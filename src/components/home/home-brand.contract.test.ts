@@ -1,5 +1,5 @@
 /**
- * عقد صفّ الهوية على الرئيسية: شريط «مزايا سَدِيد» ثم لوحة سَدِيد بعرض العمود، وفوقها فيلمها
+ * عقد صفّ الهوية على الرئيسية: شريط الحالة الحيّة ثم لوحة سَدِيد بعرض العمود، وفوقها فيلمها
  * السينمائي بموسيقاه **في حاويته نفسها**، والاسم والسطر **نصًّا حقيقيًّا**، ثم «الجوهرة» (أوامر
  * المالك ٢٠٢٦/١٠/١٧ و١٠/١٨ — المواصفة ١٠ §٢.٣ — وR4: «… يبدأ اولاً … وبمجرد فتح الموقع والدخول عليه …»
  * و«واظف الى فديو الموشن قرافيتي افضل واجمل واحدث موسيقا … واجعل علامة سديد في النهاية تكون كالجوهرة
@@ -54,6 +54,18 @@ import {
   filmActAt,
   filmRateFor,
 } from "@/components/home/HomeBrandRow";
+
+/**
+ * الشريط داخل الصفّ يقرأ القراءات المشتركة (`useHomeReads`، أمر المالك ٢٠٢٦/١٠/٢٤) ولا
+ * `QueryClient` هنا — وهذا العقد عن الفيلم واللوحة لا عن بنود الشريط (عقدها
+ * `home-ticker.contract.test.ts`). فتُستبدل بقراءاتٍ قيد الانتظار.
+ */
+vi.mock("@/components/home/home-reads", () => {
+  const waiting = { data: undefined, isPending: true, isError: false };
+  return {
+    useHomeReads: () => ({ sec: waiting, state: waiting, maint: waiting, projects: waiting }),
+  };
+});
 
 const SRC = readFileSync("src/components/home/HomeBrandRow.tsx", "utf8");
 const PAGE = readFileSync("src/routes/-blueprint-page.tsx", "utf8");

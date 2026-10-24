@@ -857,4 +857,20 @@ export const liveOf = {
  *   `sensors_total` (:270-271) — كلها execKpis و`liveOf.execKpis`؛
  *   SAP ← مزوّد `sap` في integrations (integrations-hub.functions.ts:250-271)
  *   · `liveOf.provider` · الحيّ كلمة صحّة لا نسبة.
+ *
+ * ── شريط الإعلانات (أمر المالك ٢٠٢٦/١٠/٢٤ · `home-ticker-status.ts`) ──
+ * بنودٌ أربعة تقرأ القراءات نفسها بمفاتيحها (لا طلبٌ جديد إلا المشاريع) وبالقاعدة نفسها:
+ * الحالة الأمنية ← compliance أعلاه (state · `liveOf.state`، وإلا `refKpi("compliance")` بشارة
+ *   «مرجعي» وسهمه المقيس) · نوعها (مستقرة/تحت المراقبة/مرتفعة المخاطر/حرجة) **قاعدة عرض مؤلَّفة**
+ *   بعتبات 90/75/60 على القيمة المعروضة مقرَّبةً، لا قياس · وتصعّدها درجةً بلاغاتٌ حرجة مفتوحة
+ *   مقيسة حيّة من صفوف sec `incidents` (`liveOf.secIncidents` و`counts.incidents_critical` غير
+ *   null وشدّةٌ مقيسة على صفٍّ واحد على الأقل).
+ * البلاغات ← incidents أعلاه (sec `counts.incidents_open` · `liveOf.secIncidents`، وإلا المرجع
+ *   بشارته وسهمه «ارتفاع = سلبي»)؛ والحرجة المفتوحة من الصفوف نفسها للحيّ وحده (غير مقيسة ⇒
+ *   «لم يُقَس»)، ولا رقم حرجٍ للمرجع.
+ * الصيانة ← maint · `kpis.open + on_hold` نشطة و`kpis.overdue` متأخرة · `liveOf.maint` للتمييز
+ *   لا للاستبدال: **لا مرجع بديل أبدًا** — الفشل ⇒ «تعذّر القراءة»، و`source: "export"` ⇒ «تصدير SAP».
+ * المشاريع ← projects (`getProjectsSummary`، `projects-summary.functions.ts`) · عدّادات الجارية
+ *   وصحّتها المصرَّح بها (معرّضة/متأخرة/غير مقيَّمة) بلا اسم ولا مدير (SEC-01) · من `sec_projects`
+ *   أو تصدير 697 مشروعًا المعتمد (`source: "export"`) — ولا مرجع بديل.
  */

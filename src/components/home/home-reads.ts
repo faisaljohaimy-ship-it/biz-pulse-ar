@@ -27,6 +27,7 @@ import { getRiskBoard } from "@/lib/exec/risk-board.functions";
 import { getIntegrationsOverview } from "@/lib/integrations-hub.functions";
 import { getExecKpis } from "@/lib/sec-exec-kpis.functions";
 import { getMaintSummary } from "@/lib/maint.functions";
+import { getProjectsSummary } from "@/lib/projects-summary.functions";
 
 export function useHomeReads() {
   // البوابة الوحيدة `!authLoading` — لا `enabled: !!user` على قراءة عرض.
@@ -38,6 +39,7 @@ export function useHomeReads() {
   const fetchIntegrations = useServerFn(getIntegrationsOverview);
   const fetchExecKpis = useServerFn(getExecKpis);
   const fetchMaint = useServerFn(getMaintSummary);
+  const fetchProjects = useServerFn(getProjectsSummary);
 
   const sec = useQuery({
     queryKey: ["sec-overview", user?.id ?? "anon"],
@@ -97,7 +99,21 @@ export function useHomeReads() {
     refetchInterval: 60_000,
     retry: false,
   });
-  return { sec, oms, state, risk, integrations, execKpis, maint };
+  /**
+   * ملخّص المشاريع — عدّادات فقط، لا اسم ولا مدير (SEC-01) — لشريط الرئيسية
+   * (أمر المالك ٢٠٢٦/١٠/٢٤). حيٌّ من `sec_projects` أو تصدير «Projects Data»
+   * المعتمد (`source: "export"`)، بلا محاكاة؛ فلا بديل صامت: `retry: false`
+   * والإعادة بيد المستخدم (البند ③ أعلاه).
+   */
+  const projects = useQuery({
+    queryKey: ["home-projects-summary"],
+    queryFn: () => fetchProjects(),
+    enabled: !authLoading,
+    staleTime: 60_000,
+    refetchInterval: 60_000,
+    retry: false,
+  });
+  return { sec, oms, state, risk, integrations, execKpis, maint, projects };
 }
 
 /** شكل القراءات كما تستهلكه البطاقات — يُشتقّ من الهوك فلا يُكتب مرّتين. */

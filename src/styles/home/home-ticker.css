@@ -1,5 +1,6 @@
 /* ============================================================================
-   home-ticker.css — «مزايا سَدِيد»: الشريط المتحرك فوق البانر (أمر المالك ٢٠٢٦/١٠/١٨ R3)
+   home-ticker.css — «شريط الإعلانات»: الشريط المتحرك فوق البانر (أمر المالك ٢٠٢٦/١٠/١٨ R3؛
+   وبنوده الحيّة الأربعة بأمر ٢٠٢٦/١٠/٢٤: الحالة الأمنية · الصيانة · البلاغات · المشاريع)
    ----------------------------------------------------------------------------
    يستورده `HomeTicker.tsx` وحده (حزمة الرئيسية المقتطَعة).
 
@@ -16,6 +17,13 @@
    ③ **التوقّف تجميدٌ في المكان** (`animation-play-state`) لا عودةٌ إلى البداية: الزرّ
      (`[data-paused]`)، والفأرة فوق الشريط، والتركيز داخله، وخروجه من الإطار.
    ④ لا لون إلا من طبقة الرموز (المادة ٣٣)، والنصّ 14px (أرضية 12px)، والزرّ ≥ 44px.
+   ⑤ **حركة البنود الحيّة** (أسفل الملف) أساسها مُركِّب — `opacity`/`scale`/`translate` — **مع ثلاثة
+     استثناءات معلنة لا تمسّ التخطيط**: `filter: blur` داخل نصّ البند وقت دخوله، و`clip-path` للكشف، و`@property --tk-n` للعدّ —
+     داخل بوّابة ① نفسها وعلى `[data-run]`: الرمز المتحرّك بدل الساكن، ونبضةٌ واحدة عند تغيّر
+     صنف البند (`data-flip` وإعادة تركيب الجسم بمفتاح عدّاد التغيّر)، ونبضة انتباهٍ بطيئة (3.2 ث) على حلقة الرمز الحرج، ودفعةٌ
+     باتجاه السهم. وكلّها تقف مع الزرّ وخارج الإطار. اللون في الشارة والرمز والإطار تأكيدٌ لا حاملٌ
+     وحيد: كلمة الحالة والشكل يحملان المعنى (WCAG 2.2 §1.4.1)، ونصّ الكلمة `--ink` لأن
+     اللونين الكهرماني/الأخضر على غسلتهما دون 4.5:1 في الفاتح (قِيس).
    الحارس: `src/components/home/home-ticker.contract.test.ts`.
    ============================================================================ */
 
@@ -244,6 +252,542 @@
   }
 }
 
+/* ── ⑤ البنود الحيّة ─────────────────────────────────────────────────────────
+   النبرة تُترجَم هنا إلى رمزٍ واحد `--tk-tone` من طبقة الرموز (المادة ٣٣) — لا لون نهائي.
+   خطر ⇐ ورديّ (`--tone-rose`) · تحذير ⇐ كهرمانيّ (`--tone-amber`) · سليم ⇐ زمرّديّ · معلومة ⇐
+   أزرق: لا يُدمج الخطر والتحذير، ويحمل الفرقَ الشكلُ (مثمّن/مثلث/دائرة) والكلمة معًا. */
+.nx-tk {
+  --tk-tone: var(--tone-blue);
+}
+
+.nx-tk[data-tone="danger"] {
+  --tk-tone: var(--tone-rose);
+}
+
+.nx-tk[data-tone="warning"] {
+  --tk-tone: var(--tone-amber);
+}
+
+.nx-tk[data-tone="ok"] {
+  --tk-tone: var(--tone-emerald);
+}
+
+.nx-tk[data-tone="info"] {
+  --tk-tone: var(--tone-blue);
+}
+
+/* دلالة الاتجاه (لا اتجاه السهم): إيجابي/سلبي/محايد/لم يُقَس — تأكيدٌ لونيّ على كلمتها. */
+.nx-tk-trend {
+  --tk-pol: var(--ink-3);
+  --tk-nx: 0em;
+  --tk-ny: 0em;
+  --tk-i: 4;
+}
+
+.nx-tk-trend[data-polarity="positive"] {
+  --tk-pol: var(--tone-emerald);
+}
+
+.nx-tk-trend[data-polarity="negative"] {
+  --tk-pol: var(--tone-rose);
+}
+
+/* الدفعة ±0.15em على محور السهم: الصاعد/الهابط رأسيًّا، والثابت أفقيًّا (بنسبة خطّ الشريط). */
+.nx-tk-trend[data-dir="up"] {
+  --tk-ny: 0.15em;
+}
+
+.nx-tk-trend[data-dir="down"] {
+  --tk-ny: -0.15em;
+}
+
+.nx-tk-trend[data-dir="flat"] {
+  --tk-nx: 0.15em;
+}
+
+/* جسم البند: صندوقٌ واحد تتراكب عليه نبضة الانتقال (⑤ أدناه). */
+.nx-tk-body {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding-inline: 8px;
+  border-radius: 8px;
+}
+
+/* طبقة النبضة: شفّافةٌ ساكنًا، ولا تتحرّك إلا داخل البوّابة. */
+.nx-tk-body::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--tk-tone) 24%, transparent);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ترتيب أجزاء البند في التتابع (×70ms): الرمز ← الاسم ← الكلمة ← الرقم ← الاتجاه ← الشارة. */
+.nx-tk-glyph[data-role="state"] {
+  --tk-i: 0;
+}
+
+.nx-tk-label {
+  --tk-i: 1;
+  color: var(--ink-2);
+  font-weight: 600;
+}
+
+/* كلمة الحالة: شارةٌ بإطارٍ وغسلةٍ من النبرة، ونصّها `--ink` (انظر ⑤ في الرأس). */
+.nx-tk-word {
+  --tk-i: 2;
+  position: relative;
+  /* أبعاد الشارة بنسبة الخطّ (em) لا بكسل: تكبر مع الحرف، وسطرها 1.5 يتّسع لتشكيل الخطّ العربي
+     فلا يقصّه قصّ الكنس (⑤ أدناه). */
+  padding: 0.12em 0.6em;
+  line-height: 1.5;
+  border: 1px solid color-mix(in srgb, var(--tk-tone) 70%, var(--surface));
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--tk-tone) 14%, var(--surface));
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.nx-tk-fig {
+  --tk-i: 3;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  color: var(--ink-2);
+  font-weight: 600;
+}
+
+.nx-tk-num {
+  position: relative;
+  display: inline-block;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+/* «لم يُقَس»: نصٌّ لا صفر — بنبرةٍ أخفّ لتتميّز عن رقمٍ مقيس. */
+.nx-tk-nm {
+  color: var(--ink-3);
+  font-weight: 600;
+}
+
+.nx-tk-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding-inline-start: 8px;
+  border-inline-start: 2px solid var(--tk-pol);
+  color: var(--ink-2);
+  font-weight: 600;
+}
+
+.nx-tk-badge {
+  --tk-i: 5;
+  padding-inline: 6px;
+  border: 1px solid var(--hairline-hover);
+  border-radius: 999px;
+  color: var(--ink-2);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 16px;
+}
+
+.nx-tk[data-badge="reference"] .nx-tk-badge {
+  border-color: color-mix(in srgb, var(--tone-amber) 45%, var(--surface));
+  color: var(--tone-amber);
+}
+
+/* للقارئ وحده: خارج التخطيط (مطلق)، فلا يدخل في فجوة الصفّ ولا في قياس النسخة. */
+.nx-tk-sr {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* الرمز: صورتان متراكبتان في صندوقٍ بمقاسه — الساكنة وحدها ما لم تفتح البوّابة. */
+.nx-tk-glyph {
+  position: relative;
+  display: block;
+  flex: none;
+  inline-size: 24px;
+  block-size: 24px;
+}
+
+.nx-tk-glyph[data-role="trend"] {
+  inline-size: 18px;
+  block-size: 18px;
+}
+
+.nx-tk-img {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.nx-tk-img-anim {
+  display: none;
+}
+
+/* هالة «حرجة»: خلف الرمز (أوّل ابنٍ فتعلوها الصورتان)، مرسومةٌ دائمًا وشفّافة، وتتنفّس داخل
+   البوّابة للخطر وحده — أي «حرجة» فقط، فلا بند غيرها بنبرة الخطر. */
+.nx-tk-ring {
+  position: absolute;
+  inset: -0.45em;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle closest-side,
+    color-mix(in srgb, var(--tk-tone) 60%, transparent),
+    transparent
+  );
+  opacity: 0;
+  pointer-events: none;
+}
+
+.nx-tk-glyph[data-role="trend"] .nx-tk-ring {
+  display: none;
+}
+
+/* تنفّس الهالة: 1.6 ث ذهابًا ومثلها إيابًا (دورة 3.2 ث ≈ 0.31 هرتز) وتفاوت إضاءتها 0.25
+   (0.15 ← 0.40) — دون عتبة الوميض (WCAG 2.3.1) بكثير. */
+@keyframes nxTkBreath {
+  from {
+    opacity: 0.15;
+    scale: 0.92;
+  }
+
+  to {
+    opacity: 0.4;
+    scale: 1.08;
+  }
+}
+
+/* نبضة الانتقال: غسلةٌ تخبو إلى الصفر. وإعادة تشغيلها عند كل تغيّرٍ بإعادة تركيب `.nx-tk-body` (مفتاحه عدّاد التغيّر) لا باسمَين متكافئين. */
+@keyframes nxTkFlash {
+  from {
+    opacity: 0.9;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+/* دفعة السهم: يبدأ مُزاحًا عكس محوره بـ0.15em ويستقرّ في موضعه (`--tk-nx`/`--tk-ny` من اتجاهه). للدخول
+   ولتغيّر الصنف معًا. */
+@keyframes nxTkNudge {
+  from {
+    translate: var(--tk-nx, 0em) var(--tk-ny, 0em);
+  }
+
+  to {
+    translate: 0 0;
+  }
+}
+
+/* كشف النصّ السينمائي: سطرٌ يُكشف من الأعلى (قصّ clip-path) ويصعد 0.35em ويتبدّد ضبابه (0.22em ≈ 3px
+   عند 14px) وتكتمل عتمته — كلها بنسبة خطّ الشريط فتكبر مع الحرف. النهاية `filter: none` وقصٌّ أوسع
+   من الصندوق (يحمي تشكيل الخطّ العربي من القصّ)، وبعد انتهائه يزول الأثر كلّه (fill: backwards فقط)
+   فيحرّر الطبقة. لا حرف مفرد ولا `letter-spacing` ولا وزن. */
+@keyframes nxTkReveal {
+  from {
+    opacity: 0.6;
+    translate: 0 0.35em;
+    filter: blur(0.22em);
+    clip-path: inset(0 0 100% 0);
+  }
+
+  to {
+    opacity: 1;
+    translate: 0 0;
+    filter: none;
+    clip-path: inset(-0.4em -0.6em -0.4em -0.6em);
+  }
+}
+
+/* كنس الضوء على كلمة الحالة عند تغيّر صنفها: نطاقٌ يمرّ مرّةً بإزاحة `translate` وحدها (بلا إعادة
+   رسم تخطيط)، لونه من نبرة البند، واتجاهه اتجاه القراءة (`--tk-sweep`). الكلمة والشكل يحملان المعنى. */
+@keyframes nxTkSweep {
+  0% {
+    opacity: 0;
+    translate: calc(-100% * var(--tk-sweep, 1)) 0;
+  }
+
+  25%,
+  70% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    translate: calc(100% * var(--tk-sweep, 1)) 0;
+  }
+}
+
+/* عدّ الرقم 0 ← القيمة (~700ms): غطاءٌ زخرفيّ `aria-hidden` يعدّ بعدّادٍ من خاصيةٍ مسجَّلة، والرقم
+   الحقيقي في النصّ (يبقى مخفيَّ العتمة حتى لحظة الوصول ثم يظهر) — فلا رقمٌ وسيط يُقرأ كأنه مقيس.
+   تحسينٌ تدريجي: بلا دعم `@property` يبقى الرقم العادي فقط. */
+@property --tk-n {
+  syntax: "<integer>";
+  inherits: false;
+  initial-value: 0;
+}
+
+@keyframes nxTkCount {
+  from {
+    --tk-n: 0;
+    opacity: 1;
+  }
+
+  99% {
+    opacity: 1;
+  }
+
+  to {
+    --tk-n: var(--tk-to, 0);
+    opacity: 0;
+  }
+}
+
+@keyframes nxTkRealHold {
+  0%,
+  99% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+/* الغطاء: لا وجود له ساكنًا (الرقم الحقيقي وحده)، ويظهر داخل البوّابة للنسخة المقروءة وحدها. */
+.nx-tk-count {
+  display: none;
+}
+
+.nx-tk-count::before {
+  content: counter(tkc);
+}
+
+.nx-ticker {
+  --tk-step: 70ms;
+  --tk-sweep: 1;
+}
+
+.nx-ticker[dir="rtl"] {
+  --tk-sweep: -1;
+}
+
+/* نطاق الكنس: غير مرئيٍّ ساكنًا، ويقصّه شكل الكلمة وحده حين ينبض الصنف (البوّابة أدناه). */
+.nx-tk-word::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to right,
+    transparent,
+    color-mix(in srgb, var(--tk-tone) 55%, transparent) 50%,
+    transparent
+  );
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* المتحرّك بدل الساكن — ما دام الشريط غير موقوفٍ ولا خارج الإطار. */
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-ticker:not([data-paused], [data-offscreen])
+    .nx-tk-img-anim {
+    display: block;
+  }
+
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-ticker:not([data-paused], [data-offscreen])
+    .nx-tk-img-still {
+    display: none;
+  }
+
+  /* هالة «حرجة»: تتنفّس ما دام الشريط يجري (وتقف مع الزرّ وخارج الإطار — أدناه). */
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-ticker-track[data-run]
+    .nx-tk[data-tone="danger"]
+    .nx-tk-glyph[data-role="state"]
+    .nx-tk-ring {
+    animation-name: nxTkBreath;
+    animation-duration: 1.6s;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+  }
+
+  /* ── الدخول (النسخة المقروءة وحدها — النسخ المطابقة تمرّ ساكنةً فكلفة المسار منخفضة) وتغيّر
+     الصنف (كل النسخ): القاعدة نفسها. تغيّر الصنف يضع `data-flip` ويعيد تركيب `.nx-tk-body` فتبدأ
+     الحركات من أولها. أجزاء البند تتتابع بفارق `--tk-step` (70ms) × ترتيبها `--tk-i`، بمنحنى سينمائي
+     هادئ النهاية، ~720ms. `backwards`: قبل أن يأتي دورها تبقى في حالة البداية فلا تلمع ثم تختفي. */
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-ticker-track[data-run]
+    .nx-ticker-copy:not([aria-hidden="true"])
+    :is(
+      .nx-tk-glyph[data-role="state"],
+      .nx-tk-label,
+      .nx-tk-word,
+      .nx-tk-fig,
+      .nx-tk-trend,
+      .nx-tk-badge
+    ),
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-ticker-track[data-run]
+    .nx-tk[data-flip]
+    :is(
+      .nx-tk-glyph[data-role="state"],
+      .nx-tk-label,
+      .nx-tk-word,
+      .nx-tk-fig,
+      .nx-tk-trend,
+      .nx-tk-badge
+    ) {
+    animation-name: nxTkReveal;
+    animation-duration: 720ms;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    animation-delay: calc(var(--tk-i, 0) * var(--tk-step, 70ms));
+    animation-fill-mode: backwards;
+    animation-iteration-count: 1;
+  }
+
+  /* دفعة السهم (±0.15em على محوره) بعد كشف جزء الاتجاه. */
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-ticker-track[data-run]
+    .nx-ticker-copy:not([aria-hidden="true"])
+    .nx-tk-trend
+    .nx-tk-glyph,
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-ticker-track[data-run]
+    .nx-tk[data-flip]
+    .nx-tk-trend
+    .nx-tk-glyph {
+    animation-name: nxTkNudge;
+    animation-duration: 900ms;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    animation-delay: calc(var(--tk-i, 0) * var(--tk-step, 70ms));
+    animation-fill-mode: backwards;
+    animation-iteration-count: 1;
+  }
+
+  /* عدّ الرقم: الغطاء يظهر ويعدّ، والرقم الحقيقي يبقى مخفيّ العتمة حتى لحظة الوصول. */
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-ticker-track[data-run]
+    .nx-ticker-copy:not([aria-hidden="true"])
+    .nx-tk-count {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    display: block;
+    counter-reset: tkc var(--tk-n);
+    animation-name: nxTkCount;
+    animation-duration: 700ms;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    animation-delay: calc(3 * var(--tk-step, 70ms));
+    /* `both` لا `backwards`: بعد النهاية يبقى الغطاء بعتمة 0 (حالة `to`)؛ و`backwards` كان يعيده إلى
+       عتمة 1 بعدّادٍ صفر فيُطبع «0» فوق رقمه الأول (قِيس: 2,284 ← «0,284») — الرقم الحقيقي وحده بعد العدّ. */
+    animation-fill-mode: both;
+    animation-iteration-count: 1;
+  }
+
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-ticker-track[data-run]
+    .nx-ticker-copy:not([aria-hidden="true"])
+    .nx-tk-real {
+    animation-name: nxTkRealHold;
+    animation-duration: 700ms;
+    animation-timing-function: linear;
+    animation-delay: calc(3 * var(--tk-step, 70ms));
+    animation-fill-mode: backwards;
+    animation-iteration-count: 1;
+  }
+
+  /* ── تغيّر الصنف وحده: غسلة الجسم، وكنس الضوء على كلمة الحالة (يقصّه شكل الكلمة بهامشٍ رأسيٍّ
+     لا يقصّ تشكيل الخطّ، ويمرّ بعد كشفها). ── */
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-ticker-track[data-run]
+    .nx-tk[data-flip]
+    .nx-tk-body::before {
+    animation-name: nxTkFlash;
+    animation-duration: 1.6s;
+    animation-timing-function: ease-out;
+    animation-iteration-count: 1;
+  }
+
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-ticker-track[data-run]
+    .nx-tk[data-flip]
+    .nx-tk-word {
+    clip-path: inset(-0.4em 0 round 0.43em);
+  }
+
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-ticker-track[data-run]
+    .nx-tk[data-flip]
+    .nx-tk-word::after {
+    animation-name: nxTkSweep;
+    animation-duration: 1100ms;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    animation-delay: calc(3 * var(--tk-step, 70ms));
+    animation-fill-mode: backwards;
+    animation-iteration-count: 1;
+  }
+
+  /* ── الموقوف وخارج الإطار: الحركات العابرة (كشف · عدّ · كنس) تُلغى إلى حالتها النهائية بدل أن
+     تتجمّد في منتصفها ضبابيةً؛ ونبضات الحلقة والتلميح تقف في مكانها (القاعدة بعد البوّابة). ── */
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-ticker:is([data-paused], [data-offscreen])
+    .nx-ticker-track[data-run]
+    :is(
+      .nx-tk-glyph[data-role="state"],
+      .nx-tk-label,
+      .nx-tk-word,
+      .nx-tk-fig,
+      .nx-tk-trend,
+      .nx-tk-badge
+    ),
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-ticker:is([data-paused], [data-offscreen])
+    .nx-ticker-track[data-run]
+    .nx-tk-real,
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-ticker:is([data-paused], [data-offscreen])
+    .nx-ticker-track[data-run]
+    .nx-tk-trend
+    .nx-tk-glyph,
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-ticker:is([data-paused], [data-offscreen])
+    .nx-ticker-track[data-run]
+    .nx-tk-word::after {
+    animation-name: none;
+  }
+
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-ticker:is([data-paused], [data-offscreen])
+    .nx-ticker-track[data-run]
+    .nx-tk-count {
+    display: none;
+  }
+}
+
+/* التوقّف تجميدٌ في المكان للنبضات كذلك: الزرّ، وخارج الإطار. */
+.nx-ticker:is([data-paused], [data-offscreen]) .nx-tk-ring,
+.nx-ticker:is([data-paused], [data-offscreen]) .nx-tk-body::before,
+.nx-ticker:is([data-paused], [data-offscreen]) .nx-tk-trend .nx-tk-glyph {
+  animation-play-state: paused;
+}
+
 @media (forced-colors: active) {
   .nx-ticker {
     border-color: CanvasText;
@@ -262,6 +806,21 @@
   .nx-ticker-toggle {
     border-inline-start-color: ButtonText;
     color: ButtonText;
+  }
+
+  /* القسري يمحو الغسلات: الإطار والنصّ بألوان النظام، والكلمة تبقى حاملةً للمعنى. */
+  .nx-tk-word,
+  .nx-tk-badge,
+  .nx-tk-trend {
+    border-color: CanvasText;
+    color: CanvasText;
+  }
+
+  .nx-tk-ring,
+  .nx-tk-body::before,
+  .nx-tk-word::after,
+  .nx-tk-count {
+    display: none;
   }
 }
 

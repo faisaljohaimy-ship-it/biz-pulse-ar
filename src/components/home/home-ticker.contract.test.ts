@@ -1,39 +1,60 @@
 /**
- * عقد شريط «مزايا سَدِيد» وزرّ «إيقاف الحركة» الواحد (أمر المالك ٢٠٢٦/١٠/١٨ R3: «وكون
- * الشريط الإعلاني المتحرك باستمرار يعلو علامة سديد الموجودة فالمرفق»).
+ * عقد «شريط الإعلانات» وزرّ «إيقاف الحركة» الواحد (أمر المالك ٢٠٢٦/١٠/١٨ R3: «وكون الشريط الإعلاني
+ * المتحرك باستمرار يعلو علامة سديد الموجودة فالمرفق»؛ وبنوده الحيّة بأمر ٢٠٢٦/١٠/٢٤: الحالة الأمنية
+ * · الصيانة · البلاغات · المشاريع).
  *
  * الأمر نسخ «لا حركة دائمة» (M1) **لهذا الشريط وحده** — ومعه توهّجٌ ينجرف خلف إطار البانر
  * من موجّه المرحلة نفسها. وما يكسرهما لا يراه tsc ولا البناء:
  *   • سرعةٌ تُقرأ أو لا تُقرأ — أو مدّةٌ ثابتة فتتبدّل السرعة بطول المحتوى؛
  *   • فجوةٌ تظهر عند الوصلة على شاشةٍ أعرض من النسخة؛
- *   • حركةٌ لمن طلب السكون أو أطفأ الحركة أو في الوضع الآمن؛
+ *   • حركةٌ لمن طلب السكون أو أطفأ الحركة أو في الوضع الآمن — ومنها نبضات البنود والرموز المتحرّكة؛
  *   • زرّ إيقافٍ بلا حالةٍ مُعلنة، أو أصغر من 44px، أو ظاهرٌ حيث لا شيء يتحرّك؛
  *   • اختصار `animation` يعيد `animation-play-state` إلى `running` فيُبطل الإيقاف
  *     (وقع فعلًا: ضُغط الزرّ وبقي الشريط يجري — ٢٠٢٦/١٠/١٨)؛
- *   • نسخةٌ مطابقة يقرؤها القارئ مرّتين، أو منطقةٌ حيّة تُعلن ما لا يتبدّل؛
- *   • سطرٌ لا مصدر له، أو رقمٌ أو ادّعاءٌ أو اسم منطقة مكتوب.
+ *   • نسخةٌ مطابقة يقرؤها القارئ مرّتين، أو منطقةٌ حيّة تُعلن ما يتبدّل كل دقيقة؛
+ *   • حركةٌ بخاصيةٍ غير مُركِّبة (تخطيط/رسم)، أو رمزٌ متحرّكٌ بلا نسخةٍ ساكنةٍ على القرص؛
+ *   • بندٌ يحمل لونًا بلا شكلٍ وكلمة، أو الخطر والتحذير بنبرةٍ واحدة؛
+ *   • مرجعٌ بلا شارة، أو غيابٌ يصير صفرًا، أو صيانةٌ تُستبدل بمرجع، أو اسمٌ يعبر من المشاريع.
  *
  * وكل كاشفٍ دالّةٌ تُجرَّب أولًا على انتهاكٍ مزروع (المادة ٣٠)، والقراءة بمحلّل CSS
- * لا بنصّ، والكود منزوع التعليقات.
+ * لا بنصّ، والكود منزوع التعليقات. وقواعد البنود نفسها في `home-ticker-status.test.ts`.
  */
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { createElement } from "react";
 import postcss, { type AtRule, type ChildNode, type Node, type Rule } from "postcss";
 import { act, fireEvent, render } from "@testing-library/react";
 import { axe } from "jest-axe";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { I18nProvider } from "@/lib/i18n";
-import { REGIONS } from "@/lib/regions";
 import {
-  TICKER_LINES,
+  GLYPH_FOR_TONE,
+  GLYPH_FOR_TREND,
+  glyphForTrend,
+  TICKER_GLYPHS,
+  TICKER_GLYPH_NAMES,
+  TICKER_GLYPH_SIZE,
+  TICKER_LABELS,
   TICKER_PX_PER_S,
   TICKER_SPEED_RANGE,
-  buildTickerLines,
-  regionsCountWord,
-  type TickerLine,
 } from "@/components/home/home-ticker-content";
 import { HomeTicker, tickerLoop, type TickerLoop } from "@/components/home/HomeTicker";
 import { HomeBrandRow, MOTION_PAUSE_EVENT } from "@/components/home/HomeBrandRow";
+import type { SecOverview } from "@/lib/sec.functions";
+import type { CommandCenterState } from "@/lib/exec/command-center.functions";
+import type { MaintSummary } from "@/lib/maintenance/maint-types";
+import { summarizeProjects, type ProjectsSummary } from "@/lib/projects/projects-summary";
+
+/**
+ * القراءات المشتركة (`useHomeReads`) تُستبدل بحالةٍ نتحكّم بها: الشريط يقرأ من مفاتيح react-query
+ * نفسها، فلا شبكة هنا ولا `QueryClient`. كل اختبارٍ يضبط `reads.current` ثم يرسم.
+ */
+type Q<T> = { data: T | undefined; isPending: boolean; isError: boolean };
+const reads = vi.hoisted(() => ({
+  current: null as null | Record<string, Q<unknown>>,
+}));
+vi.mock("@/components/home/home-reads", () => ({
+  useHomeReads: () => reads.current,
+}));
 
 const SRC = readFileSync("src/components/home/HomeTicker.tsx", "utf8");
 const ROW = readFileSync("src/components/home/HomeBrandRow.tsx", "utf8");
@@ -221,9 +242,13 @@ function duplicateGaps(code: string): string[] {
   return out;
 }
 
-/** ⑩ لا منطقة حيّة ولا حلقة JS: النصّ لا يتبدّل، والحركة على المُركِّب. */
+/**
+ * ⑩ لا حلقة JS، ولا منطقة حيّة للبنود: الأرقام تتبدّل كل دقيقة فلا يُعلَن شيء. والاستثناء عقدةٌ
+ * واحدة `role="status"` (مهذّبة ضمنًا) لإعلان «حرجة» وحدها — فلا `aria-live` صريح ولا غيرها.
+ */
 const liveRegions = (code: string) =>
-  code.match(/aria-live|role="(?:marquee|log|status|alert|timer)"/g) ?? [];
+  code.match(/aria-live|role="(?:marquee|log|alert|timer)"/g) ?? [];
+const statusNodes = (code: string) => code.match(/role="status"/g) ?? [];
 const jsLoops = (code: string) =>
   code.match(/requestAnimationFrame|setInterval|\.animate\(|style\.setProperty/g) ?? [];
 
@@ -270,41 +295,282 @@ function seamGaps(css: string): string[] {
   return out;
 }
 
-/** ⑬ السطور: صادقةٌ ومسنودة — بلا رقم ولا ادّعاء ولا اسم منطقة، ولكل مصدرٍ نصُّه على القرص. */
-const DIGITS = /[0-9٠-٩۰-۹٪%]/;
-const CLAIM =
-  /عميل|عملاء|شريك|شركاء|شراكة|شهادة|معتمد|حاصل على|موثوق|ISO|certif|customer|client|partner|testimonial|trusted|vendor|award/i;
-const REGION_WORDS = /الوسطى|الغربية|الشرقية|الجنوبية|Central|Western|Eastern|Southern/;
-function lineViolations(lines: readonly TickerLine[]): string[] {
+/** المجلّد الذي تُقرأ منه الرموز على القرص. */
+const GLYPH_DIR = "public/media/ticker";
+
+/**
+ * ⑬ الرموز: كل اسمٍ في الخريطة له ملفّاه (WebP متحرّك + SVG ساكن) على القرص، ومساراهما مشتقّان
+ * من الاسم، والنبرات الأربع لكلٍّ رمزٌ مختلف (الخطر ≠ التحذير)، والاتجاهات الثلاثة كذلك.
+ */
+function glyphGaps(
+  glyphs: Record<string, { anim: string; still: string }>,
+  names: readonly string[],
+  forTone: Record<string, string>,
+  forTrend: Record<string, string>,
+  exists: (path: string) => boolean = existsSync,
+): string[] {
   const out: string[] = [];
-  if (lines.length < 8 || lines.length > 12) out.push(`عدد السطور ${lines.length}`);
-  if (new Set(lines.map((l) => l.id)).size !== lines.length) out.push("معرّفٌ مكرّر");
-  for (const l of lines) {
-    for (const text of [l.ar, l.en]) {
-      if (!text.trim()) out.push(`${l.id}: فارغ`);
-      if (DIGITS.test(text)) out.push(`${l.id}: رقم`);
-      if (CLAIM.test(text)) out.push(`${l.id}: ادّعاء`);
-      if (REGION_WORDS.test(text)) out.push(`${l.id}: اسم منطقة`);
+  for (const name of names) {
+    const g = glyphs[name];
+    if (!g) {
+      out.push(`${name}: غائب من الخريطة`);
+      continue;
     }
-    if (l.sources.length === 0) out.push(`${l.id}: بلا مصدر`);
-    for (const s of l.sources) {
-      if (!existsSync(s.file)) out.push(`${l.id}: ${s.file} غائب`);
-      else if (!readFileSync(s.file, "utf8").includes(s.anchor))
-        out.push(`${l.id}: «${s.anchor}» زال`);
-    }
+    if (g.anim !== `/media/ticker/${name}.webp`) out.push(`${name}: مسار الحلقة`);
+    if (g.still !== `/media/ticker/${name}.svg`) out.push(`${name}: مسار الساكن`);
+    if (!exists(`${GLYPH_DIR}/${name}.webp`)) out.push(`${name}: ملف WebP غائب`);
+    if (!exists(`${GLYPH_DIR}/${name}.svg`)) out.push(`${name}: ملف SVG غائب`);
+  }
+  for (const tone of ["danger", "warning", "ok", "info"]) {
+    if (!names.includes(forTone[tone])) out.push(`نبرة ${tone}: رمزٌ مجهول`);
+  }
+  if (new Set(["danger", "warning", "ok", "info"].map((t) => forTone[t])).size !== 4) {
+    out.push("نبرتان بالرمز نفسه");
+  }
+  if (new Set(["up", "down", "flat"].map((d) => forTrend[d])).size !== 3) {
+    out.push("اتجاهان بالرمز نفسه");
   }
   return out;
 }
 
-/** ⑭ «الأربع» لا تُكتب إلا في دالّة العدد — والسطر يُشتقّ منها. */
-function literalCounts(code: string): string[] {
-  const fn = code.indexOf("function regionsCountWord");
-  const body = fn === -1 ? "" : code.slice(fn, code.indexOf("\n}", fn));
-  const all = code.match(/الأربع|\bfour\b/g) ?? [];
-  const inFn = body.match(/الأربع|\bfour\b/g) ?? [];
-  return all.length === inFn.length && inFn.length === 2
-    ? []
-    : [`خارج الدالّة: ${all.length - inFn.length}`];
+/**
+ * ⑬ب مفاتيح الحركة تلمس الخصائص المُركِّبة وحدها (`opacity`/`scale`/`translate`/`rotate`): حركةٌ
+ * بـ`width`/`top`/`margin`/`background-color`… تُعيد التخطيط أو الرسم كل إطار. والمستثنى بأمر المالك
+ * (٢٠٢٦/١٠/٢٤، الرموشن السينمائي) ثلاثٌ عابرةٌ داخل نصّ البند وحده: `filter` (الضباب 0.22em ثم `none`)
+ * و`clip-path` (قصّ الكشف) و`--tk-n` (عدّادٌ زخرفيّ مسجَّل) — وكلٌّ منها محروسٌ بكاشفه أدناه.
+ */
+const KEYFRAME_PROPS = /^(opacity|scale|translate|rotate|filter|clip-path|--tk-n)$/;
+function nonCompositorKeyframes(css: string): string[] {
+  const out: string[] = [];
+  postcss.parse(css).walkAtRules("keyframes", (kf) => {
+    kf.walkDecls((d) => {
+      if (!KEYFRAME_PROPS.test(d.prop)) out.push(`${kf.params}: ${d.prop}`);
+    });
+  });
+  return out;
+}
+
+/** ⑬ب٢ مفاتيحنا (`nxTk*`) بنسبة الخطّ: لا بكسل في أيّ قيمة — فالحركة تكبر مع الحرف. */
+function pxKeyframes(css: string): string[] {
+  const out: string[] = [];
+  postcss.parse(css).walkAtRules("keyframes", (kf) => {
+    if (!kf.params.startsWith("nxTk")) return;
+    kf.walkDecls((d) => {
+      if (/\b\d*\.?\d+px\b/.test(d.value)) out.push(`${kf.params}: ${d.prop}: ${d.value}`);
+    });
+  });
+  return out;
+}
+
+/**
+ * ⑬ب٣ `filter` في مفاتيح الكشف وحدها، ضبابًا بـ`em` ينتهي بـ`none` (يحرّر الطبقة)؛ ولا `filter`
+ * ولا `will-change` على أيّ قاعدةٍ عاديّة — فلا ضباب على المسار المتحرّك كلّه ولا طبقةَ دائمة.
+ */
+function filterGaps(css: string): string[] {
+  const out: string[] = [];
+  postcss.parse(css).walkDecls((d) => {
+    if (d.prop === "will-change") out.push("will-change");
+    if (d.prop === "filter" && !inKeyframes(d)) out.push(`قاعدة: ${(d.parent as Rule).selector}`);
+  });
+  postcss.parse(css).walkAtRules("keyframes", (kf) => {
+    let blurs = 0;
+    kf.walkDecls("filter", (d) => {
+      const last = (d.parent as { selector?: string }).selector;
+      if (last === "to" || last === "100%") {
+        if (d.value.trim() !== "none") out.push(`${kf.params}: النهاية ${d.value}`);
+      } else if (!/^blur\(\d*\.?\d+em\)$/.test(d.value.trim())) {
+        out.push(`${kf.params}: ${d.value}`);
+      } else blurs += 1;
+    });
+    if (kf.params.startsWith("nxTkReveal") && blurs !== 1) out.push(`${kf.params}: ضباب ${blurs}`);
+  });
+  return out;
+}
+
+/**
+ * ⑬ب٤ سلامة الحرف العربي: لا `letter-spacing` ولا `word-spacing` ولا وزن/تباين خطٍّ متحرّك في أيّ
+ * مفتاح — ولا `letter-spacing` مكتوبًا في الشريط أصلًا (يكسر الوصل والربط ويغيّر عرض النسخة المقيس).
+ */
+function arabicSafetyGaps(css: string): string[] {
+  const out: string[] = [];
+  postcss.parse(css).walkDecls((d) => {
+    if (/^(letter-spacing|word-spacing)$/.test(d.prop))
+      out.push(`${d.prop} في ${inKeyframes(d) ? "مفتاح" : (d.parent as Rule).selector}`);
+    if (inKeyframes(d) && /^(font|text-transform|text-rendering)/.test(d.prop))
+      out.push(`مفتاح: ${d.prop}`);
+  });
+  return out;
+}
+
+/** ⑬ب٥ لا شقّ لنصٍّ إلى حروف في الكود (عربيّه يُقرأ كلمةً/سطرًا فقط). */
+function letterSplitting(code: string): string[] {
+  return (
+    code.match(
+      /\.split\(\s*(?:""|''|\/\/|\/\(\?:\)\/|\/\(\?=\)\/)|\[\.\.\.\s*(?:label|word|text|item\.word|pick\([^)]*\))\s*\]|Array\.from\(\s*(?:label|word|text|pick\()|\.match\(\s*\/\.\/g?|\.charAt\(/g,
+    ) ?? []
+  );
+}
+
+/**
+ * ⑬ب٦ الكشف السينمائي: ~720ms (600–800) بمنحنى `cubic-bezier(0.16, 1, 0.3, 1)`، وتتابع 70ms،
+ * وبداية 0.35em/0.6/ضباب em، ونهاية `none`.
+ */
+const REVEAL_EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
+function revealGaps(css: string): string[] {
+  const out: string[] = [];
+  const entry = Object.entries(
+    (() => {
+      const found: Record<string, string> = {};
+      postcss.parse(css).walkRules((rule) => {
+        if (!rule.toString().includes("animation-name: nxTkReveal;")) return;
+        rule.walkDecls((d) => {
+          found[d.prop] = d.value.trim();
+        });
+      });
+      return found;
+    })(),
+  );
+  const get = (k: string) => entry.find(([p]) => p === k)?.[1];
+  const ms = Number.parseFloat(get("animation-duration") ?? "NaN");
+  if (!(ms >= 600 && ms <= 800) || !(get("animation-duration") ?? "").endsWith("ms"))
+    out.push(`المدّة ${get("animation-duration")}`);
+  if (get("animation-timing-function") !== REVEAL_EASE) out.push("المنحنى");
+  if (get("animation-fill-mode") !== "backwards") out.push("fill-mode");
+  if (!(get("animation-delay") ?? "").includes("var(--tk-step, 70ms)")) out.push("التتابع");
+  let fromOk = false;
+  postcss.parse(css).walkAtRules("keyframes", (kf) => {
+    if (kf.params !== "nxTkReveal") return;
+    const from: Record<string, string> = {};
+    kf.walkRules("from", (r) =>
+      r.walkDecls((d) => {
+        from[d.prop] = d.value.trim();
+      }),
+    );
+    fromOk =
+      from.translate === "0 0.35em" &&
+      from.opacity === "0.6" &&
+      /^blur\(0?\.22em\)$/.test(from.filter ?? "");
+  });
+  if (!fromOk) out.push("حالة البداية");
+  return out;
+}
+
+/** ⑬ب٧ الهالة: دورة ≥ 2 ث (≤ 1Hz)، وتفاوت عتمتها ≤ 0.25، وللخطر وحده. */
+function breathGaps(css: string): string[] {
+  const out: string[] = [];
+  const props: Record<string, string> = {};
+  let selector = "";
+  postcss.parse(css).walkRules((rule) => {
+    if (!rule.toString().includes("animation-name: nxTkBreath;")) return;
+    selector = rule.selector;
+    rule.walkDecls((d) => {
+      props[d.prop] = d.value.trim();
+    });
+  });
+  const dur = Number.parseFloat(props["animation-duration"] ?? "NaN");
+  const period = props["animation-direction"] === "alternate" ? dur * 2 : dur;
+  if (!(period >= 2)) out.push(`الدورة ${period}ث`);
+  if (props["animation-iteration-count"] !== "infinite") out.push("ليست مستمرّة");
+  if (!selector.includes('[data-tone="danger"]')) out.push("ليست للخطر وحده");
+  const opac: number[] = [];
+  postcss.parse(css).walkAtRules("keyframes", (kf) => {
+    if (kf.params !== "nxTkBreath") return;
+    kf.walkDecls("opacity", (d) => {
+      opac.push(Number.parseFloat(d.value));
+    });
+  });
+  if (opac.length !== 2 || Math.max(...opac) - Math.min(...opac) > 0.25) out.push("تفاوت العتمة");
+  return out;
+}
+
+/**
+ * ⑬ب٨ الحال الساكنة هي النهائية: لا قاعدةٌ عاديّة (خارج البوّابة والمفاتيح) تُخفي جزءًا أو تزيحه أو
+ * تضبّبه أو تقصّه — فمن طلب السكون يرى البند كاملًا مقروءًا، والغطاء الزخرفيّ للعدّ غائب.
+ */
+const STATIC_PARTS =
+  /^\.nx-tk-(?:glyph\[data-role="state"\]|label|word|fig|trend|badge|real|num|body)$/;
+function staticStateGaps(css: string): string[] {
+  const out: string[] = [];
+  postcss.parse(css).walkRules((rule) => {
+    if (inKeyframes(rule) || atChain(rule).some((a) => a.startsWith("@media"))) return;
+    if (!rule.selectors.some((sel) => STATIC_PARTS.test(sel.trim()))) return;
+    rule.walkDecls((d) => {
+      if (d.prop === "opacity" && Number.parseFloat(d.value) < 1)
+        out.push(`${rule.selector}: opacity`);
+      if (/^(translate|filter|clip-path|visibility)$/.test(d.prop))
+        out.push(`${rule.selector}: ${d.prop}`);
+    });
+  });
+  if (declsOf(css, ".nx-tk-count", null).display !== "none") out.push("الغطاء ظاهر ساكنًا");
+  return out;
+}
+
+/**
+ * ⑬ج تبديل الرمز: ساكنًا المتحرّك مخفيّ (`display: none` فلا يُجلَب `loading="lazy"`)، والمتحرّك
+ * يظهر والساكن يختفي داخل البوّابة وحدها وما دام الشريط غير موقوفٍ ولا خارج الإطار.
+ */
+function glyphSwapGaps(css: string): string[] {
+  const out: string[] = [];
+  if (declsOf(css, ".nx-tk-img-anim", null).display !== "none") out.push("المتحرّك ظاهرٌ ساكنًا");
+  if (declsOf(css, ".nx-tk-img-still", null).display === "none") out.push("الساكن مخفيٌّ ساكنًا");
+  const live = `${SWITCH} .nx-ticker:not([data-paused], [data-offscreen])`;
+  if (declsOf(css, `${live} .nx-tk-img-anim`, GATE).display !== "block")
+    out.push("المتحرّك لا يظهر داخل البوّابة");
+  if (declsOf(css, `${live} .nx-tk-img-still`, GATE).display !== "none")
+    out.push("الساكن يبقى مع المتحرّك");
+  return out;
+}
+
+/** ⑬د النبرات: كل نبرةٍ برمزها من الطبقة، والخطر والتحذير لا يلتقيان في رمزٍ واحد. */
+function toneGaps(css: string): string[] {
+  const want: Record<string, string> = {
+    danger: "var(--tone-rose)",
+    warning: "var(--tone-amber)",
+    ok: "var(--tone-emerald)",
+    info: "var(--tone-blue)",
+  };
+  const out: string[] = [];
+  for (const [tone, token] of Object.entries(want)) {
+    if (declsOf(css, `.nx-tk[data-tone="${tone}"]`, null)["--tk-tone"] !== token)
+      out.push(`${tone}: ${declsOf(css, `.nx-tk[data-tone="${tone}"]`, null)["--tk-tone"]}`);
+  }
+  return out;
+}
+
+/** ⑬هـ نبضات البنود تقف مع الزرّ وخارج الإطار كحركة المسار. */
+function missingMotionPauses(css: string): string[] {
+  const out: string[] = [];
+  for (const target of [".nx-tk-ring", ".nx-tk-body::before", ".nx-tk-trend .nx-tk-glyph"]) {
+    let ok = false;
+    postcss.parse(css).walkDecls("animation-play-state", (d) => {
+      if (d.value.trim() !== "paused") return;
+      const rule = d.parent as Rule;
+      if (
+        rule.selectors.some(
+          (sel) =>
+            sel.includes(target) &&
+            sel.includes("[data-paused]") &&
+            sel.includes("[data-offscreen]"),
+        )
+      )
+        ok = true;
+    });
+    if (!ok) out.push(target);
+  }
+  return out;
+}
+
+/**
+ * ⑭ العتبات في ملفٍّ واحد: قاعدة العرض المؤلَّفة (أنواع الحالة الأمنية) لا تتسرّب إلى غير
+ * `home-ticker-status.ts` — فحيث تُكتب عتبةٌ ثانية تتفرّق الكلمة عن الرقم.
+ */
+function thresholdLeaks(files: ReadonlyMap<string, string>): string[] {
+  const out: string[] = [];
+  for (const [file, code] of files) {
+    if (file.endsWith("home-ticker-status.ts")) continue;
+    if (/POSTURE_THRESHOLDS|\bpostureOf\b|\bclassifyPosture\b/.test(code)) out.push(file);
+  }
+  return out;
 }
 
 /** ⑮ واجهة الإيقاف المجمَّدة بين المسارات: سمة الجذر تُكتب وتُحذف، والحدث يُطلق من أثرٍ على الحال. */
@@ -398,6 +664,7 @@ describe("الكواشف تحمرّ على انتهاكٍ مزروع (الماد
     expect(duplicateGaps(focusable)).toEqual(["المطابقة بلا inert"]);
     expect(liveRegions(`${CODE}<div aria-live="polite" />`)).toHaveLength(1);
     expect(liveRegions(`${CODE}<div role="marquee" />`)).toHaveLength(1);
+    expect(statusNodes(`${CODE}<div role="status" />`)).toHaveLength(statusNodes(CODE).length + 1);
     expect(jsLoops(`${CODE}\nrequestAnimationFrame(tick);`)).toHaveLength(1);
   });
 
@@ -430,33 +697,190 @@ describe("الكواشف تحمرّ على انتهاكٍ مزروع (الماد
     expect(styleViolations(`${CSS}\n.x { font-size: 11px; }`)).toEqual(["font-size: 11px"]);
   });
 
-  it("سطرٌ برقمٍ أو ادّعاءٍ أو اسم منطقة، ومصدرٌ زال نصّه", () => {
-    const base = TICKER_LINES[0] as TickerLine;
-    const planted: TickerLine[] = [
-      ...TICKER_LINES,
-      { ...base, id: "x1", ar: "٩٩٪ من العملاء يثقون بنا" },
-      { ...base, id: "x2", ar: "الأمن الصناعي في الوسطى" },
-      { ...base, id: "x3", sources: [{ file: "src/lib/domain.ts", anchor: "نصٌّ غير موجود" }] },
-    ];
-    const v = lineViolations(planted);
-    expect(v).toEqual(
-      expect.arrayContaining([
-        "x1: رقم",
-        "x1: ادّعاء",
-        "x2: اسم منطقة",
-        "x3: «نصٌّ غير موجود» زال",
-      ]),
-    );
+  it("رمزٌ بلا ملفّ، أو بمسارٍ غير مشتقّ، أو نبرتان برمزٍ واحد", () => {
+    const names = [...TICKER_GLYPH_NAMES];
+    const base = TICKER_GLYPHS as Record<string, { anim: string; still: string }>;
+    const gone = (path: string) => !path.endsWith("state-ok.svg") && existsSync(path);
+    expect(
+      glyphGaps(
+        base,
+        names,
+        GLYPH_FOR_TONE,
+        GLYPH_FOR_TREND,
+        (path) => path !== `${GLYPH_DIR}/state-ok.svg`,
+      ),
+    ).toEqual(["state-ok: ملف SVG غائب"]);
+    expect(gone(`${GLYPH_DIR}/state-ok.svg`)).toBe(false);
+    const moved = {
+      ...base,
+      "trend-up": { anim: "/media/ticker/up.webp", still: base["trend-up"].still },
+    };
+    expect(glyphGaps(moved, names, GLYPH_FOR_TONE, GLYPH_FOR_TREND, () => true)).toEqual([
+      "trend-up: مسار الحلقة",
+    ]);
+    expect(
+      glyphGaps(
+        base,
+        names,
+        { ...GLYPH_FOR_TONE, danger: "state-warning" },
+        GLYPH_FOR_TREND,
+        () => true,
+      ),
+    ).toEqual(["نبرتان بالرمز نفسه"]);
+    expect(
+      glyphGaps(base, names, GLYPH_FOR_TONE, { ...GLYPH_FOR_TREND, down: "trend-up" }, () => true),
+    ).toEqual(["اتجاهان بالرمز نفسه"]);
+    expect(
+      glyphGaps({}, names, GLYPH_FOR_TONE, GLYPH_FOR_TREND, () => true).length,
+    ).toBeGreaterThanOrEqual(names.length);
   });
 
-  it("«الأربع» مكتوبةً خارج دالّة العدد", () => {
-    expect(literalCounts(CONTENT_CODE)).toEqual([]);
-    const planted = CONTENT_CODE.replace(
-      '"منظومة واحدة للأمن الصناعي في جميع المناطق"',
-      '"منظومة واحدة للأمن الصناعي في المناطق الأربع"',
+  it("مفتاحُ حركةٍ بخاصيةٍ غير مُركِّبة", () => {
+    expect(nonCompositorKeyframes(CSS)).toEqual([]);
+    const planted = `${CSS}\n@keyframes bad { to { inline-size: 10px; background-color: red; } }`;
+    expect(nonCompositorKeyframes(planted)).toEqual(["bad: inline-size", "bad: background-color"]);
+  });
+
+  it("بكسلٌ في مفاتيحنا، أو `filter` على قاعدةٍ أو طبقةٍ دائمة، أو ضبابٌ لا ينتهي بـ`none`", () => {
+    expect(pxKeyframes(CSS)).toEqual([]);
+    expect(pxKeyframes(`${CSS}\n@keyframes nxTkBad { from { translate: 0 4px; } }`)).toEqual([
+      "nxTkBad: translate: 0 4px",
+    ]);
+    expect(filterGaps(CSS)).toEqual([]);
+    expect(filterGaps(`${CSS}\n.nx-ticker-track { filter: blur(3px); }`)).toEqual([
+      "قاعدة: .nx-ticker-track",
+    ]);
+    expect(filterGaps(`${CSS}\n.nx-tk-body { will-change: filter; }`)).toEqual(["will-change"]);
+    const stuck = CSS.replace(
+      /(@keyframes nxTkReveal \{[\s\S]*?)filter: none;/,
+      "$1filter: blur(0);",
     );
-    expect(planted).not.toBe(CONTENT_CODE);
-    expect(literalCounts(planted)).toHaveLength(1);
+    expect(stuck).not.toBe(CSS);
+    expect(filterGaps(stuck)).toEqual(["nxTkReveal: النهاية blur(0)"]);
+    const px = CSS.replace("blur(0.22em)", "blur(3px)");
+    expect(filterGaps(px)).toEqual(["nxTkReveal: blur(3px)", "nxTkReveal: ضباب 0"]);
+  });
+
+  it("تباعدُ حروفٍ أو وزنٌ متحرّك أو شقٌّ لنصٍّ إلى حروف", () => {
+    expect(arabicSafetyGaps(CSS)).toEqual([]);
+    expect(arabicSafetyGaps(`${CSS}\n.nx-tk-label { letter-spacing: 0.04em; }`)).toEqual([
+      "letter-spacing في .nx-tk-label",
+    ]);
+    expect(
+      arabicSafetyGaps(`${CSS}\n@keyframes w { to { letter-spacing: 0; font-weight: 700; } }`),
+    ).toEqual(["letter-spacing في مفتاح", "مفتاح: font-weight"]);
+    expect(letterSplitting(CODE)).toEqual([]);
+    for (const planted of [
+      'label.split("").map((c) => <span>{c}</span>)',
+      "[...label].map((c) => c)",
+      "Array.from(word).map(f)",
+      "text.split(/(?:)/)",
+      "word.match(/./g)",
+      "text.charAt(i)",
+    ]) {
+      expect(letterSplitting(`${CODE}\n${planted}`), planted).toHaveLength(1);
+    }
+  });
+
+  it("كشفٌ بمدّةٍ أو منحنىً أو تتابعٍ أو بدايةٍ خارج المواصفة", () => {
+    expect(revealGaps(CSS)).toEqual([]);
+    const slow = CSS.replace("animation-duration: 720ms;", "animation-duration: 1500ms;");
+    expect(slow).not.toBe(CSS);
+    expect(revealGaps(slow)).toEqual(["المدّة 1500ms"]);
+    const ease = CSS.replace(REVEAL_EASE, "ease");
+    expect(ease).not.toBe(CSS);
+    expect(revealGaps(ease)).toContain("المنحنى");
+    const flat = CSS.replace(
+      /(@keyframes nxTkReveal \{\s*from \{\s*opacity: 0\.6;\s*translate: )0 0\.35em/,
+      "$10 0",
+    );
+    expect(flat).not.toBe(CSS);
+    expect(revealGaps(flat)).toContain("حالة البداية");
+  });
+
+  it("هالةٌ أسرع من ثانيتين أو أشدّ تفاوتًا من 0.25 أو لغير الخطر", () => {
+    expect(breathGaps(CSS)).toEqual([]);
+    const fast = CSS.replace(
+      "animation-duration: 1.6s;\n    animation-timing-function: ease-in-out;",
+      "animation-duration: 0.4s;\n    animation-timing-function: ease-in-out;",
+    );
+    expect(fast).not.toBe(CSS);
+    expect(breathGaps(fast)).toEqual(["الدورة 0.8ث"]);
+    const harsh = CSS.replace(/(@keyframes nxTkBreath \{[\s\S]*?to \{\s*opacity: )0\.4/, "$11");
+    expect(harsh).not.toBe(CSS);
+    expect(breathGaps(harsh)).toEqual(["تفاوت العتمة"]);
+    const everyone = CSS.replace(
+      '.nx-tk[data-tone="danger"]\n    .nx-tk-glyph[data-role="state"]\n    .nx-tk-ring',
+      ".nx-tk .nx-tk-ring",
+    );
+    expect(everyone).not.toBe(CSS);
+    expect(breathGaps(everyone)).toContain("ليست للخطر وحده");
+  });
+
+  it("جزءٌ مخفيٌّ أو مزاحٌ أو مضبَّبٌ في الحال الساكنة، أو غطاء العدّ ظاهرٌ بلا حركة", () => {
+    expect(staticStateGaps(CSS)).toEqual([]);
+    expect(staticStateGaps(`${CSS}\n.nx-tk-word { opacity: 0.6; }`)).toEqual([
+      ".nx-tk-word: opacity",
+    ]);
+    expect(staticStateGaps(`${CSS}\n.nx-tk-real { translate: 0 1em; }`)).toEqual([
+      ".nx-tk-real: translate",
+    ]);
+    expect(staticStateGaps(`${CSS}\n.nx-tk-fig { filter: blur(1em); }`)).toEqual([
+      ".nx-tk-fig: filter",
+    ]);
+    const shown = CSS.replace(/(\.nx-tk-count \{\s*)display: none;/, "$1display: block;");
+    expect(shown).not.toBe(CSS);
+    expect(staticStateGaps(shown)).toEqual(["الغطاء ظاهر ساكنًا"]);
+  });
+
+  it("المتحرّك ظاهرٌ ساكنًا، أو الساكن يبقى مع المتحرّك، أو بلا استثناء الإيقاف", () => {
+    expect(glyphSwapGaps(CSS)).toEqual([]);
+    const shown = CSS.replace(/(\.nx-tk-img-anim \{\s*)display: none;/, "$1display: block;");
+    expect(shown).not.toBe(CSS);
+    expect(glyphSwapGaps(shown)).toContain("المتحرّك ظاهرٌ ساكنًا");
+    const both = CSS.replace(/(\.nx-tk-img-still \{\s*)display: none;/, "$1display: block;");
+    expect(both).not.toBe(CSS);
+    expect(glyphSwapGaps(both)).toEqual(["الساكن يبقى مع المتحرّك"]);
+    const paused = CSS.replaceAll(":not([data-paused], [data-offscreen])", "");
+    expect(paused).not.toBe(CSS);
+    expect(glyphSwapGaps(paused).length).toBeGreaterThan(0);
+  });
+
+  it("الخطر والتحذير بنبرةٍ واحدة، أو لونٌ خارج الطبقة", () => {
+    expect(toneGaps(CSS)).toEqual([]);
+    const merged = CSS.replace(
+      /(\.nx-tk\[data-tone="danger"\] \{\s*--tk-tone: )var\(--tone-rose\)/,
+      "$1var(--tone-amber)",
+    );
+    expect(merged).not.toBe(CSS);
+    expect(toneGaps(merged)).toEqual(["danger: var(--tone-amber)"]);
+  });
+
+  it("نبضةٌ لا تقف مع الزرّ وخارج الإطار", () => {
+    expect(missingMotionPauses(CSS)).toEqual([]);
+    const loose = CSS.replace(
+      ".nx-ticker:is([data-paused], [data-offscreen]) .nx-tk-ring,",
+      ".nx-ticker .nx-tk-ring,",
+    );
+    expect(loose).not.toBe(CSS);
+    expect(missingMotionPauses(loose)).toEqual([".nx-tk-ring"]);
+  });
+
+  it("نبضة حلقة الخطر ونبضة الانتقال خارج البوّابة أو قبل `[data-run]`", () => {
+    const bare = `${CSS}\n.nx-tk-ring { animation-name: nxTkRing; }`;
+    expect(ungatedMotion(bare)).toContain(".nx-tk-ring");
+    const early = `${CSS}\n@media (${GATE}) { ${SWITCH} .nx-tk-body::before { animation-name: nxTkFlashA; } }`;
+    expect(ungatedMotion(early)).toEqual([`${SWITCH} .nx-tk-body::before`]);
+  });
+
+  it("عتبةٌ مكتوبة خارج وحدة الحالة", () => {
+    const files = new Map([
+      ["src/components/home/HomeTicker.tsx", CODE],
+      ["src/components/home/home-ticker-status.ts", "export const POSTURE_THRESHOLDS = {}"],
+    ]);
+    expect(thresholdLeaks(files)).toEqual([]);
+    files.set("src/components/home/HomeKpi.tsx", "if (postureOf(x) === 'stable') {}");
+    expect(thresholdLeaks(files)).toEqual(["src/components/home/HomeKpi.tsx"]);
   });
 
   it("واجهة الإيقاف بلا حذف السمة أو بلا أثرٍ على الحال", () => {
@@ -543,33 +967,26 @@ describe("الحركة اختيارٌ لا افتراض، وتقف بيد الم
   });
 });
 
-describe("الوصول — قائمةٌ تُقرأ مرّةً واحدة، بلا منطقةٍ حيّة", () => {
-  it("النسخ المطابقة `aria-hidden` و`inert`، ولا منطقة حيّة ولا حلقة JS", () => {
+describe("الوصول — قائمةٌ تُقرأ مرّةً واحدة، ومنطقةٌ مهذّبة واحدة لـ«حرجة» وحدها", () => {
+  it('النسخ المطابقة `aria-hidden` و`inert`، ولا `aria-live` ولا حلقة JS، وعقدة `role="status"` واحدة', () => {
     expect(duplicateGaps(CODE)).toEqual([]);
     expect(liveRegions(CODE)).toEqual([]);
     expect(jsLoops(CODE)).toEqual([]);
+    expect(statusNodes(CODE)).toHaveLength(1);
   });
 
   it("المصيَّر: منطقةٌ مسمّاة قابلةٌ للتركيز، ونسخةٌ مقروءة واحدة، والزرّ يقلب الحال — بلا مخالفة axe", async () => {
+    setReads({});
     const calls: boolean[] = [];
-    const { container, getByRole } = render(
-      createElement(
-        I18nProvider,
-        null,
-        createElement(HomeTicker, {
-          paused: false,
-          offscreen: false,
-          ready: true,
-          onPausedChange: (n: boolean) => calls.push(n),
-        }),
-      ),
-    );
-    const region = getByRole("region", { name: "مزايا سَدِيد" });
+    const { container, getByRole } = renderTicker({
+      onPausedChange: (n: boolean) => calls.push(n),
+    });
+    const region = getByRole("region", { name: "شريط الإعلانات — الحالة التشغيلية" });
     expect(region.getAttribute("tabindex")).toBe("0");
     const lists = container.querySelectorAll("ul.nx-ticker-copy");
     expect(lists.length).toBeGreaterThanOrEqual(2);
     expect(lists[0].hasAttribute("aria-hidden")).toBe(false);
-    expect(lists[0].querySelectorAll("li")).toHaveLength(TICKER_LINES.length);
+    expect(lists[0].querySelectorAll("li")).toHaveLength(4);
     for (const dup of [...lists].slice(1)) {
       expect(dup.getAttribute("aria-hidden")).toBe("true");
       expect(dup.hasAttribute("inert")).toBe(true);
@@ -590,35 +1007,495 @@ describe("الوصول — قائمةٌ تُقرأ مرّةً واحدة، بل�
   });
 });
 
-describe("السطور — صادقةٌ اليوم، ومسنودة، وبلا رقمٍ إلا عدد المناطق كلمةً", () => {
-  it("كل سطرٍ بلغتيه، بلا رقمٍ ولا ادّعاءٍ ولا اسم منطقة، ومصادره على القرص", () => {
-    expect(lineViolations(TICKER_LINES)).toEqual([]);
+/* ── البنود المصيَّرة: حيّ · مرجعي · فاشل ───────────────────────────── */
+
+type Reads = Record<string, Q<unknown>>;
+const okQ = <T>(data: T): Q<T> => ({ data, isPending: false, isError: false });
+const failQ = <T>(): Q<T> => ({ data: undefined, isPending: false, isError: true });
+
+type IncRow = { severity: string | null; status: string };
+const secQ = (open: number, critical: number | null, rows: IncRow[]) =>
+  okQ({
+    sites: [],
+    incidents: rows,
+    patrols: [],
+    visitors: [],
+    contractors: [],
+    permits: [],
+    assets: [],
+    cctv: [],
+    counts: { incidents_open: open, incidents_critical: critical },
+  } as unknown as SecOverview);
+const stateQ = (pcts: Array<number | null>) =>
+  okQ({
+    source: "database",
+    simulation: false,
+    regions: pcts.map((p, i) => ({ region_id: `r${i}`, compliance_pct: p })),
+  } as unknown as CommandCenterState);
+const maintQ = (overdue: number, source: "database" | "export" = "database") =>
+  okQ({
+    source,
+    exportDate: source === "export" ? "2026-09-02" : undefined,
+    kpis: { open: 10, on_hold: 2, overdue },
+    analytics: {},
+  } as unknown as MaintSummary);
+const projectsQ = (rows: Array<{ status: string; health: string | null }>): Q<ProjectsSummary> =>
+  okQ(summarizeProjects(rows, "database"));
+
+/** حالةٌ حيّةٌ سليمة افتراضًا، تُبدَّل منها خانةٌ أو أكثر. */
+function setReads(over: Partial<Reads>) {
+  reads.current = {
+    sec: secQ(0, 0, []),
+    state: stateQ([96, 94]),
+    maint: maintQ(0),
+    projects: projectsQ([{ status: "in-progress", health: "green" }]),
+    ...over,
+  };
+}
+
+function renderTicker(extra: Record<string, unknown> = {}) {
+  return render(
+    createElement(
+      I18nProvider,
+      null,
+      createElement(HomeTicker, {
+        paused: false,
+        offscreen: false,
+        ready: true,
+        onPausedChange: () => {},
+        ...extra,
+      }),
+    ),
+  );
+}
+
+const readable = (c: HTMLElement) =>
+  [...c.querySelectorAll("ul.nx-ticker-copy")[0].querySelectorAll("li")] as HTMLElement[];
+const byKind = (c: HTMLElement, kind: string) =>
+  readable(c).find((li) => li.dataset.kind === kind) as HTMLElement;
+const words = (li: HTMLElement) => li.querySelector(".nx-tk-word")?.textContent;
+const glyphOf = (li: HTMLElement, role: string) =>
+  li.querySelector(`.nx-tk-glyph[data-role="${role}"]`)?.getAttribute("data-glyph");
+
+describe("البنود الأربعة مصيَّرةً — كلمةٌ وشكلٌ وأرقامٌ وشارة", () => {
+  beforeEach(() => localStorage.removeItem("locale"));
+  afterEach(() => {
+    localStorage.removeItem("locale");
+    reads.current = null;
   });
 
-  it("«الأربع» من `REGIONS.length` وحده — وعلى غير الأربعة «جميع المناطق»", () => {
-    expect(REGIONS.length).toBe(4);
-    expect(regionsCountWord(4)).toEqual({ ar: "الأربع", en: "four" });
-    expect(regionsCountWord(5)).toBeNull();
-    expect(TICKER_LINES).toEqual(buildTickerLines(REGIONS.length));
-    const four = buildTickerLines(4).find((l) => l.id === "regions");
-    const five = buildTickerLines(5).find((l) => l.id === "regions");
-    expect(four?.ar).toContain("الأربع");
-    expect(four?.en).toContain("four");
-    expect(five?.ar).not.toContain("الأربع");
-    expect(five?.ar).toContain("جميع المناطق");
-    expect(five?.en).toContain("all regions");
-    expect(literalCounts(CONTENT_CODE)).toEqual([]);
+  it("حيّ: أربعة بنود بترتيب الأمر، لكلٍّ كلمةٌ ورمزُ حالة، ولا شارة «مرجعي»", async () => {
+    setReads({
+      state: stateQ([90, 85]),
+      sec: secQ(3, 0, [{ severity: "low", status: "open" }]),
+      maint: maintQ(4),
+    });
+    const { container } = renderTicker();
+    await act(async () => {});
+    const lis = readable(container);
+    expect(lis.map((li) => li.dataset.kind)).toEqual([
+      "posture",
+      "maintenance",
+      "incidents",
+      "projects",
+    ]);
+    for (const li of lis) {
+      expect(words(li), li.dataset.kind).toBeTruthy();
+      expect(li.querySelector('.nx-tk-glyph[data-role="state"]'), li.dataset.kind).not.toBeNull();
+    }
+    expect(container.querySelector(".nx-tk-badge")).toBeNull();
+    // الحالة الأمنية: ٨٨ (متوسط ٩٠ و٨٥ مقرَّبًا) ⇒ تحت المراقبة، مثلث تحذير، واتجاهها لم يُقَس.
+    const posture = byKind(container, "posture");
+    expect(words(posture)).toBe("تحت المراقبة");
+    expect(posture.dataset.tone).toBe("warning");
+    expect(glyphOf(posture, "state")).toBe("state-warning");
+    expect(posture.textContent).toContain("الامتثال العام");
+    expect(posture.querySelector('[data-fig="compliance"] .nx-tk-num')?.textContent).toBe("88%");
+    expect(glyphOf(posture, "trend")).toBe("trend-flat");
+    expect(posture.querySelector(".nx-tk-pol")?.textContent).toBe("لم يُقَس");
+    expect(posture.querySelector(".nx-tk-trend .nx-tk-num")).toBeNull();
+    // الصيانة: متأخرات ٤ من ١٢ نشطة.
+    const maintenance = byKind(container, "maintenance");
+    expect(words(maintenance)).toBe("متأخرات");
+    expect(maintenance.querySelector('[data-fig="active"] .nx-tk-num')?.textContent).toBe("12");
+    expect(maintenance.querySelector('[data-fig="overdue"] .nx-tk-num')?.textContent).toBe("4");
+    expect(maintenance.querySelector(".nx-tk-trend")).toBeNull();
+    // البلاغات: مفتوحة ٣، حرجة ٠ مقيسة.
+    const incidents = byKind(container, "incidents");
+    expect(words(incidents)).toBe("تتطلب متابعة");
+    expect(incidents.querySelector('[data-fig="critical"] .nx-tk-num')?.textContent).toBe("0");
+    // المشاريع: جارية ١ سليمة.
+    expect(words(byKind(container, "projects"))).toBe("منتظمة");
   });
 
-  it("لا وعد صوتٍ ولا HCIS: ما لا يصدق والخادم موقوف لا يُقال", () => {
-    for (const l of TICKER_LINES) {
-      expect(`${l.ar} ${l.en}`).not.toMatch(/صوت|voice|HCIS|الهيئة/i);
+  it("مرجعي: الشارة «مرجعي» على الحالة الأمنية والبلاغات، وسهماهما المقيسان بدلالتَيهما", async () => {
+    setReads({ state: stateQ([null, null]), sec: failQ() });
+    const { container } = renderTicker();
+    await act(async () => {});
+    const badged = readable(container).filter((li) => li.dataset.badge === "reference");
+    expect(badged.map((li) => li.dataset.kind)).toEqual(["posture", "incidents"]);
+    for (const li of badged) expect(li.querySelector(".nx-tk-badge")?.textContent).toBe("مرجعي");
+    const posture = byKind(container, "posture");
+    expect(words(posture)).toBe("مستقرة");
+    expect(glyphOf(posture, "state")).toBe("state-ok");
+    expect(glyphOf(posture, "trend")).toBe("trend-up");
+    expect(posture.querySelector(".nx-tk-pol")?.textContent).toBe("إيجابي");
+    // ارتفاع البلاغات سهمٌ لأعلى لكنه سلبي: أحمر لا أخضر (لون السهم يتبع الدلالة لا الاتجاه).
+    const incidents = byKind(container, "incidents");
+    expect(glyphOf(incidents, "trend")).toBe("trend-up-bad");
+    expect(incidents.querySelector(".nx-tk-pol")?.textContent).toBe("سلبي");
+    expect(incidents.querySelector('[data-fig="critical"]')).toBeNull();
+    // والصيانة والمشاريع لا يُوسمان مرجعيَّين أبدًا.
+    expect(byKind(container, "maintenance").dataset.badge).toBeUndefined();
+    expect(byKind(container, "projects").dataset.badge).toBeUndefined();
+  });
+
+  it("القراءة الفاشلة: «تعذّر القراءة» بلا أرقام ولا شارة ولا مرجع بديل للصيانة والمشاريع", async () => {
+    setReads({ maint: failQ(), projects: failQ() });
+    const { container } = renderTicker();
+    await act(async () => {});
+    for (const kind of ["maintenance", "projects"]) {
+      const li = byKind(container, kind);
+      expect(words(li), kind).toBe("تعذّر القراءة");
+      expect(li.dataset.read).toBe("error");
+      expect(li.querySelector(".nx-tk-fig"), kind).toBeNull();
+      expect(li.querySelector(".nx-tk-badge"), kind).toBeNull();
+      expect(li.textContent, kind).not.toMatch(/[0-9٠-٩]/);
+      expect(glyphOf(li, "state")).toBe("state-info");
+    }
+  });
+
+  it("نسخة التصدير موسومة «تصدير SAP» لا «مرجعي»، وتاريخها في ملخّص القارئ", async () => {
+    setReads({ maint: maintQ(1, "export") });
+    const { container } = renderTicker();
+    await act(async () => {});
+    const li = byKind(container, "maintenance");
+    expect(li.querySelector(".nx-tk-badge")?.textContent).toBe("تصدير SAP");
+    expect(li.dataset.badge).toBe("export");
+    expect(li.textContent).toContain("2026-09-02");
+    expect(li.textContent).not.toContain("مرجعي");
+  });
+
+  it("الخطر مثمّنٌ والتحذير مثلثٌ والسليم دائرة — برمزٍ مختلفٍ لكل نبرة", async () => {
+    setReads({
+      state: stateQ([40]),
+      sec: secQ(2, 1, [{ severity: "critical", status: "open" }]),
+      maint: maintQ(3),
+    });
+    const { container } = renderTicker();
+    await act(async () => {});
+    expect(glyphOf(byKind(container, "posture"), "state")).toBe("state-danger");
+    expect(glyphOf(byKind(container, "incidents"), "state")).toBe("state-danger");
+    expect(glyphOf(byKind(container, "maintenance"), "state")).toBe("state-warning");
+    expect(glyphOf(byKind(container, "projects"), "state")).toBe("state-ok");
+  });
+
+  it('الصور: `alt=""` بمقاسها الأصلي، المتحرّكة كسولة، والساكنة بجانبها لكل رمز', async () => {
+    setReads({});
+    const { container } = renderTicker();
+    await act(async () => {});
+    for (const box of container.querySelectorAll(".nx-tk-glyph")) {
+      const name = box.getAttribute("data-glyph") as keyof typeof TICKER_GLYPHS;
+      const anim = box.querySelector("img.nx-tk-img-anim") as HTMLImageElement;
+      const still = box.querySelector("img.nx-tk-img-still") as HTMLImageElement;
+      expect(anim.getAttribute("src")).toBe(TICKER_GLYPHS[name].anim);
+      expect(still.getAttribute("src")).toBe(TICKER_GLYPHS[name].still);
+      expect(anim.getAttribute("loading")).toBe("lazy");
+      for (const img of [anim, still]) {
+        expect(img.getAttribute("alt")).toBe("");
+        expect(img.getAttribute("width")).toBe(String(TICKER_GLYPH_SIZE));
+        expect(img.getAttribute("height")).toBe(String(TICKER_GLYPH_SIZE));
+        expect(img.getAttribute("decoding")).toBe("async");
+      }
+    }
+  });
+
+  it("الإنجليزية: الأسماء والكلمات والشارة بلسانها، والمنطقة المسمّاة بالإنجليزية", async () => {
+    localStorage.setItem("locale", "en");
+    setReads({ state: stateQ([null]), sec: failQ() });
+    const { container, getByRole } = renderTicker();
+    await act(async () => {});
+    getByRole("region", { name: "Announcements — operational status" });
+    expect(byKind(container, "posture").textContent).toContain("Security posture:");
+    expect(words(byKind(container, "posture"))).toBe("Stable");
+    expect(byKind(container, "posture").querySelector(".nx-tk-badge")?.textContent).toBe(
+      "Reference",
+    );
+    expect(byKind(container, "maintenance").textContent).toContain(TICKER_LABELS.maintenance.en);
+    expect(byKind(container, "incidents").querySelector(".nx-tk-pol")?.textContent).toBe(
+      "negative",
+    );
+    expect(container.querySelector(".nx-ticker")?.getAttribute("dir")).toBe("ltr");
+  });
+
+  it("ملخّص القارئ هو نصّ البند نفسه، ولا يحمل لونٌ وحده حالة: كلمة + رمز شكل في كل بند", async () => {
+    setReads({ sec: failQ(), maint: failQ() });
+    const { container } = renderTicker();
+    await act(async () => {});
+    for (const li of readable(container)) {
+      expect(li.querySelector("strong.nx-tk-word")?.textContent?.length).toBeGreaterThan(0);
+      expect(li.querySelectorAll("img.nx-tk-img-still").length).toBeGreaterThanOrEqual(1);
+    }
+    expect(byKind(container, "incidents").textContent).toContain("البلاغات:");
+    expect(byKind(container, "posture").textContent).toContain("الاتجاه");
+  });
+
+  it("العدّ زخرفة: الغطاء `aria-hidden` فارغ، والرقم الحقيقي نصٌّ في الشجرة، والنصّ كلماتٌ لا حروف", async () => {
+    setReads({ state: stateQ([90, 85]), maint: maintQ(4) });
+    const { container } = renderTicker();
+    await act(async () => {});
+    const covers = container.querySelectorAll(".nx-tk-count");
+    expect(covers.length).toBeGreaterThan(0);
+    for (const c of covers) {
+      expect(c.getAttribute("aria-hidden")).toBe("true");
+      expect(c.textContent).toBe("");
+    }
+    const maintenance = byKind(container, "maintenance");
+    const active = maintenance.querySelector('[data-fig="active"] .nx-tk-num') as HTMLElement;
+    expect(active.querySelector(".nx-tk-real")?.textContent).toBe("12");
+    expect(active.textContent).toBe("12");
+    expect(active.style.getPropertyValue("--tk-to")).toBe("12");
+    // الوحدة خارج الرقم الحقيقي فلا تُخفى معه، والنصّ كاملٌ في الشجرة.
+    const posture = byKind(container, "posture");
+    expect(posture.querySelector('[data-fig="compliance"] .nx-tk-num')?.textContent).toBe("88%");
+    // لا حرفٌ عربيٌّ مفردٌ في عنصرٍ: الاسم والكلمة عقدتا نصٍّ كاملتان بلا أبناء.
+    for (const li of readable(container)) {
+      for (const sel of [".nx-tk-label", ".nx-tk-word"]) {
+        const el = li.querySelector(sel) as HTMLElement;
+        expect(el.children.length, `${li.dataset.kind} ${sel}`).toBe(0);
+        expect(el.textContent!.length).toBeGreaterThan(1);
+      }
+      for (const el of li.querySelectorAll("span, strong, bdi")) {
+        expect(el.textContent, `${li.dataset.kind}`).not.toMatch(/^[\u0600-\u06FF]$/);
+      }
+    }
+  });
+
+  it("بلا مخالفة axe في الحالات الثلاث: حيّ · مرجعي · فاشل", async () => {
+    for (const over of [{}, { state: stateQ([null]), sec: failQ() }, { maint: failQ() }]) {
+      setReads(over);
+      const { container, unmount } = renderTicker();
+      await act(async () => {});
+      expect(await axe(container)).toHaveNoViolations();
+      unmount();
     }
   });
 });
 
-describe("الزرّ الواحد يوقف الصفّ والفيلم ويُحفظ (المصيَّر)", () => {
+describe("الانتقالات مصيَّرة — نبضةٌ عند تغيّر الصنف، وإعلانٌ مهذّب لـ«حرجة» وحدها", () => {
   afterEach(() => {
+    reads.current = null;
+  });
+
+  it('عقدة `role="status"` موجودة فارغة، ولا يتبدّل نصّها إلا بانتقال الصنف الأمني إلى «حرجة»', async () => {
+    setReads({ state: stateQ([96]) });
+    const view = renderTicker();
+    await act(async () => {});
+    const status = view.container.querySelector('[role="status"]') as HTMLElement;
+    expect(status.textContent).toBe("");
+    const again = () =>
+      view.rerender(
+        createElement(
+          I18nProvider,
+          null,
+          createElement(HomeTicker, {
+            paused: false,
+            offscreen: false,
+            ready: true,
+            onPausedChange: () => {},
+          }),
+        ),
+      );
+    const body = () => byKind(view.container, "posture").querySelector(".nx-tk-body");
+    const first = body();
+    // الرقم يتغيّر والصنف واحد ⇒ لا نبضة ولا إعلان، والجسم نفسه (لا إعادة تركيب).
+    setReads({ state: stateQ([94]) });
+    again();
+    expect(status.textContent).toBe("");
+    expect(byKind(view.container, "posture").dataset.flip).toBeUndefined();
+    expect(body()).toBe(first);
+    // مستقرة ← تحت المراقبة ⇒ نبضة، بلا إعلان.
+    setReads({ state: stateQ([80]) });
+    again();
+    expect(byKind(view.container, "posture").dataset.flip).toBe("");
+    // الجسم أُعيد تركيبه فبدأت حركاته من أولها، وبند البلاغات لم يُمسّ.
+    const second = body();
+    expect(second).not.toBe(first);
+    expect(byKind(view.container, "incidents").dataset.flip).toBeUndefined();
+    expect(status.textContent).toBe("");
+    // ← حرجة ⇒ إعادة تركيبٍ جديدة (تُعاد الحركة) وإعلانٌ واحد.
+    setReads({ state: stateQ([30]) });
+    again();
+    expect(byKind(view.container, "posture").dataset.flip).toBe("");
+    expect(body()).not.toBe(second);
+    expect(status.textContent).toBe("تنبيه: الحالة الأمنية صارت حرجة");
+    // الرقم يهبط والصنف حرجة ⇒ النصّ نفسه لا يتبدّل (لا إعلان ثانٍ).
+    setReads({ state: stateQ([20]) });
+    again();
+    expect(status.textContent).toBe("تنبيه: الحالة الأمنية صارت حرجة");
+    // الخروج من «حرجة» يمحو الإعلان.
+    setReads({ state: stateQ([95]) });
+    again();
+    expect(status.textContent).toBe("");
+  });
+
+  it("الوصول الأول للبيانات لا ينبض ولا يعلن ولو كان الصنف «حرجة»", async () => {
+    setReads({ state: stateQ([10]) });
+    const { container } = renderTicker();
+    await act(async () => {});
+    expect(container.querySelector('[role="status"]')?.textContent).toBe("");
+    expect(container.querySelectorAll("[data-flip]")).toHaveLength(0);
+  });
+});
+
+describe("الرموز والتسميات والمصدر — على القرص وفي الشيفرة", () => {
+  it("لكل رمزٍ في الخريطة ملفّا WebP وSVG على القرص، والنبرات والاتجاهات بأشكالٍ مختلفة", () => {
+    expect(TICKER_GLYPH_NAMES).toEqual([
+      "state-danger",
+      "state-warning",
+      "state-ok",
+      "state-info",
+      "trend-up",
+      "trend-down",
+      "trend-flat",
+      "trend-up-bad",
+      "trend-down-good",
+    ]);
+    expect(
+      glyphGaps(
+        TICKER_GLYPHS as Record<string, { anim: string; still: string }>,
+        TICKER_GLYPH_NAMES,
+        GLYPH_FOR_TONE,
+        GLYPH_FOR_TREND,
+      ),
+    ).toEqual([]);
+    expect(TICKER_GLYPH_SIZE).toBe(64);
+  });
+
+  it("لون سهم الاتجاه يتبع الدلالة لا الاتجاه: لا أخضر لأعلى بجوار «سلبي»، ولا أحمر لأسفل بجوار «إيجابي»", () => {
+    // الإيجابي أخضر في الاتجاهين، والسلبي أحمر في الاتجاهين.
+    expect(glyphForTrend("up", "positive")).toBe("trend-up");
+    expect(glyphForTrend("down", "positive")).toBe("trend-down-good");
+    expect(glyphForTrend("up", "negative")).toBe("trend-up-bad");
+    expect(glyphForTrend("down", "negative")).toBe("trend-down");
+    // بلا دلالةٍ مقيسة (محايد/لم يُقَس) أو بلا اتجاه ⇐ السهم المحايد، لا لونٌ يدّعي حكمًا.
+    for (const dir of ["up", "down"] as const) {
+      expect(glyphForTrend(dir, "neutral")).toBe("trend-flat");
+      expect(glyphForTrend(dir, "unmeasured")).toBe("trend-flat");
+    }
+    expect(glyphForTrend("flat", "positive")).toBe("trend-flat");
+    // الألوان في ملفّات الأصول نفسها: الأخضر `#2fb36d` للجيّد والأحمر `#e5484d` للسيّئ.
+    const fill = (name: string) =>
+      /fill="(#[0-9a-f]{6})" stroke="\1" stroke-width="8"/i.exec(
+        readFileSync(`${GLYPH_DIR}/${name}.svg`, "utf8"),
+      )?.[1];
+    expect(fill("trend-up")).toBe("#2fb36d");
+    expect(fill("trend-down-good")).toBe("#2fb36d");
+    expect(fill("trend-up-bad")).toBe("#e5484d");
+    expect(fill("trend-down")).toBe("#e5484d");
+  });
+
+  it("رمزا الدلالة يحملان إيقاع أصليهما حرفيًّا: 18 إطارًا، 2000 ملّي ثانية، وثبات 583", () => {
+    // مدد الإطارات من أجزاء ANMF في ملف WebP (بايت 12–14 من حمولة كل جزء).
+    const durations = (name: string) => {
+      const b = readFileSync(`${GLYPH_DIR}/${name}.webp`);
+      const d: number[] = [];
+      for (let pos = 12; pos + 8 <= b.length;) {
+        const size = b.readUInt32LE(pos + 4);
+        if (b.toString("ascii", pos, pos + 4) === "ANMF") d.push(b.readUIntLE(pos + 8 + 12, 3));
+        pos += 8 + size + (size & 1);
+      }
+      return d;
+    };
+    for (const [derived, base] of [
+      ["trend-up-bad", "trend-up"],
+      ["trend-down-good", "trend-down"],
+    ] as const) {
+      const d = durations(derived);
+      expect(d, `${derived}: إيقاعٌ غير إيقاع ${base}`).toEqual(durations(base));
+      expect(d.length).toBe(18);
+      expect(d.reduce((a, b) => a + b, 0)).toBe(2000);
+      expect(Math.max(...d)).toBe(583);
+    }
+  });
+
+  it("أسماء البنود الأربعة: الحالة الأمنية · الصيانة · البلاغات · المشاريع", () => {
+    expect(TICKER_LABELS.posture.ar).toBe("الحالة الأمنية");
+    expect(TICKER_LABELS.maintenance.ar).toBe("الصيانة");
+    expect(TICKER_LABELS.incidents.ar).toBe("البلاغات");
+    expect(TICKER_LABELS.projects.ar).toBe("المشاريع");
+    for (const l of Object.values(TICKER_LABELS)) expect(l.en.length).toBeGreaterThan(0);
+  });
+
+  it("الرموشن السينمائي على الملفّ الحيّ: بنسبة الخطّ، ومُركِّب، وآمنٌ للعربية، ويقف ويُلغى إلى النهائيّ", () => {
+    expect(nonCompositorKeyframes(CSS)).toEqual([]);
+    expect(pxKeyframes(CSS)).toEqual([]);
+    expect(filterGaps(CSS)).toEqual([]);
+    expect(arabicSafetyGaps(CSS)).toEqual([]);
+    expect(letterSplitting(CODE)).toEqual([]);
+    expect(revealGaps(CSS)).toEqual([]);
+    expect(breathGaps(CSS)).toEqual([]);
+    expect(staticStateGaps(CSS)).toEqual([]);
+    expect(ungatedMotion(CSS)).toEqual([]);
+    // ما يحرس الوقف: الحركات العابرة تُلغى (`none`) في الموقوف وخارج الإطار، والعدّ يختفي غطاؤه.
+    const stopped = `${SWITCH} .nx-ticker:is([data-paused], [data-offscreen]) .nx-ticker-track[data-run]`;
+    expect(declsOf(CSS, `${stopped} .nx-tk-real`, GATE)["animation-name"]).toBe("none");
+    expect(declsOf(CSS, `${stopped} .nx-tk-word::after`, GATE)["animation-name"]).toBe("none");
+    expect(declsOf(CSS, `${stopped} .nx-tk-count`, GATE).display).toBe("none");
+    // الدخول للنسخة المقروءة وحدها (كلفة المسار): لا قاعدة دخولٍ على النسخ المطابقة.
+    const first = `${SWITCH} .nx-ticker-track[data-run] .nx-ticker-copy:not([aria-hidden="true"]) .nx-tk-count`;
+    expect(declsOf(CSS, first, GATE)["animation-name"]).toBe("nxTkCount");
+    // الغطاء يبقى بعتمة 0 بعد العدّ (`both`): مع `backwards` كان يعود فوق الرقم الحقيقي بعدّادٍ صفر فيطمس
+    // رقمه الأول (قِيس في المتصفّح: 2,284 ← «0,284»).
+    expect(declsOf(CSS, first, GATE)["animation-fill-mode"], "الغطاء يعود بعد العدّ").toBe("both");
+    // الأرقام بأرقامٍ متساوية العرض ووزنٍ ثابت: لا يهتزّ العدّ.
+    const num = declsOf(CSS, ".nx-tk-num", null);
+    expect(num["font-variant-numeric"]).toBe("tabular-nums");
+    expect(num["font-weight"]).toBe("700");
+  });
+
+  it("الكاشفات الجديدة تُسقِط النسخ المطابقة: الدخول لا يُكتب إلا على `.nx-ticker-copy:not([aria-hidden])`", () => {
+    const everywhere = CSS.replaceAll(
+      '.nx-ticker-copy:not([aria-hidden="true"])\n    .nx-tk-count',
+      ".nx-tk-count",
+    );
+    expect(everywhere).not.toBe(CSS);
+    expect(
+      declsOf(
+        everywhere,
+        `${SWITCH} .nx-ticker-track[data-run] .nx-ticker-copy:not([aria-hidden="true"]) .nx-tk-count`,
+        GATE,
+      )["animation-name"],
+    ).toBeUndefined();
+  });
+
+  it("القراءات مشتركة: `useHomeReads` وحده — لا استعلامٌ ولا دالّة خادمٍ خاصة بالشريط", () => {
+    expect(CODE).toContain("useHomeReads()");
+    expect(CODE).not.toMatch(/useQuery\(|useServerFn\(|fetch\(|createServerFn/);
+    expect(CONTENT_CODE).not.toMatch(/useQuery\(|fetch\(/);
+  });
+
+  it("العتبات وأنواع الحالة في `home-ticker-status.ts` وحده", () => {
+    const files = new Map<string, string>();
+    for (const f of readdirSync("src/components", { recursive: true }) as string[]) {
+      if (!/\.(ts|tsx)$/.test(f) || /\.test\.|\.contract\./.test(f)) continue;
+      files.set(`src/components/${f}`, strip(readFileSync(`src/components/${f}`, "utf8")));
+    }
+    expect(files.size).toBeGreaterThan(10);
+    expect(thresholdLeaks(files)).toEqual([]);
+  });
+
+  it("لا لون ولا رقمٌ مكتوب في شيفرة الشريط: النبرة من الطبقة والأرقام من القراءات", () => {
+    expect(CODE.match(/#[0-9a-fA-F]{3,8}\b|\brgba?\(/g) ?? []).toEqual([]);
+    expect(CODE.match(/\b(?:Math\.random|Date\.now)\b/g) ?? []).toEqual([]);
+    expect(CONTENT_CODE.match(/#[0-9a-fA-F]{3,8}\b/g) ?? []).toEqual([]);
+  });
+});
+
+describe("الزرّ الواحد يوقف الصفّ والفيلم ويُحفظ (المصيَّر)", () => {
+  beforeEach(() => setReads({}));
+  afterEach(() => {
+    reads.current = null;
     localStorage.removeItem("nx-brand-motion");
     delete document.documentElement.dataset.nxMotionPaused;
   });
