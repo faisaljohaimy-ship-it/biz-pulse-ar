@@ -279,8 +279,9 @@ describe("② المخرَج الوصوليّ — بلا زرّ (أمر الما
     expect(ROOT_CODE).not.toContain("nx-holo-bg");
     expect(ROOT_CODE).not.toContain("data-nx-motion");
     // ولم يسقط معه سكربت الثيم: هو والراية كانا في السطر نفسه.
-    expect(ROOT_CODE).toContain("localStorage.getItem('theme')");
-    expect(ROOT_CODE).toMatch(/classList\.toggle\('dark',d\)/);
+    // (واختيار الوضع صار من `sessionStorage` والافتراضي داكن — أمر ٢٠٢٦/١٠/٢٤.)
+    expect(ROOT_CODE).toContain("sessionStorage.getItem('theme')");
+    expect(ROOT_CODE).toMatch(/classList\.toggle\('dark',!l\)/);
   });
 
   it("الحركة الأخرى في النظام تحتفظ بمخرجها الحيّ", () => {

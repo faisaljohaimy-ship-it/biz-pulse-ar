@@ -255,7 +255,7 @@ for (const vp of VIEWPORTS) {
     });
     await ctx.addInitScript((t) => {
       try {
-        localStorage.setItem("theme", t);
+        sessionStorage.setItem("theme", t); // الاختيار على الجلسة منذ ٢٠٢٦/١٠/٢٤
         localStorage.setItem("locale", "ar");
       } catch {
         /* التخزين قد يكون محجوبًا — اللقطة تبقى صادقة بلا تفضيل */
@@ -337,7 +337,7 @@ if (process.env.RECORD === "1") {
   });
   await ctx.addInitScript(() => {
     try {
-      localStorage.setItem("theme", "light");
+      sessionStorage.setItem("theme", "light"); // الاختيار على الجلسة منذ ٢٠٢٦/١٠/٢٤
       localStorage.setItem("locale", "ar");
     } catch {
       /* بلا تفضيل */

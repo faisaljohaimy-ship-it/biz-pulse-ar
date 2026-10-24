@@ -102,6 +102,18 @@ export const FILM_HOLD_QUERY = "(pointer: coarse)";
 export const MOTION_PAUSED_ATTR = "data-nx-motion-paused";
 export const MOTION_PAUSE_EVENT = "nx:motion-pause";
 
+// **هل الإيقاف مشروعٌ الآن؟** القاعدة الواحدة التي تقرّر الإيقاف، يقرؤها `holdFilmUnderPanel`
+// وحارسُ استئناف فيلم الهوية (`HomeBrandRow`): فيلمٌ ساكن **بلا** سببٍ من هذه الأسباب توقّف
+// بغير حقّ ويُستأنف.
+export function filmHoldActive(): boolean {
+  const root = document.documentElement;
+  const touch = typeof window.matchMedia === "function" ? window.matchMedia(FILM_HOLD_QUERY) : null;
+  return (
+    root.getAttribute(MOTION_PAUSED_ATTR) === "1" ||
+    (root.getAttribute(SADEED_PANEL_ATTR) === "open" && (touch?.matches === true || isSafeMode()))
+  );
+}
+
 /**
  * يُوقف الفيلم ما دامت اللوحة مفتوحة على اللمس أو في الوضع الآمن، **أو ما دامت
  * الحركة موقوفةً بزرّها** (`MOTION_PAUSED_ATTR`)، ويستأنفه حين تزول الأسباب كلّها
@@ -123,10 +135,7 @@ export function holdFilmUnderPanel(video: HTMLVideoElement): () => void {
   /** هل يُستأنف عند زوال الإيقاف؟ — كان يعمل حين أُوقف، أو بدأ في أثنائه. */
   let resumeOnRelease = false;
   const sync = () => {
-    const hold =
-      root.getAttribute(MOTION_PAUSED_ATTR) === "1" ||
-      (root.getAttribute(SADEED_PANEL_ATTR) === "open" &&
-        (touch?.matches === true || isSafeMode()));
+    const hold = filmHoldActive();
     if (hold === held) return;
     held = hold;
     if (hold) {

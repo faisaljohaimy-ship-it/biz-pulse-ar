@@ -83,11 +83,11 @@
  * يتبع المؤشّر (`--gx`/`--gy`) متغيّرٌ يُمرَّر لا قيمةٌ نهائية (المادة ٣٣).
  */
 import { useEffect, useRef, useState, type PointerEvent, type RefObject } from "react";
-import { RotateCcw, Volume2, VolumeX } from "lucide-react";
+import { Play, RotateCcw, Volume2, VolumeX } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { isSafeMode } from "@/lib/sadeed/self-healing/crash-loop";
 import { filmAudioHeld, watchFilmAudioHold } from "@/lib/sadeed/film-audio-hold";
-import { holdFilmUnderPanel } from "@/components/home/HoloVideoEngine";
+import { filmHoldActive, holdFilmUnderPanel } from "@/components/home/HoloVideoEngine";
 import { HomeTicker } from "@/components/home/HomeTicker";
 import { brandFilmSource } from "@/components/home/brand-film-assets";
 import "@/styles/home/home-brand.css";
@@ -190,8 +190,13 @@ export const HOME_BRAND: { readonly banner: Plate } = {
  * الفعل؛ وبعد الفيلم «إعادة العرض مع الموسيقى» فعلٌ لا تبديل.
  */
 export const SOUND_LABELS = {
-  ar: { play: "تشغيل الموسيقى", mute: "كتم الموسيقى", replay: "إعادة العرض مع الموسيقى" },
-  en: { play: "Play music", mute: "Mute music", replay: "Replay with music" },
+  ar: {
+    play: "تشغيل الموسيقى",
+    mute: "كتم الموسيقى",
+    replay: "إعادة العرض مع الموسيقى",
+    start: "تشغيل الفيلم",
+  },
+  en: { play: "Play music", mute: "Mute music", replay: "Replay with music", start: "Play film" },
 } as const;
 
 /** تفضيل الموسيقى لهذا المتصفّح — `off` حين يكتمها الزائر، وغيابه تشغيلٌ ينتظر إذن المتصفّح. */
@@ -235,6 +240,11 @@ export type FilmSound = {
   readonly sync: () => void;
   /** رفعُ الكتم الآن من داخل لمسة الزائر (زرّ الصوت أو الإعادة). */
   readonly kick: () => void;
+  /**
+   * الفيلم وقف بلا سببٍ مشروع (سياسة التشغيل ألغت صوتًا رُفع بغير إذن): يعود إلى الكتم
+   * ويُسلَّح الإذن من جديد — فيستأنف مكتومًا (مسموحٌ دائمًا) وتفتح أوّلُ نقرةٍ صوتَه.
+   */
+  readonly recover: () => void;
   readonly release: () => void;
 };
 
@@ -397,6 +407,13 @@ export function bindFilmSound(
   return {
     begin,
     sync,
+    recover: () => {
+      if (released) return;
+      unlocked = false;
+      probing = false;
+      video.muted = true;
+      arm();
+    },
     kick: () => {
       if (released) return;
       if (grace) {
@@ -543,6 +560,17 @@ function useOffscreen(ref: RefObject<HTMLElement | null>): boolean {
   return offscreen;
 }
 
+/**
+ * مهلة الخطوة في سلّم البدء (مللي ثانية): فيلمٌ لم يبلغ أوّل إطار خلال هذه المدّة يُجرَّب له
+ * المصدر الآخر (MP4 ⇄ WebM) صراحةً، ثم — إن لم يبدأ خلال مثلها — يظهر زرّ «تشغيل الفيلم»
+ * (من نقرة الزائر يأذن المتصفّح دائمًا). كان الفيلم الذي لا يبدأ لا يترك شيئًا: صورةً ثابتةً
+ * بلا زرٍّ ولا أثر (أبلغ المالك ٢٠٢٦/١٠/٢٤ على كل أجهزته).
+ */
+export const FILM_START_STEP_MS = 5_000;
+
+/** عدد مرّات استئناف توقّفٍ بلا سببٍ مشروع قبل ظهور زرّ التشغيل (مرّةٌ كل ثانية). */
+export const FILM_RESUME_MAX = 12;
+
 function BrandFilm({
   artRef,
   play,
@@ -560,6 +588,8 @@ function BrandFilm({
   const [audible, setAudible] = useState(false);
   // طلب الزائر الإعادة: زرّها يبقى هو نفسه حتى أوّل إطار، فلا يسقط التركيز إلى `body`.
   const [replayed, setReplayed] = useState(false);
+  // لم يبدأ بعد السلّم كلّه، أو توقّف بلا سببٍ مشروعٍ ولم يُستأنف: يظهر زرّ التشغيل بدل الصمت.
+  const [stuck, setStuck] = useState(false);
   const ref = useRef<HTMLVideoElement>(null);
   const sound = useRef<FilmSound | null>(null);
   const wanted = useRef(true);
@@ -591,6 +621,7 @@ function BrandFilm({
     if (!play || failed) {
       setReady(false);
       setReplayed(false);
+      setStuck(false);
     }
   }, [play, failed]);
 
@@ -697,9 +728,97 @@ function BrandFilm({
     };
   }, [live]);
 
-  if (!play || failed || !src) return null;
+  // سلّم البدء: لا إطار أوّل خلال المهلة ⇒ المصدر الآخر صراحةً ⇒ زرّ التشغيل. السكون المشروع
+  // (خارج الإطار، إيقاف، تبويبٌ مخفيّ) ليس تعثّرًا فلا يُحسب.
+  useEffect(() => {
+    const video = ref.current;
+    if (!live || !video || !src) return;
+    let step = 0;
+    let started = false;
+    let timer = 0;
+    const onStarted = () => {
+      started = true;
+      window.clearTimeout(timer);
+      setStuck(false);
+    };
+    const check = () => {
+      // «بدأ» تُقرأ من العنصر نفسه لا من المستمع وحده: `playing` قد يسبق تسجيله.
+      if (started || jewelRef.current || video.ended) return;
+      if (!video.paused && video.readyState >= 3) return;
+      if (offscreen.current || filmHoldActive() || document.visibilityState !== "visible") {
+        timer = window.setTimeout(check, FILM_START_STEP_MS);
+        return;
+      }
+      step += 1;
+      if (step === 1) {
+        const alt = /\.mp4(\?|$)/.test(video.currentSrc) ? src.replace(/\.mp4$/, ".webm") : src;
+        video.src = brandFilmSource(alt);
+        video.load();
+        (video.play() as Promise<void> | undefined)?.catch(() => {});
+        timer = window.setTimeout(check, FILM_START_STEP_MS);
+        return;
+      }
+      setStuck(true);
+    };
+    video.addEventListener("playing", onStarted);
+    timer = window.setTimeout(check, FILM_START_STEP_MS);
+    return () => {
+      window.clearTimeout(timer);
+      video.removeEventListener("playing", onStarted);
+    };
+  }, [live, src]);
+
+  // حارس الاستئناف: فيلمٌ ساكنٌ بلا سببٍ مشروع (إيقاف الحركة، لوحة سَدِيد على اللمس، خارج الإطار،
+  // تبويبٌ مخفيّ، أو انتهاء) توقّف بغير حقّ — تلغي سياسة التشغيل فيلمًا رُفع كتمُه بلا إذنٍ في
+  // Chromium مثلًا. يعود مكتومًا (مسموحٌ دائمًا) ثم تفتح أوّلُ نقرةٍ صوتَه؛ وبعد عددٍ من المحاولات
+  // يظهر زرّ التشغيل لا صمتٌ.
+  useEffect(() => {
+    const video = ref.current;
+    if (!live || !video) return;
+    let resumes = 0;
+    const timer = window.setInterval(() => {
+      if (jewelRef.current || video.ended || !video.paused) return;
+      if (offscreen.current || filmHoldActive() || document.visibilityState !== "visible") return;
+      if (resumes >= FILM_RESUME_MAX) {
+        setStuck(true);
+        return;
+      }
+      resumes += 1;
+      sound.current?.recover();
+      (video.play() as Promise<void> | undefined)?.catch((err: unknown) => {
+        if (isBlocked(err)) setStuck(true);
+      });
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [live]);
+
+  if (!play || !src) return null;
 
   const labels = ar ? SOUND_LABELS.ar : SOUND_LABELS.en;
+
+  // لم يبدأ أو تعذّر: زرٌّ واحد من نقرة الزائر — فيها يأذن المتصفّح بالتشغيل بصوته دائمًا.
+  // زرّ «تشغيل الفيلم»: حين تعذّر الفيلم (منعه المتصفّح أو سقط)، أو لم يبدأ بعد السلّم كلّه.
+  const start = failed || stuck;
+
+  const retry = () => {
+    wanted.current = true;
+    saveMusicWanted(true);
+    setStuck(false);
+    if (failed) {
+      setFailed(false);
+      setEnded(false);
+      setReady(false);
+      return;
+    }
+    const video = ref.current;
+    if (!video) return;
+    sound.current?.kick();
+    (video.play() as Promise<void> | undefined)?.catch((err: unknown) => {
+      if (!isBlocked(err)) return;
+      video.muted = true;
+      (video.play() as Promise<void> | undefined)?.catch(() => setFailed(true));
+    });
+  };
 
   // التبديل يقرّر بما يراه الزائر: صامتٌ الآن (كتمه أو منعه المتصفّح) ⇐ رفعُ الكتم من داخل نقرته.
   const toggle = () => {
@@ -740,47 +859,52 @@ function BrandFilm({
   // يحاول بصوت، ويعود مكتومًا إن رفض المتصفّح (السمة `muted` كانت تجعل البدء صامتًا دائمًا).
   return (
     <>
-      <video
-        ref={ref}
-        className="nx-brand-film"
-        playsInline
-        preload={jewel ? "none" : "auto"}
-        aria-hidden
-        tabIndex={-1}
-        disablePictureInPicture
-        data-ready={ready || undefined}
-        onPlaying={(e) => {
-          setReady(true);
-          setAudible(isSounding(e.currentTarget));
-        }}
-        onPause={(e) => setAudible(isSounding(e.currentTarget))}
-        onVolumeChange={(e) => setAudible(isSounding(e.currentTarget))}
-        onEnded={(e) => {
-          setEnded(true);
-          setAudible(isSounding(e.currentTarget));
-        }}
-        onError={(e) => {
-          const video = e.currentTarget;
-          if (e.target === video || video.networkState === video.NETWORK_NO_SOURCE) setFailed(true);
-        }}
-      >
-        <source src={brandFilmSource(src)} type="video/mp4" />
-        <source src={brandFilmSource(src.replace(/\.mp4$/, ".webm"))} type="video/webm" />
-      </video>
+      {!failed && (
+        <video
+          ref={ref}
+          className="nx-brand-film"
+          playsInline
+          preload={jewel ? "none" : "auto"}
+          aria-hidden
+          tabIndex={-1}
+          disablePictureInPicture
+          data-ready={ready || undefined}
+          onPlaying={(e) => {
+            setReady(true);
+            setAudible(isSounding(e.currentTarget));
+          }}
+          onPause={(e) => setAudible(isSounding(e.currentTarget))}
+          onVolumeChange={(e) => setAudible(isSounding(e.currentTarget))}
+          onEnded={(e) => {
+            setEnded(true);
+            setAudible(isSounding(e.currentTarget));
+          }}
+          onError={(e) => {
+            const video = e.currentTarget;
+            if (e.target === video || video.networkState === video.NETWORK_NO_SOURCE)
+              setFailed(true);
+          }}
+        >
+          <source src={brandFilmSource(src)} type="video/mp4" />
+          <source src={brandFilmSource(src.replace(/\.mp4$/, ".webm"))} type="video/webm" />
+        </video>
+      )}
       {/* زرّ الصوت في زاوية اللوحة السفلى اليمنى — بعيدًا عن الاسم والسطر والرمز على كل عرض
           (`home-brand.css` ⑥). يظهر مع أوّل إطار. **والإعادة تُبقيه
           نفسه:** العائد بعد إيقاف الحركة بلا إطارٍ (`preload="none"`)، فكان زرّ الإعادة المركَّز
           يزول بالنقر ويسقط التركيز إلى `body` حتى يُجلب الفيلم (WCAG 2.4.3، أمسكته المراجعة). */}
-      {(ready || jewel || replayed) && (
+      {(ready || jewel || replayed || stuck) && (
         <button
           type="button"
           className="nx-brand-sound nx-focus-ring"
-          aria-pressed={jewel ? undefined : audible}
-          aria-label={jewel ? labels.replay : labels.play}
-          title={jewel ? labels.replay : labels.play}
-          onClick={jewel ? replay : toggle}
+          aria-pressed={start || jewel ? undefined : audible}
+          aria-label={start ? labels.start : jewel ? labels.replay : labels.play}
+          title={start ? labels.start : jewel ? labels.replay : labels.play}
+          onClick={start ? retry : jewel ? replay : toggle}
         >
-          {jewel ? (
+          {start ? (
+            <Play aria-hidden size={18} />
+          ) : jewel ? (
             <RotateCcw aria-hidden size={18} />
           ) : audible ? (
             <Volume2 aria-hidden size={18} />
@@ -793,6 +917,37 @@ function BrandFilm({
   );
 }
 
+/**
+ * تشخيص الفيلم على الجهاز نفسه — يظهر **فقط** مع `?film-debug` في العنوان: بوّاباته وحالة العنصر
+ * وآخر خطأ، فيُصوَّر ويُرسَل حين يعجز المتصفّح عن بدء الفيلم ولا يُعرف سببه. سطرٌ مقروء لا
+ * أكثر؛ ولا يمسّ شيئًا حين غاب الوسم.
+ */
+function FilmDebug({ gates }: { gates: string }) {
+  const [text, setText] = useState("");
+  useEffect(() => {
+    const read = () => {
+      const v = document.querySelector<HTMLVideoElement>("video.nx-brand-film");
+      const root = document.documentElement;
+      const conn = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+      const video = v
+        ? `t=${v.currentTime.toFixed(1)} paused=${v.paused} ended=${v.ended} muted=${v.muted} rs=${v.readyState} ns=${v.networkState} err=${v.error?.code ?? "-"} src=${(v.currentSrc || "-").split("/").pop()?.split("?")[0]}`
+        : "video=none";
+      setText(
+        `${gates} | reduce=${window.matchMedia("(prefers-reduced-motion: reduce)").matches} safe=${isSafeMode()} saveData=${conn?.saveData === true} motion=${root.getAttribute("data-nx-motion") ?? "-"} hold=${filmHoldActive()} panel=${root.getAttribute("data-sadeed-panel") ?? "-"} | ${video}`,
+      );
+    };
+    read();
+    const id = window.setInterval(read, 500);
+    return () => window.clearInterval(id);
+  }, [gates]);
+  // بصنف السطر نفسه (`nx-brand-tagline`) لا بأسلوبٍ مضمَّن: لا لونَ ولا CSS جديدًا — طبقة الرموز.
+  return (
+    <output dir="ltr" className="nx-brand-tagline">
+      {text}
+    </output>
+  );
+}
+
 function BrandPlate({ ar, allowed, paused }: { ar: boolean; allowed: boolean; paused: boolean }) {
   const plate = HOME_BRAND.banner;
   const ref = useRef<HTMLElement>(null);
@@ -801,6 +956,14 @@ function BrandPlate({ ar, allowed, paused }: { ar: boolean; allowed: boolean; pa
   const posterReady = usePosterReady(posterRef);
   // الفيلم حين تُرسم اللوحة («وبمجرد فتح الموقع والدخول عليه») — خلف البوابات وزرّ الإيقاف.
   const play = allowed && !paused && posterReady;
+  const [debug, setDebug] = useState(false);
+  useEffect(() => {
+    try {
+      setDebug(new URLSearchParams(window.location.search).has("film-debug"));
+    } catch {
+      /* عنوانٌ غير قابل للقراءة — لا تشخيص */
+    }
+  }, []);
   const widths = Object.keys(plate.posters)
     .map(Number)
     .sort((a, b) => a - b);
@@ -866,6 +1029,11 @@ function BrandPlate({ ar, allowed, paused }: { ar: boolean; allowed: boolean; pa
             <p className="nx-brand-tagline" dir={ar ? "rtl" : "ltr"} lang={ar ? "ar" : "en"}>
               {ar ? plate.tagline.ar : plate.tagline.en}
             </p>
+            {debug && (
+              <FilmDebug
+                gates={`allowed=${allowed} pausedPref=${paused} posterReady=${posterReady}`}
+              />
+            )}
           </div>
         </div>
       </figure>

@@ -356,9 +356,11 @@ for (const vp of VIEWPORTS) {
   if (THEME) {
     // يُكتب المفتاح قبل تنفيذ أي سكربت للصفحة، فيلتقطه السكربت المانع في
     // `__root.tsx` ويضع الحالة قبل أول رسم — لا وميض ولا قياس على وضع خاطئ.
+    // في `sessionStorage` لا `localStorage` (الداكن افتراضًا دائمًا منذ ٢٠٢٦/١٠/٢٤): الأخير لم يعد
+    // يُقرأ، فكان تمرير `light` يُقاس داكنًا بصمت — وتمريرتا الوضعين شرطُ المواد ٣٢–٣٤.
     await ctx.addInitScript((t) => {
       try {
-        localStorage.setItem("theme", t);
+        sessionStorage.setItem("theme", t);
       } catch {
         /* التخزين محجوب — يبقى الوضع الافتراضي */
       }

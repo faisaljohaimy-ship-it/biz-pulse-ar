@@ -76,7 +76,8 @@ for (const route of ROUTES) {
     const res = await fetchWithRetry(url);
     const html = await res.text();
 
-    const themeScript = /localStorage\.getItem\(['"]theme['"]\)/.test(html);
+    // الاختيار في `sessionStorage` منذ ٢٠٢٦/١٠/٢٤ (الداكن افتراضًا دائمًا): السكربت المانع يقرؤه منه لا من `localStorage`.
+    const themeScript = /sessionStorage\.getItem\(['"]theme['"]\)/.test(html);
     // النطاق `neexios.com` معرّف تقني (رابط · بريد · بيانات منظَّمة) لا اسم
     // معروض، وهو مُستثنى صراحةً في حارس العلامة على المصدر. يُنزع قبل المسح
     // وإلا رسب كل مسار على ذكر رابطه القانوني. أما `NEEXIOS` في نصّ مرئي
