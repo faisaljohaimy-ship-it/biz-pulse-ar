@@ -38,6 +38,13 @@ import { evaluateRagCoverage } from "@/lib/sadeed/rag.server";
 import { parseIntent, resolveModel } from "@/lib/sadeed-core/server/ai-router.server";
 import { resolveProviderPlan, type PlannedModel } from "@/lib/sadeed/llm/provider-plan.server";
 import {
+  TRANSIENT_RETRY_MAX,
+  abortableDelay,
+  hasTimeForRetry,
+  isTransientOverload,
+  transientBackoffMs,
+} from "@/lib/sadeed/llm/transient-retry.server";
+import {
   openAiRequested,
   safeOpenAiError,
   SADEED_OPENAI_DEADLINE_MS,
@@ -1151,11 +1158,25 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
             return "محرّك التحليل غير متاح لهذه الجلسة. يمكنني فتح الشاشات وشرح مؤشّراتها ريثما يعود.";
           if (status === "402" || lower.includes("credit") || lower.includes("quota"))
             return "بلغت الجلسة حدّ التحليل المتاح الآن — أعد المحاولة بعد قليل.";
-          if (status === "429") return "الطلبات كثيرة الآن — أعد المحاولة بعد لحظات.";
+          if (
+            status === "429" ||
+            lower.includes("resource_exhausted") ||
+            lower.includes("rate limit")
+          )
+            return "الطلبات كثيرة الآن — أعد المحاولة بعد لحظات.";
           if (status === "404" || lower.includes("not found") || lower.includes("no such model"))
             return "محرّك التحليل غير متاح لهذه الجلسة — أعد المحاولة بعد قليل.";
           if (status === "400")
             return "تعذّر تنفيذ الطلب بصيغته الحالية — اختصر السؤال أو أعد المحاولة.";
+          // ازدحام المزوّد العابر («high demand» · 502/503/504): كان يسقط إلى السطر العامّ بلا رمزٍ يُفهم.
+          // يأتي بعد الرفض والحصّة فلا يبتلع نصَّهما، وبلا اسم مزوّد (`vendor-mask.contract.test.ts`).
+          if (
+            ["502", "503", "504"].includes(status ?? "") ||
+            /high demand|overloaded|temporarily (busy|unavailable)|service unavailable|unavailable|try again later/.test(
+              lower,
+            )
+          )
+            return "محرّك التحليل مزدحم الآن — أعد المحاولة بعد لحظات.";
           if (lower.includes("aborterror") || lower.includes("timeout"))
             return "استغرق سَدِيد وقتًا طويلًا — أعد المحاولة، وسيُعيد الاتصال تلقائيًا.";
           return `تعذّر إكمال الرد${status ? ` (رمز ${status})` : ""} — أعد المحاولة. المعرّف: ${requestId}`;
@@ -1191,6 +1212,9 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
           useOpenAi ? SADEED_OPENAI_DEADLINE_MS : Number.POSITIVE_INFINITY,
         );
         const turnSignal = AbortSignal.any([request.signal, AbortSignal.timeout(turnDeadlineMs)]);
+        const turnStartedAt = Date.now();
+        // خطواتُ النموذج المنتهية: بعد أولى الخطوات تكون الأدوات قد نُفِّذت، فلا يُعاد الدور (يُكرّر أثرها).
+        let stepsDone = 0;
         try {
           const backup = await import("@/lib/sadeed/backup-provider.server");
           const modelMessages = await convertToModelMessages(uiMessages, {
@@ -1207,6 +1231,9 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
               stopWhen: stepCountIs(useOpenAi ? 2 : 8),
               maxRetries: retries,
               abortSignal: turnSignal,
+              onStepFinish: () => {
+                stepsDone += 1;
+              },
               // Gemini 3.6 deprecates temperature/top-p/top-k controls. Keep
               // quality in the prompt, evidence gate and tool policy instead.
               maxOutputTokens: useOpenAi
@@ -1228,7 +1255,33 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
             try {
               // No SDK retries on the direct key: a quota 429 carries a
               // multi-hour Retry-After that left the chat "thinking" forever.
-              gen = await run(model, 0);
+              try {
+                gen = await run(model, 0);
+              } catch (first) {
+                // إعادةٌ واحدة محدودة لازدحامٍ عابر وحده (`transient-retry.server.ts`): لا للحصّة ولا للرفض،
+                // ولا بعد خطوةٍ أنهت أدواتها، ولا مع احتياطيٍّ مأذون (هو الإعادة)، ولا بلا وقتٍ يكفي.
+                const backoffMs = transientBackoffMs(0);
+                if (
+                  backupPlan ||
+                  TRANSIENT_RETRY_MAX < 1 ||
+                  stepsDone > 0 ||
+                  turnSignal.aborted ||
+                  !isTransientOverload(first) ||
+                  !hasTimeForRetry(turnDeadlineMs, Date.now() - turnStartedAt, backoffMs)
+                )
+                  throw first;
+                console.warn("[api/chat] transient provider overload → one bounded retry", {
+                  requestId,
+                  backoffMs,
+                  // ردود OpenAI لا تُسجَّل بأجسامها (قد تحمل نصّ المستخدم): الحالة وحدها، كما في سجلّ الفشل النهائي.
+                  error:
+                    attempted.vendor === "openai"
+                      ? safeOpenAiError(first)
+                      : String(first instanceof Error ? first.message : first).slice(0, 160),
+                });
+                await abortableDelay(backoffMs, turnSignal);
+                gen = await run(model, 0);
+              }
             } catch (primaryError) {
               if (!backupPlan || !backup.shouldUseBackup(primaryError)) throw primaryError;
               const msg = String(
