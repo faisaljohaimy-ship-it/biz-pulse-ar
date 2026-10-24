@@ -40,6 +40,7 @@ import { SadeedAudioBus } from "@/lib/sadeed/audio-bus";
 import { sadeedState } from "@/lib/sadeed/sadeed-state";
 import {
   BRAND_FILMS,
+  FILM_START_STEP_MS,
   FILM_TAIL,
   FILM_TEXT,
   GESTURE_GRACE_MS,
@@ -88,8 +89,13 @@ const SWITCH = 'html:not([data-nx-motion="off"]):not(.safe-mode)';
 
 /** أسماء زرّ الموسيقى بنصّ مواصفة المسار (R4). */
 const SOUND = {
-  ar: { play: "تشغيل الموسيقى", mute: "كتم الموسيقى", replay: "إعادة العرض مع الموسيقى" },
-  en: { play: "Play music", mute: "Mute music", replay: "Replay with music" },
+  ar: {
+    play: "تشغيل الموسيقى",
+    mute: "كتم الموسيقى",
+    replay: "إعادة العرض مع الموسيقى",
+    start: "تشغيل الفيلم",
+  },
+  en: { play: "Play music", mute: "Mute music", replay: "Replay with music", start: "Play film" },
 } as const;
 
 /* ── أدوات ─────────────────────────────────────────────────────────────── */
@@ -242,7 +248,7 @@ const PLAY_LINE = "const play = allowed && !paused && posterReady;";
 
 /** الفيلم لا يُرسم إلا بعد السماح وما لم يوقفه المستخدم وبعد الملصق — سطر الحراسة قبل `<video`. */
 const gatedBeforeVideo = (code: string) => {
-  const guard = code.indexOf("if (!play || failed || !src) return null;");
+  const guard = code.indexOf("if (!play || !src) return null;");
   const video = code.indexOf("<video");
   return guard > -1 && video > guard && code.includes(PLAY_LINE);
 };
@@ -317,9 +323,10 @@ function soundButtonGaps(code: string): string[] {
   const out: string[] = [];
   for (const need of [
     'type="button"',
-    "aria-pressed={jewel ? undefined : audible}",
-    "aria-label={jewel ? labels.replay : labels.play}",
-    "onClick={jewel ? replay : toggle}",
+    "aria-pressed={start || jewel ? undefined : audible}",
+    "aria-label={start ? labels.start : jewel ? labels.replay : labels.play}",
+    "onClick={start ? retry : jewel ? replay : toggle}",
+    "<Play",
     "<Volume2",
     "<VolumeX",
     "<RotateCcw",
@@ -637,7 +644,7 @@ describe("الكواشف تحمرّ على انتهاكٍ مزروع", () => {
   });
 
   it("فيلمٌ قبل حراسته أو يتجاهل الإيقاف أو يسبق الملصق، وصفٌّ في غير موضعه — تُلتقط", () => {
-    const unguarded = CODE.replace("if (!play || failed || !src) return null;", "");
+    const unguarded = CODE.replace("if (!play || !src) return null;", "");
     expect(unguarded).not.toBe(CODE);
     expect(gatedBeforeVideo(unguarded)).toBe(false);
     const ignoresPause = CODE.replace(PLAY_LINE, "const play = allowed && posterReady;");
@@ -715,8 +722,10 @@ describe("الكواشف تحمرّ على انتهاكٍ مزروع", () => {
   });
 
   it("زرّ صوتٍ بلا حاله أو نوعه أو رموزه، وهدفٌ دون 44px — يُلتقط", () => {
-    const stateless = CODE.replace("aria-pressed={jewel ? undefined : audible}", "");
-    expect(soundButtonGaps(stateless)).toEqual(["aria-pressed={jewel ? undefined : audible}"]);
+    const stateless = CODE.replace("aria-pressed={start || jewel ? undefined : audible}", "");
+    expect(soundButtonGaps(stateless)).toEqual([
+      "aria-pressed={start || jewel ? undefined : audible}",
+    ]);
     const typeless = CODE.replace(
       'type="button"\n          className="nx-brand-sound',
       'className="nx-brand-sound',
@@ -1030,6 +1039,7 @@ const MEDIA_KEYS = [
   "muted",
   "play",
   "pause",
+  "load",
 ] as const;
 const savedMedia = new Map<string, PropertyDescriptor | undefined>();
 
@@ -1105,6 +1115,8 @@ function installMedia(): void {
       return Promise.resolve();
     },
   });
+  // jsdom لا ينفّذ `load()` (يطبع «Not implemented») — السلّم يستدعيه حين يبدّل المصدر.
+  def("load", { writable: true, value: function () {} });
   def("pause", {
     writable: true,
     value: function (this: HTMLMediaElement) {
@@ -1764,6 +1776,122 @@ describe("المصيَّر — الصوت من الفيلم نفسه: بدءٌ �
 });
 
 /* ── الموضع والأنماط ─────────────────────────────────────────────────── */
+
+describe("المصيَّر — لا صمت: سلّم البدء، وحارس الاستئناف، وزرّ التشغيل", () => {
+  useMediaFakes();
+  beforeEach(() => {
+    FakeObserver.all = [];
+    vi.stubGlobal("IntersectionObserver", FakeObserver);
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "setInterval", "clearInterval"] });
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+    localStorage.removeItem("nx-brand-motion");
+    localStorage.removeItem(MUSIC_KEY);
+    delete document.documentElement.dataset.nxMotionPaused;
+    document.documentElement.removeAttribute("data-sadeed-panel");
+  });
+
+  const advance = (ms: number) =>
+    act(async () => {
+      await vi.advanceTimersByTimeAsync(ms);
+    });
+
+  it("فيلمٌ لا يبلغ أوّل إطار: يُجرَّب المصدر الآخر، ثم يظهر زرّ «تشغيل الفيلم» بدل الصمت", async () => {
+    policy.lazy = true; // لا `playing` أبدًا — التعثّر نفسه.
+    const { view, video } = await mountFilm(0);
+    expect(view.queryByRole("button", { name: SOUND.ar.start })).toBeNull();
+    await advance(FILM_START_STEP_MS);
+    expect(video.getAttribute("src") ?? "", "لم يُبدَّل المصدر").toMatch(/\.mp4\?v=|\.mp4$/);
+    expect(
+      view.queryByRole("button", { name: SOUND.ar.start }),
+      "زرٌّ قبل استنفاد السلّم",
+    ).toBeNull();
+    await advance(FILM_START_STEP_MS);
+    const button = view.getByRole("button", { name: SOUND.ar.start });
+    expect(button.getAttribute("aria-pressed")).toBeNull();
+    // نقرة الزائر تشغّل الفيلم بصوته، ويصير الزرّ زرّ الصوت المعتاد حين يبدأ.
+    policy.lazy = false;
+    await act(async () => {
+      fireEvent.click(button);
+    });
+    expect(view.queryByRole("button", { name: SOUND.ar.start })).toBeNull();
+    view.unmount();
+  });
+
+  it("فيلمٌ يبدأ في وقته لا يُظهر الزرّ ولا يبدّل مصدره", async () => {
+    const { view, video } = await mountFilm(1);
+    const src = video.getAttribute("src");
+    await advance(FILM_START_STEP_MS * 3);
+    expect(view.queryByRole("button", { name: SOUND.ar.start })).toBeNull();
+    expect(video.getAttribute("src")).toBe(src);
+    view.unmount();
+  });
+
+  it("توقّفٌ بلا سببٍ مشروع يُستأنف مكتومًا — ولا استئناف خارج الإطار ولا والإيقاف قائم", async () => {
+    const { view, video, film } = await mountFilm(3);
+    const stop = async () => {
+      film.state.paused = true;
+      await act(async () => {
+        fireEvent(video, new Event("pause"));
+      });
+    };
+    // 1) توقّفٌ بغير حقّ ⇒ يُستأنف خلال ثانية، مكتومًا.
+    film.clear();
+    await stop();
+    await advance(1100);
+    expect(film.plays.length, "لم يُستأنف").toBeGreaterThanOrEqual(1);
+    expect(film.plays.at(-1), "استُؤنف بصوت").toBe(true);
+    expect(film.state.paused).toBe(false);
+    // 2) خارج الإطار ⇒ وقوفٌ مشروع، لا استئناف.
+    FakeObserver.show(false);
+    film.clear();
+    await stop();
+    await advance(3000);
+    expect(film.plays, "استُؤنف خارج الإطار").toEqual([]);
+    view.unmount();
+  });
+
+  it("فيلمٌ بدأ ثم توقّف ولا يُستأنف: يظهر زرّ «تشغيل الفيلم» لا زرّ الصوت المتجمّد", async () => {
+    const { view, video, film } = await mountFilm(3);
+    expect(view.queryByRole("button", { name: SOUND.ar.start })).toBeNull();
+    // المتصفّح يمنع الاستئناف من الآن (توفير الطاقة مثلًا): الحارس لا ينجح فيُظهر الزرّ.
+    policy.refuseMuted = true;
+    film.state.paused = true;
+    await act(async () => {
+      fireEvent(video, new Event("pause"));
+    });
+    await advance(1100);
+    const button = view.getByRole("button", { name: SOUND.ar.start });
+    expect(button.getAttribute("aria-pressed")).toBeNull();
+    // ونقرة الزائر تشغّله من جديد، فيعود الزرّ زرّ الصوت حين يبدأ.
+    policy.refuseMuted = false;
+    await act(async () => {
+      fireEvent.click(button);
+    });
+    await act(async () => {});
+    expect(view.queryByRole("button", { name: SOUND.ar.start })).toBeNull();
+    view.unmount();
+  });
+
+  it("فيلمٌ تعذّر: زرّ «تشغيل الفيلم» يعيده من نقرة الزائر", async () => {
+    const { view, video, art } = await mountFilm(12);
+    await act(async () => {
+      fireEvent.error(video);
+    });
+    expect(view.container.querySelector("video")).toBeNull();
+    expect(art.dataset.filmAct).toBe("jewel");
+    const button = view.getByRole("button", { name: SOUND.ar.start });
+    await act(async () => {
+      fireEvent.click(button);
+    });
+    await act(async () => {});
+    expect(view.container.querySelector("video"), "لم يُعد الفيلم").not.toBeNull();
+    view.unmount();
+  });
+});
 
 describe("الموضع — الشريط فاللوحة فوق المؤشرات، بأنماط من طبقة الرموز", () => {
   it("الشريط فوق اللوحة، والصفّ فوق المؤشرات، من مصدرٍ واحد", () => {

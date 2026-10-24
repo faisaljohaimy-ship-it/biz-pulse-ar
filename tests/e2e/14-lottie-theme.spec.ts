@@ -122,14 +122,15 @@ const SURFACES: readonly Surface[] = [
 /**
  * يفتح الصفحة على وضعٍ معلوم **قبل أول رسم**.
  *
- * الكتابة في `localStorage` قبل التنقّل لا بعده: السكربت السابق للترطيب في
+ * الكتابة في `sessionStorage` قبل التنقّل لا بعده (اختيار الوضع يسري على الجلسة منذ
+ * ٢٠٢٦/١٠/٢٤، والافتراضي داكن): السكربت السابق للترطيب في
  * `__root.tsx` يقرؤه ويضع الصنف على `<html>`، فلا وميضة ولا سباق مع
  * `ThemeProvider`. والتبديل الحيّ يُفحص بالنقر لا بهذا (انظر `flipTheme`).
  */
 async function openAt(page: Page, url: string, theme: "dark" | "light") {
   await page.addInitScript((value) => {
     try {
-      window.localStorage.setItem("theme", value as string);
+      window.sessionStorage.setItem("theme", value as string);
     } catch {
       /* تخزين محظور — يتكفّل `flipTheme` بالباقي. */
     }
