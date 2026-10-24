@@ -64,7 +64,10 @@
  *
  * **يبدأ بصوت** (`bindFilmSound.begin`): يُرفع الكتم ثم يُشغَّل الفيلم؛ فإن رفض المتصفّح (سياسة
  * التشغيل التلقائي، `NotAllowedError`) بدأ مكتومًا من الإطار نفسه، وأوّل لمسةٍ صالحة في الصفحة —
- * نقرةٌ لا تمريرٌ ولا مفتاح، وليست على أزرار الصفّ، وبعد مهلتها — تفتح الصوت **دون أن يتوقف الفيلم**.
+ * نقرةٌ لا تمريرٌ ولا مفتاح، وليست على أزرار الصفّ، وبعد مهلتها — تفتح الصوت **ويُعاد الفيلم من الثانية 0
+ * ليسمعه الزائر كاملًا** (أمر المالك ٢٠٢٦/١٠/٢٤، `restartBefore`): ما دام زمنه دون 24 ث ويُسمع الصوت فعلًا
+ * بعدها (ليس «مكتومًا» بتفضيله، والصفّ في الإطار، ولا لوحة سَدِيد)، ومرّةً واحدة؛ وبلا `pause()`. وزرّ الصوت
+ * يفتحه دون إعادة.
  * وتفضيل الزائر يُحفظ (`nx-brand-music`) ويُسأل قبل كل رفعٍ للكتم.
  *
  * **والإسكات كتمٌ لا إيقاف:** لوحة سَدِيد، و«إيقاف الحركة»، وتبويبٌ مخفيّ، وسَدِيد ينطق أو يُصغي،
@@ -250,7 +253,8 @@ const isSounding = (video: HTMLVideoElement) => !video.muted && !video.paused &&
  * **البدء** (`begin`): بعد سؤال التفضيل يُرفع الكتم ويُشغَّل الفيلم؛ نجح ⇒ أُذن للصفحة. رُفض
  * (`NotAllowedError` — سياسة التشغيل التلقائي) ⇒ يبدأ مكتومًا ويُسلَّح مستمع لمسة الإذن: أوّل نقرةٍ في
  * الصفحة — لا التمرير ولا المفاتيح، وليست على أزرار الصفّ نفسه فلها قرارها — تفتح الصوت بعد
- * `GESTURE_GRACE_MS` دون أن يتوقف الفيلم. فإن رُفض التشغيل المكتوم أيضًا استُدعي `onBlocked`.
+ * `GESTURE_GRACE_MS` دون أن يتوقف الفيلم، **ويقفز زمنه إلى 0 إن توفّرت شروط `restartBefore`** (انظر خيارها).
+ * فإن رُفض التشغيل المكتوم أيضًا استُدعي `onBlocked`.
  *
  * **ولا يُفكّ كتمُ فيلمٍ جارٍ قبل الإذن**: Chromium يوقف الفيلم الذي رُفع كتمه بلا تفعيل — فالقاعدة
  * مكتوبة في الشرط نفسه (`unlocked`) لا في ترتيب الاستدعاء.
@@ -261,6 +265,12 @@ export function bindFilmSound(
     readonly wanted: () => boolean;
     readonly offscreen: () => boolean;
     readonly onBlocked?: () => void;
+    /**
+     * فيلمٌ بدأ مكتومًا (منع المتصفّح الصوت التلقائي) يُعاد من أوّله عند أوّل نقرةٍ صالحة ما دام زمنه دون
+     * هذه الثانية — بأمر المالك ٢٠٢٦/١٠/٢٤ «يُعاد من أوله عند أول نقرة» ليسمعه الزائر كاملًا بصوته.
+     * زرّ الصوت لا يعيد (قرارُ زائرٍ يريد الصوت فحسب)، ولا ما بعد هذه الثانية (الجوهرة تُعاد بزرّها).
+     */
+    readonly restartBefore?: number;
   },
 ): FilmSound {
   let unlocked = false;
@@ -270,6 +280,8 @@ export function bindFilmSound(
   // رفضٌ يصل بعد الفكّ لا يعلّق مستمعين على صفحةٍ بلا فيلم.
   let released = false;
   let grace = 0;
+  // بدأ الفيلم صامتًا بانتظار الإذن: أوّل نقرةٍ صالحة تعيده من أوّله بصوته (`restartBefore`).
+  let silentStart = false;
   const audible = () => unlocked && opts.wanted() && !opts.offscreen() && !filmAudioHeld();
   const sync = () => {
     if (released) return;
@@ -297,12 +309,28 @@ export function bindFilmSound(
     // ⇒ لا دفقة.
     grace = window.setTimeout(() => {
       grace = 0;
-      if (!released) unlock();
+      if (released) return;
+      const t = video.currentTime;
+      // يُعاد فقط إن كان الصوت سيُسمع فعلًا بعد النقرة: لا مع تفضيل «مكتوم»، ولا والصفّ خارج
+      // الإطار، ولا ولوحة سَدِيد مفتوحة (نقرةٌ فتحتها).
+      const willSound = opts.wanted() && !opts.offscreen() && !filmAudioHeld();
+      if (
+        silentStart &&
+        willSound &&
+        opts.restartBefore !== undefined &&
+        !video.ended &&
+        t > 0 &&
+        t < opts.restartBefore
+      )
+        video.currentTime = 0;
+      silentStart = false;
+      unlock();
     }, GESTURE_GRACE_MS);
   };
   function arm() {
     if (armed || released || unlocked) return;
     armed = true;
+    silentStart = true;
     for (const type of GESTURES) document.addEventListener(type, onGesture, true);
   }
   function disarm() {
@@ -658,6 +686,7 @@ function BrandFilm({
       offscreen: () => offscreen.current,
       // منعُ التشغيل حتى مكتومًا (توفير الطاقة في iOS): الجوهرة فوق الصورة لا إطارٌ متجمّد.
       onBlocked: () => setFailed(true),
+      restartBefore: FILM_TEXT.seconds,
     });
     sound.current = bound;
     if (!jewelRef.current) bound.begin();

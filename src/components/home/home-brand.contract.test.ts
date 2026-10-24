@@ -1531,6 +1531,18 @@ describe("المصيَّر — الصوت من الفيلم نفسه: بدءٌ �
       expect(film.state.paused).toBe(false);
       view.unmount();
     });
+
+    it("بدأ مكتومًا والصفّ خارج الإطار وقت النقرة: لا إعادة صامتة (الصوت لن يُسمع)", async () => {
+      const { view, film } = await mountFilm(9, { refuse: true });
+      await act(async () => {
+        FakeObserver.show(false);
+      });
+      policy.activated = true;
+      fireEvent.click(document.body);
+      await wait(GESTURE_GRACE_MS + 30);
+      expect(film.state.time, "أُعيد والصفّ خارج الإطار").toBe(9);
+      view.unmount();
+    });
   });
 
   it("كتم الزائر يُحفظ ويسكت الفيلم دون إيقافه، والتشغيل من النقرة يمحوه — والزرّ بلغة الواجهة", async () => {
@@ -1604,6 +1616,71 @@ describe("المصيَّر — الصوت من الفيلم نفسه: بدءٌ �
     expect(film.plays, "الفتح أعاد تشغيل الفيلم").toEqual([false, true]);
     expect(button.getAttribute("aria-pressed")).toBe("true");
     view.unmount();
+  });
+
+  it("بدأ مكتومًا بمنع المتصفّح: أوّل نقرةٍ صالحة تعيده من الثانية 0 بصوته (أمر المالك ٢٠٢٦/١٠/٢٤) — لا تمريرٌ ولا زرّ الصوت", async () => {
+    const { view, video, film } = await mountFilm(9, { refuse: true });
+    expect(video.muted).toBe(true);
+    // ما ليس إذنًا لا يعيد ولا يفتح.
+    fireEvent.scroll(window);
+    fireEvent.keyDown(document.body, { key: "Tab" });
+    await wait(GESTURE_GRACE_MS + 30);
+    expect(film.state.time, "ما ليس نقرةً أعاد الفيلم").toBe(9);
+    // نقرةٌ في الصفحة: بعد مهلة اللمسة يُعاد من أوّله ويُفتح الصوت، والفيلم لا يتوقف.
+    policy.activated = true;
+    fireEvent.click(document.body);
+    expect(film.state.time, "أُعيد قبل استقرار اللمسة").toBe(9);
+    await wait(GESTURE_GRACE_MS + 30);
+    expect(film.state.time, "لم يُعد من أوّله").toBe(0);
+    expect(video.muted).toBe(false);
+    expect(film.pauses).toBe(0);
+    // نقرةٌ ثانية لا تعيده ثانيةً.
+    film.state.time = 4;
+    fireEvent.click(document.body);
+    await wait(GESTURE_GRACE_MS + 30);
+    expect(film.state.time, "أُعيد مرّتين").toBe(4);
+    view.unmount();
+  });
+
+  it("لا إعادة مع تفضيل «مكتوم» محفوظ: نقرةٌ لا تعيد ولا تفتح", async () => {
+    localStorage.setItem(MUSIC_KEY, "off");
+    const m = await mountFilm(9, { refuse: true });
+    policy.activated = true;
+    fireEvent.click(document.body);
+    await wait(GESTURE_GRACE_MS + 30);
+    expect(m.film.state.time, "أُعيد رغم تفضيل المكتوم").toBe(9);
+    expect(m.video.muted).toBe(true);
+    m.view.unmount();
+  });
+
+  it("لا إعادة لفيلمٍ بلغ الجوهرة: تُعاد بزرّها لا بنقرة الصفحة", async () => {
+    const m = await mountFilm(FILM_TEXT.seconds + 0.5, { refuse: true });
+    policy.activated = true;
+    fireEvent.click(document.body);
+    await wait(GESTURE_GRACE_MS + 30);
+    expect(m.film.state.time, "أُعيدت الجوهرة بنقرة الصفحة").toBe(FILM_TEXT.seconds + 0.5);
+    m.view.unmount();
+  });
+
+  it("زرّ الصوت قرارُ زائرٍ يريد الصوت فحسب: يفتحه دون إعادة", async () => {
+    const m = await mountFilm(9, { refuse: true });
+    policy.activated = true;
+    await act(async () => {
+      fireEvent.click(m.view.getByRole("button", { name: SOUND.ar.play }));
+    });
+    expect(m.video.muted).toBe(false);
+    expect(m.film.state.time, "زرّ الصوت أعاد الفيلم").toBe(9);
+    m.view.unmount();
+  });
+
+  it("نقرةٌ فتحت لوحة سَدِيد: لا إعادة صامتة", async () => {
+    const m = await mountFilm(9, { refuse: true });
+    policy.activated = true;
+    fireEvent.click(document.body);
+    document.documentElement.setAttribute("data-sadeed-panel", "open");
+    await wait(GESTURE_GRACE_MS + 30);
+    expect(m.film.state.time, "أُعيد والصوت محجوب بلوحة سَدِيد").toBe(9);
+    m.view.unmount();
   });
 
   it("لا يُفكّ كتمٌ قبل الإذن ولو زال سبب الإسكات — وقاعدة المتصفّح المحاكاة حقيقية", async () => {
