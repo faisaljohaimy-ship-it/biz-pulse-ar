@@ -128,6 +128,45 @@ export const ENV_CAPABILITIES: readonly CapabilitySpec[] = [
     ],
   },
   {
+    key: "finn-github-readonly",
+    labelAr: "أداة فِن لنشاط GitHub (قراءةٌ فقط — اختيارية؛ تفشل مغلقةً بلا مفتاح)",
+    requirement: "all",
+    vars: [
+      S(
+        "FINN_GITHUB_TOKEN",
+        "Fine-grained GitHub token for FINN's read-only github_activity tool: Contents/Pull requests/Checks = Read on the product repo ONLY; server only; absent ⇒ the tool reports not_configured",
+      ),
+    ],
+  },
+  {
+    key: "finn-vercel-readonly",
+    labelAr: "أداة فِن لنشرات Vercel (قراءةٌ فقط — اختيارية؛ تفشل مغلقةً بلا مفتاح)",
+    requirement: "all",
+    vars: [
+      S(
+        "FINN_VERCEL_TOKEN",
+        "Read-only Vercel token for FINN's vercel_deployments tool; server only; absent ⇒ the tool reports not_configured",
+      ),
+      S(
+        "FINN_VERCEL_PROJECT_ID",
+        "Vercel project id whose production deployments FINN may list (an id, not a secret)",
+        false,
+      ),
+    ],
+  },
+  {
+    key: "finn-vercel-team",
+    labelAr: "فريق Vercel لأداة فِن (اختياري — لحسابات الفرق)",
+    requirement: "optional",
+    vars: [
+      S(
+        "FINN_VERCEL_TEAM_ID",
+        "Optional Vercel team id scoping FINN's read-only deployment listing (an id, not a secret)",
+        false,
+      ),
+    ],
+  },
+  {
     key: "finn-quota",
     labelAr: "حصّة فِن اليومية (سطح مستقلّ عن سَدِيد — اختياري، له افتراضات)",
     requirement: "optional",

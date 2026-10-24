@@ -15,6 +15,10 @@ import type { FinnEngineName } from "@/lib/finn-agent/identity";
 import { FINN_LIMITS } from "@/lib/finn-agent/limits";
 import { trimFinnWindow } from "@/lib/finn-agent/messages";
 import type { FinnFallbackReason } from "@/lib/finn-agent/status";
+import type { FinnToolName, FinnToolPhase } from "@/lib/finn-agent/tool-names";
+
+/** أداةٌ استعملها فِن في هذا الرد — للعرض فقط (اسمٌ ومرحلة). */
+export type FinnToolRun = { readonly name: FinnToolName; readonly phase: FinnToolPhase };
 
 export type FinnUiMessage = {
   readonly id: string;
@@ -25,6 +29,8 @@ export type FinnUiMessage = {
   readonly fallback?: FinnFallbackReason | null;
   readonly truncated?: boolean;
   readonly interrupted?: boolean;
+  /** الأدوات التي نادى بها فِن قبل/أثناء هذا الرد، بترتيبها. */
+  readonly tools?: readonly FinnToolRun[];
 };
 
 export type FinnChatStatus = "idle" | "waiting" | "streaming";
@@ -110,6 +116,24 @@ export function useFinnChat() {
         onDelta: (delta) => {
           buffer += delta;
           schedule();
+        },
+        onTool: (event) => {
+          commit((prev) =>
+            prev.map((m) => {
+              if (m.id !== assistantId) return m;
+              const runs = [...(m.tools ?? [])];
+              if (event.phase === "start") {
+                runs.push({ name: event.name, phase: "start" });
+              } else {
+                // يحسم آخر نداءٍ جارٍ بالاسم نفسه؛ وإن لم يوجد (وصل الحسم وحده) يُسجَّل.
+                const open = runs.map((r) => r.phase === "start" && r.name === event.name);
+                const at = open.lastIndexOf(true);
+                if (at >= 0) runs[at] = { name: event.name, phase: event.phase };
+                else runs.push({ name: event.name, phase: event.phase });
+              }
+              return { ...m, tools: runs };
+            }),
+          );
         },
       });
       flush();

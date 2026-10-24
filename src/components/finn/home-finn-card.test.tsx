@@ -19,7 +19,9 @@ vi.mock("@/lib/auth-context", () => ({ useAuth: () => ({ user: sim.user }) }));
 vi.mock("@/lib/i18n", () => ({ useI18n: () => ({ locale: sim.locale }) }));
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ to, children, ...rest }: { to: string; children: ReactNode }) => (
-    <a href={to} {...rest}>{children}</a>
+    <a href={to} {...rest}>
+      {children}
+    </a>
   ),
 }));
 
@@ -35,7 +37,9 @@ const OWNER = {
 function renderCard() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
-    <QueryClientProvider client={client}><HomeFinnCard /></QueryClientProvider>,
+    <QueryClientProvider client={client}>
+      <HomeFinnCard />
+    </QueryClientProvider>,
   );
 }
 
@@ -49,7 +53,10 @@ describe("HomeFinnCard — public entry and private access", () => {
   it("shows a guest entry without an access request or chat", () => {
     const { container } = renderCard();
     expect(container.querySelector('[data-finn-access="guest"]')).not.toBeNull();
-    expect(screen.getByRole("link", { name: /دخول المالك إلى فنن/ })).toHaveAttribute("href", "/auth");
+    expect(screen.getByRole("link", { name: /دخول المالك إلى فنن/ })).toHaveAttribute(
+      "href",
+      "/auth",
+    );
     expect(screen.queryByRole("textbox")).toBeNull();
     expect(sim.access).not.toHaveBeenCalled();
   });
@@ -58,7 +65,9 @@ describe("HomeFinnCard — public entry and private access", () => {
     sim.user = { id: "u1" };
     sim.access.mockResolvedValue({ allowed: false });
     const { container } = renderCard();
-    await waitFor(() => expect(container.querySelector('[data-finn-access="denied"]')).not.toBeNull());
+    await waitFor(() =>
+      expect(container.querySelector('[data-finn-access="denied"]')).not.toBeNull(),
+    );
     expect(screen.queryByRole("textbox")).toBeNull();
     expect(container.querySelector('a[href="/finn"]')).toBeNull();
     expect(container.querySelector("[data-finn-readiness]")).toBeNull();
@@ -88,7 +97,10 @@ describe("HomeFinnCard — public entry and private access", () => {
     sim.user = { id: "owner" };
     sim.access.mockResolvedValue(OWNER);
     const { container } = renderCard();
-    expect(await screen.findByRole("link", { name: /افتح محادثة فِن/ })).toHaveAttribute("href", "/finn");
+    expect(await screen.findByRole("link", { name: /افتح محادثة فِن/ })).toHaveAttribute(
+      "href",
+      "/finn",
+    );
     expect(screen.getByText(FINN_BANNER_AR)).toBeInTheDocument();
     const img = container.querySelector("img");
     expect(img).toHaveAttribute("src", HOME_IMAGES.finn.src);
@@ -102,7 +114,10 @@ describe("HomeFinnCard — public entry and private access", () => {
     sim.locale = "en";
     sim.access.mockResolvedValue(OWNER);
     const { container } = renderCard();
-    expect(await screen.findByRole("link", { name: /Open the Finn chat/ })).toHaveAttribute("href", "/finn");
+    expect(await screen.findByRole("link", { name: /Open the Finn chat/ })).toHaveAttribute(
+      "href",
+      "/finn",
+    );
     expect(screen.getByRole("heading", { name: "Finn" })).toBeInTheDocument();
     expect(container.querySelector("section")).toHaveAttribute("dir", "ltr");
   });
@@ -136,7 +151,9 @@ describe("owner chat inline on the homepage", () => {
     sim.access.mockResolvedValue(OWNER);
     const { container } = renderCard();
     await screen.findByRole("textbox");
-    expect(container.querySelector('[data-finn-chat="inline"]')?.closest("[data-finn-home-card]")).not.toBeNull();
+    expect(
+      container.querySelector('[data-finn-chat="inline"]')?.closest("[data-finn-home-card]"),
+    ).not.toBeNull();
     expect(screen.getByRole("link", { name: /افتح محادثة فِن/ })).toHaveAttribute("href", "/finn");
   });
 
@@ -157,7 +174,9 @@ describe("owner chat inline on the homepage", () => {
     fireEvent.click(screen.getByRole("button", { name: /إخفاء المحادثة/ }));
     const toggle = screen.getByRole("button", { name: /إظهار المحادثة/ });
     expect(toggle).toHaveAttribute("aria-expanded", "false");
-    expect(document.getElementById(toggle.getAttribute("aria-controls") ?? "")).toHaveAttribute("hidden");
+    expect(document.getElementById(toggle.getAttribute("aria-controls") ?? "")).toHaveAttribute(
+      "hidden",
+    );
     expect(container.querySelector('[data-finn-chat="inline"]')).not.toBeNull();
     fireEvent.click(toggle);
     expect(screen.getByRole("textbox")).toHaveValue("اكتب سكربت أتمتة");
@@ -213,10 +232,16 @@ describe("FNN portrait file dimensions and budget", () => {
     const bytes = readFileSync(FILE);
     expect(bytes.toString("latin1", 0, 4)).toBe("RIFF");
     expect(bytes.toString("latin1", 8, 12)).toBe("WEBP");
-    expect(webpDims(bytes)).toEqual({ width: HOME_IMAGES.finn.width * 2, height: HOME_IMAGES.finn.height * 2 });
+    expect(webpDims(bytes)).toEqual({
+      width: HOME_IMAGES.finn.width * 2,
+      height: HOME_IMAGES.finn.height * 2,
+    });
   });
   it("keeps public/home within its existing image budget", () => {
-    const total = readdirSync("public/home").map((f) => statSync(`public/home/${f}`)).filter((s) => s.isFile()).reduce((n, s) => n + s.size, 0);
+    const total = readdirSync("public/home")
+      .map((f) => statSync(`public/home/${f}`))
+      .filter((s) => s.isFile())
+      .reduce((n, s) => n + s.size, 0);
     expect(total).toBeLessThanOrEqual(HOME_IMAGES_MAX_BYTES);
   });
 });

@@ -18,6 +18,7 @@ import { SYSTEM_NAV, systemNavDestinations } from "@/lib/nav/system-nav";
 import { ENV_CAPABILITIES, validateEnv } from "@/lib/env/env-manifest";
 import { isSilentRoute, narrationFor } from "@/lib/sadeed/page-narrations";
 import { FINN_BANNER_AR } from "./copy";
+import { FINN_TOOL_NAMES } from "./tool-names";
 import { FINN_IDENTITY } from "./identity";
 
 const read = (p: string) => readFileSync(p, "utf8");
@@ -41,6 +42,7 @@ const CLIENT_LIB_FILES = [
   "src/lib/finn-agent/limits.ts",
   "src/lib/finn-agent/messages.ts",
   "src/lib/finn-agent/stream-protocol.ts",
+  "src/lib/finn-agent/tool-names.ts",
 ];
 /** كل ما قد يُجمَّع في حزمة العميل. */
 const CLIENT_FILES = [...UI_FILES, ...CLIENT_LIB_FILES];
@@ -107,10 +109,15 @@ describe("② الخادم: بوّابة المالك ثم مفتاح الإيق
     expect(engine).not.toMatch(/request\./);
   });
 
-  it("لا أدوات تنفيذ: لا tools ولا toolChoice ولا stopWhen في نداء النموذج", () => {
+  it("أدوات القراءة وحدها (٢٠٢٦/١٠/٢٤): من buildFinnTools فقط، بسقف خطوات، بلا toolChoice ولا تجريبيّات", () => {
     const engine = strip(read("src/lib/finn-agent/engine.server.ts"));
-    expect(engine).not.toMatch(/\btools\s*:/);
-    expect(engine).not.toMatch(/toolChoice|stopWhen|experimental_/);
+    // كانت: «لا tools إطلاقًا». صارت: أدواتٌ من وحدةٍ واحدةٍ مقيّدةٍ بقراءةٍ فقط (انظر ⑨).
+    expect(engine).toContain("buildFinnTools(");
+    expect(engine).toMatch(/\btools:\s*settings\.tools/);
+    expect(engine).toMatch(/stopWhen:\s*stepCountIs\(FINN_MAX_STEPS\)/);
+    expect(engine).not.toMatch(/toolChoice|experimental_/);
+    // لا أداةٌ تُعرَّف داخل المحرّك نفسه: التعريف في tools.server.ts وحده.
+    expect(engine).not.toMatch(/\btool\(\s*\{/);
     expect(engine).toContain("streamText(");
   });
 
@@ -430,6 +437,84 @@ describe("⑧ التوثيق: الاسم لا ينقض قرار ٢٠٢٦/٠٨/٠
     expect(src).toContain("٢٠٢٦/٠٨/٠٩");
     expect(src).toMatch(/منفصل عن سَدِيد/);
     expect(src).toMatch(/لا ينقض قرار/);
+  });
+});
+
+describe("⑨ أدوات فِن: قراءةٌ فقط، مضيفان ثابتان، بلا تنفيذ (٢٠٢٦/١٠/٢٤)", () => {
+  const TOOLS = strip(read("src/lib/finn-agent/tools.server.ts"));
+
+  /** كل طريقةٍ غير GET، أو مضيفٌ خارج القائمة المغلقة، أو واجهة تنفيذٍ/كتابة. */
+  const toolViolations = (code: string): string[] => {
+    const out: string[] = [];
+    for (const m of code.matchAll(/method:\s*["'](POST|PUT|PATCH|DELETE)["']/gi)) out.push(m[0]);
+    for (const m of code.matchAll(/https?:\/\/[A-Za-z0-9.-]+/g)) {
+      if (!["https://api.github.com", "https://api.vercel.com"].includes(m[0])) out.push(m[0]);
+    }
+    for (const m of code.matchAll(
+      /child_process|\bexecSync?\b|\bspawn\b|\beval\(|new Function|writeFile|supabaseAdmin|client\.server|createClient|\.insert\(|\.update\(|\.delete\(|\.rpc\(/g,
+    )) {
+      out.push(m[0]);
+    }
+    return out;
+  };
+
+  it("وحدة الأدوات نظيفة: لا كتابة ولا تنفيذ ولا قاعدة ولا مضيفٌ خارج القائمة", () => {
+    expect(toolViolations(TOOLS)).toEqual([]);
+  });
+
+  it("القراءة بـGET وحده وبلا تتبّع تحويلات، وبمهلةٍ وسقف حجم", () => {
+    expect(TOOLS).toMatch(/method:\s*"GET"/);
+    expect(TOOLS).toMatch(/redirect:\s*"error"/);
+    expect(TOOLS).toContain("AbortSignal.timeout(FINN_TOOL_TIMEOUT_MS)");
+    expect(TOOLS).toContain("MAX_BODY_CHARS");
+  });
+
+  it("المستودع ثابتٌ في الكود لا يأتي من النموذج، والمدخلات مخطَّطة (تعداداتٌ وsha سداسيّ)", () => {
+    expect(TOOLS).toContain('FINN_GITHUB_REPO = "faisaljohaimy-ship-it/biz-pulse-ar"');
+    expect(TOOLS).toMatch(
+      /z\.enum\(\["recent_commits", "open_pull_requests", "checks_for_commit"\]\)/,
+    );
+    expect(TOOLS).toMatch(/regex\(\/\^\[0-9a-fA-F\]\{7,40\}\$\/\)/);
+    // لا يُبنى مسارٌ أو استعلامٌ من نصٍّ حرّ: `url` لا يحمل متغيّرًا من المدخل إلا sha مُرمَّزًا.
+    expect(TOOLS).toContain("encodeURIComponent(input.sha)");
+  });
+
+  it("المفاتيح من بيئة الخادم وحدها، لا تُسجَّل ولا تُعاد، والتدقيق اسمٌ ونتيجةٌ وزمنٌ فقط", () => {
+    expect(TOOLS).toMatch(/env\.FINN_GITHUB_TOKEN/);
+    expect(TOOLS).toMatch(/env\.FINN_VERCEL_TOKEN/);
+    expect(TOOLS).not.toMatch(/console\.\w+\([^)]*(token|Authorization|headers)/i);
+    expect(TOOLS).toMatch(/audit:\s*\(entry\)\s*=>\s*console\.info\("\[finn\] tool", entry\)/);
+  });
+
+  it("المسجَّل في المجموعة = القائمة المغلقة بالضبط (لا أداةٌ زائدة ولا ناقصة)", async () => {
+    const { registeredFinnToolNames } = await import("./tools.server");
+    const names = registeredFinnToolNames(() => ({
+      gpt: false,
+      gptModel: "x",
+      fallback: false,
+      paused: false,
+    }));
+    expect(names).toEqual([...FINN_TOOL_NAMES].sort());
+  });
+
+  it("الأدوات لا يستوردها غير المحرّك، ولا يصلها العميل", () => {
+    const importers = globSync("src/**/*.{ts,tsx}").filter(
+      (f) =>
+        !/\.test\.tsx?$/.test(f) &&
+        f !== "src/lib/finn-agent/tools.server.ts" &&
+        /finn-agent\/tools\.server|from\s+["']\.\/tools\.server["']/.test(read(f)),
+    );
+    expect(importers).toEqual(["src/lib/finn-agent/engine.server.ts"]);
+  });
+
+  it("كاشف الانتهاك يحمرّ على مزروعاتٍ حقيقية (المادة ٣٠)", () => {
+    expect(toolViolations('fetch(u, { method: "POST" })')).toHaveLength(1);
+    expect(toolViolations('fetch("https://evil.example/x")')).toEqual(["https://evil.example"]);
+    expect(toolViolations('import { exec } from "node:child_process"')).toEqual(["child_process"]);
+    expect(toolViolations("await supabaseAdmin.from('t').insert(x)")).toHaveLength(2);
+    expect(toolViolations('fetch("https://api.github.com/repos/x", { method: "GET" })')).toEqual(
+      [],
+    );
   });
 });
 

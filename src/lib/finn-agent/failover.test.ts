@@ -616,3 +616,89 @@ describe("W5 #6 — نفاد رصيد OpenAI يُعلَن billing لا rate_limi
     expect(r.fallback).toBe("billing");
   });
 });
+
+describe("أجزاء الأداة في سلسلة المحرّكات (٢٠٢٦/١٠/٢٤)", () => {
+  const tool = (phase: "start" | "done" | "error" = "start"): FinnPart => ({
+    type: "tool",
+    name: "platform_status",
+    phase,
+  });
+
+  it("أداةٌ قبل أول نصّ لا تُعدّ إجابةً ولا تفكّ المهلة، وتُبثّ قبل أول نصّ", async () => {
+    const r = await openFinnReply(
+      [attempt("openai", () => parts([tool("start"), tool("done"), text("جاهز"), finish()]))],
+      { ...OPTS, signal: new AbortController().signal },
+    );
+    if (!r.ok) throw new Error("expected ok");
+    const events: unknown[] = [];
+    for await (const e of r.events) events.push(e);
+    expect(events).toEqual([
+      { type: "tool", name: "platform_status", phase: "start" },
+      { type: "tool", name: "platform_status", phase: "done" },
+      { type: "delta", text: "جاهز" },
+      { type: "done", truncated: false },
+    ]);
+  });
+
+  it("أداةٌ ثم صمتٌ ⇒ المهلة تُسقط إلى الاحتياطي معلَنًا (الأداة لا تُفكّ المهلة)", async () => {
+    const stuckAfterTool = (): AsyncIterable<FinnPart> => ({
+      [Symbol.asyncIterator]: () => {
+        let sent = false;
+        return {
+          next: () => {
+            if (!sent) {
+              sent = true;
+              return Promise.resolve({ done: false as const, value: tool("start") });
+            }
+            return new Promise<IteratorResult<FinnPart>>(() => undefined);
+          },
+          return: () => Promise.resolve({ done: true, value: undefined }),
+        };
+      },
+    });
+    const r = await openFinnReply(
+      [
+        attempt("openai", stuckAfterTool),
+        attempt("gemini", () => parts([text("من الاحتياطي"), finish()])),
+      ],
+      { ...OPTS, signal: new AbortController().signal },
+    );
+    if (!r.ok) throw new Error("expected ok");
+    expect(r.engine).toBe("gemini");
+    expect(r.fallback).toBe("timeout");
+    const events: unknown[] = [];
+    for await (const e of r.events) events.push(e);
+    // أحداث أداة المحرّك الساقط لا تُنسب للمحرّك الذي أجاب.
+    expect(events).toEqual([
+      { type: "delta", text: "من الاحتياطي" },
+      { type: "done", truncated: false },
+    ]);
+  });
+
+  it("أداةٌ بعد النصّ تمرّ في موضعها، وأداةٌ بلا نصّ ثم finish ⇒ ردٌّ فارغٌ عطلٌ لا إجابة", async () => {
+    const mid = await openFinnReply(
+      [
+        attempt("openai", () =>
+          parts([text("أ"), tool("start"), tool("done"), text("ب"), finish()]),
+        ),
+      ],
+      { ...OPTS, signal: new AbortController().signal },
+    );
+    if (!mid.ok) throw new Error("expected ok");
+    const events: unknown[] = [];
+    for await (const e of mid.events) events.push(e);
+    expect(events.map((e) => (e as { type: string }).type)).toEqual([
+      "delta",
+      "tool",
+      "tool",
+      "delta",
+      "done",
+    ]);
+
+    const empty = await openFinnReply([attempt("openai", () => parts([tool("start"), finish()]))], {
+      ...OPTS,
+      signal: new AbortController().signal,
+    });
+    expect(empty.ok).toBe(false);
+  });
+});

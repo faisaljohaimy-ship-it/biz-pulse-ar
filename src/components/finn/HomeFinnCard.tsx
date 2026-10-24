@@ -95,7 +95,9 @@ function CardFrame({
           className="nx-fn-portrait"
         />
         <div className="nx-fn-id">
-          <span className="nx-fn-agent-badge" dir="ltr">FNN</span>
+          <span className="nx-fn-agent-badge" dir="ltr">
+            FNN
+          </span>
           <h2 id="nx-home-finn-title" className="nx-fn-title">
             {ar ? FINN_COPY.title : "Finn"}
           </h2>
@@ -118,13 +120,22 @@ function Capabilities({ ar, owner }: { ar: boolean; owner: boolean }) {
       </summary>
       <p className="py-2 text-sm text-[color:var(--ink-2)]" data-finn-permission>
         {owner
-          ? ar ? "تم التحقق من صلاحية المالك." : "Owner access verified."
-          : ar ? "استخدام المحادثة للمالك بعد التحقق من الحساب." : "Chat requires verified owner access."}
+          ? ar
+            ? "تم التحقق من صلاحية المالك."
+            : "Owner access verified."
+          : ar
+            ? "استخدام المحادثة للمالك بعد التحقق من الحساب."
+            : "Chat requires verified owner access."}
       </p>
       <ul className="list-inside list-disc space-y-1 text-sm text-[color:var(--ink)]">
-        {FINN_HOME_CAPABILITIES.map((item) => <li key={item.en}>{ar ? item.ar : item.en}</li>)}
+        {FINN_HOME_CAPABILITIES.map((item) => (
+          <li key={item.en}>{ar ? item.ar : item.en}</li>
+        ))}
       </ul>
-      <p className="mt-2 text-sm leading-6 text-[color:var(--ink-2)]" data-finn-execution="advisory">
+      <p
+        className="mt-2 text-sm leading-6 text-[color:var(--ink-2)]"
+        data-finn-execution="advisory"
+      >
         {ar
           ? "القدرات نصية: لا تنفيذ أو نشر أو تعديل مستودع أو قاعدة بيانات من هذه المحادثة."
           : "Text assistance only: this chat does not execute, deploy, or modify repositories or databases."}
@@ -145,10 +156,16 @@ function AccessNotice({
   busy?: boolean;
 }) {
   const messages = {
-    guest: ar ? "سجّل الدخول بحساب المالك لبدء محادثة فنن." : "Sign in with the owner account to start FNN.",
+    guest: ar
+      ? "سجّل الدخول بحساب المالك لبدء محادثة فنن."
+      : "Sign in with the owner account to start FNN.",
     checking: ar ? "جارٍ التحقق من صلاحية الحساب…" : "Checking account access…",
-    denied: ar ? "هذا الحساب لا يملك صلاحية استخدام فنن. لن تُفتح المحادثة أو أدواتها." : "This account cannot use FNN. Chat and tools remain locked.",
-    error: ar ? "تعذّر التحقق من صلاحية فنن الآن. أعد المحاولة؛ لم تُمنح صلاحيات إضافية." : "FNN access could not be checked. Retry; no additional access was granted.",
+    denied: ar
+      ? "هذا الحساب لا يملك صلاحية استخدام فنن. لن تُفتح المحادثة أو أدواتها."
+      : "This account cannot use FNN. Chat and tools remain locked.",
+    error: ar
+      ? "تعذّر التحقق من صلاحية فنن الآن. أعد المحاولة؛ لم تُمنح صلاحيات إضافية."
+      : "FNN access could not be checked. Retry; no additional access was granted.",
   };
   return (
     <CardFrame ar={ar} state={state}>
@@ -157,7 +174,11 @@ function AccessNotice({
       </p>
       <Capabilities ar={ar} owner={false} />
       {state === "guest" ? (
-        <Link to="/auth" search={{ mode: "signin", redirect: "/#fnn" }} className="nx-fn-open min-h-11!">
+        <Link
+          to="/auth"
+          search={{ mode: "signin", redirect: "/#fnn" }}
+          className="nx-fn-open min-h-11!"
+        >
           {ar ? "دخول المالك إلى فنن" : "Owner sign-in for FNN"}
         </Link>
       ) : retry ? (
@@ -185,7 +206,9 @@ function FinnCard({ userId }: { userId: string }) {
       <AccessNotice
         ar={ar}
         state={state === "owner" ? "checking" : state}
-        retry={() => { void refetch(); }}
+        retry={() => {
+          void refetch();
+        }}
         busy={isFetching}
       />
     );

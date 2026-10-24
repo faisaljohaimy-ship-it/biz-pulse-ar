@@ -445,6 +445,159 @@ describe("②-ب ملاحظات W5 #3–#6 عبر تطبيع أجزاء الـSD
   });
 });
 
+describe("②-ج أدوات القراءة (٢٠٢٦/١٠/٢٤): تُمرَّر للمحرّكات كلّها، وأحداثها اسمٌ ومرحلةٌ فقط", () => {
+  const toolCall = (toolName: string, input: unknown = { secret: "in" }) => ({
+    type: "tool-call",
+    toolCallId: "c1",
+    toolName,
+    input,
+  });
+  const toolResult = (toolName: string, output: unknown) => ({
+    type: "tool-result",
+    toolCallId: "c1",
+    toolName,
+    input: { secret: "in" },
+    output,
+  });
+
+  async function all(events: AsyncGenerator<Record<string, unknown>>) {
+    const out: Record<string, unknown>[] = [];
+    for await (const e of events) out.push(e);
+    return out;
+  }
+
+  it("المحاولات الثلاث تحمل المجموعة المغلقة نفسها وسقف خطوات", async () => {
+    sim.script.openai = () => stream([textPart("ok"), finishPart()]);
+    await (
+      await open()
+    ).ok;
+    for (const tag of ["openai"]) {
+      const call = sim.calls.find((c) => c.tag === tag)!;
+      const tools = call.extra.tools as Record<string, unknown>;
+      expect(Object.keys(tools).sort()).toEqual([
+        "github_activity",
+        "platform_status",
+        "vercel_deployments",
+      ]);
+      expect(call.extra.stopWhen).toBeDefined();
+    }
+  });
+
+  it("الاحتياطي (Gemini) يحمل المجموعة نفسها لا مجموعةً أوسع", async () => {
+    vi.stubEnv("OPENAI_API_KEY", "");
+    sim.script["gemini-direct"] = () => stream([textPart("ok"), finishPart()]);
+    const r = await open();
+    expect(r.ok).toBe(true);
+    const call = sim.calls.find((c) => c.tag === "gemini-direct")!;
+    expect(Object.keys(call.extra.tools as object).sort()).toEqual([
+      "github_activity",
+      "platform_status",
+      "vercel_deployments",
+    ]);
+  });
+
+  it("أداةٌ قبل أول نصّ ⇒ تُبثّ أولًا بالترتيب: start ثم done ثم النصّ ثم done", async () => {
+    sim.script.openai = () =>
+      stream([
+        toolCall("platform_status"),
+        toolResult("platform_status", { ok: true }),
+        textPart("الحالة سليمة"),
+        finishPart(),
+      ]);
+    const r = await open();
+    if (!r.ok) throw new Error("expected ok");
+    const events = await all(r.events as AsyncGenerator<Record<string, unknown>>);
+    expect(events).toEqual([
+      { type: "tool", name: "platform_status", phase: "start" },
+      { type: "tool", name: "platform_status", phase: "done" },
+      { type: "delta", text: "الحالة سليمة" },
+      { type: "done", truncated: false },
+    ]);
+  });
+
+  it("نتيجةٌ ok:false أو tool-error ⇒ المرحلة error؛ وأداةٌ بعد النصّ تمرّ في موضعها", async () => {
+    sim.script.openai = () =>
+      stream([
+        textPart("سأفحص"),
+        toolCall("github_activity"),
+        toolResult("github_activity", { ok: false, reason: "not_configured" }),
+        toolCall("vercel_deployments"),
+        {
+          type: "tool-error",
+          toolCallId: "c2",
+          toolName: "vercel_deployments",
+          error: new Error("x"),
+        },
+        textPart("تعذّر"),
+        finishPart(),
+      ]);
+    const r = await open();
+    if (!r.ok) throw new Error("expected ok");
+    const events = await all(r.events as AsyncGenerator<Record<string, unknown>>);
+    expect(events.map((e) => `${e.type}:${e.name ?? e.text ?? ""}:${e.phase ?? ""}`)).toEqual([
+      "delta:سأفحص:",
+      "tool:github_activity:start",
+      "tool:github_activity:error",
+      "tool:vercel_deployments:start",
+      "tool:vercel_deployments:error",
+      "delta:تعذّر:",
+      "done::",
+    ]);
+  });
+
+  it("اسمُ أداةٍ خارج القائمة المغلقة يُهمَل — لا يعبر السلكَ اسمٌ لم يقرّه الخادم", async () => {
+    sim.script.openai = () =>
+      stream([
+        toolCall("shell_exec"),
+        toolResult("shell_exec", { ok: true }),
+        textPart("x"),
+        finishPart(),
+      ]);
+    const r = await open();
+    if (!r.ok) throw new Error("expected ok");
+    const events = await all(r.events as AsyncGenerator<Record<string, unknown>>);
+    expect(events.some((e) => e.type === "tool")).toBe(false);
+  });
+
+  it("حدث الأداة على السلك: اسمٌ ومرحلةٌ فقط — لا مدخلاتٌ ولا مخرجات ولا معرّف نداء", async () => {
+    sim.script.openai = () =>
+      stream([
+        toolCall("github_activity", { view: "recent_commits", note: "PRIVATE-INPUT" }),
+        toolResult("github_activity", { ok: true, items: [{ message: "PRIVATE-OUTPUT" }] }),
+        textPart("x"),
+        finishPart(),
+      ]);
+    const r = await open();
+    if (!r.ok) throw new Error("expected ok");
+    const events = await all(r.events as AsyncGenerator<Record<string, unknown>>);
+    const toolEvents = events.filter((e) => e.type === "tool");
+    expect(toolEvents).toHaveLength(2);
+    for (const e of toolEvents) expect(Object.keys(e).sort()).toEqual(["name", "phase", "type"]);
+    expect(JSON.stringify(events)).not.toMatch(/PRIVATE|toolCallId|c1/);
+  });
+
+  it("أداةٌ ثم صمتٌ بلا نصّ ⇒ تسقط عند مهلة أول نصّ (الأداة لا تُطيل المهلة)", async () => {
+    vi.stubEnv("OPENAI_API_KEY", SECRET_KEY);
+    sim.script.openai = async function* (signal: AbortSignal) {
+      yield toolCall("platform_status");
+      yield toolResult("platform_status", { ok: true });
+      await new Promise<void>((resolve) => signal.addEventListener("abort", () => resolve()));
+    };
+    sim.script["gemini-direct"] = () => stream([textPart("من الاحتياطي"), finishPart()]);
+    vi.useFakeTimers();
+    try {
+      const pending = open();
+      await vi.advanceTimersByTimeAsync(46_000);
+      const r = await pending;
+      if (!r.ok) throw new Error("expected ok");
+      expect(r.engine).toBe("gemini");
+      expect(r.fallback).toBe("timeout");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
 describe("③ لا يتسرّب نصّ المزوّد ولا المفتاح — لا في الاستجابة ولا في السجلّ", () => {
   const LEAK_BODY = `{"error":{"message":"Incorrect API key provided: ${SECRET_KEY}. prompt: اكتب دالة"}}`;
   const leaky = () =>
