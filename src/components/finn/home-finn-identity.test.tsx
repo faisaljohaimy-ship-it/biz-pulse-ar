@@ -60,7 +60,7 @@ describe("FNN home identity and separate session", () => {
     sim.access.mockResolvedValue(OWNER);
   });
 
-  it("shows the distinct FNN identity only inside the authorized card", async () => {
+  it("shows the distinct FNN identity and the supplied portrait", async () => {
     const { container } = mountCard();
     expect(await screen.findByText("FNN")).toBeInTheDocument();
     const card = container.querySelector('[data-agent="fnn"]');
@@ -74,26 +74,30 @@ describe("FNN home identity and separate session", () => {
   it("keeps an English separation label and existing full-chat route", async () => {
     sim.locale = "en";
     mountCard();
-    expect(await screen.findByText("Separate from SADEED · Owner only")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Open the Finn chat/ })).toHaveAttribute(
+    expect(await screen.findByRole("link", { name: /Open the Finn chat/ })).toHaveAttribute(
       "href",
       "/finn",
     );
+    expect(screen.getByText("Separate from SADEED · Owner only")).toBeInTheDocument();
   });
 
-  it("never displays the identity or loads a chat for a guest", () => {
+  it("shows a public identity but never loads a chat or checks access for a guest", () => {
     sim.user = null;
     const { container } = mountCard();
-    expect(container).toBeEmptyDOMElement();
+    expect(container.querySelector('[data-finn-access="guest"]')).not.toBeNull();
+    expect(screen.getByText("FNN")).toBeInTheDocument();
+    expect(screen.queryByRole("textbox")).toBeNull();
     expect(sim.access).not.toHaveBeenCalled();
   });
 
-  it("does not disclose the card after an access denial", async () => {
+  it("keeps the public card but no private conversation after an access denial", async () => {
     sim.access.mockResolvedValue({ allowed: false });
     const { container } = mountCard();
-    await waitFor(() => expect(sim.access).toHaveBeenCalled());
-    expect(container).toBeEmptyDOMElement();
-    expect(screen.queryByText("FNN")).toBeNull();
+    await waitFor(() =>
+      expect(container.querySelector('[data-finn-access="denied"]')).not.toBeNull(),
+    );
+    expect(screen.queryByRole("textbox")).toBeNull();
+    expect(container.querySelector('a[href="/finn"]')).toBeNull();
   });
 
   it("preserves a draft while folding and reopening the same owner's chat", async () => {
@@ -117,12 +121,14 @@ describe("FNN home identity and separate session", () => {
     expect(await screen.findByRole("textbox")).toHaveValue("");
   });
 
-  it("removes the card and its draft when the session ends", async () => {
+  it("removes the private draft on sign-out while leaving the public entry visible", async () => {
     const { container, rerender, tree } = mountCard();
     const box = await screen.findByRole("textbox");
     fireEvent.change(box, { target: { value: "Private draft" } });
     sim.user = null;
     rerender(tree());
-    expect(container).toBeEmptyDOMElement();
+    expect(screen.queryByRole("textbox")).toBeNull();
+    expect(container).not.toHaveTextContent("Private draft");
+    expect(container.querySelector('[data-finn-access="guest"]')).not.toBeNull();
   });
 });
