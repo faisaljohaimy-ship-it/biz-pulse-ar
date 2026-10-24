@@ -40,6 +40,9 @@ import { SadeedAudioBus } from "@/lib/sadeed/audio-bus";
 import { sadeedState } from "@/lib/sadeed/sadeed-state";
 import {
   BRAND_FILMS,
+  FILM_EFFECTIVE_SECONDS,
+  FILM_PLAYBACK_RATE,
+  FILM_SOURCE_SECONDS,
   FILM_START_STEP_MS,
   FILM_TAIL,
   FILM_TEXT,
@@ -49,6 +52,7 @@ import {
   MUSIC_KEY,
   SOUND_LABELS,
   filmActAt,
+  filmRateFor,
 } from "@/components/home/HomeBrandRow";
 
 const SRC = readFileSync("src/components/home/HomeBrandRow.tsx", "utf8");
@@ -1889,6 +1893,206 @@ describe("المصيَّر — لا صمت: سلّم البدء، وحارس ا�
     });
     await act(async () => {});
     expect(view.container.querySelector("video"), "لم يُعد الفيلم").not.toBeNull();
+    view.unmount();
+  });
+});
+
+/**
+ * سرعة الفيلم 50% (أمر المالك ٢٠٢٦/١٠/٢٤، PR #32): تُكتب على العنصر قبل أوّل تشغيل وتُعاد بعد كل ما
+ * يُسقطها. ثغرات المصدر الممكنة: لا استدعاء `holdFilmRate` قبل `bindFilmSound`، أو كتابةٌ لإحدى السرعتين دون
+ * الأخرى (`load()` يُعيد `playbackRate` إلى `defaultPlaybackRate`)، أو ثابتٌ غير 0.5، أو مستمعٌ لا يُفكّ.
+ */
+function filmRateGaps(code: string): string[] {
+  const gaps: string[] = [];
+  if (!/export const FILM_PLAYBACK_RATE = 0\.5;/.test(code)) gaps.push("الثابت 0.5");
+  const hold = code.match(/export function holdFilmRate[\s\S]*?\n}\n/)?.[0] ?? "";
+  if (!/video\.defaultPlaybackRate = rate/.test(hold)) gaps.push("defaultPlaybackRate");
+  if (!/video\.playbackRate = rate/.test(hold)) gaps.push("playbackRate");
+  for (const type of ["loadstart", "loadedmetadata", "ratechange"])
+    if (!hold.includes(`"${type}"`)) gaps.push(`حدث ${type}`);
+  if (!/removeEventListener\(type, apply\)/.test(hold)) gaps.push("فكّ المستمعين");
+  const hooked = code.indexOf("holdFilmRate(video)");
+  const bound = code.indexOf("bindFilmSound(video, {");
+  if (hooked === -1 || bound === -1 || hooked > bound) gaps.push("السرعة قبل أوّل تشغيل");
+  if (!/releaseRate\(\);/.test(code)) gaps.push("إطلاق السرعة عند الفكّ");
+  return gaps;
+}
+
+describe("المصيَّر — سرعة 50% ثابتة على الفيلم، وصوته على خطّه الزمنيّ", () => {
+  useMediaFakes();
+  beforeEach(() => {
+    FakeObserver.all = [];
+    vi.stubGlobal("IntersectionObserver", FakeObserver);
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "setInterval", "clearInterval"] });
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+    localStorage.removeItem("nx-brand-motion");
+    localStorage.removeItem(MUSIC_KEY);
+    delete document.documentElement.dataset.nxMotionPaused;
+  });
+
+  const advance = (ms: number) =>
+    act(async () => {
+      await vi.advanceTimersByTimeAsync(ms);
+    });
+  const withDuration = (el: HTMLVideoElement, seconds: number) =>
+    Object.defineProperty(el, "duration", { configurable: true, value: seconds });
+
+  it("المدّة المعروضة 52 ث = 26 ث بنصف السرعة، وفصول النصّ والجوهرة بزمن الوسائط لا بالجدار", () => {
+    expect(FILM_PLAYBACK_RATE).toBe(0.5);
+    expect(FILM_SOURCE_SECONDS).toBe(CONTAINER_SECONDS);
+    expect(FILM_EFFECTIVE_SECONDS).toBe(52);
+    // الفصول من `currentTime` (زمن الملفّ): تبطيء العنصر يؤخّرها جداريًّا دون تبديل حدودها — فالجوهرة عند 24 ث
+    // من الملفّ = 48 ث على الجدار، والنصّ يظهر عند 21.6 ث = 43.2 ث، والفصل الأخير يبقى مرتبطًا بمشهده.
+    expect(filmActAt(FILM_TEXT.revealAt)).toBe("reveal");
+    expect(FILM_TEXT.revealAt / FILM_PLAYBACK_RATE).toBeCloseTo(43.2);
+    expect(FILM_TEXT.seconds / FILM_PLAYBACK_RATE).toBe(48);
+    // لا ساعة جدارية تقرأ زمن الفيلم: فصول الفيلم من `currentTime` وحده.
+    expect(CODE).not.toMatch(/performance\.now\(\)[\s\S]{0,80}FILM_TEXT/);
+  });
+
+  it("`filmRateFor`: الأصل (26 ث) أو ما لم تُعرف مدّته 0.5، والمبطَّأ سلفًا (52 ث) 1 — فلا تبطيءٌ مزدوج", () => {
+    expect(filmRateFor(26)).toBe(0.5);
+    expect(filmRateFor(26.008)).toBe(0.5);
+    expect(filmRateFor(Number.NaN)).toBe(0.5);
+    expect(filmRateFor(0)).toBe(0.5);
+    expect(filmRateFor(Number.POSITIVE_INFINITY)).toBe(0.5);
+    expect(filmRateFor(39)).toBe(0.5);
+    expect(filmRateFor(39.01)).toBe(1);
+    expect(filmRateFor(51.934)).toBe(1);
+    expect(filmRateFor(52)).toBe(1);
+  });
+
+  it("كاشف الثغرات نظيفٌ على المصدر، ويحمرّ على انتهاكٍ مزروع (المادة ٣٠)", () => {
+    expect(filmRateGaps(CODE)).toEqual([]);
+    const late = CODE.replace("const releaseRate = holdFilmRate(video);", "");
+    expect(late).not.toBe(CODE);
+    expect(filmRateGaps(late)).toContain("السرعة قبل أوّل تشغيل");
+    const half = CODE.replace("video.defaultPlaybackRate = rate", "void rate");
+    expect(half).not.toBe(CODE);
+    expect(filmRateGaps(half)).toEqual(["defaultPlaybackRate"]);
+    const fast = CODE.replace("FILM_PLAYBACK_RATE = 0.5;", "FILM_PLAYBACK_RATE = 1;");
+    expect(fast).not.toBe(CODE);
+    expect(filmRateGaps(fast)).toContain("الثابت 0.5");
+    const leak = CODE.replace(
+      "removeEventListener(type, apply)",
+      "removeEventListener(type, noop)",
+    );
+    expect(leak).not.toBe(CODE);
+    expect(filmRateGaps(leak)).toEqual(["فكّ المستمعين"]);
+    const loose = CODE.replace("      releaseRate();\n", "");
+    expect(loose).not.toBe(CODE);
+    expect(filmRateGaps(loose)).toEqual(["إطلاق السرعة عند الفكّ"]);
+  });
+
+  it("يبدأ بنصف السرعة: كلتا السرعتين 0.5 قبل أوّل تشغيل، ولا تُقلب إلى 1 بتبديل المصدر أو التحميل", async () => {
+    policy.lazy = true; // لا `playing` — يبدّل السلّم المصدر بعد المهلة (`load()` يُسقط السرعة في المتصفّح).
+    const { view, video } = await mountFilm(0);
+    expect(video.defaultPlaybackRate).toBe(0.5);
+    expect(video.playbackRate).toBe(0.5);
+    await advance(FILM_START_STEP_MS);
+    // محاكاة `load()`: المتصفّح يُعيد `playbackRate` إلى الافتراضيّ — وهنا يُسقطهما معًا مثل محرّكٍ يصفّرهما.
+    video.defaultPlaybackRate = 1;
+    video.playbackRate = 1;
+    await act(async () => {
+      fireEvent(video, new Event("loadstart"));
+    });
+    expect(video.defaultPlaybackRate, "defaultPlaybackRate لم يُعَد").toBe(0.5);
+    expect(video.playbackRate, "playbackRate لم يُعَد").toBe(0.5);
+    // وبعد أوّل إطار.
+    video.playbackRate = 1;
+    await act(async () => {
+      fireEvent(video, new Event("playing"));
+    });
+    expect(video.playbackRate).toBe(0.5);
+    view.unmount();
+  });
+
+  it("أيّ تغيير للسرعة (ratechange) من خارج الصفّ يُعاد إلى 0.5 دون حلقة", async () => {
+    const { view, video } = await mountFilm(3);
+    const writes: number[] = [];
+    let rate = video.playbackRate;
+    Object.defineProperty(video, "playbackRate", {
+      configurable: true,
+      get: () => rate,
+      set: (v: number) => {
+        writes.push(v);
+        rate = v;
+        video.dispatchEvent(new Event("ratechange"));
+      },
+    });
+    rate = 1;
+    await act(async () => {
+      video.dispatchEvent(new Event("ratechange"));
+    });
+    expect(rate).toBe(0.5);
+    // كتابةٌ واحدة تعيد السرعة ثم يستقرّ: لا ارتدادٌ بين الحدث والكتابة.
+    expect(writes).toEqual([0.5]);
+    view.unmount();
+  });
+
+  it("نسخةٌ مبطَّأة سلفًا (52 ث) تُعرض بسرعتها الطبيعية — لا تبطيءٌ مزدوج", async () => {
+    const { view, video } = await mountFilm(3);
+    expect(video.playbackRate).toBe(0.5);
+    withDuration(video, 52);
+    await act(async () => {
+      fireEvent(video, new Event("loadedmetadata"));
+    });
+    expect(video.playbackRate).toBe(1);
+    expect(video.defaultPlaybackRate).toBe(1);
+    // ولا يُعاد تبطيؤها بحدثٍ لاحق.
+    await act(async () => {
+      fireEvent(video, new Event("playing"));
+      fireEvent(video, new Event("ratechange"));
+    });
+    expect(video.playbackRate).toBe(1);
+    view.unmount();
+  });
+
+  it("الإعادة بعد النهاية وإعادة التركيب بعد تعذّرٍ تُبقيان نصف السرعة", async () => {
+    const { view, video, film } = await mountFilm(12);
+    // نهاية الفيلم ثم زرّ الإعادة من أوّله.
+    film.state.time = FILM_SOURCE_SECONDS;
+    film.state.paused = true;
+    film.state.ended = true;
+    await act(async () => {
+      fireEvent(video, new Event("pause"));
+      fireEvent(video, new Event("ended"));
+    });
+    await act(async () => {
+      fireEvent.click(view.getByRole("button", { name: SOUND.ar.replay }));
+    });
+    expect(film.state.time).toBe(0);
+    expect(video.playbackRate).toBe(0.5);
+    // تعذّر ثم زرّ «تشغيل الفيلم»: عنصرٌ جديد يُضبط من جديد.
+    await act(async () => {
+      fireEvent.error(video);
+    });
+    expect(view.container.querySelector("video")).toBeNull();
+    await act(async () => {
+      fireEvent.click(view.getByRole("button", { name: SOUND.ar.start }));
+    });
+    await act(async () => {});
+    const fresh = view.container.querySelector<HTMLVideoElement>("video.nx-brand-film");
+    expect(fresh, "لم يُعد الفيلم").not.toBeNull();
+    expect(fresh!.playbackRate).toBe(0.5);
+    expect(fresh!.defaultPlaybackRate).toBe(0.5);
+    view.unmount();
+  });
+
+  it("حارس الاستئناف يعمل على الزمن الجداريّ لا على زمن الفيلم: توقّفٌ بلا حقٍّ يُستأنف خلال ثانية بنصف السرعة", async () => {
+    const { view, video, film } = await mountFilm(3);
+    film.clear();
+    film.state.paused = true;
+    await act(async () => {
+      fireEvent(video, new Event("pause"));
+    });
+    await advance(1100);
+    expect(film.plays.length, "لم يُستأنف").toBeGreaterThanOrEqual(1);
+    expect(video.playbackRate).toBe(0.5);
     view.unmount();
   });
 });
