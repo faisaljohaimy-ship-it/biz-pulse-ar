@@ -6,6 +6,7 @@
  * فلا يبلغ الشاشةَ نصٌّ خام ولا عبارة مصادقة. ولا تخزين: لا `localStorage` ولا
  * `sessionStorage` — المحادثة في ذاكرة الصفحة وحدها.
  */
+import type { FinnToolName, FinnToolPhase } from "./tool-names";
 import { authenticatedFetch } from "@/lib/auth-fetch";
 import { classifyFinnHttpError, FINN_ERROR_AR, type FinnClientErrorKind } from "./copy";
 import type { FinnEngineName } from "./identity";
@@ -50,6 +51,8 @@ export async function streamFinnReply(options: {
   readonly signal: AbortSignal;
   readonly onMeta: (meta: FinnReplyMeta) => void;
   readonly onDelta: (text: string) => void;
+  /** نشاط أداةٍ هندسية (اسمٌ ومرحلةٌ فقط). اختياري: غيابه لا يغيّر شيئًا في الرد. */
+  readonly onTool?: (event: { name: FinnToolName; phase: FinnToolPhase }) => void;
 }): Promise<FinnTransportResult> {
   const controller = new AbortController();
   const forward = () => controller.abort();
@@ -112,6 +115,7 @@ export async function streamFinnReply(options: {
       for (const event of events) {
         if (state.outcome) return;
         if (event.type === "delta") options.onDelta(event.text);
+        else if (event.type === "tool") options.onTool?.({ name: event.name, phase: event.phase });
         else if (event.type === "done") state.outcome = { ok: true, truncated: event.truncated };
         else state.outcome = failed(event.code === "timeout" ? "timeout" : "engine");
       }

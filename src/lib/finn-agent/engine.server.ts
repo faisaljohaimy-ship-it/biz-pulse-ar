@@ -25,6 +25,7 @@
  * نداءٌ مدفوع، فمفتاح الإيقاف يُفحص هنا أيضًا (دفاعٌ ثانٍ خلف بوّابة المسار).
  */
 import {
+  stepCountIs,
   streamText,
   type LanguageModel,
   type ModelMessage,
@@ -44,6 +45,8 @@ import { FINN_LIMITS } from "./limits";
 import type { FinnChatMessage } from "./messages";
 import { FINN_SYSTEM_PROMPT } from "./prompt";
 import type { FinnEngineStatus } from "./status";
+import { isFinnToolName } from "./tool-names";
+import { buildFinnTools, FINN_MAX_STEPS } from "./tools.server";
 
 export const FINN_OPENAI_DEFAULT_MODEL = "gpt-4.1";
 
@@ -106,6 +109,23 @@ async function* normalize(
       case "reasoning-delta":
         yield { type: "progress" };
         break;
+      // الأدوات: اسمٌ ومرحلةٌ فقط (لا مدخلات ولا مخرجات)، وما ليس في القائمة المغلقة يُهمَل.
+      case "tool-call":
+        if (isFinnToolName(part.toolName)) {
+          yield { type: "tool", name: part.toolName, phase: "start" };
+        }
+        break;
+      case "tool-result":
+        if (isFinnToolName(part.toolName)) {
+          const ok = (part.output as { ok?: unknown } | null | undefined)?.ok === true;
+          yield { type: "tool", name: part.toolName, phase: ok ? "done" : "error" };
+        }
+        break;
+      case "tool-error":
+        if (isFinnToolName(part.toolName)) {
+          yield { type: "tool", name: part.toolName, phase: "error" };
+        }
+        break;
       case "error":
         yield { type: "error", error: part.error };
         break;
@@ -127,6 +147,7 @@ async function* normalize(
 
 type RunSettings = {
   readonly messages: readonly ModelMessage[];
+  readonly tools: ToolSet;
   readonly maxRetries: number;
   readonly providerOptions?: Record<string, Record<string, boolean>>;
 };
@@ -144,6 +165,9 @@ async function* run(
     model,
     system: FINN_SYSTEM_PROMPT,
     messages: [...settings.messages],
+    // أدوات قراءةٍ فقط، وسقف خطواتٍ: نداءٌ واحد للنموذج لا حلقةٌ مفتوحة.
+    tools: settings.tools,
+    stopWhen: stepCountIs(FINN_MAX_STEPS),
     maxOutputTokens: FINN_LIMITS.maxOutputTokens,
     maxRetries: settings.maxRetries,
     abortSignal: signal,
@@ -161,6 +185,8 @@ export function buildFinnAttempts(
   env: EnvLike = process.env,
 ): FinnAttempt[] {
   const modelMessages: ModelMessage[] = messages.map((m) => ({ role: m.role, content: m.content }));
+  // مجموعة أدواتٍ لكل طلب (بلا حالةٍ مشتركة). تُبنى بعد بوّابة المالك — هذا الملف لا يُستدعى قبلها.
+  const tools = buildFinnTools(() => readFinnEngineStatus(env), { env });
 
   const openai: FinnAttempt = {
     engine: "openai",
@@ -170,6 +196,7 @@ export function buildFinnAttempts(
         () => createOpenAiModel(env),
         {
           messages: modelMessages,
+          tools,
           maxRetries: 0,
           // لا يحتفظ المزوّد بالمحادثة (كما في مسار OpenAI الصريح في سَدِيد).
           providerOptions: { openai: { store: false } },
@@ -192,7 +219,7 @@ export function buildFinnAttempts(
           if (!gemini) throw new Error("no direct model");
           return gemini.provider(gemini.modelId);
         },
-        { messages: modelMessages, maxRetries: 0 },
+        { messages: modelMessages, tools, maxRetries: 0 },
         signal,
       ),
     onFailure: (error) => {
@@ -211,7 +238,7 @@ export function buildFinnAttempts(
           if (!gateway) throw new Error("no backup model");
           return gateway as unknown as LanguageModel;
         },
-        { messages: modelMessages, maxRetries: 1 },
+        { messages: modelMessages, tools, maxRetries: 1 },
         signal,
       ),
   };

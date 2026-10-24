@@ -220,3 +220,56 @@ describe("بروتوكول البثّ", () => {
     ]);
   });
 });
+
+describe("حدث الأداة في بروتوكول البثّ (٢٠٢٦/١٠/٢٤)", () => {
+  it("يُرمَّز ويُحلَّل ذهابًا وإيابًا: اسمٌ ومرحلةٌ فقط", () => {
+    const events: FinnStreamEvent[] = [
+      { type: "tool", name: "platform_status", phase: "start" },
+      { type: "tool", name: "platform_status", phase: "done" },
+      { type: "delta", text: "ok" },
+      { type: "done", truncated: false },
+    ];
+    const parser = createFinnEventParser();
+    const out = parser.push(events.map(encodeFinnEvent).join(""));
+    expect(out).toEqual(events);
+  });
+
+  it("اسمٌ خارج القائمة المغلقة أو مرحلةٌ غير معروفة تُهمَل ولا تُسقط البثّ", () => {
+    const parser = createFinnEventParser();
+    const raw = [
+      { type: "tool", name: "shell_exec", phase: "start" },
+      { type: "tool", name: "github_activity", phase: "running" },
+      { type: "tool", phase: "start" },
+      { type: "tool", name: 7, phase: "done" },
+      { type: "delta", text: "باقٍ" },
+    ]
+      .map((e) => `data: ${JSON.stringify(e)}\n\n`)
+      .join("");
+    expect(parser.push(raw)).toEqual([{ type: "delta", text: "باقٍ" }]);
+  });
+
+  it("حقولٌ زائدة في حدث الأداة (مدخلات/مخرجات) لا تعبر المحلّل", () => {
+    const parser = createFinnEventParser();
+    const out = parser.push(
+      `data: ${JSON.stringify({
+        type: "tool",
+        name: "github_activity",
+        phase: "done",
+        input: { secret: 1 },
+        output: { items: ["x"] },
+      })}\n\n`,
+    );
+    expect(out).toEqual([{ type: "tool", name: "github_activity", phase: "done" }]);
+    expect(Object.keys(out[0] as object).sort()).toEqual(["name", "phase", "type"]);
+  });
+
+  it("يتحمّل انقطاع الحدث في منتصفه عبر قطعتين", () => {
+    const parser = createFinnEventParser();
+    const frame = encodeFinnEvent({ type: "tool", name: "vercel_deployments", phase: "start" });
+    const cut = Math.floor(frame.length / 2);
+    expect(parser.push(frame.slice(0, cut))).toEqual([]);
+    expect(parser.push(frame.slice(cut))).toEqual([
+      { type: "tool", name: "vercel_deployments", phase: "start" },
+    ]);
+  });
+});

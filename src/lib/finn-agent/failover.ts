@@ -34,12 +34,15 @@
  */
 import type { FinnFallbackReason } from "./status";
 import type { FinnStreamEvent } from "./stream-protocol";
+import type { FinnToolName, FinnToolPhase } from "./tool-names";
 
 export type FinnEngine = "openai" | "gemini";
 
 /** ما يُنتجه محرّكٌ بعد تطبيعه من أجزاء الـSDK. */
 export type FinnPart =
   | { readonly type: "progress" }
+  /** نشاط أداة (٢٠٢٦/١٠/٢٤): اسمٌ ومرحلةٌ فقط — لا مدخلات ولا مخرجات. */
+  | { readonly type: "tool"; readonly name: FinnToolName; readonly phase: FinnToolPhase }
   | { readonly type: "text"; readonly text: string }
   | { readonly type: "error"; readonly error: unknown }
   | { readonly type: "abort" }
@@ -266,6 +269,8 @@ export async function openFinnReply(
       let failure: FinnClassification | null = null;
       let firstText: string | null = null;
       let failedError: unknown = undefined;
+      // أحداث أداةٍ جرت قبل أول نصّ: تُبثّ أولًا فلا يضيع ما فعله فِن قبل أن يكتب.
+      const earlyTools: FinnStreamEvent[] = [];
 
       try {
         iterator = attempt.open(controller.signal)[Symbol.asyncIterator]();
@@ -305,6 +310,14 @@ export async function openFinnReply(
         if (part.type === "progress") {
           // لا تُفكّ مهلة أول نصّ بجزءٍ غير نصّي (W5 #5): بدء الاستدلال/النصّ يصل قبل أي
           // نصّ، ومحرّكٌ يرسله ثم يصمت يجب أن يسقط عند مهلته لا عند السقف الكلّي.
+          continue;
+        }
+        if (part.type === "tool") {
+          // الأداة نشاطٌ لا نصّ: لا تُفكّ بها المهلة (أداةٌ تعلق تُسقط المحرّك عند مهلته)،
+          // لكن يُحتفَظ بها لتُبثّ قبل أول نصّ. سقفٌ لمنع تضخّم الذاكرة.
+          if (earlyTools.length < 32) {
+            earlyTools.push({ type: "tool", name: part.name, phase: part.phase });
+          }
           continue;
         }
         if (part.type === "text") {
@@ -375,6 +388,7 @@ export async function openFinnReply(
       const first = firstText ?? "";
       const events = (async function* (): AsyncGenerator<FinnStreamEvent, void, void> {
         try {
+          for (const event of earlyTools) yield event;
           yield { type: "delta", text: first };
           for (;;) {
             let step: Step;
@@ -396,6 +410,10 @@ export async function openFinnReply(
             const part = step.value;
             if (part.type === "text") {
               if (part.text !== "") yield { type: "delta", text: part.text };
+              continue;
+            }
+            if (part.type === "tool") {
+              yield { type: "tool", name: part.name, phase: part.phase };
               continue;
             }
             if (part.type === "error") {

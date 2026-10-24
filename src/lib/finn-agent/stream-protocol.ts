@@ -1,15 +1,18 @@
 /**
  * بروتوكول بثّ فِن — أحداث SSE مشتركة بين الخادم والعميل، نقيّة بلا شبكة.
  *
- * الأحداث ثلاثة، وكلّها **رموزٌ ونصّ الرد فقط**: لا نصّ خطأ خامًا ولا تفصيل
+ * الأحداث أربعة، وكلّها **رموزٌ ونصّ الرد فقط**: لا نصّ خطأ خامًا ولا تفصيل
  * مزوّد يعبر السلك. خطأ منتصف البثّ يحمل رمزًا (`timeout` · `engine_error`)
- * والواجهة تكتب الجملة العربية.
+ * والواجهة تكتب الجملة العربية. وحدث `tool` (٢٠٢٦/١٠/٢٤) يعلن **اسم الأداة ومرحلتها فقط**
+ * — لا مدخلاتها ولا مخرجاتها — وباسمٍ من القائمة المغلقة (`tool-names.ts`) وإلا أُهمل.
  */
+import { isFinnToolName, type FinnToolName, type FinnToolPhase } from "./tool-names";
 
 export type FinnStreamErrorCode = "timeout" | "engine_error";
 
 export type FinnStreamEvent =
   | { readonly type: "delta"; readonly text: string }
+  | { readonly type: "tool"; readonly name: FinnToolName; readonly phase: FinnToolPhase }
   | { readonly type: "error"; readonly code: FinnStreamErrorCode }
   | { readonly type: "done"; readonly truncated: boolean };
 
@@ -21,6 +24,13 @@ function asEvent(value: unknown): FinnStreamEvent | null {
   if (!value || typeof value !== "object") return null;
   const v = value as Record<string, unknown>;
   if (v.type === "delta" && typeof v.text === "string") return { type: "delta", text: v.text };
+  if (
+    v.type === "tool" &&
+    isFinnToolName(v.name) &&
+    (v.phase === "start" || v.phase === "done" || v.phase === "error")
+  ) {
+    return { type: "tool", name: v.name, phase: v.phase };
+  }
   if (v.type === "error" && (v.code === "timeout" || v.code === "engine_error")) {
     return { type: "error", code: v.code };
   }

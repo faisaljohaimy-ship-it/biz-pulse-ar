@@ -4,6 +4,7 @@
  */
 import { memo } from "react";
 import { FINN_COPY } from "@/lib/finn-agent/copy";
+import { FINN_TOOL_LABEL_AR, FINN_TOOL_PHASE_AR } from "@/lib/finn-agent/tool-names";
 import { FinnEngineBadge } from "./FinnEngineBadge";
 import { FinnMarkdown } from "./FinnMarkdown";
 import type { FinnUiMessage } from "./use-finn-chat";
@@ -30,6 +31,18 @@ function FinnMessageImpl({ message, streaming }: { message: FinnUiMessage; strea
           <FinnEngineBadge engine={message.engine} fallback={message.fallback} />
         ) : null}
       </div>
+      {message.tools && message.tools.length > 0 ? (
+        // الأدوات (قراءةٌ فقط): الاسم والحال **نصًّا** لا لونًا. أصنافٌ مستعملةٌ أصلًا فلا CSS جديد.
+        <p className="mb-1 text-[13px] text-[color:var(--ink-2)]">
+          <span>{FINN_COPY.toolsUsed}: </span>
+          {message.tools.map((run, i) => (
+            <span key={`${run.name}-${i}`}>
+              {i > 0 ? " · " : ""}
+              {FINN_TOOL_LABEL_AR[run.name]} ({FINN_TOOL_PHASE_AR[run.phase]})
+            </span>
+          ))}
+        </p>
+      ) : null}
       {streaming && message.content === "" ? (
         // انتظار أول مخرج — محدودٌ بمهلة الخادم (45 ث للمحرّك، 120 ث للكل)، لا تحميلٌ أبدي.
         <p role="status" className="text-[14px] text-[color:var(--ink-2)]">
