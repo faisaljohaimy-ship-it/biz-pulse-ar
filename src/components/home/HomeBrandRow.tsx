@@ -571,6 +571,48 @@ export const FILM_START_STEP_MS = 5_000;
 /** عدد مرّات استئناف توقّفٍ بلا سببٍ مشروع قبل ظهور زرّ التشغيل (مرّةٌ كل ثانية). */
 export const FILM_RESUME_MAX = 12;
 
+/**
+ * سرعة عرض فيلم اللوحة — **50%** بأمر المالك ٢٠٢٦/١٠/٢٤ («الفيلم بنصف سرعته الأصلية»؛ PR #32). **وقت الفيلم
+ * (`currentTime`) يبقى وقتَ الملفّ**: فصول النصّ (`FILM_TEXT`) والجوهرة (24 ث) ونافذة الإعادة عند أوّل نقرة
+ * (`restartBefore`) كلّها بزمن الوسائط فتتبع السرعة وحدها، والصوت على الخطّ الزمنيّ نفسه (مسارٌ واحد في
+ * الحاوية) فيتباطأ معه دون مزامنةٍ ثانية. وهذا **للفيلم هذا وحده** — فيلم الخلفية (`HoloVideoEngine`) سرعته
+ * الطبيعية بقرار ٢٠٢٦/١٠/٢٣ ولم يُمسّ.
+ */
+export const FILM_PLAYBACK_RATE = 0.5;
+
+/** مدّة الحاوية الأصلية بزمن الوسائط (ث): 24 ث فيلمًا + ثباتُ الذيل. */
+export const FILM_SOURCE_SECONDS = FILM_TEXT.seconds + FILM_TAIL;
+
+/** المدّة المعروضة فعلًا بالسرعة المقرَّرة (ث) — 52 ث. */
+export const FILM_EFFECTIVE_SECONDS = FILM_SOURCE_SECONDS / FILM_PLAYBACK_RATE;
+
+/**
+ * السرعة اللازمة لملفٍّ مدّته `duration`: حاويةٌ أطول من الأصل بنصفه فأكثر نسخةٌ **مبطَّأة سلفًا**
+ * (52 ث) فتُعرض بسرعتها الطبيعية — فلا يُبطَّأ ما أُبطئ مرّتين. وما لم تُعرف مدّته بعد (`NaN`) فهو الأصل.
+ */
+export function filmRateFor(duration: number): number {
+  return Number.isFinite(duration) && duration > FILM_SOURCE_SECONDS * 1.5 ? 1 : FILM_PLAYBACK_RATE;
+}
+
+/**
+ * يثبّت سرعة الفيلم على العنصر ما دام مركَّبًا ويعيدها بعد كل ما قد يُسقطها: `load()` (تبديل المصدر في سلّم
+ * البدء) يُعيد `playbackRate` إلى `defaultPlaybackRate`، وبعض المحرّكات تُصفّرها عند تحميل مورد جديد، و
+ * `ratechange` من إضافةٍ أو سياسة. يكتب فقط حين تختلف القيمة — فلا حلقة بين الحدث والكتابة.
+ */
+export function holdFilmRate(video: HTMLVideoElement): () => void {
+  const apply = () => {
+    const rate = filmRateFor(video.duration);
+    if (video.defaultPlaybackRate !== rate) video.defaultPlaybackRate = rate;
+    if (video.playbackRate !== rate) video.playbackRate = rate;
+  };
+  const events = ["loadstart", "loadedmetadata", "playing", "ratechange"] as const;
+  apply();
+  for (const type of events) video.addEventListener(type, apply);
+  return () => {
+    for (const type of events) video.removeEventListener(type, apply);
+  };
+}
+
 function BrandFilm({
   artRef,
   play,
@@ -712,10 +754,8 @@ function BrandFilm({
   useEffect(() => {
     const video = ref.current;
     if (!live || !video) return;
-    // Owner-approved 50% presentation speed. Audio stays on the same media timeline.
-    // This doubles playback duration without replacing the original MP4/WebM assets.
-    video.defaultPlaybackRate = 0.5;
-    video.playbackRate = 0.5;
+    // السرعة قبل أوّل `play()` — وتُعاد بعد تبديل المصدر والتحميل (`holdFilmRate`).
+    const releaseRate = holdFilmRate(video);
     const bound = bindFilmSound(video, {
       wanted: () => wanted.current,
       offscreen: () => offscreen.current,
@@ -727,6 +767,7 @@ function BrandFilm({
     if (!jewelRef.current) bound.begin();
     return () => {
       bound.release();
+      releaseRate();
       sound.current = null;
       setAudible(false);
     };
@@ -934,7 +975,7 @@ function FilmDebug({ gates }: { gates: string }) {
       const root = document.documentElement;
       const conn = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
       const video = v
-        ? `t=${v.currentTime.toFixed(1)} paused=${v.paused} ended=${v.ended} muted=${v.muted} rs=${v.readyState} ns=${v.networkState} err=${v.error?.code ?? "-"} src=${(v.currentSrc || "-").split("/").pop()?.split("?")[0]}`
+        ? `t=${v.currentTime.toFixed(1)} rate=${v.playbackRate} dur=${v.duration.toFixed(1)} paused=${v.paused} ended=${v.ended} muted=${v.muted} rs=${v.readyState} ns=${v.networkState} err=${v.error?.code ?? "-"} src=${(v.currentSrc || "-").split("/").pop()?.split("?")[0]}`
         : "video=none";
       setText(
         `${gates} | reduce=${window.matchMedia("(prefers-reduced-motion: reduce)").matches} safe=${isSafeMode()} saveData=${conn?.saveData === true} motion=${root.getAttribute("data-nx-motion") ?? "-"} hold=${filmHoldActive()} panel=${root.getAttribute("data-sadeed-panel") ?? "-"} | ${video}`,
