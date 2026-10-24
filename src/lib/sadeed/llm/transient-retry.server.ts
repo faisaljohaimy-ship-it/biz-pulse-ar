@@ -32,6 +32,36 @@ function statusOf(error: unknown, text: string): number {
   return Number(text.match(/\b([45]\d\d)\b/)?.[1]);
 }
 
+/** Read only response headers; never inspect or log request bodies or credentials. */
+function responseHeader(error: unknown, name: string): string | undefined {
+  if (!error || typeof error !== "object" || !("responseHeaders" in error)) return undefined;
+  const headers = (error as { responseHeaders?: unknown }).responseHeaders;
+  if (headers instanceof Headers) return headers.get(name) ?? undefined;
+  if (!headers || typeof headers !== "object") return undefined;
+  const value = Object.entries(headers).find(([key]) => key.toLowerCase() === name)?.[1];
+  return typeof value === "string" ? value : undefined;
+}
+
+/**
+ * Keep the existing 1.5–1.9 second retry bounded. If Retry-After asks for longer,
+ * do not retry this turn: neither ignore the provider's delay nor extend the deadline.
+ * HTTP-date and delay-seconds are defined by RFC 9110 section 10.2.3.
+ */
+function allowsShortRetry(error: unknown): boolean {
+  const value = responseHeader(error, "retry-after")?.trim();
+  if (!value) return true;
+  if (/^\d+$/.test(value)) return Number(value) * 1_000 <= TRANSIENT_BACKOFF_BASE_MS;
+  // Do not let Date.parse interpret malformed numeric delays as calendar dates.
+  if (!/[a-z]/i.test(value)) return false;
+  const until = Date.parse(value);
+  if (!Number.isFinite(until)) return false;
+  const serverDate = Date.parse(responseHeader(error, "date") ?? "");
+  // A local clock ahead of the provider must not turn a future delay into an expired one.
+  const now = Date.now();
+  const reference = Number.isFinite(serverDate) ? Math.min(now, serverDate) : now;
+  return until - reference <= TRANSIENT_BACKOFF_BASE_MS;
+}
+
 /** هل الخطأ ازدحامٌ/انقطاعٌ عابر يستحق إعادة واحدة؟ — لا الحصّة ولا الرفض ولا الإلغاء. */
 export function isTransientOverload(error: unknown): boolean {
   const name = String((error as { name?: unknown } | null)?.name ?? "");
@@ -39,8 +69,9 @@ export function isTransientOverload(error: unknown): boolean {
   const text = (error instanceof Error ? error.message : String(error)).toLowerCase();
   const status = statusOf(error, text);
   // الرفض لا يُعاد ولو حمل نصّه «unavailable»؛ والحصّة لا تُعاد ولو حملت 503 في وسط نصّها.
-  if ([400, 401, 402, 403, 404, 429].includes(status)) return false;
+  if (status >= 400 && status < 500) return false;
   if (/quota|rate.?limit|resource_exhausted|too many requests/.test(text)) return false;
+  if (!allowsShortRetry(error)) return false;
   if ([500, 502, 503, 504].includes(status)) return true;
   return /high demand|experiencing (?:high )?demand|overloaded|temporarily (?:busy|unavailable)|service unavailable|unavailable|try again later/.test(
     text,
