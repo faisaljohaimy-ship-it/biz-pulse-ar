@@ -1443,7 +1443,7 @@ describe("الرئيسية — شبكات الصفوف وترتيبها", () => 
       expect(reorders, `${file}: ترتيبٌ بصريّ على الصفوف`).toEqual([]);
     }
     // وصفّ الهوية بلا ترتيبٍ بصريّ، وما يُركَّز فيه بترتيب DOM: منطقة الشريط (تمرير بالأسهم في
-    // السكون، وإيقافٌ بالتركيز) ثم زرّ إيقاف الحركة، ثم في البانر **زرٌّ واحد** — زرّ الموسيقى
+    // السكون، وإيقافٌ بالتركيز — ولا زرّ في الشريط بعد ٢٠٢٦/١٠/٢٥ «أزل علامة التوقف والاستمرار»)، ثم في البانر **زرٌّ واحد** — زرّ الموسيقى
     // وإعادة العرض (أمر المالك ٢٠٢٦/١٠/١٨ R4 «واظف الى فديو الموشن قرافيتي … موسيقا»، وWCAG 1.4.2
     // يوجب للصوت الذي يبدأ وحده مخرجًا). لا رابطٌ ولا موقف تبويبٍ آخر في البانر.
     const brandCss = HOME_CSS.get("src/styles/home/home-brand.css") ?? "";
@@ -1457,7 +1457,8 @@ describe("الرئيسية — شبكات الصفوف وترتيبها", () => 
     const focusStops = (code: string) => code.match(/tabIndex=\{?["']?0\b/g) ?? [];
     expect(focusables(brandRow)).toEqual(["<button"]);
     expect(brandRow).toMatch(/<button\s+type="button"\s+className="nx-brand-sound nx-focus-ring"/);
-    expect(focusables(ticker)).toEqual(["<button"]);
+    expect(focusables(ticker)).toEqual([]);
+    expect(focusables(`${ticker}\n<button type="button" />`)).toEqual(["<button"]);
     expect(focusStops(brandRow), "عنصرٌ قابلٌ للتركيز في البانر").toEqual([]);
     expect(focusStops(ticker)).toHaveLength(1);
     expect(ticker).toMatch(/className="nx-ticker-view" role="region"[^>]*tabIndex=\{0\}/);

@@ -1262,7 +1262,7 @@ describe("المصيَّر — الملصق ثم الفيلم، والنصّ ي�
     cached.unmount();
   });
 
-  it("الفصل من زمن الإطار المعروض (والجوهرة من 24 ث)، ويزول بزرّ الإيقاف فيعود النصّ", async () => {
+  it("الفصل من زمن الإطار المعروض (والجوهرة من 24 ث)", async () => {
     const { view, art, seek } = await mountFilm(10);
     expect(art.dataset.filmAct).toBe("story");
     seek(FILM_TEXT.revealAt + 0.5);
@@ -1274,11 +1274,8 @@ describe("المصيَّر — الملصق ثم الفيلم، والنصّ ي�
     expect(art.dataset.filmAct).toBe("jewel");
     seek(10);
     expect(art.dataset.filmAct).toBe("story");
-    fireEvent.click(view.getByRole("button", { name: "إيقاف الحركة" }));
-    await act(async () => {});
-    expect(view.container.querySelector("video")).toBeNull();
-    expect(view.container.querySelector("audio")).toBeNull();
-    expect(art.dataset.filmAct, "النصّ بقي خافتًا بعد الإيقاف").toBeUndefined();
+    // لا زرّ «إيقاف الحركة» في الصفّ (أمر ٢٠٢٦/١٠/٢٥ «أزل علامة التوقف والاستمرار»).
+    expect(view.queryByRole("button", { name: "إيقاف الحركة" })).toBeNull();
     view.unmount();
   });
 
@@ -1361,22 +1358,8 @@ describe("المصيَّر — مرّةً ثم الجوهرة، ولا يُعا�
       root.removeAttribute("data-sadeed-panel");
     });
     expect(film.plays, "إغلاق اللوحة أعاد الفيلم").toEqual([]);
-    // «إيقاف الحركة» ثم استئنافها: الجوهرة باقية، والعائد بلا تشغيلٍ ولا تحميل.
-    const proto = vi.spyOn(HTMLMediaElement.prototype, "play");
-    const pause = view.getByRole("button", { name: "إيقاف الحركة" });
-    fireEvent.click(pause);
-    await act(async () => {});
-    expect(view.container.querySelector("video")).toBeNull();
-    expect(art.dataset.filmAct, "الجوهرة سقطت بالإيقاف").toBe("jewel");
-    fireEvent.click(pause);
-    await act(async () => {
-      FakeObserver.show(true);
-    });
-    const back = view.container.querySelector<HTMLVideoElement>("video.nx-brand-film")!;
-    expect(back, "الفيلم لم يعد بعد الاستئناف").not.toBeNull();
-    expect(back.autoplay, "العائد بعد النهاية يبدأ وحده").toBe(false);
-    expect(back.getAttribute("preload")).toBe("none");
-    expect(proto, "العائد بعد النهاية شُغِّل").not.toHaveBeenCalled();
+    // لا زرّ إيقافٍ في الصفّ: الجوهرة باقية ولا فيلم يعود وحده.
+    expect(view.queryByRole("button", { name: "إيقاف الحركة" })).toBeNull();
     expect(art.dataset.filmAct).toBe("jewel");
     view.unmount();
   });
@@ -1401,30 +1384,19 @@ describe("المصيَّر — مرّةً ثم الجوهرة، ولا يُعا�
     view.unmount();
   });
 
-  it("والإعادة بعد إيقاف الحركة واستئنافها تُبقي التركيز على زرّها نفسه — قبل أوّل إطار وبعده (أمسكته المراجعة)", async () => {
-    const { view, end } = await mountFilm(20);
+  it("زرّ الإعادة يبقى هو نفسه وعليه التركيز بالنقر وبعد أوّل إطار (أمسكته المراجعة)", async () => {
+    const { view, video, film, end } = await mountFilm(20);
     await end();
-    const pause = view.getByRole("button", { name: "إيقاف الحركة" });
-    fireEvent.click(pause);
-    await act(async () => {});
-    fireEvent.click(pause);
-    await act(async () => {
-      FakeObserver.show(true);
-    });
-    // العائد بعد النهاية عنصرٌ جديد بـ`preload="none"`: لا إطار حتى يُجلب.
-    policy.lazy = true;
-    const video = view.container.querySelector<HTMLVideoElement>("video.nx-brand-film")!;
-    const film = mediaOf(video);
     const replay = view.getByRole("button", { name: SOUND.ar.replay });
     replay.focus();
     expect(document.activeElement).toBe(replay);
     await act(async () => {
       fireEvent.click(replay);
     });
-    expect(film.plays, "الإعادة لم تشغّل الفيلم").toHaveLength(1);
+    expect(film.plays.length, "الإعادة لم تشغّل الفيلم").toBeGreaterThanOrEqual(2);
     expect(replay.isConnected, "زرّ الإعادة زال بالنقر").toBe(true);
     expect(document.activeElement, "سقط التركيز بالإعادة").toBe(replay);
-    film.ready = 4;
+    mediaOf(video).ready = 4;
     await act(async () => {
       fireEvent(video, new Event("playing"));
     });
@@ -1625,10 +1597,8 @@ describe("المصيَّر — الصوت من الفيلم نفسه: بدءٌ �
     fireEvent.scroll(window);
     fireEvent.wheel(document.body);
     fireEvent.pointerDown(document.body, { pointerType: "touch" });
-    // زرّ «إيقاف الحركة» يقرّر بنفسه — لا يفتح الصوت.
-    fireEvent.pointerDown(view.getByRole("button", { name: "إيقاف الحركة" }), {
-      pointerType: "mouse",
-    });
+    // وزرّ الصوت نفسه يقرّر بنفسه — ضغطه لا يفتح الصوت قبل نقرته.
+    fireEvent.pointerDown(button, { pointerType: "mouse" });
     // ولا المفاتيح: Tab وسهمٌ تنقّلٌ لا قبولٌ بالصوت (أمسكته المراجعة).
     fireEvent.keyDown(document.body, { key: "Tab" });
     fireEvent.keyDown(document.body, { key: "ArrowDown" });

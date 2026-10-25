@@ -544,11 +544,9 @@ describe("البوابات — الفيلم اختيارٌ لا افتراض", (
       expect(button.getAttribute("aria-disabled")).toBe("true");
       expect(button.getAttribute("aria-describedby")).toBe(view.getByRole("status").id);
       expect(view.getByRole("status").textContent).toMatch(/الحركة موقوفة في النظام/);
-      // التلميح بالسبب (#13/#17): زرّ الرئيسية لا يُحيل إليه إلا حيث يزيل السببَ فعلًا.
+      // التلميح بالسبب (#13/#17): الرئيسية لا يُحال إليها إلا حيث تزيل السببَ فعلًا.
       if (homeButtonClearsIt) {
-        expect(view.getByRole("status").textContent).toMatch(
-          /زرّ «إيقاف الحركة» في الصفحة الرئيسية/,
-        );
+        expect(view.getByRole("status").textContent).toMatch(/افتح الصفحة الرئيسية مرّةً/);
       } else {
         expect(
           view.getByRole("status").textContent,
@@ -580,7 +578,7 @@ describe("البوابات — الفيلم اختيارٌ لا افتراض", (
     document.documentElement.classList.remove("safe-mode");
     document.documentElement.setAttribute("data-nx-motion-paused", "1");
     const paused = await mountVisible();
-    expect(paused.getByRole("status").textContent).toMatch(/“Pause motion” on the home page/);
+    expect(paused.getByRole("status").textContent).toMatch(/Open the home page once/);
     paused.unmount();
   });
 
@@ -593,7 +591,7 @@ describe("البوابات — الفيلم اختيارٌ لا افتراض", (
     expect(play).not.toHaveBeenCalled();
     const button = view.getByRole("button", { name: "تشغيل الفيلم" });
     expect(button.getAttribute("aria-disabled")).toBe("true");
-    expect(view.getByRole("status").textContent).toMatch(/زرّ «إيقاف الحركة» في الصفحة الرئيسية/);
+    expect(view.getByRole("status").textContent).toMatch(/افتح الصفحة الرئيسية مرّةً/);
     // قراءةٌ فقط: لا كتابة ولا حذف ولا سمة (كاتب السمة صفّ الرئيسية وحده).
     expect(setItem).not.toHaveBeenCalled();
     expect(removeItem).not.toHaveBeenCalled();

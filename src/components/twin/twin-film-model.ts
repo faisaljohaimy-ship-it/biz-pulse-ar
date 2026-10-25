@@ -118,7 +118,7 @@ export type GateSignals = {
   readonly effectiveType?: string;
   /** `html[data-nx-motion="off"]` — مفتاح النظام. */
   readonly motionOff: boolean;
-  /** `html[data-nx-motion-paused="1"]` — زرّ «إيقاف الحركة» الواحد في النظام. */
+  /** `html[data-nx-motion-paused="1"]` — واجهة الإيقاف المجمَّدة (لا كاتب لها في الواجهة بعد إزالة الزرّ ٢٠٢٦/١٠/٢٥). */
   readonly motionPaused: boolean;
   /** الوضع الآمن بعد حلقة انهيار. */
   readonly safeMode: boolean;
@@ -149,9 +149,9 @@ export function filmGate(s: GateSignals): FilmGate {
 }
 
 /**
- * سبب البوابة `off` (#13/#17) — ما يُقال للزائر يتبع السبب: زرّ «إيقاف الحركة» في الرئيسية يزيل `motionPaused`
- * وحده، ولا يزيل الوضع الآمن (بعد حلقة انهيار) ولا `data-nx-motion="off"` (لا كاتب له في الواجهة).
- * `pause-button` ⇐ الزرّ وحده؛ وأيّ سببٍ آخر معه أو دونه ⇐ `system` (لا إحالة إلى زرّ لن يكفي).
+ * سبب البوابة `off` (#13/#17) — ما يُقال للزائر يتبع السبب: زيارة الرئيسية تمحو تفضيل «paused» القديم
+ * (لا زرّ بعد ٢٠٢٦/١٠/٢٥) فتزيل `motionPaused` وحده، ولا يزيل الوضع الآمن (بعد حلقة انهيار) ولا `data-nx-motion="off"` (لا كاتب له في الواجهة).
+ * `pause-button` ⇐ التفضيل القديم وحده؛ وأيّ سببٍ آخر معه أو دونه ⇐ `system` (لا إحالة إلى زرّ لن يكفي).
  */
 export type OffCause = "pause-button" | "system";
 
@@ -188,7 +188,7 @@ export const TWIN_FILM_TEXT = {
     hints: {
       off: "الحركة موقوفة في النظام، فيُعرض الفيلم صورةً ثابتة.",
       offPaused:
-        "الحركة موقوفة في النظام، فيُعرض الفيلم صورةً ثابتة. استأنفها من زرّ «إيقاف الحركة» في الصفحة الرئيسية.",
+        "الحركة موقوفة في النظام، فيُعرض الفيلم صورةً ثابتة. افتح الصفحة الرئيسية مرّةً لتُستأنف.",
       reduced:
         "تقليل الحركة مفعّل في جهازك، فلا يبدأ الفيلم تلقائيًا. اضغط «تشغيل الفيلم» متى شئت.",
       saver:
@@ -218,7 +218,7 @@ export const TWIN_FILM_TEXT = {
     hints: {
       off: "Motion is turned off, so the film is shown as a still image.",
       offPaused:
-        "Motion is paused system-wide, so the film is shown as a still image. Resume it with “Pause motion” on the home page.",
+        "Motion is paused system-wide, so the film is shown as a still image. Open the home page once to resume it.",
       reduced:
         "Reduced motion is on for your device, so the film does not start by itself. Press “Play film” whenever you like.",
       saver:

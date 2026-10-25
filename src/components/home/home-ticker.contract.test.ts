@@ -182,19 +182,20 @@ function shorthandResets(css: string): string[] {
 }
 
 /**
- * ⑤ قواعد الإيقاف: الزرّ، وخارج الإطار، وتركيز لوحة المفاتيح (`:focus-visible` — لا `:focus`/`:focus-within`
+ * ⑤ قواعد الإيقاف: خارج الإطار، وتركيز لوحة المفاتيح (`:focus-visible` — لا `:focus`/`:focus-within`
  * فالنقر بالفأرة يطابقهما فيجمّد الشريط). **والفأرة ممنوعة** (٢٠٢٦/١٠/٢٥): أي إيقافٍ بـ`:hover` على
- * الهدف يُبلَّغ `hover-pause`، وبتركيز النقر `mouse-focus-pause`.
+ * الهدف يُبلَّغ `hover-pause`، وبتركيز النقر `mouse-focus-pause`. **ولا زرّ** (أمر ٢٠٢٦/١٠/٢٥ «أزل علامة
+ * التوقف والاستمرار»): أي قاعدة إيقافٍ بـ`[data-paused]` على الشريط تُبلَّغ `button-pause`.
  */
 function missingPauses(css: string, target: string): string[] {
-  const found = { paused: false, offscreen: false, focus: false };
+  const found = { offscreen: false, focus: false };
   const bad = new Set<string>();
   postcss.parse(css).walkDecls("animation-play-state", (d) => {
     if (d.value.trim() !== "paused") return;
     const rule = d.parent as Rule;
     for (const s of rule.selectors) {
       if (!s.includes(target)) continue;
-      if (s.includes("[data-paused]")) found.paused = true;
+      if (s.includes("[data-paused]") && target.startsWith(".nx-ticker")) bad.add("button-pause");
       if (s.includes("[data-offscreen]")) found.offscreen = true;
       if (s.includes(":focus-visible")) found.focus = true;
       if (s.includes(":hover")) bad.add("hover-pause");
@@ -216,41 +217,33 @@ function staticModeGaps(css: string): string[] {
   const moving = (sel: string) => declsOf(css, `${SWITCH} ${sel}`, GATE);
   if (base('.nx-ticker-copy[aria-hidden="true"]').display !== "none")
     out.push("النسخ ظاهرة ساكنًا");
-  if (base(".nx-ticker-toggle").display !== "none") out.push("الزرّ ظاهرٌ ساكنًا");
   if (base(".nx-ticker-view")["overflow-x"] !== "auto") out.push("القائمة الساكنة لا تُمرَّر");
   if (moving('.nx-ticker-copy[aria-hidden="true"]').display !== "flex")
     out.push("النسخ لا تظهر مع الحركة");
-  if (moving(".nx-ticker-toggle").display !== "grid") out.push("الزرّ لا يظهر مع الحركة");
   if (moving(".nx-ticker-view").overflow !== "hidden") out.push("النافذة لا تقصّ مع الحركة");
   return out;
 }
 
-/** ⑦ أهداف اللمس: الزرّ ≥ 44px في البعدين، والشريط يتّسع له داخل حدّيه (≥ 46px). */
+/** ⑦ ارتفاع الشريط يتّسع لكبسولته (≥ 46px داخل حدّيه). */
 function targetGaps(css: string): string[] {
   const out: string[] = [];
-  const toggle = declsOf(css, ".nx-ticker-toggle", null);
-  if (!(px(toggle["min-inline-size"]) >= 44)) out.push("عرض الزرّ");
-  if (!(px(toggle["min-block-size"]) >= 44)) out.push("ارتفاع الزرّ");
   if (!(px(declsOf(css, ".nx-ticker", null)["block-size"]) >= 46)) out.push("ارتفاع الشريط");
   return out;
 }
 
-/** ⑧ زرّ الإيقاف: زرٌّ حقيقي بحالةٍ مُعلنة واسمٍ ثابت، يُرسَم دائمًا (الإخفاء للـCSS). */
-function pauseButtonGaps(code: string): string[] {
-  const at = code.indexOf('className="nx-ticker-toggle');
-  if (at === -1) return ["لا زرّ"];
-  const button = code.slice(code.lastIndexOf("<button", at), code.indexOf("</button>", at));
+/**
+ * ⑧ **لا زرّ إيقاف في الشريط** (أمر المالك ٢٠٢٦/١٠/٢٥ «اقم بإزالة علامة التوقف والاستمرار»): لا عنصر
+ * `<button>`، ولا صنف الزرّ ولا خصائصه في الشيفرة، ولا قاعدةٌ له ولا `data-paused` في الـCSS.
+ * (الشيفرة والـCSS تُمرَّران منزوعتَي التعليقات.)
+ */
+function pauseButtonGaps(code: string, css: string): string[] {
   const out: string[] = [];
-  for (const need of [
-    'type="button"',
-    "aria-pressed={paused}",
-    "aria-label={pauseLabel}",
-    "onClick={() => onPausedChange(!paused)}",
-  ]) {
-    if (!button.includes(need)) out.push(need);
-  }
-  if (!code.includes('"إيقاف الحركة"') || !code.includes('"Pause motion"')) out.push("الاسم");
-  if (/\{\s*\w+\s*&&\s*\(\s*<button/.test(code)) out.push("يُركَّب بشرط JS — قفزة تخطيط");
+  if (/<button\b/.test(code)) out.push("زرٌّ في الشريط");
+  if (/nx-ticker-toggle/.test(code)) out.push("صنف الزرّ في الشيفرة");
+  if (/onPausedChange|aria-pressed|pauseLabel|Pause motion|إيقاف الحركة|\bpaused\b/.test(code))
+    out.push("بقايا الإيقاف في الشيفرة");
+  if (/nx-ticker-toggle/.test(css)) out.push("قاعدة الزرّ في الـCSS");
+  if (/data-paused/.test(css)) out.push("data-paused في الـCSS");
   return out;
 }
 
@@ -540,7 +533,7 @@ function glyphSwapGaps(css: string): string[] {
   const out: string[] = [];
   if (declsOf(css, ".nx-tk-img-anim", null).display !== "none") out.push("المتحرّك ظاهرٌ ساكنًا");
   if (declsOf(css, ".nx-tk-img-still", null).display === "none") out.push("الساكن مخفيٌّ ساكنًا");
-  const live = `${SWITCH} .nx-ticker:not([data-paused], [data-offscreen])`;
+  const live = `${SWITCH} .nx-ticker:not([data-offscreen])`;
   if (declsOf(css, `${live} .nx-tk-img-anim`, GATE).display !== "block")
     out.push("المتحرّك لا يظهر داخل البوّابة");
   if (declsOf(css, `${live} .nx-tk-img-still`, GATE).display !== "none")
@@ -564,7 +557,7 @@ function toneGaps(css: string): string[] {
   return out;
 }
 
-/** ⑬هـ نبضات البنود تقف مع الزرّ وخارج الإطار كحركة المسار. */
+/** ⑬هـ نبضات البنود تقف خارج الإطار كحركة المسار. */
 function missingMotionPauses(css: string): string[] {
   const out: string[] = [];
   for (const target of [".nx-tk-ring", ".nx-tk-body::before", ".nx-tk-trend .nx-tk-glyph"]) {
@@ -576,8 +569,8 @@ function missingMotionPauses(css: string): string[] {
         rule.selectors.some(
           (sel) =>
             sel.includes(target) &&
-            sel.includes("[data-paused]") &&
-            sel.includes("[data-offscreen]"),
+            sel.includes("[data-offscreen]") &&
+            !sel.includes("[data-paused]"),
         )
       )
         ok = true;
@@ -672,27 +665,32 @@ describe("الكواشف تحمرّ على انتهاكٍ مزروع (الماد
     expect(missingPauses(plain, ".nx-ticker-track")).toEqual(["focus", "mouse-focus-pause"]);
   });
 
-  it("زرٌّ ظاهرٌ حيث لا حركة، أو أصغر من 44px، أو شريطٌ يضيق عنه", () => {
-    const shown = CSS.replace(/(\.nx-ticker-toggle \{[^}]*?)display: none;/, "$1display: grid;");
-    expect(shown).not.toBe(CSS);
-    expect(staticModeGaps(shown)).toContain("الزرّ ظاهرٌ ساكنًا");
-    const small = CSS.replace("min-block-size: 44px;", "min-block-size: 40px;");
-    expect(small).not.toBe(CSS);
-    expect(targetGaps(small)).toEqual(["ارتفاع الزرّ"]);
+  it("زرٌّ يعود إلى الشريط، أو بقايا الإيقاف في الشيفرة والـCSS، أو شريطٌ يضيق", () => {
+    expect(pauseButtonGaps(CODE, strip(CSS))).toEqual([]);
+    const button = `${CODE}\n<button type="button" className="nx-ticker-toggle" aria-pressed={paused} />`;
+    expect(pauseButtonGaps(button, strip(CSS))).toEqual([
+      "زرٌّ في الشريط",
+      "صنف الزرّ في الشيفرة",
+      "بقايا الإيقاف في الشيفرة",
+    ]);
+    expect(pauseButtonGaps(`${CODE}\nonPausedChange(true)`, strip(CSS))).toEqual([
+      "بقايا الإيقاف في الشيفرة",
+    ]);
+    expect(pauseButtonGaps(CODE, `${strip(CSS)}\n.nx-ticker-toggle { display: grid; }`)).toEqual([
+      "قاعدة الزرّ في الـCSS",
+    ]);
+    expect(
+      pauseButtonGaps(
+        CODE,
+        `${strip(CSS)}\n.nx-ticker[data-paused] .nx-ticker-track { color: red; }`,
+      ),
+    ).toEqual(["data-paused في الـCSS"]);
+    // قاعدة إيقافٍ بالزرّ على المسار تُبلَّغ كذلك.
+    const stuck = `${CSS}\n.nx-ticker[data-paused] .nx-ticker-track { animation-play-state: paused; }`;
+    expect(missingPauses(stuck, ".nx-ticker-track")).toEqual(["button-pause"]);
     const thin = CSS.replace("block-size: 52px;", "block-size: 44px;");
     expect(thin).not.toBe(CSS);
     expect(targetGaps(thin)).toEqual(["ارتفاع الشريط"]);
-  });
-
-  it("زرٌّ بلا حالةٍ مُعلنة أو مشروطٌ بـJS", () => {
-    const stateless = CODE.replace("aria-pressed={paused}", "");
-    expect(stateless).not.toBe(CODE);
-    expect(pauseButtonGaps(stateless)).toEqual(["aria-pressed={paused}"]);
-    const gated = CODE.replace("<button", "{allowed && (<button").replace(
-      "</button>",
-      "</button>)}",
-    );
-    expect(pauseButtonGaps(gated)).toContain("يُركَّب بشرط JS — قفزة تخطيط");
   });
 
   it("نسخةٌ مطابقة يقرؤها القارئ أو يبلغها التركيز، ومنطقةٌ حيّة، وحلقة JS", () => {
@@ -887,9 +885,9 @@ describe("الكواشف تحمرّ على انتهاكٍ مزروع (الماد
     const both = CSS.replace(/(\.nx-tk-img-still \{\s*)display: none;/, "$1display: block;");
     expect(both).not.toBe(CSS);
     expect(glyphSwapGaps(both)).toEqual(["الساكن يبقى مع المتحرّك"]);
-    const paused = CSS.replaceAll(":not([data-paused], [data-offscreen])", "");
-    expect(paused).not.toBe(CSS);
-    expect(glyphSwapGaps(paused).length).toBeGreaterThan(0);
+    const always = CSS.replaceAll(":not([data-offscreen])", "");
+    expect(always).not.toBe(CSS);
+    expect(glyphSwapGaps(always).length).toBeGreaterThan(0);
   });
 
   it("الخطر والتحذير بنبرةٍ واحدة، أو لونٌ خارج الطبقة", () => {
@@ -902,12 +900,9 @@ describe("الكواشف تحمرّ على انتهاكٍ مزروع (الماد
     expect(toneGaps(merged)).toEqual(["danger: var(--tone-amber)"]);
   });
 
-  it("نبضةٌ لا تقف مع الزرّ وخارج الإطار", () => {
+  it("نبضةٌ لا تقف خارج الإطار", () => {
     expect(missingMotionPauses(CSS)).toEqual([]);
-    const loose = CSS.replace(
-      ".nx-ticker:is([data-paused], [data-offscreen]) .nx-tk-ring,",
-      ".nx-ticker .nx-tk-ring,",
-    );
+    const loose = CSS.replace(".nx-ticker[data-offscreen] .nx-tk-ring,", ".nx-ticker .nx-tk-ring,");
     expect(loose).not.toBe(CSS);
     expect(missingMotionPauses(loose)).toEqual([".nx-tk-ring"]);
   });
@@ -974,7 +969,7 @@ describe("الشريط — سرعةٌ مقروءة ثابتة، وحلقةٌ ب�
   });
 });
 
-describe("الحركة اختيارٌ لا افتراض، وتقف بيد المستخدم (WCAG 2.2.2 · 2.3.3)", () => {
+describe("الحركة اختيارٌ لا افتراض — بلا زرّ إيقاف (أمر ٢٠٢٦/١٠/٢٥؛ WCAG 2.2.2 · 2.3.3)", () => {
   it("في الطبقتين حركةٌ فعلًا — فلا تمرّ الفحوص على مجموعةٍ فارغة", () => {
     let named = 0;
     postcss.parse(`${CSS}\n${BRAND_CSS}`).walkDecls("animation-name", () => {
@@ -993,7 +988,7 @@ describe("الحركة اختيارٌ لا افتراض، وتقف بيد الم
     expect(shorthandResets(BRAND_CSS)).toEqual([]);
   });
 
-  it("يقف بالزرّ وخارج الإطار وبالتركيز وبالفأرة، والتوهّج بالزرّ وخارج الإطار", () => {
+  it("يقف خارج الإطار وبتركيز لوحة المفاتيح — لا بالفأرة ولا بزرّ؛ والتوهّج كما كان", () => {
     expect(missingPauses(CSS, ".nx-ticker-track")).toEqual([]);
     expect(missingPauses(BRAND_CSS, ".nx-brand-halo").sort()).toEqual(["focus"]);
   });
@@ -1002,8 +997,8 @@ describe("الحركة اختيارٌ لا افتراض، وتقف بيد الم
     expect(staticModeGaps(CSS)).toEqual([]);
   });
 
-  it("زرّ «إيقاف الحركة»: زرٌّ حقيقي بحالةٍ مُعلنة، ≥ 44px، في شريطٍ يتّسع له", () => {
-    expect(pauseButtonGaps(CODE)).toEqual([]);
+  it("لا زرّ إيقاف في الشريط، وارتفاعه يتّسع لكبسولته", () => {
+    expect(pauseButtonGaps(CODE, strip(CSS))).toEqual([]);
     expect(targetGaps(CSS)).toEqual([]);
   });
 
@@ -1023,12 +1018,9 @@ describe("الوصول — قائمةٌ تُقرأ مرّةً واحدة، وم�
     expect(statusNodes(CODE)).toHaveLength(1);
   });
 
-  it("المصيَّر: منطقةٌ مسمّاة قابلةٌ للتركيز، ونسخةٌ مقروءة واحدة، والزرّ يقلب الحال — بلا مخالفة axe", async () => {
+  it("المصيَّر: منطقةٌ مسمّاة قابلةٌ للتركيز، ونسخةٌ مقروءة واحدة، بلا زرّ ولا طبقاتٌ زخرفيةٌ في الشجرة — بلا مخالفة axe", async () => {
     setReads({});
-    const calls: boolean[] = [];
-    const { container, getByRole } = renderTicker({
-      onPausedChange: (n: boolean) => calls.push(n),
-    });
+    const { container, getByRole, queryByRole } = renderTicker();
     const region = getByRole("region", { name: "شريط الإعلانات — الحالة التشغيلية" });
     expect(region.getAttribute("tabindex")).toBe("0");
     const lists = container.querySelectorAll("ul.nx-ticker-copy");
@@ -1039,10 +1031,16 @@ describe("الوصول — قائمةٌ تُقرأ مرّةً واحدة، وم�
       expect(dup.getAttribute("aria-hidden")).toBe("true");
       expect(dup.hasAttribute("inert")).toBe(true);
     }
-    const button = getByRole("button", { name: "إيقاف الحركة" });
-    expect(button.getAttribute("aria-pressed")).toBe("false");
-    fireEvent.click(button);
-    expect(calls).toEqual([true]);
+    expect(queryByRole("button")).toBeNull();
+    expect(container.querySelector("[aria-pressed]")).toBeNull();
+    // طبقتا الضوء الزخرفيتان: خارج شجرة الوصول، ولا بنود فيهما ولا نصّ.
+    const fx = [...container.querySelectorAll(".nx-tk-fx")];
+    expect(fx).toHaveLength(2);
+    for (const el of fx) {
+      expect(el.getAttribute("aria-hidden")).toBe("true");
+      expect(el.textContent).toBe("");
+    }
+    expect(container.querySelectorAll("ul.nx-ticker-copy [class*='nx-tk-fx']")).toHaveLength(0);
     expect(await axe(container)).toHaveNoViolations();
   });
 
@@ -1107,10 +1105,8 @@ function renderTicker(extra: Record<string, unknown> = {}) {
       I18nProvider,
       null,
       createElement(HomeTicker, {
-        paused: false,
         offscreen: false,
         ready: true,
-        onPausedChange: () => {},
         ...extra,
       }),
     ),
@@ -1347,10 +1343,8 @@ describe("الانتقالات مصيَّرة — نبضةٌ عند تغيّر �
           I18nProvider,
           null,
           createElement(HomeTicker, {
-            paused: false,
             offscreen: false,
             ready: true,
-            onPausedChange: () => {},
           }),
         ),
       );
@@ -1486,7 +1480,7 @@ describe("الرموز والتسميات والمصدر — على القرص �
     expect(staticStateGaps(CSS)).toEqual([]);
     expect(ungatedMotion(CSS)).toEqual([]);
     // ما يحرس الوقف: الحركات العابرة تُلغى (`none`) في الموقوف وخارج الإطار، والعدّ يختفي غطاؤه.
-    const stopped = `${SWITCH} .nx-ticker:is([data-paused], [data-offscreen]) .nx-ticker-track[data-run]`;
+    const stopped = `${SWITCH} .nx-ticker[data-offscreen] .nx-ticker-track[data-run]`;
     expect(declsOf(CSS, `${stopped} .nx-tk-real`, GATE)["animation-name"]).toBe("none");
     expect(declsOf(CSS, `${stopped} .nx-tk-word::after`, GATE)["animation-name"]).toBe("none");
     expect(declsOf(CSS, `${stopped} .nx-tk-count`, GATE).display).toBe("none");
@@ -1540,7 +1534,7 @@ describe("الرموز والتسميات والمصدر — على القرص �
   });
 });
 
-describe("الزرّ الواحد يوقف الصفّ والفيلم ويُحفظ (المصيَّر)", () => {
+describe("لا زرّ إيقاف في الصفّ، والتفضيل القديم يُمحى (أمر ٢٠٢٦/١٠/٢٥)", () => {
   beforeEach(() => setReads({}));
   afterEach(() => {
     reads.current = null;
@@ -1548,39 +1542,32 @@ describe("الزرّ الواحد يوقف الصفّ والفيلم ويُحف�
     delete document.documentElement.dataset.nxMotionPaused;
   });
 
-  it("يعلن الحال عند التركيب، ويكتب السمة ويحذفها مع كل ضغطة، ويستعيد المحفوظ", async () => {
+  it("بلا زرّ، ويُمحى «paused» المحفوظ فلا يتجمّد شيءٌ بلا مخرج، ويُعلَن الحال «غير موقوف» مرّةً", async () => {
+    localStorage.setItem("nx-brand-motion", "paused");
     const events: boolean[] = [];
     const listen = (e: Event) => events.push((e as CustomEvent<{ paused: boolean }>).detail.paused);
     window.addEventListener(MOTION_PAUSE_EVENT, listen);
     try {
-      const first = render(createElement(I18nProvider, null, createElement(HomeBrandRow)));
+      const view = render(createElement(I18nProvider, null, createElement(HomeBrandRow)));
       await act(async () => {});
+      expect(view.queryByRole("button", { name: "إيقاف الحركة" })).toBeNull();
+      expect(view.container.querySelector(".nx-ticker-toggle")).toBeNull();
+      expect(localStorage.getItem("nx-brand-motion")).toBeNull();
       expect(events).toEqual([false]);
       expect(document.documentElement.dataset.nxMotionPaused).toBeUndefined();
-      const button = first.getByRole("button", { name: "إيقاف الحركة" });
-      fireEvent.click(button);
-      expect(events).toEqual([false, true]);
-      expect(document.documentElement.dataset.nxMotionPaused).toBe("1");
-      expect(localStorage.getItem("nx-brand-motion")).toBe("paused");
-      expect(button.getAttribute("aria-pressed")).toBe("true");
-      first.unmount();
-
-      // زيارةٌ ثانية: المحفوظ يُستعاد ويُعلَن قبل أيّ حركة.
-      events.length = 0;
-      delete document.documentElement.dataset.nxMotionPaused;
-      const second = render(createElement(I18nProvider, null, createElement(HomeBrandRow)));
-      await act(async () => {});
-      expect(events).toEqual([true]);
-      expect(document.documentElement.dataset.nxMotionPaused).toBe("1");
-      const again = second.getByRole("button", { name: "إيقاف الحركة" });
-      expect(again.getAttribute("aria-pressed")).toBe("true");
-      fireEvent.click(again);
-      expect(events).toEqual([true, false]);
-      expect(document.documentElement.dataset.nxMotionPaused).toBeUndefined();
-      expect(localStorage.getItem("nx-brand-motion")).toBeNull();
+      for (const el of view.container.querySelectorAll(".nx-ticker, .nx-home-brand")) {
+        expect(el.hasAttribute("data-paused")).toBe(false);
+      }
+      expect(view.container.querySelector(".nx-ticker")).not.toBeNull();
     } finally {
       window.removeEventListener(MOTION_PAUSE_EVENT, listen);
     }
+  });
+
+  it("الصفّ لا يمرّر إيقافًا إلى الشريط: الخصائص `offscreen` و`ready` وحدهما", () => {
+    expect(ROW_CODE).toContain("<HomeTicker offscreen={offscreen} ready={known} />");
+    expect(ROW_CODE).not.toContain("onPausedChange");
+    expect(ROW_CODE).toContain("localStorage.removeItem(PAUSE_KEY)");
   });
 });
 
@@ -1589,10 +1576,18 @@ describe("الزرّ الواحد يوقف الصفّ والفيلم ويُحف�
    ══════════════════════════════════════════════════════════════════════════ */
 
 /** طبقات الضوء الجديدة: مفاتيحها لا تلمس إلا المُركِّب (بلا الاستثناءات الثلاثة المعلنة للبنود). */
-const LIGHT_KEYFRAMES = ["nxTkComet", "nxTkGlint", "nxTkGem"] as const;
-const LIVE = ":not([data-paused], [data-offscreen])";
+const LIGHT_KEYFRAMES = [
+  "nxTkComet",
+  "nxTkGlint",
+  "nxTkGem",
+  "nxTkDrift",
+  "nxTkSpin",
+  "nxTkTwinkle",
+  "nxTkShine",
+] as const;
+const LIVE = ":not([data-offscreen])";
 
-/** ⑯ مفاتيح الضوء: `translate`/`opacity`/`scale` وحدها، وكلٌّ منها موجود. */
+/** ⑯ مفاتيح الضوء: `translate`/`opacity`/`scale`/`rotate` وحدها، وكلٌّ منها موجود. */
 function lightKeyframeGaps(css: string): string[] {
   const out: string[] = [];
   const seen = new Set<string>();
@@ -1600,7 +1595,7 @@ function lightKeyframeGaps(css: string): string[] {
     if (!(LIGHT_KEYFRAMES as readonly string[]).includes(kf.params)) return;
     seen.add(kf.params);
     kf.walkDecls((d) => {
-      if (!/^(translate|opacity|scale)$/.test(d.prop)) out.push(`${kf.params}: ${d.prop}`);
+      if (!/^(translate|opacity|scale|rotate)$/.test(d.prop)) out.push(`${kf.params}: ${d.prop}`);
     });
   });
   for (const k of LIGHT_KEYFRAMES) if (!seen.has(k)) out.push(`${k}: غائب`);
@@ -1609,17 +1604,20 @@ function lightKeyframeGaps(css: string): string[] {
 
 /**
  * ⑰ طبقات الضوء تُرسم مع الجري وحده: كل قاعدةٍ تسمّي أحد مفاتيحها (وقاعدة تبديل الشفق المتحرّك) تحمل
- * `:not([data-paused], [data-offscreen])` في كل محدِّداتها — فتختفي مع الزرّ وخارج الإطار بدل أن تتجمّد
+ * `:not([data-offscreen])` في كل محدِّداتها — فتختفي خارج الإطار بدل أن تتجمّد
  * نصفَ كنسٍ (والمتحرّك WebP لا يُوقَف إلا بتبديله بساكنه).
  */
 function lightGateGaps(css: string): string[] {
   const out: string[] = [];
   const named = new Set<string>();
   postcss.parse(css).walkDecls("animation-name", (d) => {
-    if (!(LIGHT_KEYFRAMES as readonly string[]).includes(d.value.trim()) || inKeyframes(d)) return;
-    named.add(d.value.trim());
-    for (const sel of (d.parent as Rule).selectors) {
-      if (!sel.includes(LIVE)) out.push(`${d.value}: ${sel.replace(/\s+/g, " ")}`);
+    if (inKeyframes(d)) return;
+    for (const name of d.value.split(",").map((n) => n.trim())) {
+      if (!(LIGHT_KEYFRAMES as readonly string[]).includes(name)) continue;
+      named.add(name);
+      for (const sel of (d.parent as Rule).selectors) {
+        if (!sel.includes(LIVE)) out.push(`${name}: ${sel.replace(/\s+/g, " ")}`);
+      }
     }
   });
   for (const k of LIGHT_KEYFRAMES) if (!named.has(k)) out.push(`${k}: بلا حركة`);
@@ -1635,16 +1633,23 @@ function lightGateGaps(css: string): string[] {
   return out;
 }
 
-/** مدّة حركةٍ مسمّاة بالثواني من قاعدتها. */
+/** أسرع مدّةٍ لحركةٍ مسمّاة بالثواني عبر قواعدها كلّها (والقوائم المفصولة بفاصلة تُقرأ بالموضع). */
 function durationOf(css: string, name: string): number {
-  let sec = Number.NaN;
+  let sec = Number.POSITIVE_INFINITY;
   postcss.parse(css).walkDecls("animation-name", (d) => {
-    if (d.value.trim() !== name || inKeyframes(d)) return;
+    if (inKeyframes(d)) return;
+    const at = d.value
+      .split(",")
+      .map((n) => n.trim())
+      .indexOf(name);
+    if (at === -1) return;
     d.parent?.walkDecls("animation-duration", (x) => {
-      sec = Number.parseFloat(x.value);
+      const list = x.value.split(",").map((n) => Number.parseFloat(n));
+      const v = list[at] ?? list[0];
+      if (v < sec) sec = v;
     });
   });
-  return sec;
+  return Number.isFinite(sec) ? sec : Number.NaN;
 }
 
 /**
@@ -1674,6 +1679,83 @@ function glintGaps(css: string): string[] {
   if (swings !== 2) out.push(`تصريحا --tk-glint: ${swings}`);
   const comet = durationOf(css, "nxTkComet");
   if (!(comet >= 6)) out.push(`دورة المذنّب ${comet}ث`);
+  return out;
+}
+
+/** ⑳ الطبقات الخرافية (٢٠٢٦/١٠/٢٥ — ب): كل دورةٍ دون عتبةٍ هادئة، فلا وميض ولا اهتزاز (WCAG 2.3.1). */
+const FX_MIN_SECONDS: Record<string, number> = {
+  nxTkShine: 6,
+  nxTkTwinkle: 2,
+  nxTkSpin: 3,
+  nxTkDrift: 15,
+};
+function fxGaps(css: string): string[] {
+  const out: string[] = [];
+  for (const [name, min] of Object.entries(FX_MIN_SECONDS)) {
+    const sec = durationOf(css, name);
+    if (!(sec >= min)) out.push(`${name}: ${sec}ث < ${min}ث`);
+  }
+  return out;
+}
+
+/**
+ * ⑳ب المذنّب السفلي بعكس العلويّ في اللغتين: قاعدة الإنجليزية تحمل بوّابة قاعدتها الأساس نفسها
+ * (`[data-run]:not([data-offscreen])`) وإلا خسرت أمامها بالنوعيّة فسار المذنّبان باتجاهٍ واحد.
+ */
+function cometDirectionGaps(css: string): string[] {
+  const out: string[] = [];
+  let base = "";
+  let ltr = "";
+  postcss.parse(css).walkRules((rule) => {
+    for (const sel of rule.selectors) {
+      const flat = sel.replace(/\s+/g, " ");
+      if (!flat.endsWith('.nx-tk-fx[data-fx="b"]::before')) continue;
+      if (flat.includes('[dir="ltr"]')) ltr = flat;
+      else if (flat.includes("[data-run]")) base = flat;
+    }
+  });
+  if (!base) out.push("القاعدة الأساس");
+  if (!ltr) out.push("قاعدة الإنجليزية");
+  for (const need of ["[data-run]", ":not([data-offscreen])"]) {
+    if (ltr && !ltr.includes(need)) out.push(`الإنجليزية بلا ${need}`);
+  }
+  return out;
+}
+
+/** ⑳ج القسري يُخفي الطبقات الخرافية بـ`display: none !important` (لا بالاسم وحده). */
+function forcedHidesFx(css: string): string[] {
+  const need = new Set([
+    ".nx-tk-fx",
+    ".nx-tk-body::after",
+    '.nx-tk-glyph[data-role="state"]::after',
+  ]);
+  postcss.parse(css).walkAtRules("media", (m) => {
+    if (!m.params.includes("forced-colors")) return;
+    m.walkRules((r) => {
+      let hides = false;
+      r.walkDecls("display", (d) => {
+        if (d.value.trim() === "none" && d.important) hides = true;
+      });
+      if (!hides) return;
+      for (const sel of r.selectors) need.delete(sel.replace(/\s+/g, " ").trim());
+    });
+  });
+  return [...need];
+}
+
+/** ⑳د المدار حول الدائرة (السليم) وحدها — لا حلقةٌ دائرية على المثمّن والمثلث والمعيّن. */
+function orbitGaps(css: string): string[] {
+  const out: string[] = [];
+  let seen = false;
+  postcss.parse(css).walkRules((rule) => {
+    if (!rule.toString().includes("animation-name: nxTkSpin;")) return;
+    for (const sel of rule.selectors) {
+      if (!sel.includes('.nx-tk-glyph[data-role="state"]::after')) continue;
+      seen = true;
+      if (!sel.includes('[data-tone="ok"]')) out.push("المدار لغير السليم");
+    }
+  });
+  if (!seen) out.push("لا مدار");
   return out;
 }
 
@@ -1741,13 +1823,13 @@ describe("٢٠٢٦/١٠/٢٥ — الكواشف تحمرّ على المزروع
   it("ضوءٌ يبقى مع الإيقاف أو خارج الإطار، أو شفقٌ متحرّكٌ يبقى", () => {
     expect(lightGateGaps(CSS)).toEqual([]);
     const loose = CSS.replace(
-      ".nx-ticker[data-run]:not([data-paused], [data-offscreen])::after {\n    display: block;\n    animation-name: nxTkGlint;",
+      ".nx-ticker[data-run]:not([data-offscreen])::after {\n    display: block;\n    animation-name: nxTkGlint;",
       ".nx-ticker[data-run]::after {\n    display: block;\n    animation-name: nxTkGlint;",
     );
     expect(loose).not.toBe(CSS);
     expect(lightGateGaps(loose)).toHaveLength(1);
     const stuck = CSS.replace(
-      /(\.nx-ticker\[data-run\])(:not\(\[data-paused\], \[data-offscreen\]\))(::before \{\s*background-image: var\(--tk-live\))/,
+      /(\.nx-ticker\[data-run\])(:not\(\[data-offscreen\]\))(::before \{\s*background-image: var\(--tk-live\))/,
       "$1$3",
     );
     expect(stuck).not.toBe(CSS);
@@ -1765,6 +1847,46 @@ describe("٢٠٢٦/١٠/٢٥ — الكواشف تحمرّ على المزروع
     const comet = CSS.replace("animation-duration: 7s;", "animation-duration: 3s;");
     expect(comet).not.toBe(CSS);
     expect(glintGaps(comet)).toEqual(["دورة المذنّب 3ث"]);
+  });
+
+  it("طبقةٌ خرافية أسرع من العتبة، أو مذنّبٌ سفليّ بقاعدةٍ لاتينية أضعف، أو مدارٌ دائريّ لغير السليم", () => {
+    expect(fxGaps(CSS)).toEqual([]);
+    const fastShine = CSS.replace("animation-duration: 8s;", "animation-duration: 1s;");
+    expect(fastShine).not.toBe(CSS);
+    expect(fxGaps(fastShine)).toEqual(["nxTkShine: 1ث < 6ث"]);
+    const fastDust = CSS.replace("animation-duration: 46s, 5s;", "animation-duration: 46s, 0.3s;");
+    expect(fastDust).not.toBe(CSS);
+    expect(fxGaps(fastDust)).toEqual(["nxTkTwinkle: 0.3ث < 2ث"]);
+    const fastOrbit = CSS.replace("animation-duration: 3.6s;", "animation-duration: 0.5s;");
+    expect(fastOrbit).not.toBe(CSS);
+    expect(fxGaps(fastOrbit)).toEqual(["nxTkSpin: 0.5ث < 3ث"]);
+
+    expect(cometDirectionGaps(CSS)).toEqual([]);
+    const weak = CSS.replace(
+      '.nx-ticker[dir="ltr"][data-run]:not([data-offscreen])\n    .nx-tk-fx[data-fx="b"]::before',
+      '.nx-ticker[dir="ltr"]\n    .nx-tk-fx[data-fx="b"]::before',
+    );
+    expect(weak).not.toBe(CSS);
+    expect(cometDirectionGaps(weak)).toEqual([
+      "الإنجليزية بلا [data-run]",
+      "الإنجليزية بلا :not([data-offscreen])",
+    ]);
+
+    expect(orbitGaps(CSS)).toEqual([]);
+    const everyone = CSS.replace(
+      '\n    .nx-tk[data-tone="ok"]\n    .nx-tk-glyph[data-role="state"]::after {',
+      '\n    .nx-tk-glyph[data-role="state"]::after {',
+    );
+    expect(everyone).not.toBe(CSS);
+    expect(orbitGaps(everyone)).toEqual(["المدار لغير السليم"]);
+
+    expect(forcedHidesFx(CSS)).toEqual([]);
+    const soft = CSS.replace(
+      /(\.nx-tk-fx,\s*\.nx-tk-body::after,[^}]*?)display: none !important;/,
+      "$1display: none;",
+    );
+    expect(soft).not.toBe(CSS);
+    expect(forcedHidesFx(soft).length).toBeGreaterThan(0);
   });
 
   it("صورة شفقٍ مفقودة، أو متحرّكةٌ في خانة الساكنة، أو مرجعٌ خارج الأسماء الأربعة", () => {
@@ -1786,10 +1908,13 @@ describe("٢٠٢٦/١٠/٢٥ — الكواشف تحمرّ على المزروع
 });
 
 describe("٢٠٢٦/١٠/٢٥ — المظهر السينمائي على الملفّ الحيّ", () => {
-  it("طبقات الضوء مُركِّبة، داخل البوّابة، تقف مع الإيقاف، ووميضها آمن", () => {
+  it("طبقات الضوء مُركِّبة، داخل البوّابة، تقف خارج الإطار، ووميضها آمن", () => {
     expect(lightKeyframeGaps(CSS)).toEqual([]);
     expect(lightGateGaps(CSS)).toEqual([]);
     expect(glintGaps(CSS)).toEqual([]);
+    expect(fxGaps(CSS)).toEqual([]);
+    expect(cometDirectionGaps(CSS)).toEqual([]);
+    expect(orbitGaps(CSS)).toEqual([]);
     expect(ungatedMotion(CSS)).toEqual([]);
     // اللوح ساكنًا بلا مذنّب ولا وميض (`display: none`)، وتُرسم داخل البوّابة وحدها.
     expect(declsOf(CSS, ".nx-ticker::after", null).display).toBe("none");
@@ -1845,7 +1970,7 @@ describe("٢٠٢٦/١٠/٢٥ — المظهر السينمائي على المل
     expect(CODE).not.toMatch(/["'`]\s*(?:dark|light)\b[^"'`]*["'`]\s*:|classList/);
   });
 
-  it("الطباعة تُخفي الشريط، والقسري يُخفي طبقات الضوء، وحلقة تركيز الزرّ داخل اللوح المقصوص", () => {
+  it("الطباعة تُخفي الشريط، والقسري يُخفي طبقات الضوء، وحلقة تركيز المنطقة داخل اللوح المقصوص", () => {
     expect(declsOf(CSS, ".nx-ticker", "print").display).toBe("none");
     const forced = CSS.slice(CSS.indexOf("@media (forced-colors: active)"));
     for (const sel of [".nx-ticker::before", ".nx-ticker::after", ".nx-ticker-window::after"]) {
@@ -1854,10 +1979,9 @@ describe("٢٠٢٦/١٠/٢٥ — المظهر السينمائي على المل
     expect(forced).toMatch(/\.nx-tk-body,/);
     expect(declsOf(CSS, ".nx-ticker", null).overflow).toBe("hidden");
     expect(
-      Number.parseFloat(
-        declsOf(CSS, ".nx-ticker .nx-ticker-toggle:focus-visible", null)["outline-offset"],
-      ),
+      Number.parseFloat(declsOf(CSS, ".nx-ticker-view:focus-visible", null)["outline-offset"]),
     ).toBeLessThan(0);
+    expect(forcedHidesFx(CSS)).toEqual([]);
   });
 
   it("الحضور الطباعي: 15px/1.2 للبند، كلمة الحالة 600، أرقامٌ متساوية العرض، وأرضية 12px محفوظة", () => {
@@ -2027,10 +2151,8 @@ describe("٢٠٢٦/١٠/٢٥ — الاستمرار: مدّةٌ تتغيّر و�
             I18nProvider,
             null,
             createElement(HomeTicker, {
-              paused: false,
               offscreen: false,
               ready: true,
-              onPausedChange: () => {},
             }),
           ),
         );

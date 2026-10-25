@@ -523,7 +523,9 @@ function usePausedPreference(): [boolean, (next: boolean) => void, boolean] {
   const [known, setKnown] = useState(false);
   useEffect(() => {
     try {
-      setPaused(localStorage.getItem(PAUSE_KEY) === "paused");
+      // لا زرّ في الشريط يلغي الإيقاف بعد ٢٠٢٦/١٠/٢٥ («أزل علامة التوقف والاستمرار»): فتفضيلٌ قديم
+      // «paused» يُمحى هنا ولا يُطبَّق، وإلا بقي الشريط والماء والتوهّج مجمَّدةً بلا مخرج.
+      if (localStorage.getItem(PAUSE_KEY) === "paused") localStorage.removeItem(PAUSE_KEY);
     } catch {
       /* التخزين محجوب — تبقى الحركة */
     }
@@ -1090,7 +1092,7 @@ export function HomeBrandRow() {
   const { locale } = useI18n();
   const ar = locale === "ar";
   const allowed = useFilmAllowed();
-  const [paused, setPaused, known] = usePausedPreference();
+  const [paused, , known] = usePausedPreference();
   const ref = useRef<HTMLElement>(null);
   const offscreen = useOffscreen(ref);
   return (
@@ -1105,7 +1107,7 @@ export function HomeBrandRow() {
       data-paused={paused || undefined}
       data-offscreen={offscreen || undefined}
     >
-      <HomeTicker paused={paused} offscreen={offscreen} ready={known} onPausedChange={setPaused} />
+      <HomeTicker offscreen={offscreen} ready={known} />
       <BrandPlate ar={ar} allowed={allowed} paused={paused} />
     </section>
   );

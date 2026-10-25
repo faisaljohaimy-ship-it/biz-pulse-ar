@@ -13,21 +13,21 @@
      يعيد تركيب القناع كل إطار، درس iOS ٢٠٢٦/١٠/١٤): فذوبان البنود عند الحافّتين طبقتان ساكنتان بلون
      أرضية اللوح نفسه (`--tk-base`) تقع تحتهما صورة الشفق فتخبو إلى الأرضية.
    ② **الحال الأساسية ساكنة** (ما يراه من طلب السكون): النسخة المقروءة وحدها تُمرَّر
-     أفقيًّا داخل الشريط بلا نسخٍ مطابقة ولا زرّ إيقاف، وصورة الشفق ساكنة. والارتفاع ثابتٌ في
+     أفقيًّا داخل الشريط بلا نسخٍ مطابقة، وصورة الشفق ساكنة. والارتفاع ثابتٌ في
      الحالين — فلا قفزة تخطيط حين تبدأ الحركة.
-   ③ **لا توقّف بالفأرة** (٢٠٢٦/١٠/٢٥ — أمر «متواصل بدون توقف»): مرور المؤشّر لا يجمّد شيئًا. يقف
-     المسار تجميدًا في المكان (`animation-play-state`) لا عودةً إلى البداية في ثلاثٍ فقط: زرّ «إيقاف
-     الحركة» (WCAG 2.2.2 — الآلية الواجبة، وهي وحدها تكفيه)، وخروجه من الإطار (لا يُرى)، وتركيز
-     لوحة المفاتيح عليه (`:focus-visible`: من يقرأ بالأسهم لا يهرب منه النصّ؛ والنقر بالفأرة لا يطابقه
-     فلا يجمّده). وبقيّة طبقات الضوء (شفق · مذنّب · وميض · سداسيّ) تُرسم مع الجري وحده وتختفي مع الإيقاف.
+   ③ **لا توقّف بالفأرة ولا زرّ** (٢٠٢٦/١٠/٢٥ — أمران: «متواصل بدون توقف» ثم «أزل علامة التوقف والاستمرار»): لا
+     شيء في الشريط يجمّده. يقف المسار تجميدًا في المكان (`animation-play-state`) لا عودةً إلى البداية في
+     اثنتين فقط: خروجه من الإطار (لا يُرى)، وتركيز لوحة المفاتيح عليه (`:focus-visible`: من يقرأ بالأسهم لا
+     يهرب منه النصّ؛ والنقر بالفأرة لا يطابقه فلا يجمّده). ومن أراد السكون كلّه فمن نظام التشغيل
+     (`prefers-reduced-motion`). وبقيّة طبقات الضوء تُرسم مع الجري وتختفي خارج الإطار.
    ④ لا لون إلا من طبقة الرموز (المادة ٣٣) — الثيم يُقرأ بـ`.dark` وحدها (أساسُها الفاتح)، والنصّ
-     ≥ 12px، والزرّ ≥ 44px. **ميزانية البايتات:** اللوح يُرسم بتدرّجاتٍ وصورة شفقٍ مصيَّرة (Remotion،
+     ≥ 12px. **ميزانية البايتات:** اللوح يُرسم بتدرّجاتٍ وصورة شفقٍ مصيَّرة (Remotion،
      `public/media/ticker/bg-*`) لا بقواعد طويلة.
    ⑤ **حركة البنود الحيّة** (أسفل الملف) أساسها مُركِّب — `opacity`/`scale`/`translate` — **مع ثلاثة
      استثناءات معلنة لا تمسّ التخطيط**: `filter: blur` داخل نصّ البند وقت دخوله، و`clip-path` للكشف، و`@property --tk-n` للعدّ —
      داخل بوّابة ① نفسها وعلى `[data-run]`: الرمز المتحرّك بدل الساكن، ونبضةٌ واحدة عند تغيّر
      صنف البند (`data-flip` وإعادة تركيب الجسم بمفتاح عدّاد التغيّر)، ونبضة انتباهٍ بطيئة (3.2 ث) على حلقة الرمز الحرج، ودفعةٌ
-     باتجاه السهم. وكلّها تقف مع الزرّ وخارج الإطار. اللون في الشارة والرمز والإطار تأكيدٌ لا حاملٌ
+     باتجاه السهم. وكلّها تقف خارج الإطار. اللون في الشارة والرمز والإطار تأكيدٌ لا حاملٌ
      وحيد: كلمة الحالة والشكل يحملان المعنى (WCAG 2.2 §1.4.1)، ونصّ الكلمة `--ink` لأن
      اللونين الكهرماني/الأخضر على غسلتهما دون 4.5:1 في الفاتح (قِيس).
    ⑥ **طبقات الضوء** (٢٠٢٦/١٠/٢٥): مذنّبٌ على الحدّ العلوي (7 ث) ووميضٌ يكنس اللوح كلّ 9 ث لمدّة 1.1 ث
@@ -38,7 +38,7 @@
 
 /* اللوح الزجاجي: أرضيةٌ كحليّة عميقة (داكن) أو لؤلؤيةٌ شاحبة (فاتح) من الرموز، وفوقها وهجان ساكنان
    وصورة الشفق (::before). الظلّ والحدّ العلوي الداخلي يعطيان سُمك اللوح. `overflow: hidden` يقصّ
-   الوميض على استدارة اللوح، فحلقة تركيز الزرّ داخليّة (أدناه). */
+   الوميض على استدارة اللوح، فحلقة تركيز المنطقة داخليّة (أدناه). */
 .nx-ticker {
   --tk-base: color-mix(in srgb, var(--tone-blue) 6%, var(--surface-2));
   --tk-comet: var(--sd-azure);
@@ -223,47 +223,6 @@
   display: none;
 }
 
-/* زرّ «إيقاف الحركة» في طرف الشريط — خارج اللوحة. مخفيٌّ في الحال الساكنة (لا شيء
-   يُوقَف)، ويظهر مع الحركة (أدناه). */
-.nx-ticker-toggle {
-  position: relative;
-  z-index: 2;
-  display: none;
-  flex: none;
-  place-items: center;
-  inline-size: 44px;
-  min-inline-size: 44px;
-  min-block-size: 44px;
-  padding: 0;
-  border: 0;
-  border-inline-start: 1px solid var(--hairline);
-  background: transparent;
-  color: var(--ink-2);
-  cursor: pointer;
-}
-
-.nx-ticker-toggle svg {
-  inline-size: 18px;
-  block-size: 18px;
-}
-
-/* حلقة التركيز داخل اللوح: `overflow: hidden` عليه يقصّ الحلقة الخارجية (إزاحة +2px من الطبقة العامة). */
-.nx-ticker .nx-ticker-toggle:focus-visible {
-  outline-offset: -4px;
-}
-
-/* الحالة بالرمز (إيقاف ⇄ تشغيل) وبـ`aria-pressed` — واللون تأكيدٌ لا حاملٌ وحيد. */
-.nx-ticker-toggle[aria-pressed="true"] {
-  color: var(--sd-azure);
-}
-
-@media (hover: hover) {
-  .nx-ticker-toggle:hover {
-    background: var(--chip-hover);
-    color: var(--ink);
-  }
-}
-
 /* ── ① الحركة: نسخةٌ واحدة في كل دورة، والاتجاه من اللغة ─────────────────────
    العربية: المسار يبدأ عند الحافّة اليمنى وينزاح يمينًا، فتدخل كل عبارة من اليسار
    بطرفها الأيمن — أوّلها. والإنجليزية بعكسها. والنسبة من عرض المسار
@@ -330,13 +289,9 @@
     display: block;
   }
 
-  html:not([data-nx-motion="off"]):not(.safe-mode) .nx-ticker-toggle {
-    display: grid;
-  }
-
   /* خصائص مفصّلة لا الاختصار: `animation` المختصرة تعيد `animation-play-state` إلى
      `running` بنوعيّة هذا المحدِّد (0,4,1) فتغلب قواعد الإيقاف أدناه (0,3,0) — قِيس:
-     ضُغط الزرّ فبقي الشريط يجري (٢٠٢٦/١٠/١٨). */
+     أُوقف الشريط فبقي يجري (٢٠٢٦/١٠/١٨). */
   html:not([data-nx-motion="off"]):not(.safe-mode) .nx-ticker-track[data-run] {
     animation-name: nxTickerRtl;
     animation-duration: var(--nx-ticker-s, 60s);
@@ -350,15 +305,15 @@
     animation-name: nxTickerLtr;
   }
 
-  /* طبقات الضوء: تُرسم وتتحرّك ما دام الشريط يجري — وتختفي (لا تتجمّد نصفَ كنسٍ) مع الزرّ وخارج الإطار.
+  /* طبقات الضوء: تُرسم وتتحرّك ما دام الشريط يجري — وتختفي (لا تتجمّد نصفَ كنسٍ) خارج الإطار.
      الشفق المتحرّك (WebP) يحلّ محلّ ساكنه هنا لأنه لا يُوقَف إلا بتبديله. */
   html:not([data-nx-motion="off"]):not(.safe-mode)
-    .nx-ticker[data-run]:not([data-paused], [data-offscreen])::before {
+    .nx-ticker[data-run]:not([data-offscreen])::before {
     background-image: var(--tk-live);
   }
 
   html:not([data-nx-motion="off"]):not(.safe-mode)
-    .nx-ticker[data-run]:not([data-paused], [data-offscreen])::after {
+    .nx-ticker[data-run]:not([data-offscreen])::after {
     display: block;
     animation-name: nxTkGlint;
     animation-duration: 9s;
@@ -367,7 +322,7 @@
   }
 
   html:not([data-nx-motion="off"]):not(.safe-mode)
-    .nx-ticker[data-run]:not([data-paused], [data-offscreen])
+    .nx-ticker[data-run]:not([data-offscreen])
     .nx-ticker-window::after {
     display: block;
     animation-name: nxTkComet;
@@ -377,20 +332,20 @@
   }
 
   html:not([data-nx-motion="off"]):not(.safe-mode)
-    .nx-ticker[data-run]:not([data-paused], [data-offscreen])
+    .nx-ticker[data-run]:not([data-offscreen])
     .nx-ticker-item::after {
-    animation-name: nxTkGem;
-    animation-duration: 2.4s;
-    animation-timing-function: ease-in-out;
-    animation-iteration-count: infinite;
-    animation-direction: alternate;
+    animation-name: nxTkGem, nxTkSpin;
+    animation-duration: 2.4s, 9s;
+    animation-timing-function: ease-in-out, linear;
+    animation-iteration-count: infinite, infinite;
+    animation-direction: alternate, normal;
   }
 
   /* الإنجليزية تجري يسارًا: المذنّب والوميض بعكس اتجاههما، ورأس المذنّب يتقدّم (مقطعاهما متناظران). */
   html:not([data-nx-motion="off"]):not(.safe-mode)
-    .nx-ticker[dir="ltr"][data-run]:not([data-paused], [data-offscreen])::after,
+    .nx-ticker[dir="ltr"][data-run]:not([data-offscreen])::after,
   html:not([data-nx-motion="off"]):not(.safe-mode)
-    .nx-ticker[dir="ltr"][data-run]:not([data-paused], [data-offscreen])
+    .nx-ticker[dir="ltr"][data-run]:not([data-offscreen])
     .nx-ticker-window::after {
     animation-direction: reverse;
   }
@@ -402,16 +357,8 @@
   }
 }
 
-@media (hover: hover) and (prefers-reduced-motion: no-preference) {
-  html:not([data-nx-motion="off"]) .nx-ticker-toggle {
-    transition:
-      background-color 0.2s var(--nx-ease-out),
-      color 0.2s var(--nx-ease-out);
-  }
-}
-
-/* ③ التوقّف تجميدٌ في المكان: الزرّ، وخارج الإطار، وتركيز لوحة المفاتيح — **لا الفأرة** (أمر ٢٠٢٦/١٠/٢٥). */
-.nx-ticker:is([data-paused], [data-offscreen]) .nx-ticker-track,
+/* ③ التوقّف تجميدٌ في المكان: خارج الإطار، وتركيز لوحة المفاتيح — **لا الفأرة ولا زرّ** (أمر ٢٠٢٦/١٠/٢٥). */
+.nx-ticker[data-offscreen] .nx-ticker-track,
 .nx-ticker-view:focus-visible .nx-ticker-track {
   animation-play-state: paused;
 }
@@ -779,18 +726,18 @@
 @media (prefers-reduced-motion: no-preference) {
   /* المتحرّك بدل الساكن — ما دام الشريط غير موقوفٍ ولا خارج الإطار. */
   html:not([data-nx-motion="off"]):not(.safe-mode)
-    .nx-ticker:not([data-paused], [data-offscreen])
+    .nx-ticker:not([data-offscreen])
     .nx-tk-img-anim {
     display: block;
   }
 
   html:not([data-nx-motion="off"]):not(.safe-mode)
-    .nx-ticker:not([data-paused], [data-offscreen])
+    .nx-ticker:not([data-offscreen])
     .nx-tk-img-still {
     display: none;
   }
 
-  /* هالة «حرجة»: تتنفّس ما دام الشريط يجري (وتقف مع الزرّ وخارج الإطار — أدناه). */
+  /* هالة «حرجة»: تتنفّس ما دام الشريط يجري (وتقف خارج الإطار — أدناه). */
   html:not([data-nx-motion="off"]):not(.safe-mode)
     .nx-ticker-track[data-run]
     .nx-tk[data-tone="danger"]
@@ -922,7 +869,7 @@
   /* ── الموقوف وخارج الإطار: الحركات العابرة (كشف · عدّ · كنس) تُلغى إلى حالتها النهائية بدل أن
      تتجمّد في منتصفها ضبابيةً؛ ونبضات الحلقة والتلميح تقف في مكانها (القاعدة بعد البوّابة). ── */
   html:not([data-nx-motion="off"]):not(.safe-mode)
-    .nx-ticker:is([data-paused], [data-offscreen])
+    .nx-ticker[data-offscreen]
     .nx-ticker-track[data-run]
     :is(
       .nx-tk-glyph[data-role="state"],
@@ -933,34 +880,294 @@
       .nx-tk-badge
     ),
   html:not([data-nx-motion="off"]):not(.safe-mode)
-    .nx-ticker:is([data-paused], [data-offscreen])
+    .nx-ticker[data-offscreen]
     .nx-ticker-track[data-run]
     .nx-tk-real,
   html:not([data-nx-motion="off"]):not(.safe-mode)
-    .nx-ticker:is([data-paused], [data-offscreen])
+    .nx-ticker[data-offscreen]
     .nx-ticker-track[data-run]
     .nx-tk-trend
     .nx-tk-glyph,
   html:not([data-nx-motion="off"]):not(.safe-mode)
-    .nx-ticker:is([data-paused], [data-offscreen])
+    .nx-ticker[data-offscreen]
     .nx-ticker-track[data-run]
     .nx-tk-word::after {
     animation-name: none;
   }
 
   html:not([data-nx-motion="off"]):not(.safe-mode)
-    .nx-ticker:is([data-paused], [data-offscreen])
+    .nx-ticker[data-offscreen]
     .nx-ticker-track[data-run]
     .nx-tk-count {
     display: none;
   }
 }
 
-/* التوقّف تجميدٌ في المكان للنبضات كذلك: الزرّ، وخارج الإطار. */
-.nx-ticker:is([data-paused], [data-offscreen]) .nx-tk-ring,
-.nx-ticker:is([data-paused], [data-offscreen]) .nx-tk-body::before,
-.nx-ticker:is([data-paused], [data-offscreen]) .nx-tk-trend .nx-tk-glyph {
+/* التوقّف تجميدٌ في المكان للنبضات كذلك: خارج الإطار. */
+.nx-ticker[data-offscreen] .nx-tk-ring,
+.nx-ticker[data-offscreen] .nx-tk-body::before,
+.nx-ticker[data-offscreen] .nx-tk-trend .nx-tk-glyph {
   animation-play-state: paused;
+}
+
+/* ── ⑦ الطبقات الخرافية (٢٠٢٦/١٠/٢٥: «أضف أحدث الريموشنات … الخيالية المبهرة») ──────────────────
+   كلّها داخل بوّابة الحركة نفسها (`no-preference` · ليس `data-nx-motion="off"` · ليس الوضع الآمن · `[data-run]`
+   · داخل الإطار) و**على المُركِّب وحده** (`translate`/`rotate`/`opacity`) — لا خاصيةَ رسمٍ ولا تخطيط، ولا
+   قناع فوق ما يتحرّك دائمًا (①). الألوان من الرموز (`--tone-*` · `--tk-comet` · `--nx-white`) لا قيمًا نهائية.
+   الوميض: أبطأ ما فيها بريق الكبسولة (3 ث كل 8 ث) وتلألؤ الغبار (دورة 5 ث) — دون عتبة 3/ث (WCAG 2.3.1) بكثير.
+     أ) شفقٌ منجرف ذهابًا وإيابًا (30 ث، `alternate`) خلف المسار فيعطي عمقًا · ب) غبارٌ نجميٌّ يتلألأ وينجرف ذهابًا وإيابًا أبطأ (46 ث)
+     ج) مذنّبٌ سفليّ بعكس العلويّ (11 ث) · د) حدٌّ قزحيٌّ منجرف على الحافّتين (18 ث)
+     هـ) بريقٌ يعبر كل كبسولةٍ بنبرتها بالتناوب (8 ث) · و) مدارٌ يدور حول رمز الحالة السليمة (3.6 ث)
+     ز) السداسيّ يدور (9 ث) مع تنفّسه. الاتجاه كلّه من `--tk-sweep` (+1 إنجليزية · −1 عربية). */
+.nx-tk-fx {
+  position: absolute;
+  inset: 0;
+  display: none;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.nx-tk-fx::before,
+.nx-tk-fx::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+}
+
+.nx-tk-glyph[data-role="state"]::after,
+.nx-tk-body::after {
+  content: "";
+  position: absolute;
+  display: none;
+  pointer-events: none;
+}
+
+/* دورانٌ متّصل وانجرافٌ ذهابًا وإيابًا (`alternate`): مداه ربع العنصر = نصف النافذة، وبلاطةٌ مكرَّرة فلا فجوة عند الطرفين. */
+@keyframes nxTkDrift {
+  from {
+    translate: calc(-12.5% * var(--tk-sweep, 1)) 0;
+  }
+
+  to {
+    translate: calc(12.5% * var(--tk-sweep, 1)) 0;
+  }
+}
+
+@keyframes nxTkSpin {
+  to {
+    rotate: 360deg;
+  }
+}
+
+@keyframes nxTkTwinkle {
+  from {
+    opacity: 0.35;
+  }
+
+  to {
+    opacity: 0.85;
+  }
+}
+
+@keyframes nxTkShine {
+  0%,
+  62% {
+    opacity: 0;
+    translate: calc(-140% * var(--tk-sweep, 1)) 0;
+  }
+
+  66%,
+  92% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    translate: calc(380% * var(--tk-sweep, 1)) 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-ticker[data-run]:not([data-offscreen])
+    .nx-tk-fx {
+    display: block;
+  }
+
+  /* أ) شفقٌ منجرف: غيمتان تتكرّران كل ربع العنصر (بلاطة 50% من النافذة). */
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-ticker[data-run]:not([data-offscreen])
+    .nx-tk-fx[data-fx="a"]::before {
+    inset-inline-start: -50%;
+    inline-size: 200%;
+    background:
+      radial-gradient(
+        60% 90% at 25% 28%,
+        color-mix(in srgb, var(--tone-cyan) 20%, transparent),
+        transparent 70%
+      ),
+      radial-gradient(
+        55% 85% at 75% 78%,
+        color-mix(in srgb, var(--tone-blue) 18%, transparent),
+        transparent 70%
+      );
+    background-size: 25% 100%;
+    background-repeat: repeat-x;
+    animation-name: nxTkDrift;
+    animation-duration: 30s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+  }
+
+  /* ب) غبارٌ نجميّ: ست نقاطٍ في البلاطة، يتلألأ كلّه بدورة 5 ث ويجري أبطأ. */
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-ticker[data-run]:not([data-offscreen])
+    .nx-tk-fx[data-fx="a"]::after {
+    inset-inline-start: -50%;
+    inline-size: 200%;
+    background:
+      radial-gradient(circle at 8% 24%, var(--tk-comet) 0 1px, transparent 2px),
+      radial-gradient(circle at 21% 70%, var(--tk-comet) 0 1.2px, transparent 2.4px),
+      radial-gradient(circle at 37% 38%, var(--tk-comet) 0 0.8px, transparent 1.8px),
+      radial-gradient(circle at 53% 82%, var(--tk-comet) 0 1px, transparent 2px),
+      radial-gradient(circle at 69% 18%, var(--tk-comet) 0 1.2px, transparent 2.4px),
+      radial-gradient(circle at 86% 56%, var(--tk-comet) 0 0.8px, transparent 1.8px);
+    background-size: 25% 100%;
+    background-repeat: repeat-x;
+    animation-name: nxTkDrift, nxTkTwinkle;
+    animation-duration: 46s, 5s;
+    animation-timing-function: linear, ease-in-out;
+    animation-iteration-count: infinite, infinite;
+    animation-direction: alternate, alternate;
+  }
+
+  /* ج) مذنّبٌ سفليّ بعكس العلويّ: رأسه يتقدّم، ولونه زمرّديّ من الرموز. */
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-ticker[data-run]:not([data-offscreen])
+    .nx-tk-fx[data-fx="b"]::before {
+    inset-block: auto 0;
+    inset-inline: 0;
+    block-size: 7px;
+    background:
+      linear-gradient(to right, transparent 34%, var(--tone-emerald) 50%, transparent 50.6%)
+        bottom / 100% 2px no-repeat,
+      radial-gradient(
+        ellipse 7% 100% at 50% 100%,
+        color-mix(in srgb, var(--tone-emerald) 38%, transparent),
+        transparent
+      );
+    animation-name: nxTkComet;
+    animation-duration: 11s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-direction: reverse;
+    scale: -1 1;
+  }
+
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-ticker[dir="ltr"][data-run]:not([data-offscreen])
+    .nx-tk-fx[data-fx="b"]::before {
+    animation-direction: normal;
+    scale: 1 1;
+  }
+
+  /* د) حدٌّ قزحيّ منجرف على الحافّتين: سماويّ ← أزرق ← زمرّديّ ← سماويّ (بلاطةٌ مغلقة فلا وصلة). */
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-ticker[data-run]:not([data-offscreen])
+    .nx-tk-fx[data-fx="b"]::after {
+    inset-inline-start: -50%;
+    inline-size: 200%;
+    opacity: 0.6;
+    background:
+      linear-gradient(
+          90deg,
+          var(--tone-cyan),
+          var(--tone-blue),
+          var(--tone-emerald),
+          var(--tone-cyan)
+        )
+        top / 25% 1px repeat-x,
+      linear-gradient(
+          90deg,
+          var(--tone-cyan),
+          var(--tone-blue),
+          var(--tone-emerald),
+          var(--tone-cyan)
+        )
+        bottom / 25% 1px repeat-x;
+    animation-name: nxTkDrift;
+    animation-duration: 18s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+  }
+
+  /* هـ) بريق الكبسولة: شريطٌ ضيّق بنبرة البند يعبرها، والكبسولة تقصّه (`overflow: clip` على الجسم). */
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-ticker[data-run]:not([data-offscreen])
+    .nx-tk-body {
+    overflow: clip;
+  }
+
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-ticker[data-run]:not([data-offscreen])
+    .nx-tk-body::after {
+    display: block;
+    inset-block: 0;
+    inset-inline-start: 0;
+    inline-size: 34%;
+    background: linear-gradient(
+      100deg,
+      transparent,
+      color-mix(in srgb, var(--tk-tone) 34%, transparent),
+      transparent
+    );
+    opacity: 0;
+    animation-name: nxTkShine;
+    animation-duration: 8s;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    animation-iteration-count: infinite;
+  }
+
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-ticker[data-run]:not([data-offscreen])
+    .nx-ticker-item:nth-child(2)
+    .nx-tk-body::after {
+    animation-delay: 2s;
+  }
+
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-ticker[data-run]:not([data-offscreen])
+    .nx-ticker-item:nth-child(3)
+    .nx-tk-body::after {
+    animation-delay: 4s;
+  }
+
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-ticker[data-run]:not([data-offscreen])
+    .nx-ticker-item:nth-child(4)
+    .nx-tk-body::after {
+    animation-delay: 6s;
+  }
+
+  /* و) مدارٌ حول رمز الحالة **السليمة** (الدائرة) وحدها: قوسٌ دائريّ بنبرة البند يدور. لا حلقةٌ دائرية حول
+     المثمّن (خطر) ولا المثلث (تحذير) ولا المعيّن (معلومة) — فلغة الأشكال (الدائرة = سليم) لا تلتبس. */
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-ticker[data-run]:not([data-offscreen])
+    .nx-tk[data-tone="ok"]
+    .nx-tk-glyph[data-role="state"]::after {
+    display: block;
+    inset: -3px;
+    border: 1.5px solid transparent;
+    border-radius: 50%;
+    border-block-start-color: var(--tk-tone);
+    border-inline-end-color: color-mix(in srgb, var(--tk-tone) 35%, transparent);
+    animation-name: nxTkSpin;
+    animation-duration: 3.6s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+  }
 }
 
 @media (forced-colors: active) {
@@ -980,11 +1187,6 @@
     background: CanvasText;
   }
 
-  .nx-ticker-toggle {
-    border-inline-start-color: ButtonText;
-    color: ButtonText;
-  }
-
   /* القسري يمحو الغسلات: الإطار والنصّ بألوان النظام، والكلمة تبقى حاملةً للمعنى. */
   .nx-tk-body,
   .nx-tk-word,
@@ -997,8 +1199,11 @@
   .nx-tk-ring,
   .nx-tk-body::before,
   .nx-tk-word::after,
-  .nx-tk-count {
-    display: none;
+  .nx-tk-count,
+  .nx-tk-fx,
+  .nx-tk-body::after,
+  .nx-tk-glyph[data-role="state"]::after {
+    display: none !important;
   }
 }
 

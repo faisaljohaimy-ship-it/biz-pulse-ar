@@ -915,9 +915,9 @@ describe("سبب الإيقاف — التلميح بالسبب لا بالبو�
     expect(offCause(SIGNALS)).toBe("system");
   });
 
-  it("الإحالة إلى زرّ الرئيسية في نصّ الزرّ وحده، والمحايد بلا إحالة بلسانيه", () => {
-    expect(TWIN_FILM_TEXT.ar.hints.offPaused).toMatch(/زرّ «إيقاف الحركة» في الصفحة الرئيسية/);
-    expect(TWIN_FILM_TEXT.en.hints.offPaused).toMatch(/“Pause motion” on the home page/);
+  it("الإحالة إلى الرئيسية في نصّ التفضيل القديم وحده، والمحايد بلا إحالة بلسانيه", () => {
+    expect(TWIN_FILM_TEXT.ar.hints.offPaused).toMatch(/افتح الصفحة الرئيسية مرّةً/);
+    expect(TWIN_FILM_TEXT.en.hints.offPaused).toMatch(/Open the home page once/);
     for (const lang of ["ar", "en"] as const) {
       expect(TWIN_FILM_TEXT[lang].hints.off, `${lang}: المحايد يحيل`).not.toMatch(
         /الصفحة الرئيسية|home page|إيقاف الحركة|Pause motion/i,
