@@ -16,10 +16,20 @@
  *   • بندٌ يحمل لونًا بلا شكلٍ وكلمة، أو الخطر والتحذير بنبرةٍ واحدة؛
  *   • مرجعٌ بلا شارة، أو غيابٌ يصير صفرًا، أو صيانةٌ تُستبدل بمرجع، أو اسمٌ يعبر من المشاريع.
  *
+ * وأمر ٢٠٢٦/١٠/٢٥ («متواصل بدون توقف» + المظهر السينمائي) أضاف ما يحرسه هذا الملف أيضًا:
+ *   • لا توقّفَ بالفأرة (ولا بنقرتها: التركيز بالنقر لا يجمّده) — يقف بزرّ الإيقاف وخارج الإطار
+ *     وبتركيز لوحة المفاتيح وحده؛
+ *   • وصلةٌ بلا قفزة: تغيّر المدّة (وصول الخطّ · تحديث القراءات · تغيّر العرض) لا يحرّك المسار
+ *     (`carryLoopTime` · `retimeLoop`)، والمسار لا يُعاد تركيبه؛
+ *   • طبقات الضوء (شفق · مذنّب · وميض · سداسيّ) داخل البوّابة، مُركِّبة، تختفي مع الإيقاف، وبوميضٍ آمنٍ
+ *     (WCAG 2.3.1)؛ وملفّات الشفق على القرص؛ ولا قناعٌ على سلفٍ للمسار.
+ *
  * وكل كاشفٍ دالّةٌ تُجرَّب أولًا على انتهاكٍ مزروع (المادة ٣٠)، والقراءة بمحلّل CSS
  * لا بنصّ، والكود منزوع التعليقات. وقواعد البنود نفسها في `home-ticker-status.test.ts`.
  */
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { createElement } from "react";
 import postcss, { type AtRule, type ChildNode, type Node, type Rule } from "postcss";
 import { act, fireEvent, render } from "@testing-library/react";
@@ -37,7 +47,13 @@ import {
   TICKER_PX_PER_S,
   TICKER_SPEED_RANGE,
 } from "@/components/home/home-ticker-content";
-import { HomeTicker, tickerLoop, type TickerLoop } from "@/components/home/HomeTicker";
+import {
+  carryLoopTime,
+  HomeTicker,
+  retimeLoop,
+  tickerLoop,
+  type TickerLoop,
+} from "@/components/home/HomeTicker";
 import { HomeBrandRow, MOTION_PAUSE_EVENT } from "@/components/home/HomeBrandRow";
 import type { SecOverview } from "@/lib/sec.functions";
 import type { CommandCenterState } from "@/lib/exec/command-center.functions";
@@ -165,9 +181,14 @@ function shorthandResets(css: string): string[] {
   return out;
 }
 
-/** ⑤ قواعد الإيقاف: الزرّ، وخارج الإطار، والتركيز، والفأرة (تحت `hover: hover`). */
+/**
+ * ⑤ قواعد الإيقاف: الزرّ، وخارج الإطار، وتركيز لوحة المفاتيح (`:focus-visible` — لا `:focus`/`:focus-within`
+ * فالنقر بالفأرة يطابقهما فيجمّد الشريط). **والفأرة ممنوعة** (٢٠٢٦/١٠/٢٥): أي إيقافٍ بـ`:hover` على
+ * الهدف يُبلَّغ `hover-pause`، وبتركيز النقر `mouse-focus-pause`.
+ */
 function missingPauses(css: string, target: string): string[] {
-  const found = { paused: false, offscreen: false, focus: false, hover: false };
+  const found = { paused: false, offscreen: false, focus: false };
+  const bad = new Set<string>();
   postcss.parse(css).walkDecls("animation-play-state", (d) => {
     if (d.value.trim() !== "paused") return;
     const rule = d.parent as Rule;
@@ -175,14 +196,17 @@ function missingPauses(css: string, target: string): string[] {
       if (!s.includes(target)) continue;
       if (s.includes("[data-paused]")) found.paused = true;
       if (s.includes("[data-offscreen]")) found.offscreen = true;
-      if (s.includes(":focus-within")) found.focus = true;
-      if (s.includes(":hover") && atChain(d).some((a) => a.includes("hover: hover")))
-        found.hover = true;
+      if (s.includes(":focus-visible")) found.focus = true;
+      if (s.includes(":hover")) bad.add("hover-pause");
+      if (/:focus(?!-visible)/.test(s)) bad.add("mouse-focus-pause");
     }
   });
-  return Object.entries(found)
-    .filter(([, v]) => !v)
-    .map(([k]) => k);
+  return [
+    ...Object.entries(found)
+      .filter(([, v]) => !v)
+      .map(([k]) => k),
+    ...bad,
+  ];
 }
 
 /** ⑥ الحال الأساسية ساكنة، والحركة تُبدّلها داخل البوابة وحدها. */
@@ -250,7 +274,10 @@ const liveRegions = (code: string) =>
   code.match(/aria-live|role="(?:marquee|log|alert|timer)"/g) ?? [];
 const statusNodes = (code: string) => code.match(/role="status"/g) ?? [];
 const jsLoops = (code: string) =>
-  code.match(/requestAnimationFrame|setInterval|\.animate\(|style\.setProperty/g) ?? [];
+  code.match(/requestAnimationFrame|setInterval|setTimeout|\.animate\(/g) ?? [];
+/** الكتابة المباشرة على الأسلوب: متغيّر المدّة وحده (تصحيح الاستمرار) — لا عدد النسخ ولا قيمٌ نهائية. */
+const styleWrites = (code: string) =>
+  [...code.matchAll(/\.style\.setProperty\(\s*"([^"]+)"/g)].map((m) => m[1]);
 
 /** ⑪ الاتجاه: العربية يمينًا (موجب)، والإنجليزية يسارًا (سالب) — نسخةٌ بالتمام. */
 function directionGaps(css: string): string[] {
@@ -625,19 +652,34 @@ describe("الكواشف تحمرّ على انتهاكٍ مزروع (الماد
   it("الاختصار الذي يُبطل الإيقاف، وقاعدة إيقافٍ محذوفة", () => {
     const short = `${CSS}\n@media (${GATE}) { ${SWITCH} .nx-ticker-track[data-run] { animation: nxTickerRtl 60s linear infinite; } }`;
     expect(shorthandResets(short)).toHaveLength(1);
-    const noFocus = CSS.replace(".nx-ticker-view:focus-within .nx-ticker-track", ".nx-x");
+    const noFocus = CSS.replace(".nx-ticker-view:focus-visible .nx-ticker-track", ".nx-x");
     expect(noFocus).not.toBe(CSS);
     expect(missingPauses(noFocus, ".nx-ticker-track")).toEqual(["focus"]);
   });
 
+  it("إيقافٌ بالفأرة أو بتركيز النقر يُبلَّغ — الشريط متواصلٌ مع المؤشّر", () => {
+    const hover = `${CSS}\n@media (hover: hover) { .nx-ticker-view:hover .nx-ticker-track { animation-play-state: paused; } }`;
+    expect(missingPauses(hover, ".nx-ticker-track")).toEqual(["hover-pause"]);
+    const within = CSS.replace(
+      ".nx-ticker-view:focus-visible .nx-ticker-track",
+      ".nx-ticker-view:focus-within .nx-ticker-track",
+    );
+    expect(missingPauses(within, ".nx-ticker-track")).toEqual(["focus", "mouse-focus-pause"]);
+    const plain = CSS.replace(
+      ".nx-ticker-view:focus-visible .nx-ticker-track",
+      ".nx-ticker-view:focus .nx-ticker-track",
+    );
+    expect(missingPauses(plain, ".nx-ticker-track")).toEqual(["focus", "mouse-focus-pause"]);
+  });
+
   it("زرٌّ ظاهرٌ حيث لا حركة، أو أصغر من 44px، أو شريطٌ يضيق عنه", () => {
-    const shown = CSS.replace(/(\.nx-ticker-toggle \{\s*)display: none;/, "$1display: grid;");
+    const shown = CSS.replace(/(\.nx-ticker-toggle \{[^}]*?)display: none;/, "$1display: grid;");
     expect(shown).not.toBe(CSS);
     expect(staticModeGaps(shown)).toContain("الزرّ ظاهرٌ ساكنًا");
     const small = CSS.replace("min-block-size: 44px;", "min-block-size: 40px;");
     expect(small).not.toBe(CSS);
     expect(targetGaps(small)).toEqual(["ارتفاع الزرّ"]);
-    const thin = CSS.replace("block-size: 46px;", "block-size: 44px;");
+    const thin = CSS.replace("block-size: 52px;", "block-size: 44px;");
     expect(thin).not.toBe(CSS);
     expect(targetGaps(thin)).toEqual(["ارتفاع الشريط"]);
   });
@@ -666,6 +708,10 @@ describe("الكواشف تحمرّ على انتهاكٍ مزروع (الماد
     expect(liveRegions(`${CODE}<div role="marquee" />`)).toHaveLength(1);
     expect(statusNodes(`${CODE}<div role="status" />`)).toHaveLength(statusNodes(CODE).length + 1);
     expect(jsLoops(`${CODE}\nrequestAnimationFrame(tick);`)).toHaveLength(1);
+    expect(styleWrites(`${CODE}\nel.style.setProperty("--nx-ticker-n", "9");`)).toEqual([
+      "--nx-ticker-s",
+      "--nx-ticker-n",
+    ]);
   });
 
   it("حاشيةٌ على النسخة تكسر إيقاع الوصلة، وفاصلٌ لا يعود مع الحركة", () => {
@@ -907,7 +953,7 @@ describe("الشريط — سرعةٌ مقروءة ثابتة، وحلقةٌ ب�
     // والمكوّن يكتب المتغيّرين وحدهما (المادة ٣٣) ويرسم `copies − 1` نسخةً مطابقة.
     expect(CODE).toContain('["--nx-ticker-n" as string]: String(copies)');
     expect(CODE).toContain(
-      '["--nx-ticker-s" as string]: loop ? `${loop.seconds.toFixed(2)}s` : undefined',
+      '["--nx-ticker-s" as string]: seconds === null ? undefined : `${seconds.toFixed(2)}s`',
     );
     expect(CODE).toContain("Array.from({ length: copies - 1 }");
     expect(CSS).toContain("animation-duration: var(--nx-ticker-s, 60s);");
@@ -949,7 +995,7 @@ describe("الحركة اختيارٌ لا افتراض، وتقف بيد الم
 
   it("يقف بالزرّ وخارج الإطار وبالتركيز وبالفأرة، والتوهّج بالزرّ وخارج الإطار", () => {
     expect(missingPauses(CSS, ".nx-ticker-track")).toEqual([]);
-    expect(missingPauses(BRAND_CSS, ".nx-brand-halo").sort()).toEqual(["focus", "hover"]);
+    expect(missingPauses(BRAND_CSS, ".nx-brand-halo").sort()).toEqual(["focus"]);
   });
 
   it("الحال الأساسية ساكنة ومُمرَّرة، والحركة تُبدّلها داخل البوابة وحدها", () => {
@@ -972,6 +1018,8 @@ describe("الوصول — قائمةٌ تُقرأ مرّةً واحدة، وم�
     expect(duplicateGaps(CODE)).toEqual([]);
     expect(liveRegions(CODE)).toEqual([]);
     expect(jsLoops(CODE)).toEqual([]);
+    // الكتابة المباشرة على الأسلوب: متغيّر المدّة وحده (وهو ما سيكتبه React بعدها بالقيمة نفسها).
+    expect(styleWrites(CODE)).toEqual(["--nx-ticker-s"]);
     expect(statusNodes(CODE)).toHaveLength(1);
   });
 
@@ -1533,5 +1581,477 @@ describe("الزرّ الواحد يوقف الصفّ والفيلم ويُحف�
     } finally {
       window.removeEventListener(MOTION_PAUSE_EVENT, listen);
     }
+  });
+});
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ٢٠٢٦/١٠/٢٥ — «متواصل بدون توقف» والمظهر السينمائي
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/** طبقات الضوء الجديدة: مفاتيحها لا تلمس إلا المُركِّب (بلا الاستثناءات الثلاثة المعلنة للبنود). */
+const LIGHT_KEYFRAMES = ["nxTkComet", "nxTkGlint", "nxTkGem"] as const;
+const LIVE = ":not([data-paused], [data-offscreen])";
+
+/** ⑯ مفاتيح الضوء: `translate`/`opacity`/`scale` وحدها، وكلٌّ منها موجود. */
+function lightKeyframeGaps(css: string): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  postcss.parse(css).walkAtRules("keyframes", (kf) => {
+    if (!(LIGHT_KEYFRAMES as readonly string[]).includes(kf.params)) return;
+    seen.add(kf.params);
+    kf.walkDecls((d) => {
+      if (!/^(translate|opacity|scale)$/.test(d.prop)) out.push(`${kf.params}: ${d.prop}`);
+    });
+  });
+  for (const k of LIGHT_KEYFRAMES) if (!seen.has(k)) out.push(`${k}: غائب`);
+  return out;
+}
+
+/**
+ * ⑰ طبقات الضوء تُرسم مع الجري وحده: كل قاعدةٍ تسمّي أحد مفاتيحها (وقاعدة تبديل الشفق المتحرّك) تحمل
+ * `:not([data-paused], [data-offscreen])` في كل محدِّداتها — فتختفي مع الزرّ وخارج الإطار بدل أن تتجمّد
+ * نصفَ كنسٍ (والمتحرّك WebP لا يُوقَف إلا بتبديله بساكنه).
+ */
+function lightGateGaps(css: string): string[] {
+  const out: string[] = [];
+  const named = new Set<string>();
+  postcss.parse(css).walkDecls("animation-name", (d) => {
+    if (!(LIGHT_KEYFRAMES as readonly string[]).includes(d.value.trim()) || inKeyframes(d)) return;
+    named.add(d.value.trim());
+    for (const sel of (d.parent as Rule).selectors) {
+      if (!sel.includes(LIVE)) out.push(`${d.value}: ${sel.replace(/\s+/g, " ")}`);
+    }
+  });
+  for (const k of LIGHT_KEYFRAMES) if (!named.has(k)) out.push(`${k}: بلا حركة`);
+  let swapped = false;
+  postcss.parse(css).walkDecls("background-image", (d) => {
+    if (d.value.trim() !== "var(--tk-live)") return;
+    swapped = true;
+    for (const sel of (d.parent as Rule).selectors) {
+      if (!sel.includes(LIVE)) out.push(`الشفق المتحرّك: ${sel.replace(/\s+/g, " ")}`);
+    }
+  });
+  if (!swapped) out.push("الشفق المتحرّك: بلا تبديل");
+  return out;
+}
+
+/** مدّة حركةٍ مسمّاة بالثواني من قاعدتها. */
+function durationOf(css: string, name: string): number {
+  let sec = Number.NaN;
+  postcss.parse(css).walkDecls("animation-name", (d) => {
+    if (d.value.trim() !== name || inKeyframes(d)) return;
+    d.parent?.walkDecls("animation-duration", (x) => {
+      sec = Number.parseFloat(x.value);
+    });
+  });
+  return sec;
+}
+
+/**
+ * ⑱ الوميض آمن (WCAG 2.3.1) وهادئ: دورةٌ ≥ 8 ث، وكنسٌ بين 0.9 و1.3 ث، وتفاوت إضاءةٍ ≤ 0.12 (نسبة المزج
+ * في `--tk-glint` بالوضعين). والمذنّب دورته ≥ 6 ث.
+ */
+function glintGaps(css: string): string[] {
+  const out: string[] = [];
+  const period = durationOf(css, "nxTkGlint");
+  if (!(period >= 8)) out.push(`دورة الوميض ${period}ث`);
+  let idleEnd = Number.NaN;
+  postcss.parse(css).walkAtRules("keyframes", (kf) => {
+    if (kf.params !== "nxTkGlint") return;
+    kf.walkRules((r) => {
+      const stops = r.selector.split(",").map((x) => Number.parseFloat(x));
+      if (stops.length === 2) idleEnd = stops[1];
+    });
+  });
+  const sweep = ((100 - idleEnd) / 100) * period;
+  if (!(sweep >= 0.9 && sweep <= 1.3)) out.push(`الكنس ${sweep}ث`);
+  let swings = 0;
+  postcss.parse(css).walkDecls("--tk-glint", (d) => {
+    swings += 1;
+    const pct = Number.parseFloat(/(\d+(?:\.\d+)?)%\s*,\s*transparent/.exec(d.value)?.[1] ?? "NaN");
+    if (!(pct <= 12)) out.push(`تفاوت الإضاءة ${pct}%`);
+  });
+  if (swings !== 2) out.push(`تصريحا --tk-glint: ${swings}`);
+  const comet = durationOf(css, "nxTkComet");
+  if (!(comet >= 6)) out.push(`دورة المذنّب ${comet}ث`);
+  return out;
+}
+
+const BACKDROPS = [
+  "bg-aurora-dark-still.webp",
+  "bg-aurora-dark.webp",
+  "bg-aurora-light-still.webp",
+  "bg-aurora-light.webp",
+];
+/**
+ * ⑲ صور الشفق: الأربع بأسمائها، الساكنة في `--tk-still` والمتحرّكة في `--tk-live` وحدهما، وكلّها على القرص.
+ */
+function backdropGaps(css: string, exists: (path: string) => boolean = existsSync): string[] {
+  const out: string[] = [];
+  const found: string[] = [];
+  postcss.parse(css).walkDecls((d) => {
+    for (const m of d.value.matchAll(/url\(\s*["']?([^"')]+)["']?\s*\)/g)) {
+      const url = m[1];
+      if (!url.startsWith("/media/ticker/bg-")) {
+        out.push(`${d.prop}: ${url}`);
+        continue;
+      }
+      const file = url.slice("/media/ticker/".length);
+      found.push(file);
+      if (d.prop === "--tk-still" && !file.endsWith("-still.webp")) out.push(`still: ${file}`);
+      if (d.prop === "--tk-live" && file.endsWith("-still.webp")) out.push(`live: ${file}`);
+      if (d.prop !== "--tk-still" && d.prop !== "--tk-live") out.push(`${d.prop}: ${file}`);
+      if (!exists(`public${url}`)) out.push(`غائب على القرص: ${file}`);
+    }
+  });
+  if ([...new Set(found)].sort().join() !== BACKDROPS.join()) out.push(`الأسماء: ${found.join()}`);
+  return out;
+}
+
+/** ⑲ب مقاس صورة الشفق من ترويسة WebP (VP8X): 1200×96، والساكنة خفيفة والمتحرّكة تحت 160 KB، وعتمة الطبقة بالمدى المقيس. */
+function backdropFileGaps(root = "public/media/ticker"): string[] {
+  const out: string[] = [];
+  for (const file of BACKDROPS) {
+    const path = `${root}/${file}`;
+    if (!existsSync(path)) continue;
+    const b = readFileSync(path);
+    const still = file.endsWith("-still.webp");
+    if (b.toString("ascii", 0, 4) !== "RIFF" || b.toString("ascii", 8, 12) !== "WEBP")
+      out.push(`${file}: ليس WebP`);
+    if (b.toString("ascii", 12, 16) === "VP8X") {
+      const [w, h] = [b.readUIntLE(24, 3) + 1, b.readUIntLE(27, 3) + 1];
+      if (w !== 1200 || h !== 96) out.push(`${file}: ${w}×${h}`);
+    }
+    if (b.length > (still ? 12_000 : 160_000)) out.push(`${file}: ${b.length} بايت`);
+  }
+  return out;
+}
+
+describe("٢٠٢٦/١٠/٢٥ — الكواشف تحمرّ على المزروع", () => {
+  it("مفتاحُ ضوءٍ بخاصيةٍ غير مُركِّبة، أو مفتاحٌ محذوف", () => {
+    expect(lightKeyframeGaps(CSS)).toEqual([]);
+    expect(lightKeyframeGaps(`${CSS}\n@keyframes nxTkGem { to { inline-size: 3px; } }`)).toEqual([
+      "nxTkGem: inline-size",
+    ]);
+    expect(lightKeyframeGaps(CSS.replace("@keyframes nxTkComet", "@keyframes nxTkCometX"))).toEqual(
+      ["nxTkComet: غائب"],
+    );
+  });
+
+  it("ضوءٌ يبقى مع الإيقاف أو خارج الإطار، أو شفقٌ متحرّكٌ يبقى", () => {
+    expect(lightGateGaps(CSS)).toEqual([]);
+    const loose = CSS.replace(
+      ".nx-ticker[data-run]:not([data-paused], [data-offscreen])::after {\n    display: block;\n    animation-name: nxTkGlint;",
+      ".nx-ticker[data-run]::after {\n    display: block;\n    animation-name: nxTkGlint;",
+    );
+    expect(loose).not.toBe(CSS);
+    expect(lightGateGaps(loose)).toHaveLength(1);
+    const stuck = CSS.replace(
+      /(\.nx-ticker\[data-run\])(:not\(\[data-paused\], \[data-offscreen\]\))(::before \{\s*background-image: var\(--tk-live\))/,
+      "$1$3",
+    );
+    expect(stuck).not.toBe(CSS);
+    expect(lightGateGaps(stuck).some((g) => g.startsWith("الشفق المتحرّك"))).toBe(true);
+  });
+
+  it("وميضٌ أسرع، أو أشدّ إضاءةً، أو مذنّبٌ أسرع", () => {
+    expect(glintGaps(CSS)).toEqual([]);
+    const fast = CSS.replace("animation-duration: 9s;", "animation-duration: 2s;");
+    expect(fast).not.toBe(CSS);
+    expect(glintGaps(fast).length).toBeGreaterThan(0);
+    const bright = CSS.replace("--nx-white) 9%, transparent", "--nx-white) 40%, transparent");
+    expect(bright).not.toBe(CSS);
+    expect(glintGaps(bright)).toEqual(["تفاوت الإضاءة 40%"]);
+    const comet = CSS.replace("animation-duration: 7s;", "animation-duration: 3s;");
+    expect(comet).not.toBe(CSS);
+    expect(glintGaps(comet)).toEqual(["دورة المذنّب 3ث"]);
+  });
+
+  it("صورة شفقٍ مفقودة، أو متحرّكةٌ في خانة الساكنة، أو مرجعٌ خارج الأسماء الأربعة", () => {
+    const absent = (p: string) => !p.endsWith("bg-aurora-light.webp") && existsSync(p);
+    expect(backdropGaps(CSS, (p) => p !== "public/media/ticker/bg-aurora-light.webp")).toEqual([
+      "غائب على القرص: bg-aurora-light.webp",
+    ]);
+    expect(absent("public/media/ticker/bg-aurora-light.webp")).toBe(false);
+    const swapped = CSS.replace(
+      '--tk-still: url("/media/ticker/bg-aurora-light-still.webp");',
+      '--tk-still: url("/media/ticker/bg-aurora-light.webp");',
+    );
+    expect(swapped).not.toBe(CSS);
+    expect(backdropGaps(swapped, () => true)).toContain("still: bg-aurora-light.webp");
+    expect(
+      backdropGaps(`${CSS}\n.x { background: url("/media/ticker/bg-extra.webp"); }`, () => true),
+    ).toContain("background: bg-extra.webp");
+  });
+});
+
+describe("٢٠٢٦/١٠/٢٥ — المظهر السينمائي على الملفّ الحيّ", () => {
+  it("طبقات الضوء مُركِّبة، داخل البوّابة، تقف مع الإيقاف، ووميضها آمن", () => {
+    expect(lightKeyframeGaps(CSS)).toEqual([]);
+    expect(lightGateGaps(CSS)).toEqual([]);
+    expect(glintGaps(CSS)).toEqual([]);
+    expect(ungatedMotion(CSS)).toEqual([]);
+    // اللوح ساكنًا بلا مذنّب ولا وميض (`display: none`)، وتُرسم داخل البوّابة وحدها.
+    expect(declsOf(CSS, ".nx-ticker::after", null).display).toBe("none");
+    expect(declsOf(CSS, ".nx-ticker-window::after", null).display).toBe("none");
+  });
+
+  it("صور الشفق الأربع على القرص: الساكنة افتراضًا والمتحرّكة داخل البوّابة وحدها", () => {
+    expect(backdropGaps(CSS)).toEqual([]);
+    expect(declsOf(CSS, ".nx-ticker::before", null).background).toContain("var(--tk-still)");
+    expect(CSS).not.toMatch(/\.nx-ticker::before \{[^}]*--tk-live/);
+  });
+
+  it("صور الشفق: 1200×96، والساكنة ≤ 12 KB والمتحرّكة ≤ 160 KB، وعتمة الطبقة داكنًا 0.40–0.45 وفاتحًا 0.60–0.70", () => {
+    expect(backdropFileGaps()).toEqual([]);
+    const dir = mkdtempSync(join(tmpdir(), "tk-"));
+    writeFileSync(join(dir, "bg-aurora-dark.webp"), Buffer.alloc(200_000));
+    expect(backdropFileGaps(dir)).toEqual([
+      "bg-aurora-dark.webp: ليس WebP",
+      "bg-aurora-dark.webp: 200000 بايت",
+    ]);
+    const light = Number.parseFloat(declsOf(CSS, ".nx-ticker", null)["--tk-aurora"]);
+    const dark = Number.parseFloat(declsOf(CSS, ".dark .nx-ticker", null)["--tk-aurora"]);
+    expect(light).toBeGreaterThanOrEqual(0.6);
+    expect(light).toBeLessThanOrEqual(0.7);
+    expect(dark).toBeGreaterThanOrEqual(0.4);
+    expect(dark).toBeLessThanOrEqual(0.45);
+    expect(declsOf(CSS, ".nx-ticker::before", null).opacity).toBe("var(--tk-aurora)");
+  });
+
+  it("لا قناعٌ على سلفٍ للمسار: ذوبان الحافّتين طبقتان ساكنتان بلون الأرضية", () => {
+    expect(styleViolations(CSS)).toEqual([]);
+    const edge = declsOf(CSS, ".nx-ticker-window::before", null).background;
+    expect(edge).toContain("var(--tk-base)");
+    expect(declsOf(CSS, ".nx-ticker-window::before", null)["pointer-events"]).toBe("none");
+    for (const sel of [".nx-ticker", ".nx-ticker-window", ".nx-ticker-view", ".nx-ticker-track"]) {
+      const d = declsOf(CSS, sel, null);
+      expect(
+        Object.keys(d).filter((p) => /mask/.test(p)),
+        sel,
+      ).toEqual([]);
+    }
+  });
+
+  it("الثيم من `.dark` وحدها على الرموز، والأرضية والشفق يتبدّلان معه", () => {
+    const light = declsOf(CSS, ".nx-ticker", null);
+    const dark = declsOf(CSS, ".dark .nx-ticker", null);
+    for (const k of ["--tk-base", "--tk-still", "--tk-live", "--tk-glint", "--tk-comet"]) {
+      expect(light[k], `فاتح ${k}`).toBeTruthy();
+      expect(dark[k], `داكن ${k}`).toBeTruthy();
+      expect(dark[k]).not.toBe(light[k]);
+    }
+    // لا صنف ثيمٍ في الترميز (المادة ٣٢): الشيفرة لا تذكر dark/light أصنافًا.
+    expect(CODE).not.toMatch(/["'`]\s*(?:dark|light)\b[^"'`]*["'`]\s*:|classList/);
+  });
+
+  it("الطباعة تُخفي الشريط، والقسري يُخفي طبقات الضوء، وحلقة تركيز الزرّ داخل اللوح المقصوص", () => {
+    expect(declsOf(CSS, ".nx-ticker", "print").display).toBe("none");
+    const forced = CSS.slice(CSS.indexOf("@media (forced-colors: active)"));
+    for (const sel of [".nx-ticker::before", ".nx-ticker::after", ".nx-ticker-window::after"]) {
+      expect(forced).toContain(sel);
+    }
+    expect(forced).toMatch(/\.nx-tk-body,/);
+    expect(declsOf(CSS, ".nx-ticker", null).overflow).toBe("hidden");
+    expect(
+      Number.parseFloat(
+        declsOf(CSS, ".nx-ticker .nx-ticker-toggle:focus-visible", null)["outline-offset"],
+      ),
+    ).toBeLessThan(0);
+  });
+
+  it("الحضور الطباعي: 15px/1.2 للبند، كلمة الحالة 600، أرقامٌ متساوية العرض، وأرضية 12px محفوظة", () => {
+    const item = declsOf(CSS, ".nx-ticker-item", null);
+    expect(item["font-size"]).toBe("15px");
+    expect(item["line-height"]).toBe("1.2");
+    expect(declsOf(CSS, ".nx-tk-word", null)["font-weight"]).toBe("600");
+    expect(declsOf(CSS, ".nx-tk-num", null)["font-variant-numeric"]).toBe("tabular-nums");
+    expect(declsOf(CSS, ".nx-tk-badge", null)["font-size"]).toBe("12px");
+    // الكبسولة بارتفاعٍ ثابت: وصول الخطّ لا يغيّره، وارتفاع الشريط قيمةٌ واحدة بلا قفزة.
+    expect(px(declsOf(CSS, ".nx-tk-body", null)["block-size"])).toBeGreaterThanOrEqual(32);
+    expect(declsOf(CSS, ".nx-tk-body", null)["border-radius"]).toBe("999px");
+    expect(declsOf(CSS, ".nx-ticker", null)["block-size"]).toBe("52px");
+  });
+
+  it("السرعة 44 بكسلًا في الثانية — داخل المدى", () => {
+    expect(TICKER_PX_PER_S).toBe(44);
+    expect(speedViolations(TICKER_PX_PER_S)).toEqual([]);
+  });
+});
+
+describe("٢٠٢٦/١٠/٢٥ — الاستمرار: مدّةٌ تتغيّر والمسار لا يقفز", () => {
+  /** موضع المسار بالبكسل لوقتٍ محلّي (السرعة ثابتة) — النموذج الذي يجب أن يُحفَظ. */
+  const pos = (localMs: number) => (localMs / 1000) * TICKER_PX_PER_S;
+
+  it("`carryLoopTime` يحفظ الموضع بالبكسل لا نسبة التقدّم، ويلتفّ حين تقصر النسخة", () => {
+    // بعد 3 دوراتٍ و5 ث، والنسخة تكبر 38 ← 44 ث: الموضع نفسه (5 ث)، لا 5×(44/38).
+    expect(carryLoopTime(3 * 38_000 + 5_000, 38_000, 44_000)).toBe(5_000);
+    expect(pos(carryLoopTime(3 * 38_000 + 5_000, 38_000, 44_000))).toBe(pos(5_000));
+    // `T mod الجديدة` الخام قفزةٌ (هذا ما يفعله CSS وحده): يختلف عن الوقت المحلي.
+    expect((3 * 38_000 + 5_000) % 44_000).not.toBe(5_000);
+    // الدورة الأولى: يبقى كما هو.
+    expect(carryLoopTime(1_234, 38_000, 44_000)).toBe(1_234);
+    // النسخة تقصر دون الإزاحة الحالية: يلتفّ (قفزةٌ لازمة) ويبقى داخل الدورة.
+    expect(carryLoopTime(30_000, 38_000, 20_000)).toBe(10_000);
+    // مدخلاتٌ فاسدة: لا يغيّر شيئًا.
+    expect(carryLoopTime(Number.NaN, 38_000, 44_000)).toBeNaN();
+    expect(carryLoopTime(500, 0, 44_000)).toBe(500);
+    expect(carryLoopTime(500, 38_000, 0)).toBe(500);
+    // خاصيةٌ على شبكة: النتيجة في [0، الجديدة)، والموضع مصون ما دام الوقت المحلي دون الجديدة.
+    for (const prev of [9_000, 38_000, 51_250]) {
+      for (const next of [7_500, 38_000, 60_000]) {
+        for (const t of [0, 1, 8_999, 37_999, 123_456, 999_999]) {
+          const r = carryLoopTime(t, prev, next);
+          expect(r).toBeGreaterThanOrEqual(0);
+          expect(r).toBeLessThan(next);
+          const local = t % prev;
+          if (local < next) expect(r).toBe(local);
+        }
+      }
+    }
+  });
+
+  it("`retimeLoop` يكتب متغيّر المدّة ويصحّح حركة المسار وحدها", () => {
+    const written: Record<string, string> = {};
+    const other = { animationName: "nxTkReveal", currentTime: 777 as number | null };
+    const mine = { animationName: "nxTickerRtl", currentTime: 3 * 38_000 + 5_000 };
+    const track = {
+      style: { setProperty: (k: string, v: string) => (written[k] = v) },
+      getAnimations: () => [other, mine],
+    } as unknown as Parameters<typeof retimeLoop>[0];
+    expect(retimeLoop(track, 38, 44)).toBe(true);
+    expect(written).toEqual({ "--nx-ticker-s": "44.00s" });
+    expect(mine.currentTime).toBe(5_000);
+    expect(other.currentTime).toBe(777);
+    // بلا حركةٍ قائمة (سكون): تُكتب المدّة ولا يُصحَّح شيء.
+    const idle = {
+      style: { setProperty: () => {} },
+      getAnimations: () => [other],
+    } as unknown as Parameters<typeof retimeLoop>[0];
+    expect(retimeLoop(idle, 38, 44)).toBe(false);
+    // متصفّحٌ بلا `getAnimations`.
+    const bare = { style: { setProperty: () => {} } } as unknown as Parameters<
+      typeof retimeLoop
+    >[0];
+    expect(retimeLoop(bare, 38, 44)).toBe(false);
+  });
+
+  describe("مصيَّرًا", () => {
+    const observers: Array<() => void> = [];
+    let copyW = 440;
+    const clock = { currentTime: 0 as number };
+    const original = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "getAnimations");
+
+    beforeEach(() => {
+      observers.length = 0;
+      copyW = 440;
+      clock.currentTime = 0;
+      vi.stubGlobal(
+        "ResizeObserver",
+        class {
+          constructor(cb: () => void) {
+            observers.push(cb);
+          }
+          observe() {}
+          disconnect() {}
+        },
+      );
+      vi.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(function (
+        this: Element,
+      ) {
+        const width = this.classList.contains("nx-ticker-copy") ? copyW : 300;
+        return { width, height: 50, top: 0, left: 0, right: width, bottom: 50 } as DOMRect;
+      });
+      Object.defineProperty(HTMLElement.prototype, "getAnimations", {
+        configurable: true,
+        value(this: HTMLElement) {
+          return this.classList.contains("nx-ticker-track")
+            ? [
+                {
+                  animationName: "nxTickerRtl",
+                  get currentTime() {
+                    return clock.currentTime;
+                  },
+                  set currentTime(v: number) {
+                    clock.currentTime = v;
+                  },
+                },
+              ]
+            : [];
+        },
+      });
+      setReads({});
+    });
+    afterEach(() => {
+      vi.unstubAllGlobals();
+      vi.restoreAllMocks();
+      if (original) Object.defineProperty(HTMLElement.prototype, "getAnimations", original);
+      else delete (HTMLElement.prototype as { getAnimations?: unknown }).getAnimations;
+      reads.current = null;
+    });
+
+    it("تغيّر عرض النسخة (خطٌّ يصل · بنودٌ تتبدّل) يصحّح الزمن في نداء المراقب نفسه، لا بعد إيداع", async () => {
+      const { container } = renderTicker();
+      await act(async () => {});
+      const track = container.querySelector(".nx-ticker-track") as HTMLElement;
+      expect(track.style.getPropertyValue("--nx-ticker-s")).toBe("10.00s");
+      expect(container.querySelector(".nx-ticker")?.hasAttribute("data-run")).toBe(true);
+      // بعد ثلاث دوراتٍ و4 ث، تكبر النسخة 440 ← 880 (مدّة 20 ث).
+      clock.currentTime = 3 * 10_000 + 4_000;
+      copyW = 880;
+      for (const cb of observers) cb();
+      // قبل أن يُرسَم React أيَّ شيء: الزمن مصحَّحٌ والمتغيّر مكتوب.
+      expect(clock.currentTime).toBe(4_000);
+      expect(track.style.getPropertyValue("--nx-ticker-s")).toBe("20.00s");
+      await act(async () => {});
+      expect(track.style.getPropertyValue("--nx-ticker-s")).toBe("20.00s");
+      // ثم تقصر 880 ← 110 (مدّة 2.5 ث): تلتفّ الإزاحة 4 ث حولها.
+      copyW = 110;
+      for (const cb of observers) cb();
+      expect(clock.currentTime).toBe(1_500);
+      expect(track.style.getPropertyValue("--nx-ticker-s")).toBe("2.50s");
+      // وتغيّرٌ دون عتبة 0.01 ث لا يمسّ شيئًا.
+      clock.currentTime = 777;
+      copyW = 110.1;
+      for (const cb of observers) cb();
+      expect(clock.currentTime).toBe(777);
+    });
+
+    it("تحديث القراءات لا يعيد تركيب المسار ولا النسخ ولا البند؛ وتغيّر الصنف يعيد الجسم وحده", async () => {
+      setReads({ state: stateQ([96]) });
+      const view = renderTicker();
+      await act(async () => {});
+      const again = () =>
+        view.rerender(
+          createElement(
+            I18nProvider,
+            null,
+            createElement(HomeTicker, {
+              paused: false,
+              offscreen: false,
+              ready: true,
+              onPausedChange: () => {},
+            }),
+          ),
+        );
+      const track = view.container.querySelector(".nx-ticker-track");
+      const lists = [...view.container.querySelectorAll("ul.nx-ticker-copy")];
+      const li = byKind(view.container, "posture");
+      const body = li.querySelector(".nx-tk-body");
+      // الرقم يتغيّر (تحديث قراءات) والصنف واحد.
+      setReads({ state: stateQ([94]) });
+      again();
+      expect(view.container.querySelector(".nx-ticker-track")).toBe(track);
+      expect([...view.container.querySelectorAll("ul.nx-ticker-copy")]).toEqual(lists);
+      expect(byKind(view.container, "posture")).toBe(li);
+      expect(byKind(view.container, "posture").querySelector(".nx-tk-body")).toBe(body);
+      // الصنف يتغيّر: الجسم وحده يُعاد، والمسار والنسخ والبند باقية.
+      setReads({ state: stateQ([40]) });
+      again();
+      expect(view.container.querySelector(".nx-ticker-track")).toBe(track);
+      expect([...view.container.querySelectorAll("ul.nx-ticker-copy")]).toEqual(lists);
+      expect(byKind(view.container, "posture")).toBe(li);
+      expect(byKind(view.container, "posture").querySelector(".nx-tk-body")).not.toBe(body);
+    });
   });
 });

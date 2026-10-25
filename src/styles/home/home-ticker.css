@@ -1,22 +1,28 @@
 /* ============================================================================
    home-ticker.css — «شريط الإعلانات»: الشريط المتحرك فوق البانر (أمر المالك ٢٠٢٦/١٠/١٨ R3؛
-   وبنوده الحيّة الأربعة بأمر ٢٠٢٦/١٠/٢٤: الحالة الأمنية · الصيانة · البلاغات · المشاريع)
+   وبنوده الحيّة الأربعة بأمر ٢٠٢٦/١٠/٢٤: الحالة الأمنية · الصيانة · البلاغات · المشاريع؛
+   ومظهره السينمائي المتواصل بأمر ٢٠٢٦/١٠/٢٥)
    ----------------------------------------------------------------------------
    يستورده `HomeTicker.tsx` وحده (حزمة الرئيسية المقتطَعة).
 
    ① **الحركة الدائمة الوحيدة في صفوف الرئيسية، بنصّ المالك** («الشريط الإعلاني
-     المتحرك باستمرار»): نسخ «لا حركة دائمة» (M1) لهذا الشريط وحده. وهي اختيارٌ لا
-     افتراض: داخل `prefers-reduced-motion: no-preference` وتحت
-     `html:not([data-nx-motion="off"]):not(.safe-mode)`، وعلى `[data-run]` وحده (بعد
+     المتحرك باستمرار»، ثم «متواصل بدون توقف»): داخل `prefers-reduced-motion: no-preference`
+     وتحت `html:not([data-nx-motion="off"]):not(.safe-mode)`، وعلى `[data-run]` وحده (بعد
      القياس وقراءة التفضيل). `translate` على المُركِّب — لا `transform` (المادة ٣٢) ولا
-     خاصية تخطيط ولا قناع (`mask-image` فوق ابنٍ يتحرّك دائمًا يعيد تركيب القناع كل
-     إطار، وهو درس iOS ٢٠٢٦/١٠/١٤) — فالحافّتان طبقتان ساكنتان بلون السطح.
+     خاصية تخطيط. **والقناع ممنوعٌ على كل سلفٍ للمسار** (`mask-image` فوق ابنٍ يتحرّك دائمًا
+     يعيد تركيب القناع كل إطار، درس iOS ٢٠٢٦/١٠/١٤): فذوبان البنود عند الحافّتين طبقتان ساكنتان بلون
+     أرضية اللوح نفسه (`--tk-base`) تقع تحتهما صورة الشفق فتخبو إلى الأرضية.
    ② **الحال الأساسية ساكنة** (ما يراه من طلب السكون): النسخة المقروءة وحدها تُمرَّر
-     أفقيًّا داخل الشريط بلا نسخٍ مطابقة ولا زرّ إيقاف. والارتفاع ثابتٌ في الحالين —
-     الإطار نفسه، فلا قفزة تخطيط حين تبدأ الحركة.
-   ③ **التوقّف تجميدٌ في المكان** (`animation-play-state`) لا عودةٌ إلى البداية: الزرّ
-     (`[data-paused]`)، والفأرة فوق الشريط، والتركيز داخله، وخروجه من الإطار.
-   ④ لا لون إلا من طبقة الرموز (المادة ٣٣)، والنصّ 14px (أرضية 12px)، والزرّ ≥ 44px.
+     أفقيًّا داخل الشريط بلا نسخٍ مطابقة ولا زرّ إيقاف، وصورة الشفق ساكنة. والارتفاع ثابتٌ في
+     الحالين — فلا قفزة تخطيط حين تبدأ الحركة.
+   ③ **لا توقّف بالفأرة** (٢٠٢٦/١٠/٢٥ — أمر «متواصل بدون توقف»): مرور المؤشّر لا يجمّد شيئًا. يقف
+     المسار تجميدًا في المكان (`animation-play-state`) لا عودةً إلى البداية في ثلاثٍ فقط: زرّ «إيقاف
+     الحركة» (WCAG 2.2.2 — الآلية الواجبة، وهي وحدها تكفيه)، وخروجه من الإطار (لا يُرى)، وتركيز
+     لوحة المفاتيح عليه (`:focus-visible`: من يقرأ بالأسهم لا يهرب منه النصّ؛ والنقر بالفأرة لا يطابقه
+     فلا يجمّده). وبقيّة طبقات الضوء (شفق · مذنّب · وميض · سداسيّ) تُرسم مع الجري وحده وتختفي مع الإيقاف.
+   ④ لا لون إلا من طبقة الرموز (المادة ٣٣) — الثيم يُقرأ بـ`.dark` وحدها (أساسُها الفاتح)، والنصّ
+     ≥ 12px، والزرّ ≥ 44px. **ميزانية البايتات:** اللوح يُرسم بتدرّجاتٍ وصورة شفقٍ مصيَّرة (Remotion،
+     `public/media/ticker/bg-*`) لا بقواعد طويلة.
    ⑤ **حركة البنود الحيّة** (أسفل الملف) أساسها مُركِّب — `opacity`/`scale`/`translate` — **مع ثلاثة
      استثناءات معلنة لا تمسّ التخطيط**: `filter: blur` داخل نصّ البند وقت دخوله، و`clip-path` للكشف، و`@property --tk-n` للعدّ —
      داخل بوّابة ① نفسها وعلى `[data-run]`: الرمز المتحرّك بدل الساكن، ونبضةٌ واحدة عند تغيّر
@@ -24,53 +30,125 @@
      باتجاه السهم. وكلّها تقف مع الزرّ وخارج الإطار. اللون في الشارة والرمز والإطار تأكيدٌ لا حاملٌ
      وحيد: كلمة الحالة والشكل يحملان المعنى (WCAG 2.2 §1.4.1)، ونصّ الكلمة `--ink` لأن
      اللونين الكهرماني/الأخضر على غسلتهما دون 4.5:1 في الفاتح (قِيس).
+   ⑥ **طبقات الضوء** (٢٠٢٦/١٠/٢٥): مذنّبٌ على الحدّ العلوي (7 ث) ووميضٌ يكنس اللوح كلّ 9 ث لمدّة 1.1 ث
+     بتفاوت إضاءةٍ ≤ 0.12 (WCAG 2.3.1: أبعد ما يكون عن 3 وميضات/ث)، وسداسيّ الفاصل يتنفّس ببطء —
+     كلّها `translate`/`opacity`/`scale` على عناصر زائفة.
    الحارس: `src/components/home/home-ticker.contract.test.ts`.
    ============================================================================ */
 
+/* اللوح الزجاجي: أرضيةٌ كحليّة عميقة (داكن) أو لؤلؤيةٌ شاحبة (فاتح) من الرموز، وفوقها وهجان ساكنان
+   وصورة الشفق (::before). الظلّ والحدّ العلوي الداخلي يعطيان سُمك اللوح. `overflow: hidden` يقصّ
+   الوميض على استدارة اللوح، فحلقة تركيز الزرّ داخليّة (أدناه). */
 .nx-ticker {
+  --tk-base: color-mix(in srgb, var(--tone-blue) 6%, var(--surface-2));
+  --tk-comet: var(--sd-azure);
+  --tk-glint: color-mix(in srgb, var(--tone-blue) 11%, transparent);
+  --tk-still: url("/media/ticker/bg-aurora-light-still.webp");
+  --tk-live: url("/media/ticker/bg-aurora-light.webp");
+  /* الصورتان معتمتان (لا ألفا): طبقةٌ بعتمةٍ فوق الأرضية — 0.65 فاتحًا و0.42 داكنًا (قياس وكيل الأصول)، ومركزها يقصّ الأسطر 25–71 من 96. */
+  --tk-aurora: 0.65;
+  --tk-step: 70ms;
+  --tk-sweep: 1;
   position: relative;
   display: flex;
   align-items: stretch;
-  /* 44px للزرّ داخل حدّين شعريين. */
-  block-size: 46px;
+  isolation: isolate;
+  overflow: hidden;
+  /* 50px داخل حدّين شعريين. */
+  block-size: 52px;
   border: 1px solid var(--hairline);
-  border-radius: 12px;
-  background: var(--surface);
+  border-radius: 14px;
+  background:
+    radial-gradient(
+      60% 150% at 12% 0,
+      color-mix(in srgb, var(--tone-cyan) 14%, transparent),
+      transparent
+    ),
+    radial-gradient(
+      50% 150% at 88% 100%,
+      color-mix(in srgb, var(--tone-blue) 12%, transparent),
+      transparent
+    ),
+    var(--tk-base);
   color: var(--ink-2);
   box-shadow:
-    0 1px 2px color-mix(in srgb, var(--ink) 6%, transparent),
-    0 8px 24px -14px color-mix(in srgb, var(--ink) 18%, transparent);
+    inset 0 1px 0 var(--glass-rim),
+    inset 0 -1px 0 color-mix(in srgb, var(--tone-blue) 22%, transparent),
+    0 14px 28px -18px color-mix(in srgb, var(--ink) 38%, transparent);
 }
 
-/* النافذة تقصّ المسار والحافّتين على استدارة الشريط (داخل حدّه): زاويةٌ مربّعة هنا
-   كانت ترسم الحافّة فوق منحنى الحدّ حين يغيب الزرّ في الحال الساكنة. */
-.nx-ticker-window {
-  position: relative;
-  flex: 1 1 auto;
-  min-inline-size: 0;
-  overflow: hidden;
-  border-radius: 11px;
+.dark .nx-ticker {
+  --tk-aurora: 0.42;
+  --tk-base: color-mix(in srgb, var(--surface) 78%, var(--nx-ink));
+  --tk-comet: var(--tone-cyan);
+  --tk-glint: color-mix(in srgb, var(--nx-white) 9%, transparent);
+  --tk-still: url("/media/ticker/bg-aurora-dark-still.webp");
+  --tk-live: url("/media/ticker/bg-aurora-dark.webp");
 }
 
-/* حافّتان تذوبان في السطح: طبقتان ساكنتان فوق المسار لا قناعٌ عليه (①). */
-.nx-ticker-window::before,
-.nx-ticker-window::after {
+.nx-ticker[dir="rtl"] {
+  --tk-sweep: -1;
+}
+
+/* صورة الشفق: ساكنةٌ هنا، والمتحرّكة (WebP) داخل البوّابة وما دام الشريط يجري (⑥ أدناه). */
+.nx-ticker::before {
   content: "";
   position: absolute;
-  inset-block: 0;
-  z-index: 1;
-  inline-size: 24px;
+  inset: 0;
+  background: var(--tk-still) center / cover no-repeat;
+  opacity: var(--tk-aurora);
   pointer-events: none;
 }
 
-.nx-ticker-window::before {
-  left: 0;
-  background: linear-gradient(to right, var(--surface), transparent);
+/* الوميض والمذنّب: غير مرسومَين إلا داخل البوّابة. */
+.nx-ticker::after,
+.nx-ticker-window::after {
+  content: "";
+  position: absolute;
+  z-index: 3;
+  display: none;
+  pointer-events: none;
 }
 
+.nx-ticker::after {
+  inset: 0;
+  background: linear-gradient(105deg, transparent 42%, var(--tk-glint) 50%, transparent 58%);
+}
+
+/* النافذة تقصّ المسار على استدارة الشريط (داخل حدّه). */
+.nx-ticker-window {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  overflow: hidden;
+  border-radius: 13px;
+}
+
+/* ذوبان الحافّتين: طبقتان ساكنتان بلون الأرضية فوق المسار (لا قناع — ①) بين اللوح والبنود. */
+.nx-ticker-window::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background:
+    linear-gradient(to right, var(--tk-base), transparent) left / 36px 100% no-repeat,
+    linear-gradient(to left, var(--tk-base), transparent) right / 36px 100% no-repeat;
+  pointer-events: none;
+}
+
+/* مذنّب الحدّ العلوي: خطٌّ بتوهّجٍ عند رأسه في منتصف عنصرٍ بعرض النافذة، فيكنس الإزاحة كلّها. */
 .nx-ticker-window::after {
-  right: 0;
-  background: linear-gradient(to left, var(--surface), transparent);
+  inset: 0 0 auto;
+  block-size: 7px;
+  background:
+    linear-gradient(to right, transparent 34%, var(--tk-comet) 50%, transparent 50.6%) top / 100%
+      2px no-repeat,
+    radial-gradient(
+      ellipse 7% 100% at 50% 0,
+      color-mix(in srgb, var(--tk-comet) 42%, transparent),
+      transparent
+    );
 }
 
 /* ② الحال الساكنة: تمريرٌ أفقيّ داخل الشريط، والصفحة لا تتحرّك جانبيًّا. */
@@ -116,26 +194,26 @@
 
 /* البند بارتفاع الشريط كاملًا (`block-size: 100%`) لا بارتفاع سطره: وصول الخطّ العربي
    (تبديل الخطّ) كان يكبّر صندوق السطر 20 ← 24px فيُزيح البنود 1–3px — إزاحة تخطيطٍ
-   قِيست (٠٫٠١ على 1536 و٠٫٠١٨ على 390، ٢٠٢٦/١٠/١٨). */
+   قِيست (٠٫٠١ على 1536 و٠٫٠١٨ على 390، ٢٠٢٦/١٠/١٨). والكبسولة نفسها بارتفاعٍ ثابت (`.nx-tk-body`). */
 .nx-ticker-item {
   display: inline-flex;
   align-items: center;
   gap: 16px;
   block-size: 100%;
   padding-inline-end: 16px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
-  line-height: 1.4;
+  line-height: 1.2;
   white-space: nowrap;
 }
 
-/* الفاصل: سداسيّ صغير صدى رمز سَدِيد — زخرفةٌ بلا نصّ، فلا يقرؤه القارئ. */
+/* الفاصل: سداسيٌّ صغير صدى رمز سَدِيد (لا ماسة: المعيّن رمز حالة «معلومة») — زخرفةٌ بلا نصّ، فلا يقرؤها القارئ. تتنفّس داخل البوّابة (⑥). */
 .nx-ticker-item::after {
   content: "";
   flex: none;
   inline-size: 9px;
   block-size: 10px;
-  background: var(--sd-azure);
+  background: linear-gradient(135deg, var(--sd-azure-soft), var(--sd-azure));
   clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
 }
 
@@ -148,6 +226,8 @@
 /* زرّ «إيقاف الحركة» في طرف الشريط — خارج اللوحة. مخفيٌّ في الحال الساكنة (لا شيء
    يُوقَف)، ويظهر مع الحركة (أدناه). */
 .nx-ticker-toggle {
+  position: relative;
+  z-index: 2;
   display: none;
   flex: none;
   place-items: center;
@@ -157,8 +237,6 @@
   padding: 0;
   border: 0;
   border-inline-start: 1px solid var(--hairline);
-  border-start-end-radius: 11px;
-  border-end-end-radius: 11px;
   background: transparent;
   color: var(--ink-2);
   cursor: pointer;
@@ -167,6 +245,11 @@
 .nx-ticker-toggle svg {
   inline-size: 18px;
   block-size: 18px;
+}
+
+/* حلقة التركيز داخل اللوح: `overflow: hidden` عليه يقصّ الحلقة الخارجية (إزاحة +2px من الطبقة العامة). */
+.nx-ticker .nx-ticker-toggle:focus-visible {
+  outline-offset: -4px;
 }
 
 /* الحالة بالرمز (إيقاف ⇄ تشغيل) وبـ`aria-pressed` — واللون تأكيدٌ لا حاملٌ وحيد. */
@@ -194,6 +277,43 @@
 @keyframes nxTickerLtr {
   to {
     translate: calc(-100% / var(--nx-ticker-n, 2)) 0;
+  }
+}
+
+/* ⑥ طبقات الضوء: مذنّبٌ يعبر النافذة في 4.9 ث من دورة 7 ث، ووميضٌ يكنس اللوح 1.1 ث من دورة 9 ث
+   (يسكن 7.9 ث أوّلًا فلا وميض عند الفتح)، وسداسيٌّ يتنفّس. الاتجاه العربي (+x) هو الأصل؛ والإنجليزية
+   تعكسه بـ`animation-direction`. */
+@keyframes nxTkComet {
+  0% {
+    translate: -60% 0;
+  }
+
+  70%,
+  100% {
+    translate: 60% 0;
+  }
+}
+
+@keyframes nxTkGlint {
+  0%,
+  87.8% {
+    translate: -100% 0;
+  }
+
+  100% {
+    translate: 100% 0;
+  }
+}
+
+@keyframes nxTkGem {
+  from {
+    opacity: 0.55;
+    scale: 0.7;
+  }
+
+  to {
+    opacity: 1;
+    scale: 1;
   }
 }
 
@@ -229,6 +349,57 @@
     .nx-ticker-track[data-run] {
     animation-name: nxTickerLtr;
   }
+
+  /* طبقات الضوء: تُرسم وتتحرّك ما دام الشريط يجري — وتختفي (لا تتجمّد نصفَ كنسٍ) مع الزرّ وخارج الإطار.
+     الشفق المتحرّك (WebP) يحلّ محلّ ساكنه هنا لأنه لا يُوقَف إلا بتبديله. */
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-ticker[data-run]:not([data-paused], [data-offscreen])::before {
+    background-image: var(--tk-live);
+  }
+
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-ticker[data-run]:not([data-paused], [data-offscreen])::after {
+    display: block;
+    animation-name: nxTkGlint;
+    animation-duration: 9s;
+    animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1);
+    animation-iteration-count: infinite;
+  }
+
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-ticker[data-run]:not([data-paused], [data-offscreen])
+    .nx-ticker-window::after {
+    display: block;
+    animation-name: nxTkComet;
+    animation-duration: 7s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+  }
+
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-ticker[data-run]:not([data-paused], [data-offscreen])
+    .nx-ticker-item::after {
+    animation-name: nxTkGem;
+    animation-duration: 2.4s;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+  }
+
+  /* الإنجليزية تجري يسارًا: المذنّب والوميض بعكس اتجاههما، ورأس المذنّب يتقدّم (مقطعاهما متناظران). */
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-ticker[dir="ltr"][data-run]:not([data-paused], [data-offscreen])::after,
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-ticker[dir="ltr"][data-run]:not([data-paused], [data-offscreen])
+    .nx-ticker-window::after {
+    animation-direction: reverse;
+  }
+
+  html:not([data-nx-motion="off"]):not(.safe-mode)
+    .nx-ticker[dir="ltr"][data-run]
+    .nx-ticker-window::after {
+    scale: -1 1;
+  }
 }
 
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
@@ -239,17 +410,10 @@
   }
 }
 
-/* ③ التوقّف تجميدٌ في المكان: الزرّ، وخارج الإطار، والتركيز داخل الشريط. */
+/* ③ التوقّف تجميدٌ في المكان: الزرّ، وخارج الإطار، وتركيز لوحة المفاتيح — **لا الفأرة** (أمر ٢٠٢٦/١٠/٢٥). */
 .nx-ticker:is([data-paused], [data-offscreen]) .nx-ticker-track,
-.nx-ticker-view:focus-within .nx-ticker-track {
+.nx-ticker-view:focus-visible .nx-ticker-track {
   animation-play-state: paused;
-}
-
-/* والفأرة فوقه — المؤشّر الدقيق وحده: على اللمس يبقى «المرور» عالقًا بعد النقر. */
-@media (hover: hover) {
-  .nx-ticker-view:hover .nx-ticker-track {
-    animation-play-state: paused;
-  }
 }
 
 /* ── ⑤ البنود الحيّة ─────────────────────────────────────────────────────────
@@ -305,14 +469,23 @@
   --tk-nx: 0.15em;
 }
 
-/* جسم البند: صندوقٌ واحد تتراكب عليه نبضة الانتقال (⑤ أدناه). */
+/* جسم البند كبسولةٌ مثلّجة: زجاجٌ شفّاف بحدٍّ وتوهّجٍ داخليٍّ من نبرة الحالة (`--tk-tone`) — اللون تأكيدٌ
+   لا حاملٌ وحيد (الشكل والكلمة والسهم معه). ارتفاعها ثابت فلا يغيّره وصول الخطّ. تتراكب عليها نبضة الانتقال (⑤). */
 .nx-tk-body {
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding-inline: 8px;
-  border-radius: 8px;
+  gap: 9px;
+  block-size: 36px;
+  padding-inline: 8px 14px;
+  border: 1px solid color-mix(in srgb, var(--tk-tone) 40%, var(--hairline));
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--ink) 8%, transparent), transparent 70%),
+    color-mix(in srgb, var(--tk-tone) 6%, color-mix(in srgb, var(--tk-base) 80%, transparent));
+  box-shadow:
+    inset 0 0 18px -6px color-mix(in srgb, var(--tk-tone) 62%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--ink) 10%, transparent);
 }
 
 /* طبقة النبضة: شفّافةٌ ساكنًا، ولا تتحرّك إلا داخل البوّابة. */
@@ -345,11 +518,11 @@
      فلا يقصّه قصّ الكنس (⑤ أدناه). */
   padding: 0.12em 0.6em;
   line-height: 1.5;
-  border: 1px solid color-mix(in srgb, var(--tk-tone) 70%, var(--surface));
-  border-radius: 6px;
-  background: color-mix(in srgb, var(--tk-tone) 14%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--tk-tone) 70%, var(--tk-base));
+  border-radius: 0.5em;
+  background: color-mix(in srgb, var(--tk-tone) 16%, var(--tk-base));
   color: var(--ink);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .nx-tk-fig {
@@ -390,6 +563,8 @@
   padding-inline: 6px;
   border: 1px solid var(--hairline-hover);
   border-radius: 999px;
+  /* أرضيةٌ مصمتة تحت نصّ 12px: الوهج الداخلي للكبسولة لا يخفض تباينه عن 4.5:1. */
+  background: color-mix(in srgb, var(--surface) 70%, var(--tk-base));
   color: var(--ink-2);
   font-size: 12px;
   font-weight: 700;
@@ -729,7 +904,7 @@
     .nx-ticker-track[data-run]
     .nx-tk[data-flip]
     .nx-tk-word {
-    clip-path: inset(-0.4em 0 round 0.43em);
+    clip-path: inset(-0.4em 0 round 0.5em);
   }
 
   html:not([data-nx-motion="off"]):not(.safe-mode)
@@ -793,9 +968,11 @@
     border-color: CanvasText;
   }
 
+  .nx-ticker::before,
+  .nx-ticker::after,
   .nx-ticker-window::before,
   .nx-ticker-window::after {
-    display: none;
+    display: none !important;
   }
 
   .nx-ticker-item::after {
@@ -809,6 +986,7 @@
   }
 
   /* القسري يمحو الغسلات: الإطار والنصّ بألوان النظام، والكلمة تبقى حاملةً للمعنى. */
+  .nx-tk-body,
   .nx-tk-word,
   .nx-tk-badge,
   .nx-tk-trend {

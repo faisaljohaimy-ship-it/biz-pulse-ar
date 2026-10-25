@@ -13,15 +13,21 @@
  * مفاتيح react-query نفسها) فلا طلبٌ مضاعف ولا رقمٌ يخالف بطاقة المؤشرات تحته.
  * `HomeTicker` يقرأ ويقرّر؛ و`TickerStrip` يرسم ما يُعطاه وحده (فيُجرَّب بلا شبكة).
  *
- * ## كيف يتحرّك — المُركِّب وحده، بلا حلقة JS
+ * ## كيف يتحرّك — المُركِّب وحده، بلا حلقة JS، ومتواصلٌ بلا توقّف
  *
  * مسارٌ فيه النسخة المقروءة ونسخٌ مطابقة (`aria-hidden` + `inert`)، ينزاح بخاصية
  * `translate` المستقلّة نسخةً واحدة في كل دورة فتحلّ التالية محلّ الأولى بلا وصلةٍ
- * تُرى. والقياس مرّةً عند التركيب ومع كل تغيّر حجم (`ResizeObserver` — ويلتقط وصول
- * الخطوط وتبدّل نصّ البنود)، يكتب متغيّرين لا قيمتين نهائيتين (المادة ٣٣): المدّة من عرض النسخة
- * بسرعةٍ ثابتة مهما طال المحتوى، وعدد النسخ بما يملأ أيّ عرضٍ فلا تظهر فجوة (`tickerLoop`).
- * والاتجاه من اللغة: العربية تجري من اليسار إلى اليمين فيتقدّم أوّلُ كل عبارة (طرفها
+ * تُرى (قِيس: موضع أوّل بند عند t وt+دورة متطابق تمامًا). والقياس مرّةً عند التركيب ومع كل تغيّر حجم
+ * (`ResizeObserver` — ويلتقط وصول الخطوط وتبدّل نصّ البنود)، يكتب متغيّرين لا قيمتين نهائيتين (المادة ٣٣): المدّة
+ * من عرض النسخة بسرعةٍ ثابتة (44px/ث) مهما طال المحتوى، وعدد النسخ بما يملأ أيّ عرضٍ فلا تظهر فجوة
+ * (`tickerLoop`). والاتجاه من اللغة: العربية تجري من اليسار إلى اليمين فيتقدّم أوّلُ كل عبارة (طرفها
  * الأيمن) داخلًا، والإنجليزية بعكسها.
+ *
+ * **الاستمرار (أمر ٢٠٢٦/١٠/٢٥ «متواصل بدون توقف»):** تغيّر المدّة — وصول الخطّ، تحديث القراءات، تغيّر
+ * العرض — لا يعيد المسار إلى أوّله ولا يقفز به، ولا يُعاد تركيب المسار ولا النسخ. CSS وحده يقفز بعد
+ * أوّل دورة (`T mod الجديدة` غير `T mod القديمة`)، فيُصحَّح الزمن المحلي مرّةً واحدة (`retimeLoop`) **داخل
+ * نداء المراقب نفسه قبل الرسم**: الإزاحة بالبكسل = السرعة × الزمن المحلي، فيُحفظ الزمن المحلي لا نسبة
+ * التقدّم (`carryLoopTime`). وهذا تصحيحٌ لا حلقة — حركة المسار تبقى CSS على المُركِّب.
  *
  * ## الحركة السينمائية ولماذا لا تمسّ الحرف العربي
  *
@@ -30,27 +36,32 @@
  * إلى حروف في هذا المكوّن (يكسر وصل الحروف العربية وتشكيلها)، ولا `letter-spacing` متحرّكًا (خاصيةُ
  * تخطيطٍ تغيّر عرض النسخة المقيس)، ولا وزنَ متحرّكًا. العدّ التصاعدي للرقم زخرفةٌ `aria-hidden`.
  *
+ * والمظهر لوحٌ زجاجي (٢٠٢٦/١٠/٢٥): شفقٌ مصيَّر خلف البنود، ومذنّبٌ على الحدّ العلوي ووميضٌ كل 9 ث وسداسيُّ
+ * فاصلٍ تتنفّس، والبنود كبسولاتٌ مثلّجة بتوهّجٍ داخلي من نبرة حالتها — كلّها في `home-ticker.css`.
+ *
  * وفوق المسار حركةٌ **مُركِّبة** (`opacity`/`scale`/`translate` وحدها، في `home-ticker.css`):
  * الرمز المتحرّك (WebP) مقابل ساكنه (SVG) باختيار الـCSS لا JS؛ نبضةٌ واحدة حين يتغيّر صنف
  * بندٍ (`data-flip` وإعادة تركيب الجسم بمفتاح عدّاد التغيّر)؛ نبضة انتباهٍ بطيئة على حلقة الرمز الحرج؛ ودفعةٌ باتجاه
  * السهم مع النبضة. كلّها في بوّابة الحركة نفسها.
  *
- * ## متى لا يتحرّك
+ * ## متى لا يتحرّك — وما لا يوقفه أبدًا
  *
  * • تحت `prefers-reduced-motion: reduce` و`html[data-nx-motion="off"]` والوضع الآمن:
  *   قائمةٌ ساكنة تُمرَّر أفقيًّا **داخل الشريط** لا الصفحة، بلا نسخٍ مطابقة ولا زرّ إيقاف
- *   (لا شيء يُوقَف)، وبالرموز الساكنة. يقرّرها الـCSS من أوّل رسمة، والارتفاع واحدٌ في الحالين.
- * • ويقف في مكانه (لا يعود إلى أوّله): عند مرور الفأرة، وعند التركيز داخله، وخارج الإطار،
- *   وبزرّ «إيقاف الحركة» الظاهر (WCAG 2.2.2) — والزرّ نفسه يوقف حلقة ماء البانر وتوهّج
+ *   (لا شيء يُوقَف)، وبالرموز والشفق الساكنَين. يقرّرها الـCSS من أوّل رسمة، والارتفاع واحدٌ في الحالين.
+ * • ويقف في مكانه (لا يعود إلى أوّله) في ثلاثٍ فقط: زرّ «إيقاف الحركة» الظاهر (WCAG 2.2.2 — الآلية
+ *   الواجبة، وهي وحدها تكفيه)، وخارج الإطار (لا يُرى)، وتركيز لوحة المفاتيح عليه (`:focus-visible`: من
+ *   يقرأ بالأسهم لا يهرب منه النصّ). **الفأرة لا توقفه** (أُلغي إيقاف المرور ٢٠٢٦/١٠/٢٥)، ولا النقر
+ *   عليه (التركيز بالنقر لا يطابق `:focus-visible`). والزرّ نفسه يوقف حلقة ماء البانر وتوهّج
  *   إطاره، وفيلمَ الخلفية عبر واجهة الإيقاف المجمَّدة (`data-nx-motion-paused` على الجذر
  *   وحدث `nx:motion-pause`)، ويُحفظ لكل متصفّح (`HomeBrandRow` يملك التفضيل ويمرّره). ومعه
- *   تقف الرموز الساكنة بدل المتحرّكة ونبضاتُها.
+ *   تقف الرموز الساكنة بدل المتحرّكة ونبضاتُها، ويختفي الشفق والمذنّب والوميض.
  * • ولا يبدأ قبل القياس وقراءة التفضيل (`data-run`): من أوقفه سابقًا لا يرى إطار حركةٍ
  *   واحدًا، ولا تقفز السرعة حين تصل المدّة.
  *
  * ## الوصول
  *
- * منطقةٌ مسمّاة قابلةٌ للتركيز — التركيز يوقفها، وفي الحال الساكنة تُمرَّر بالأسهم. نصّ كل بند هو
+ * منطقةٌ مسمّاة قابلةٌ للتركيز — تركيز لوحة المفاتيح يوقفها، وفي الحال الساكنة تُمرَّر بالأسهم. نصّ كل بند هو
  * ملخّصه (لا اسمٌ مستقل): الاسم · كلمة الحالة · الأرقام · الاتجاه · الشارة، والقارئ يسمع القائمة
  * مرّةً واحدة لأن النسخ المطابقة خارج الشجرة. **لا `aria-live` ولا منطقة حيّة للبنود** (الأرقام
  * تتبدّل كل دقيقة فلا يُعلَن شيء)؛ والاستثناء الوحيد عقدة `role="status"` مخفيةٌ بصريًّا يتبدّل
@@ -110,6 +121,45 @@ export function tickerLoop(
 
 const sameLoop = (a: TickerLoop | null, b: TickerLoop | null) =>
   a !== null && b !== null && a.copies === b.copies && Math.abs(a.seconds - b.seconds) < 0.01;
+
+/** ما يُكتب في الـCSS فعلًا: ثانيتان بعد الفاصلة — وبه يُقاس تغيّر المدّة، لا بالقياس الخام. */
+const writtenSeconds = (loop: TickerLoop | null) => (loop ? Number(loop.seconds.toFixed(2)) : null);
+
+/**
+ * وقت الدورة المحلي الذي يُبقي المسار حيث هو حين تتغيّر المدّة (٢٠٢٦/١٠/٢٥: «متواصل بدون توقف»).
+ *
+ * الإزاحة بالبكسل = السرعة × وقت الدورة المحلي — **لا تتبع المدّة**، لأن المدّة نفسها عرض النسخة ÷
+ * السرعة. فما يُحفظ هو الوقت المحلي لا نسبة التقدّم: حفظ النسبة يقفز بالمسار `نسبة × فرق العرض` عند
+ * وصول الخطّ أو تبدّل نصّ بند، وحفظ الوقت المحلي لا يقفز. والـ`currentTime` الخام لا يصلح: بعد دورةٍ
+ * أولى يكون `T mod الجديدة` غير `T mod القديمة` فيقفز المسار حتى لو لم يتغيّر شيء في العرض. وإن صار الوقت
+ * المحلي فوق المدّة الجديدة (نسخةٌ أقصر من إزاحتها الحاليّة) التفّ حول الدورة — القفزة هنا لازمة.
+ */
+export function carryLoopTime(currentMs: number, prevMs: number, nextMs: number): number {
+  if (!Number.isFinite(currentMs) || !(prevMs > 0) || !(nextMs > 0)) return currentMs;
+  return (currentMs % prevMs) % nextMs;
+}
+
+/**
+ * يكتب المدّة الجديدة ويُعيد ضبط حركة المسار القائمة (دون إعادة تشغيلها). الحركة نفسها تبقى CSS مُركِّبًا؛
+ * هذا تصحيحٌ لمرّةٍ عند التغيّر وليس حلقة، وكتابة المتغيّر هنا هي نفسها ما سيكتبه React بعد إيداعه (القيمة
+ * ذاتها فلا أثر). و`false` من التصحيح حين لا حركة قائمة (سكون، أو قبل `data-run`، أو متصفّحٌ بلا
+ * `getAnimations`) — فلا شيء يُصحَّح.
+ */
+export function retimeLoop(
+  track: Pick<HTMLElement, "getAnimations" | "style">,
+  prevSeconds: number,
+  nextSeconds: number,
+): boolean {
+  track.style.setProperty("--nx-ticker-s", `${nextSeconds.toFixed(2)}s`);
+  if (typeof track.getAnimations !== "function") return false;
+  for (const a of track.getAnimations()) {
+    if (!(a as Partial<CSSAnimation>).animationName?.startsWith("nxTicker")) continue;
+    if (typeof a.currentTime !== "number") continue;
+    a.currentTime = carryLoopTime(a.currentTime, prevSeconds * 1000, nextSeconds * 1000);
+    return true;
+  }
+  return false;
+}
 
 /** الأرقام لاتينيةٌ بفاصل الآلاف كما في صفّ المؤشرات (`fmtKpi`) — وتُرسم `ltr`. */
 const fmt = (n: number) => Math.round(n).toLocaleString("en-US");
@@ -260,19 +310,31 @@ export function TickerStrip({
   const ar = locale === "ar";
   const viewRef = useRef<HTMLDivElement>(null);
   const copyRef = useRef<HTMLUListElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
   const [loop, setLoop] = useState<TickerLoop | null>(null);
+  const seconds = writtenSeconds(loop);
+  // آخر حلقةٍ كُتبت فعلًا — يقرؤها القياس المتزامن (الحالة نفسها تتأخّر إلى الإيداع التالي).
+  const written = useRef<TickerLoop | null>(null);
 
-  // القياس: عند التركيب، ومع تغيّر اللغة، وكلّما تغيّر عرض النسخة أو النافذة (ومنها تبدّل البنود).
+  // القياس: عند التركيب، ومع تغيّر اللغة، وكلّما تغيّر عرض النسخة أو النافذة (ومنها تبدّل البنود). وهو
+  // **متزامنٌ مع التخطيط قبل الرسم** (ResizeObserver): تغيّر العرض بلا تغيّر المدّة يزيح المسار
+  // `نسبة × فرق العرض` لإطارٍ واحد، فتُكتب المدّة الجديدة ويُصحَّح الزمن هنا لا بعد إيداع React.
   useEffect(() => {
     const view = viewRef.current;
     const copy = copyRef.current;
-    if (!view || !copy) return;
+    const track = trackRef.current;
+    if (!view || !copy || !track) return;
     const measure = () => {
       const next = tickerLoop(
         copy.getBoundingClientRect().width,
         view.getBoundingClientRect().width,
       );
-      setLoop((prev) => (sameLoop(prev, next) ? prev : next));
+      const prev = written.current;
+      if (sameLoop(prev, next)) return;
+      written.current = next;
+      const [from, to] = [writtenSeconds(prev), writtenSeconds(next)];
+      if (from !== null && to !== null && from !== to) retimeLoop(track, from, to);
+      setLoop(next);
     };
     measure();
     if (typeof ResizeObserver === "undefined") return;
@@ -292,17 +354,19 @@ export function TickerStrip({
     <div
       dir={ar ? "rtl" : "ltr"}
       className="nx-ticker"
+      data-run={(ready && loop !== null) || undefined}
       data-paused={paused || undefined}
       data-offscreen={offscreen || undefined}
     >
       <div className="nx-ticker-window">
         <div ref={viewRef} className="nx-ticker-view" role="region" aria-label={label} tabIndex={0}>
           <div
+            ref={trackRef}
             className="nx-ticker-track"
             data-run={(ready && loop !== null) || undefined}
             style={{
               ["--nx-ticker-n" as string]: String(copies),
-              ["--nx-ticker-s" as string]: loop ? `${loop.seconds.toFixed(2)}s` : undefined,
+              ["--nx-ticker-s" as string]: seconds === null ? undefined : `${seconds.toFixed(2)}s`,
             }}
           >
             <ul ref={copyRef} className="nx-ticker-copy">
