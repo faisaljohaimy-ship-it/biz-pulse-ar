@@ -1,0 +1,29 @@
+/* Keyboard reading must suspend every cinematic layer, not just the text track.
+   Keep the existing animation objects/timeline: leaving keyboard focus resumes them.
+   These scoped overrides also cover the pre-rendered WebP, which CSS cannot pause. */
+.nx-ticker:has(.nx-ticker-view:focus-visible),
+.nx-ticker:has(.nx-ticker-view:focus-visible)::before,
+.nx-ticker:has(.nx-ticker-view:focus-visible)::after,
+.nx-ticker:has(.nx-ticker-view:focus-visible) *,
+.nx-ticker:has(.nx-ticker-view:focus-visible) *::before,
+.nx-ticker:has(.nx-ticker-view:focus-visible) *::after {
+  animation-play-state: paused !important;
+}
+
+.nx-ticker:has(.nx-ticker-view:focus-visible)::before {
+  background-image: var(--tk-still) !important;
+}
+
+.nx-ticker:has(.nx-ticker-view:focus-visible) :is(.nx-tk-img-anim, .nx-tk-count) {
+  display: none !important;
+}
+
+.nx-ticker:has(.nx-ticker-view:focus-visible) .nx-tk-img-still {
+  display: block !important;
+}
+
+/* Never strand a reader on a blurred entry or a partially counted number. */
+.nx-ticker:has(.nx-ticker-view:focus-visible)
+  :is(.nx-tk-label, .nx-tk-word, .nx-tk-fig, .nx-tk-trend, .nx-tk-badge, .nx-tk-real) {
+  animation-name: none !important;
+}

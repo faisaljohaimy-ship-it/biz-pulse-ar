@@ -92,6 +92,7 @@ import {
   type TickerTransitions,
 } from "@/components/home/home-ticker-status";
 import "@/styles/home/home-ticker.css";
+import "@/styles/home/home-ticker-focus.css";
 
 export type TickerLoop = {
   /** مدّة الدورة بالثواني — عرض نسخةٍ واحدة ÷ السرعة. */
