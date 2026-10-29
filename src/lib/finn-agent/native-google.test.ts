@@ -1,28 +1,60 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { finnGoogleError, finnGoogleOptions, googleProviderEnabled, hasFinnOAuthError, verifiedGoogleAuthorizeUrl, withFinnDeadline } from "./native-google";
+import {
+  finnGoogleError,
+  finnGoogleOptions,
+  googleProviderEnabled,
+  hasFinnOAuthError,
+  verifiedGoogleAuthorizeUrl,
+  withFinnDeadline,
+} from "./native-google";
 
 describe("FNN native Google entry", () => {
-  afterEach(() => { vi.useRealTimers(); });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
   it("uses Google directly and a fixed same-origin return path", () => {
     expect(finnGoogleOptions("https://neexios.com/?redirect=https://example.org")).toEqual({
       provider: "google",
-      options: { redirectTo: "https://neexios.com/fnn", skipBrowserRedirect: true, queryParams: { prompt: "select_account" } },
+      options: {
+        redirectTo: "https://neexios.com/fnn",
+        skipBrowserRedirect: true,
+        queryParams: { prompt: "select_account" },
+      },
     });
-    expect(finnGoogleOptions("https://www.neexios.com").options.redirectTo).toBe("https://www.neexios.com/fnn");
+    expect(finnGoogleOptions("https://www.neexios.com").options.redirectTo).toBe(
+      "https://www.neexios.com/fnn",
+    );
   });
   it("rejects remote insecure or credential-bearing origins", () => {
     expect(() => finnGoogleOptions("http://example.org")).toThrow();
     expect(() => finnGoogleOptions("https://user:pass@neexios.com")).toThrow();
-    expect(finnGoogleOptions("http://localhost:5173").options.redirectTo).toBe("http://localhost:5173/fnn");
+    expect(finnGoogleOptions("http://localhost:5173").options.redirectTo).toBe(
+      "http://localhost:5173/fnn",
+    );
   });
   it("requires a strict enabled provider boolean", () => {
     expect(googleProviderEnabled({ external: { google: true } })).toBe(true);
-    for (const value of [null, {}, { external: { google: false } }, { external: { google: "true" } }]) expect(googleProviderEnabled(value)).toBe(false);
+    for (const value of [
+      null,
+      {},
+      { external: { google: false } },
+      { external: { google: "true" } },
+    ])
+      expect(googleProviderEnabled(value)).toBe(false);
   });
   it("accepts only the native Auth endpoint, provider and return URL", () => {
-    const url = "https://test.supabase.co/auth/v1/authorize?provider=google&redirect_to=" + encodeURIComponent("https://neexios.com/fnn");
+    const url =
+      "https://test.supabase.co/auth/v1/authorize?provider=google&redirect_to=" +
+      encodeURIComponent("https://neexios.com/fnn");
     expect(verifiedGoogleAuthorizeUrl(url, "https://neexios.com")).toBe(url);
-    for (const bad of [null, "https://example.org", url.replace("test.supabase.co", "example.org"), url.replace("google", "github"), url.replace("fnn", "other")]) expect(() => verifiedGoogleAuthorizeUrl(bad, "https://neexios.com")).toThrow();
+    for (const bad of [
+      null,
+      "https://example.org",
+      url.replace("test.supabase.co", "example.org"),
+      url.replace("google", "github"),
+      url.replace("fnn", "other"),
+    ])
+      expect(() => verifiedGoogleAuthorizeUrl(bad, "https://neexios.com")).toThrow();
   });
   it("does not reflect raw provider messages", () => {
     const text = finnGoogleError(new Error("token=private-value"), true);

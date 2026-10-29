@@ -31,6 +31,7 @@ import { Route as ExecutiveBookingRouteImport } from './routes/executive-booking
 import { Route as ExecutiveBriefingRouteImport } from './routes/executive-briefing'
 import { Route as ExecutiveShowcaseRouteImport } from './routes/executive-showcase'
 import { Route as FilmsRouteImport } from './routes/films'
+import { Route as FnnRouteImport } from './routes/fnn'
 import { Route as GovernmentBriefRouteImport } from './routes/government-brief'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as McpRouteImport } from './routes/mcp'
@@ -176,6 +177,7 @@ import { Route as AuthenticatedSettingsMicrosoftRouteImport } from './routes/_au
 import { Route as ApiAgentsFleetRouteImport } from './routes/api/agents/fleet'
 import { Route as ApiChatHealthRouteImport } from './routes/api/chat.health'
 import { Route as ApiFinnChatRouteImport } from './routes/api/finn/chat'
+import { Route as ApiFnnAuthHealthRouteImport } from './routes/api/fnn/auth-health'
 import { Route as ApiHeygenStatusRouteImport } from './routes/api/heygen/status'
 import { Route as ApiHeygenStopRouteImport } from './routes/api/heygen/stop'
 import { Route as ApiHeygenTokenRouteImport } from './routes/api/heygen/token'
@@ -323,6 +325,11 @@ const ExecutiveShowcaseRoute = ExecutiveShowcaseRouteImport.update({
 const FilmsRoute = FilmsRouteImport.update({
   id: '/films',
   path: '/films',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FnnRoute = FnnRouteImport.update({
+  id: '/fnn',
+  path: '/fnn',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GovernmentBriefRoute = GovernmentBriefRouteImport.update({
@@ -1092,6 +1099,11 @@ const ApiFinnChatRoute = ApiFinnChatRouteImport.update({
   path: '/api/finn/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiFnnAuthHealthRoute = ApiFnnAuthHealthRouteImport.update({
+  id: '/api/fnn/auth-health',
+  path: '/api/fnn/auth-health',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiHeygenStatusRoute = ApiHeygenStatusRouteImport.update({
   id: '/api/heygen/status',
   path: '/api/heygen/status',
@@ -1324,6 +1336,7 @@ export interface FileRoutesByFullPath {
   '/executive-briefing': typeof ExecutiveBriefingRoute
   '/executive-showcase': typeof ExecutiveShowcaseRoute
   '/films': typeof FilmsRoute
+  '/fnn': typeof FnnRoute
   '/government-brief': typeof GovernmentBriefRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
@@ -1466,6 +1479,7 @@ export interface FileRoutesByFullPath {
   '/api/agents/fleet': typeof ApiAgentsFleetRoute
   '/api/chat/health': typeof ApiChatHealthRoute
   '/api/finn/chat': typeof ApiFinnChatRoute
+  '/api/fnn/auth-health': typeof ApiFnnAuthHealthRoute
   '/api/heygen/status': typeof ApiHeygenStatusRoute
   '/api/heygen/stop': typeof ApiHeygenStopRoute
   '/api/heygen/token': typeof ApiHeygenTokenRoute
@@ -1531,6 +1545,7 @@ export interface FileRoutesByTo {
   '/executive-briefing': typeof ExecutiveBriefingRoute
   '/executive-showcase': typeof ExecutiveShowcaseRoute
   '/films': typeof FilmsRoute
+  '/fnn': typeof FnnRoute
   '/government-brief': typeof GovernmentBriefRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
@@ -1671,6 +1686,7 @@ export interface FileRoutesByTo {
   '/api/agents/fleet': typeof ApiAgentsFleetRoute
   '/api/chat/health': typeof ApiChatHealthRoute
   '/api/finn/chat': typeof ApiFinnChatRoute
+  '/api/fnn/auth-health': typeof ApiFnnAuthHealthRoute
   '/api/heygen/status': typeof ApiHeygenStatusRoute
   '/api/heygen/stop': typeof ApiHeygenStopRoute
   '/api/heygen/token': typeof ApiHeygenTokenRoute
@@ -1738,6 +1754,7 @@ export interface FileRoutesById {
   '/executive-briefing': typeof ExecutiveBriefingRoute
   '/executive-showcase': typeof ExecutiveShowcaseRoute
   '/films': typeof FilmsRoute
+  '/fnn': typeof FnnRoute
   '/government-brief': typeof GovernmentBriefRoute
   '/login': typeof LoginRoute
   '/mcp': typeof McpRoute
@@ -1880,6 +1897,7 @@ export interface FileRoutesById {
   '/api/agents/fleet': typeof ApiAgentsFleetRoute
   '/api/chat/health': typeof ApiChatHealthRoute
   '/api/finn/chat': typeof ApiFinnChatRoute
+  '/api/fnn/auth-health': typeof ApiFnnAuthHealthRoute
   '/api/heygen/status': typeof ApiHeygenStatusRoute
   '/api/heygen/stop': typeof ApiHeygenStopRoute
   '/api/heygen/token': typeof ApiHeygenTokenRoute
@@ -1947,6 +1965,7 @@ export interface FileRouteTypes {
     | '/executive-briefing'
     | '/executive-showcase'
     | '/films'
+    | '/fnn'
     | '/government-brief'
     | '/login'
     | '/mcp'
@@ -2089,6 +2108,7 @@ export interface FileRouteTypes {
     | '/api/agents/fleet'
     | '/api/chat/health'
     | '/api/finn/chat'
+    | '/api/fnn/auth-health'
     | '/api/heygen/status'
     | '/api/heygen/stop'
     | '/api/heygen/token'
@@ -2154,6 +2174,7 @@ export interface FileRouteTypes {
     | '/executive-briefing'
     | '/executive-showcase'
     | '/films'
+    | '/fnn'
     | '/government-brief'
     | '/login'
     | '/mcp'
@@ -2294,6 +2315,7 @@ export interface FileRouteTypes {
     | '/api/agents/fleet'
     | '/api/chat/health'
     | '/api/finn/chat'
+    | '/api/fnn/auth-health'
     | '/api/heygen/status'
     | '/api/heygen/stop'
     | '/api/heygen/token'
@@ -2360,6 +2382,7 @@ export interface FileRouteTypes {
     | '/executive-briefing'
     | '/executive-showcase'
     | '/films'
+    | '/fnn'
     | '/government-brief'
     | '/login'
     | '/mcp'
@@ -2502,6 +2525,7 @@ export interface FileRouteTypes {
     | '/api/agents/fleet'
     | '/api/chat/health'
     | '/api/finn/chat'
+    | '/api/fnn/auth-health'
     | '/api/heygen/status'
     | '/api/heygen/stop'
     | '/api/heygen/token'
@@ -2569,6 +2593,7 @@ export interface RootRouteChildren {
   ExecutiveBriefingRoute: typeof ExecutiveBriefingRoute
   ExecutiveShowcaseRoute: typeof ExecutiveShowcaseRoute
   FilmsRoute: typeof FilmsRoute
+  FnnRoute: typeof FnnRoute
   GovernmentBriefRoute: typeof GovernmentBriefRoute
   LoginRoute: typeof LoginRoute
   McpRoute: typeof McpRoute
@@ -2607,6 +2632,7 @@ export interface RootRouteChildren {
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiAgentsFleetRoute: typeof ApiAgentsFleetRoute
   ApiFinnChatRoute: typeof ApiFinnChatRoute
+  ApiFnnAuthHealthRoute: typeof ApiFnnAuthHealthRoute
   ApiHeygenStatusRoute: typeof ApiHeygenStatusRoute
   ApiHeygenStopRoute: typeof ApiHeygenStopRoute
   ApiHeygenTokenRoute: typeof ApiHeygenTokenRoute
@@ -2802,6 +2828,13 @@ declare module '@tanstack/react-router' {
       path: '/films'
       fullPath: '/films'
       preLoaderRoute: typeof FilmsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fnn': {
+      id: '/fnn'
+      path: '/fnn'
+      fullPath: '/fnn'
+      preLoaderRoute: typeof FnnRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/government-brief': {
@@ -3819,6 +3852,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiFinnChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/fnn/auth-health': {
+      id: '/api/fnn/auth-health'
+      path: '/api/fnn/auth-health'
+      fullPath: '/api/fnn/auth-health'
+      preLoaderRoute: typeof ApiFnnAuthHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/heygen/status': {
       id: '/api/heygen/status'
       path: '/api/heygen/status'
@@ -4389,6 +4429,7 @@ const rootRouteChildren: RootRouteChildren = {
   ExecutiveBriefingRoute: ExecutiveBriefingRoute,
   ExecutiveShowcaseRoute: ExecutiveShowcaseRoute,
   FilmsRoute: FilmsRoute,
+  FnnRoute: FnnRoute,
   GovernmentBriefRoute: GovernmentBriefRoute,
   LoginRoute: LoginRoute,
   McpRoute: McpRoute,
@@ -4428,6 +4469,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiAgentsFleetRoute: ApiAgentsFleetRoute,
   ApiFinnChatRoute: ApiFinnChatRoute,
+  ApiFnnAuthHealthRoute: ApiFnnAuthHealthRoute,
   ApiHeygenStatusRoute: ApiHeygenStatusRoute,
   ApiHeygenStopRoute: ApiHeygenStopRoute,
   ApiHeygenTokenRoute: ApiHeygenTokenRoute,

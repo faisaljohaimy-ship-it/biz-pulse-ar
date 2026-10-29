@@ -5,10 +5,16 @@ import { googleProviderEnabled } from "@/lib/finn-agent/native-google";
 export async function fnnAuthHealth(): Promise<Response> {
   const headers = { "content-type": "application/json", "cache-control": "no-store" };
   const reply = (checked: boolean, googleEnabled: boolean, status = 200) =>
-    new Response(JSON.stringify({ checked, googleEnabled, returnPath: "/fnn" }), { status, headers });
+    new Response(JSON.stringify({ checked, googleEnabled, returnPath: "/fnn" }), {
+      status,
+      headers,
+    });
   const base = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
-  const key = process.env.VITE_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-    process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_PUBLISHABLE_KEY;
+  const key =
+    process.env.VITE_SUPABASE_ANON_KEY ||
+    process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.SUPABASE_ANON_KEY ||
+    process.env.SUPABASE_PUBLISHABLE_KEY;
   if (!base || !key) return reply(true, false);
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 5_000);
