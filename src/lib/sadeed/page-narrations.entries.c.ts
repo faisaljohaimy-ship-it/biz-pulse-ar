@@ -295,8 +295,8 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
     n(
       "مدخل فِن المستقل",
       "the standalone FNN entrance",
-      "صفحة دخول مستقلة لوكيل فِن: تسجيل دخول Google ثم تحقّق ملكية الحساب من الخادم قبل فتح الدردشة",
-      "a standalone sign-in page for the FNN agent: Google sign-in, then a server-side owner check before the chat opens",
+      "صفحة دخول مستقلة لوكيل فِن: تسجيل دخول Google أو بالبريد وكلمة المرور، ثم تحقّق ملكية الحساب من الخادم قبل فتح الدردشة",
+      "a standalone sign-in page for the FNN agent: Google sign-in or email and password, then a server-side owner check before the chat opens",
       "الدردشة للمالك وحده بعد تحقّق الخادم، ولا تُفتح لغيره",
       "the chat opens for the owner only after the server check, and for no one else",
     ),

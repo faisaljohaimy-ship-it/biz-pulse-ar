@@ -8,6 +8,7 @@ import { useI18n } from "@/lib/i18n";
 import { isSupabaseConfigured, supabase } from "@/integrations/supabase/client";
 import { getFinnAccess } from "@/lib/finn-agent/access.functions";
 import {
+  FNN_PATH,
   finnGoogleError,
   finnGoogleOptions,
   hasFinnOAuthError,
@@ -325,6 +326,16 @@ export function FnnWorkspace() {
               : "No separate FNN password. Owner permission is checked after you return, before chat opens."}
           </p>
           <GoogleSignIn ar={ar} signedIn={false} />
+          {/* بديلٌ يعمل متى كان مزوّد Google غير مفعَّل في خدمة الهوية (قِيس ٢٠٢٦/١٠/٢٩: `googleEnabled:false`
+              على الإنتاج؛ لقطة المالك ٢٠٢٦/١٠/٣٠): البريد وكلمة المرور من صفحة `/auth` ذاتها ثم عودةٌ إلى هنا،
+              والصلاحية يحكم فيها الخادم بعد العودة كما بعد Google — لا طريق دخول جديد ولا منحٌ تلقائي. */}
+          <Link
+            to="/auth"
+            search={{ mode: "signin", redirect: FNN_PATH }}
+            className="fnn-button mt-3 w-full min-h-11!"
+          >
+            {ar ? "الدخول بالبريد وكلمة المرور" : "Sign in with email and password"}
+          </Link>
           <small>
             {ar
               ? "Google يثبت الهوية؛ صلاحيات فنن يحددها الخادم، ولا تُمنح تلقائيًا."

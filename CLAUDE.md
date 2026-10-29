@@ -1304,7 +1304,11 @@ Disconnect_ لوقف مزامنته مع المستودع (وإلا بقيت ت�
   (`src/lib/auth/native-google.ts`: `probeGoogleProvider` بمهلة 5 ث، و`safeAuthTarget` لمسارٍ من الأصل نفسه فقط،
   و`googleOAuthOptions`)، فإن أكّدت التفعيل صراحةً نادى `supabase.auth.signInWithOAuth` الأصلي بتوجيه المتصفّح؛ وإن
   قالت «غير مفعّل» عُطِّل الزرّ بسطر عربي/إنجليزي ظاهر تحته؛ وإن تعذّر التحقق (انقطاع، غير 200، جسم مشوَّه، مهلة) أُعيد
-  السؤال مرّةً عند النقر ثم ظهر toast محايد. **البريد وكلمة المرور يعملان في كل الحالات.** الحارس:
+  السؤال مرّةً عند النقر ثم ظهر toast محايد. **البريد وكلمة المرور يعملان في كل الحالات.** **وصفحة `/fnn`
+  (٢٠٢٦/١٠/٣٠، بعد لقطة المالك الثانية: ظلّت تعرض «دخول Google غير مهيّأ» ولا طريق غيره) صار تحت زرّ Google فيها رابط
+  «الدخول بالبريد وكلمة المرور» إلى `/auth?mode=signin&redirect=/fnn`؛ والصلاحية يحكم فيها الخادم بعد العودة كما بعد
+  Google، فلا طريق دخولٍ جديد ولا منحٌ تلقائي؛ حارسه `src/components/finn/fnn-email-fallback.contract.test.ts`.**
+  الحارس:
   `src/lib/auth/native-google.test.ts` وآخر الفقرات في `src/components/nav/employee-login.contract.test.ts`
   (بانتهاكات مزروعة). **وما بقي على المالك ولم يُنفَّذ:** إنشاء عميل Google OAuth وتفعيل المزوّد في مشروع Supabase
   الإنتاجي، وإضافة روابط العودة المسموحة `https://neexios.com/**` و`https://www.neexios.com/**` (Authentication ←
