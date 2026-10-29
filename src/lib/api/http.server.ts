@@ -15,6 +15,12 @@
 import { ApiError, apiError, type ApiErrorCode } from "./errors";
 
 export interface HttpOptions extends Omit<RequestInit, "signal"> {
+  /**
+   * إشارة إلغاء من المستدعي (مثل موعد ذراع الاسترجاع): تُدمج مع مؤقّت كل
+   * محاولة، وإطلاقها يوقف المحاولة الجارية **ويمنع أي محاولة تالية** — كان
+   * النداء المهجور يكمل محاولاته الثلاث (≈45 ث) بعد أن مضى الردّ.
+   */
+  signal?: AbortSignal | null;
   /** Per-request timeout in milliseconds. Default 15000. */
   timeoutMs?: number;
   /** Retry attempts on transient failure. Default 2 (so 3 total tries). */
@@ -37,11 +43,19 @@ function defaultRetryOn(status: number): boolean {
 
 function delay(ms: number, signal?: AbortSignal): Promise<void> {
   return new Promise((resolve, reject) => {
-    const t = setTimeout(resolve, ms);
-    signal?.addEventListener("abort", () => {
+    if (signal?.aborted) {
+      reject(new Error("aborted"));
+      return;
+    }
+    const onAbort = () => {
       clearTimeout(t);
       reject(new Error("aborted"));
-    });
+    };
+    const t = setTimeout(() => {
+      signal?.removeEventListener("abort", onAbort);
+      resolve();
+    }, ms);
+    signal?.addEventListener("abort", onAbort, { once: true });
   });
 }
 
@@ -66,29 +80,42 @@ export async function httpFetch(input: string | URL, init: HttpOptions = {}): Pr
     retryBaseMs = DEFAULT_BASE_MS,
     label,
     retryOn = defaultRetryOn,
+    signal: outerOrNull,
     ...rest
   } = init;
+  const outer = outerOrNull ?? undefined;
 
   const url = typeof input === "string" ? input : input.toString();
   const target = label ?? url;
+  const abandoned = () =>
+    apiError("upstream_timeout", `Aborted by caller while calling ${target}`, {
+      details: { url, aborted: true },
+    });
 
   let lastErr: unknown;
   for (let attempt = 0; attempt <= retries; attempt++) {
+    if (outer?.aborted) throw abandoned();
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
+    // إشارة المستدعي تُطلق مؤقّت المحاولة نفسه — دمجٌ يدوي لا يعتمد على `AbortSignal.any`.
+    const onOuterAbort = () => controller.abort();
+    outer?.addEventListener("abort", onOuterAbort, { once: true });
     try {
       const res = await fetch(input, { ...rest, signal: controller.signal });
       clearTimeout(timer);
       if (!res.ok && retryOn(res.status) && attempt < retries) {
         const retryAfter = parseRetryAfter(res.headers.get("retry-after"));
         const backoff = retryAfter ?? retryBaseMs * Math.pow(2, attempt) + Math.random() * 100;
-        await delay(backoff);
+        await delay(backoff, outer).catch(() => {
+          throw abandoned();
+        });
         continue;
       }
       return res;
     } catch (err) {
       clearTimeout(timer);
       lastErr = err;
+      if (outer?.aborted) throw abandoned();
       const aborted = (err as { name?: string })?.name === "AbortError";
       if (aborted && attempt === retries) {
         throw apiError("upstream_timeout", `Timeout after ${timeoutMs}ms calling ${target}`, {
@@ -96,9 +123,13 @@ export async function httpFetch(input: string | URL, init: HttpOptions = {}): Pr
         });
       }
       if (attempt < retries) {
-        await delay(retryBaseMs * Math.pow(2, attempt) + Math.random() * 100);
+        await delay(retryBaseMs * Math.pow(2, attempt) + Math.random() * 100, outer).catch(() => {
+          throw abandoned();
+        });
         continue;
       }
+    } finally {
+      outer?.removeEventListener("abort", onOuterAbort);
     }
   }
 

@@ -8,6 +8,9 @@ const citation = (title: string, kind: RagCitation["kind"] = "document"): RagCit
   similarity: 0.9,
   tag: `[${kind === "document" ? "DOC" : kind === "knowledge" ? "KB" : "MEM"}:${title}]`,
   excerpt: "Verified source excerpt",
+  label: "تشابه دلالي",
+  arm: "vector",
+  bodyText: true,
 });
 
 describe("RAG coverage counts complete citation tags", () => {

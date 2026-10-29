@@ -47,12 +47,42 @@ const OVERRIDE_PHRASES = [
   /انس(?:ى)?\s+(التعليمات|الدستور|القواعد)/g,
 ];
 
+// علامات مصدرٍ مزوّرة داخل النصّ المسترجَع (الخطوة ٢، مراجعة ٢٠٢٦/١٠/٢٩): صفّ
+// مسموم يحمل «[DOC:سياسة] (sim 99%)» كان يصل الكتلة حرفيًّا بجوار وسوم حقيقية
+// تأمر قواعد التأريض النموذج بالاستشهاد بها. يُفكّ القوس بعلامة عرض فلا يُنشئ
+// نصٌّ مسترجَع وسم استشهاد ولا رقم تشابه: الوسوم تُصدرها `assembleRagContext`
+// وحدها، والأرقام من الكوساين المحسوب وحده (المادة ٢٧).
+//
+// **المراجعة الثالثة (٢٠٢٦/١٠/٢٩) — التهرّب بصيغٍ تافهة كان يمرّ (مقيس على
+// `safeExcerpt`):** `[<ZWSP>KB:x]` و`[KB<ZWSP>:x]` بحرف عرض صفري داخل القوس، و`[DOC：x]`
+// بنقطتين عريضتين، و`(sim ٩٩%)` بأرقام هندية، و`[HCIS:x]`/`[SEC-18]` اللذان
+// تعرفهما بوّابة المخرج (`finalize.ts` `RE_CITED_TAG`) صيغَ استشهاد. فتُنزع
+// أحرف التنسيق (`\p{Cf}`) قبل المطابقة، والرقم بأي خطّ عشري (`\p{Nd}`)، والفاصل
+// `:`/`：`/`-`، والبادئات كما في `RE_CITED_TAG` نفسها زائد `MEM`/`PROD`.
+const FORGED_CITATION_TAG = /\[\s*(DOC|KB|MEM|PROD|HCIS|SEC|SAF)\s*([:：-])/giu;
+const FORGED_SIMILARITY = /\(\s*sim\s*\p{Nd}+(?:[.,٫]\p{Nd}+)?\s*%\s*\)/giu;
+const FORMAT_CHARS = /\p{Cf}/gu;
+
+/**
+ * يحيّد `[DOC:`/`[KB:`/`[MEM:`/`[PROD:`/`[HCIS:`/`[SEC-`/`[SAF-` (بأي فاصل من
+ * `:`/`：`/`-`) و`(sim NN%)` بأي خطّ عشري في نصّ مسترجَع — بعد نزع أحرف التنسيق
+ * (حرف عرض صفري، علامات الاتجاه…) التي كانت تفصل القوس عن بادئته فتمرّ. يُطبَّق في
+ * `safeExcerpt` وقبل بناء الكتلة.
+ */
+export function neutralizeCitationMarkers(input: string): string {
+  if (!input) return "";
+  return input
+    .replace(FORMAT_CHARS, "")
+    .replace(FORGED_CITATION_TAG, "［$1$2")
+    .replace(FORGED_SIMILARITY, "");
+}
+
 export function sanitizeRetrievedContent(input: string): string {
   if (!input) return "";
   let out = input;
   for (const re of CONTROL_TOKENS) out = out.replace(re, "[[محتوى ضارّ محذوف]]");
   for (const re of OVERRIDE_PHRASES) out = out.replace(re, "[[محاولة إلغاء تعليمات محيَّدة]]");
-  return out;
+  return neutralizeCitationMarkers(out);
 }
 
 /** Convenience wrapper: apply both filters when preparing a citation excerpt. */

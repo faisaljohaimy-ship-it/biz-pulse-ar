@@ -11,7 +11,7 @@ export const EMBEDDING_MODEL = resolveGeminiEmbeddingModel();
 
 export async function embedText(
   input: string,
-  options: { purpose?: GeminiEmbeddingPurpose; title?: string } = {},
+  options: { purpose?: GeminiEmbeddingPurpose; title?: string; signal?: AbortSignal } = {},
 ): Promise<number[] | null> {
   if (!resolveGeminiApiKey()) return null;
   try {
@@ -19,9 +19,12 @@ export async function embedText(
       dimensions: EMBEDDING_DIMS,
       purpose: options.purpose ?? "retrieval-query",
       title: options.title,
+      signal: options.signal,
     });
     return result?.vector ?? null;
   } catch (e) {
+    // الهجر بإشارة المستدعي ليس عطلًا يُسجَّل بنصّه — الذراع تعيد سببها `aborted`.
+    if (options.signal?.aborted) return null;
     console.error("[sadeed/embed] Gemini embedding failed", e);
     return null;
   }

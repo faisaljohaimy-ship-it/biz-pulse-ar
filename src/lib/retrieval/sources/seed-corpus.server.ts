@@ -43,9 +43,10 @@ import {
   searchBm25,
   type Bm25Index,
 } from "../bm25.server";
+import { ARM_NAMES } from "../aggregate.server";
 import type { ArmResult, Hit, HitSource, RetrievalArm, RetrievalContext } from "../types";
 
-export const SEED_CORPUS_ARM_NAME = "seed-corpus-lexical";
+export const SEED_CORPUS_ARM_NAME = ARM_NAMES.seed;
 export const EXCERPT_MAX_CHARS = 240;
 
 export type HcisTable = "hcis_directives" | "hcis_approval_stages" | "hcis_sectors";

@@ -18,8 +18,11 @@
  *    حالة مزروعة تمرّ عبر دالّة الحذف نفسها لا على النصّ الخام).
  * ٣. لا ملف عميل يستوردها (كاشف يُثبت احمراره على مصدر مزروع، ساكنًا
  *    و**ديناميكيًّا** `import("…")` — فالاستيراد الكسول كان يمرّ).
- * ٤. الخطوة ١ لا تصل الأذرع بمسار الإجابة: قائمة المستهلكين خارج
- *    `src/lib/retrieval` فارغة؛ الخطوة ٢ تضيف إليها بالضوابط الأربعة.
+ * ٤. مستهلكو النواة خارج `src/lib/retrieval` **قائمة صريحة مغلقة**: كانت
+ *    فارغة في الخطوة ١، وأضافت الخطوة ٢ (٢٠٢٦/١٠/٢٩، الضوابط الأربعة) مسار
+ *    الإجابة عبر `rag.server.ts` وأذرعه تحت `src/lib/sadeed/rag/` — كلّها
+ *    `.server.ts`. أي مستهلك جديد يُضاف هنا باسمه أو يُدان؛ و`/api/chat` لا
+ *    يستورد النواة مباشرةً (يصلها عبر `gatherRagContext` وحدها).
  */
 import { execSync } from "node:child_process";
 import { readdirSync, readFileSync, statSync } from "node:fs";
@@ -62,8 +65,17 @@ function importsRetrieval(src: string): boolean {
   );
 }
 
-/** مستهلكو النواة خارج مجلدها — فارغة في الخطوة ١. */
-const ALLOWED_CONSUMERS: readonly string[] = [];
+/**
+ * مستهلكو النواة خارج مجلدها — فارغة في الخطوة ١؛ الخطوة ٢ وصلت مسار الإجابة
+ * بهذه الأربعة وحدها (خادمٌ فقط): المجمِّع يُستدعى من `rag.server.ts`، والأذرع
+ * القاعدية والمتّجهية والرصد تحت `src/lib/sadeed/rag/`.
+ */
+const ALLOWED_CONSUMERS: readonly string[] = [
+  "src/lib/sadeed/rag.server.ts",
+  "src/lib/sadeed/rag/lexical-arms.server.ts",
+  "src/lib/sadeed/rag/observe.server.ts",
+  "src/lib/sadeed/rag/vector-arm.server.ts",
+];
 
 describe("① كل وحدة تنفيذية خادمٌ فقط", () => {
   it("المجموعة ليست فارغة، وكلها .server.ts", () => {
@@ -131,7 +143,20 @@ describe("② لا مزوّد ولا شبكة ولا قاعدة ولا غلاف 
   });
 });
 
-describe("③ لا ملف عميل يستورد النواة، ④ ولا مستهلك خارجها في الخطوة ١", () => {
+/**
+ * كاشف المستهلكين كما يُطبَّق على الشجرة: كل ملف `.ts`/`.tsx` خارج `src/lib/retrieval`
+ * وليس اختبارًا ويستورد النواة (`importsRetrieval`). مستقلّ عن `grep` كي يُجرَّب
+ * على مدخل مزروع عبر المسار نفسه الذي يمسح الشجرة.
+ */
+function consumersOf(entries: ReadonlyArray<{ path: string; src: string }>): string[] {
+  return entries
+    .filter((e) => !e.path.startsWith(`${ROOT}/`) && !/\.test\.tsx?$/.test(e.path))
+    .filter((e) => importsRetrieval(e.src))
+    .map((e) => e.path)
+    .sort();
+}
+
+describe("③ لا ملف عميل يستورد النواة، ④ ولا مستهلك خارج القائمة الصريحة", () => {
   const importers = execSync(
     'grep -rlE "(from |import\\()[[:space:]]*[\'\\"](@/lib/retrieval|\\.{1,2}/(\\.\\./)*retrieval)(/|[\'\\"])" src --include=*.ts --include=*.tsx || true',
     { encoding: "utf8" },
@@ -140,10 +165,33 @@ describe("③ لا ملف عميل يستورد النواة، ④ ولا مست
     .filter(Boolean)
     .filter((f) => !f.startsWith(`${ROOT}/`));
 
-  it("المستهلكون خارج المجلد (عدا الاختبارات) = القائمة المسموحة (فارغة الآن)", () => {
+  const TREE = walk("src")
+    .filter((f) => /\.tsx?$/.test(f))
+    .map((path) => ({ path, src: readFileSync(path, "utf8") }));
+
+  it("المستهلكون خارج المجلد (عدا الاختبارات) = القائمة المسموحة بالضبط — بالكاشف وبـgrep معًا", () => {
     // الاختبارات تستورد النواة لتفحصها لا لتخدم بها — ليست مستهلكي مسار إجابة.
-    const consumers = importers.filter((f) => !/\.test\.tsx?$/.test(f));
-    expect(consumers.sort()).toEqual([...ALLOWED_CONSUMERS].sort());
+    const consumers = consumersOf(TREE);
+    expect(consumers).toEqual([...ALLOWED_CONSUMERS].sort());
+    expect(importers.filter((f) => !/\.test\.tsx?$/.test(f)).sort()).toEqual(consumers);
+    // والقائمة ليست فارغة بعد الخطوة ٢: مسار الإجابة موصول فعلًا، لا بالادّعاء.
+    expect(consumers).toContain("src/lib/sadeed/rag.server.ts");
+  });
+
+  it("مزروع: مستهلكٌ خامس خارج القائمة يُدان بالكاشف نفسه — القائمة مغلقة لا مفتوحة", () => {
+    const planted = {
+      path: "src/lib/sadeed-tools.server.ts",
+      src: 'import type { Hit } from "@/lib/retrieval/types";\nexport const x = 1;\n',
+    };
+    const withPlant = consumersOf([...TREE.filter((e) => e.path !== planted.path), planted]);
+    expect(withPlant).toContain(planted.path);
+    expect(withPlant).not.toEqual([...ALLOWED_CONSUMERS].sort());
+    // وملفٌ مزروع لا يستورد النواة لا يُدان — الكاشف يفرّق لا يدين الكلّ.
+    expect(
+      consumersOf([
+        { path: "src/lib/x.server.ts", src: 'import { a } from "@/lib/rag/evaluation";' },
+      ]),
+    ).toEqual([]);
   });
 
   it("ولا مستهلك خارج .server.ts أو api/ أو اختبار", () => {
@@ -181,7 +229,9 @@ describe("③ لا ملف عميل يستورد النواة، ④ ولا مست
     expect(out).toBe("2");
   });
 
-  it("مسار الإجابة لم يُمسّ: /api/chat لا يستورد النواة ساكنًا ولا ديناميكيًّا", () => {
-    expect(importsRetrieval(readFileSync("src/routes/api/chat.ts", "utf8"))).toBe(false);
+  it("/api/chat لا يستورد النواة ساكنًا ولا ديناميكيًّا — يصلها عبر gatherRagContext وحدها", () => {
+    const chat = readFileSync("src/routes/api/chat.ts", "utf8");
+    expect(importsRetrieval(chat)).toBe(false);
+    expect(chat).toMatch(/import\("@\/lib\/sadeed\/rag\.server"\)/);
   });
 });

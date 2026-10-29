@@ -18,6 +18,8 @@ export type GeminiEmbeddingOptions = {
   dimensions: number;
   purpose: GeminiEmbeddingPurpose;
   title?: string;
+  /** إشارة المستدعي (موعد ذراع الاسترجاع): تُهجر المحاولة الجارية ولا تُعاد. */
+  signal?: AbortSignal;
 };
 
 type GeminiEmbeddingResponse = {
@@ -107,6 +109,7 @@ export async function embedGeminiText(
     label: "sadeed/gemini-embedding",
     retries: 2,
     timeoutMs: 15_000,
+    signal: options.signal,
   });
   const vector = json.embedding?.values;
   if (!Array.isArray(vector) || vector.length !== options.dimensions) {

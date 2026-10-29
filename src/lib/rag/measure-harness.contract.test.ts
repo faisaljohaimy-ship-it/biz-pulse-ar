@@ -13,9 +13,12 @@
 import { readFileSync, existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { LABELLED_QUESTIONS } from "@/lib/retrieval/eval/labelled-set.server";
+import { ARM_NAMES } from "@/lib/retrieval/aggregate.server";
 import {
   assertProbesAreNotTitles,
+  formatAggregatorMeasureAr,
   formatOfflineMeasureAr,
+  runAggregatorOfflineMeasure,
   runOfflineMeasure,
 } from "@/lib/retrieval/eval/offline-measure.server";
 import { normalizeArStrict } from "@/lib/retrieval/normalize-ar.server";
@@ -201,5 +204,72 @@ describe("الذراع غير المتّصلة — رقمٌ مع حدوده بل
     expect(offlineAt).toBeLessThan(pgAt);
     expect(SH).toContain("esbuild");
     expect(SH).toMatch(/exit 0/);
+  });
+});
+
+/**
+ * مقياس مجمِّع الخطوة ٢ (الضابط الرابع، ٢٠٢٦/١٠/٢٩): المقياس نفسه بذراع ثالثة
+ * لا مقياس ثانٍ — يشغّل `runArms` الحقيقي بتشكيلة أذرع مسار الإجابة بأسمائها،
+ * والقاعدية والمتّجهية «لم يُقَس» لأنها لا تُنفَّذ هنا.
+ */
+describe("مقياس المجمِّع غير المتّصل — المسار الموصول في وضع صفر مزوّد", () => {
+  it("N = المجموعة الموسومة، المقام = N، والداخلية وحدها تخدم كل الأسئلة", async () => {
+    const m = await runAggregatorOfflineMeasure({});
+    expect(m.mode).toBe("aggregator-offline");
+    expect(m.n).toBe(LABELLED_QUESTIONS.length);
+    expect(m.scored).toBe(m.n);
+    expect(m.arms[ARM_NAMES.seed]).toMatchObject({ served: m.n, of: m.n, text: null });
+    for (const name of [
+      ARM_NAMES.hcisLive,
+      ARM_NAMES.finnKnowledge,
+      ARM_NAMES.secKnowledge,
+      ARM_NAMES.documentChunks,
+    ])
+      expect(m.arms[name], name).toMatchObject({
+        served: 0,
+        of: m.n,
+        reason: "offline_no_db",
+        text: "لم يُقَس",
+      });
+    expect(m.arms[ARM_NAMES.vector]).toMatchObject({
+      served: 0,
+      reason: "flag_off",
+      text: "لم يُقَس",
+    });
+    expect(typeof m.hitAt5).toBe("number");
+    expect(typeof m.p95LatencyMs).toBe("number");
+    expect(m.latenciesMs).toHaveLength(m.n);
+  });
+
+  it("الراية مرفوعة بلا مفتاح ⇐ سبب المتّجهية embed_unavailable؛ ومع المفتاح not_run_offline — لا تُنفَّذ هنا", async () => {
+    const noKey = await runAggregatorOfflineMeasure({ SADEED_GEMINI_RAG_READY: "true" });
+    expect(noKey.arms[ARM_NAMES.vector].reason).toBe("embed_unavailable");
+    const withKey = await runAggregatorOfflineMeasure({
+      SADEED_GEMINI_RAG_READY: "true",
+      GEMINI_API_KEY: "present",
+    });
+    expect(withKey.arms[ARM_NAMES.vector].reason).toBe("not_run_offline");
+    expect(withKey.arms[ARM_NAMES.vector].text).toBe("لم يُقَس");
+  });
+
+  it("الجدول يطبع الحدود والأساس و«لم يُقَس» للأذرع غير المنفَّذة، ولا يقارن بعتبتَي الدستور", async () => {
+    const m = await runAggregatorOfflineMeasure({});
+    const table = formatAggregatorMeasureAr(m);
+    expect(table).toContain(m.limits);
+    expect(table).toContain("ليست استدعاء@5 على متن موثّق");
+    expect(table).toContain("لم يُقَس");
+    expect(table).toContain("p95 = ");
+    expect(table).not.toMatch(/0\.85|0\.95/);
+  });
+
+  it("مزروع: تشكيلة بلا الذراع الداخلية تُفرغ النتائج — فالرقم يشهد للمسار الموصول لا لذراعٍ بعينها", async () => {
+    const { runArms } = await import("@/lib/retrieval/aggregate.server");
+    const out = await runArms([], LABELLED_QUESTIONS[0].questionAr, {
+      orgId: null,
+      audience: "anonymous",
+    });
+    expect(out.fused).toEqual([]);
+    const m = await runAggregatorOfflineMeasure({});
+    expect(m.perQuestion.every((p) => p.rank !== null)).toBe(true);
   });
 });

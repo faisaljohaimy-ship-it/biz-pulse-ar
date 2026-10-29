@@ -25,8 +25,11 @@
  * شيء هنا يفتحها.
  */
 
-/** مصدر النتيجة — من أين جاء النصّ. */
-export type HitSource = "hcis" | "seed" | "knowledge" | "upload-unverified" | "memory";
+/**
+ * مصدر النتيجة — من أين جاء النصّ. `document` للذراع المتّجهية وحدها (قرار
+ * المالك ⑤ يخصّ القراءة المعجمية للمقاطع: تلك `upload-unverified` دائمًا).
+ */
+export type HitSource = "hcis" | "seed" | "knowledge" | "document" | "upload-unverified" | "memory";
 
 /** وسم الذراع كما يُطبع للنموذج وللمستخدم — لا نسبة مئوية للمعجمي. */
 export type MatchLabel = "مطابقة نصّية" | "تشابه دلالي";
@@ -70,17 +73,32 @@ export interface ArmResult {
   /** هل خدمت الذراع فعلًا (لا مهلة ولا عطل). الفراغ مع `served: true` نتيجة صادقة. */
   served: boolean;
   hits: Hit[];
-  /** سبب عدم الخدمة — `null` حين خدمت. */
+  /**
+   * سبب عدم الخدمة — `null` حين خدمت. رمزٌ قصير بلا نصّ استعلام ولا رسالة
+   * خطأ حرّة (يصل حدث `rag.arm_failed` كما هو): `timeout` · `threw` ·
+   * `flag_off` · `embed_unavailable` · `no_org` · `db_unavailable` · `guest` ·
+   * `breaker_open` · `negative_cache` · رمز Postgres مثل `42P01`.
+   */
   reason: string | null;
   latencyMs: number;
 }
 
 /**
- * ذراع استرجاع واحدة. لا ذراع موصولة بـ`/api/chat` في الخطوة ١
- * (التدقيق `docs/audit/SADEED_RAG_AUDIT_2026-10-29.md` §٥) — التوصيل خطوة ٢
- * بالضوابط الأربعة.
+ * ذراع استرجاع واحدة. المجمِّع (`aggregate.server.ts`) يشغّل الأذرع متزامنةً
+ * ويمرّر لكلٍّ موعدها وإشارة إلغاء تُطلق عند تجاوزه — الذراع التي تنادي
+ * القاعدة تمرّر الإشارة لنداءاتها فتُهجَر لا تُنتظَر. الإشارة اختيارية كي
+ * تبقى الأذرع المتزامنة داخليًّا (الفهرس الذاكري) كما هي.
+ *
+ * موصولةٌ بمسار الإجابة منذ الخطوة ٢ (٢٠٢٦/١٠/٢٩) عبر `gatherRagContext` في
+ * `src/lib/sadeed/rag.server.ts` بالضوابط الأربعة — المستهلكون المسموح لهم
+ * محصورون في `retrieval.architecture.contract.test.ts`.
  */
 export interface RetrievalArm {
   readonly name: string;
-  run(query: string, ctx: RetrievalContext, deadlineMs: number): Promise<ArmResult>;
+  run(
+    query: string,
+    ctx: RetrievalContext,
+    deadlineMs: number,
+    signal?: AbortSignal,
+  ): Promise<ArmResult>;
 }

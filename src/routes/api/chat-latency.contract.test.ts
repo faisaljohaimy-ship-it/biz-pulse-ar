@@ -194,8 +194,12 @@ describe("الصفر تكلفة أوّلًا — ترتيب المسار (أمر
   });
 
   it("معرفة المستأجر المسترجعة لا تسقط حين يُرفع علم البيانات الحيّة في فرع المجموعات", () => {
-    expect(CHAT_CODE).toContain("if (ragContext && !ragIncluded)");
+    // مراجعة ثالثة ٢٠٢٦/١٠/٢٩: الكتلة تدخل بترويستها دائمًا (`if (ragContext)`) —
+    // لا شرط `!liveDataAvailable` القديم ولا `!ragIncluded` (الإدراج داخل كتلة
+    // الصفوف الحيّة «Verified» أُلغي؛ الحارس في `chat-retrieval.test.ts` ④).
+    expect(CHAT_CODE).toContain("if (ragContext) {");
     expect(CHAT_CODE).not.toContain("if (ragContext && !liveDataAvailable)");
+    expect(CHAT_CODE).not.toContain("ragIncluded");
   });
 
   it("دور النموذج تحت سقفٍ زمني يجمع إلغاء الطلب والمهلة", () => {
