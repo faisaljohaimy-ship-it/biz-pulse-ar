@@ -1,5 +1,6 @@
 /**
- * عقد سلوك «فيلم التوأم الرقمي» مُصيَّرًا (jsdom) — المشغّل المضمَّن وصفحة `/cinematic`.
+ * عقد سلوك «فيلم التوأم الرقمي» مُصيَّرًا (jsdom) — المشغّل المضمَّن (في `/cinematic` وفي أسفل
+ * الرئيسية منذ أمر المالك ٢٠٢٦/١٠/٢٩) وصفحة `/cinematic`.
  *
  * ما يكسره التعديل ولا يراه tsc ولا البناء:
  *   • فيلمٌ يُركَّب أو يُطلب ملفّه قبل أن يظهر إطاره، أو يبدأ لمن طلب تقليل الحركة أو توفير البيانات
@@ -320,7 +321,7 @@ describe("المشغّل — الملصق أوّلًا، والفيلم بعد �
     view.unmount();
   });
 
-  it("وبلا priority الملصق كسول (تحت الطيّة في /sec/twin)", async () => {
+  it("وبلا priority الملصق كسول (تحت الطيّة في أسفل الرئيسية)", async () => {
     const view = await mount(createElement(TwinFilmPlayer));
     const img = view.container.querySelector("img.twin-film-poster")!;
     expect(img.getAttribute("loading")).toBe("lazy");

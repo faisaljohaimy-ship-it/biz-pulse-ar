@@ -1,12 +1,18 @@
 /**
- * عقد «فيلم التوأم الرقمي» — صفحتا `/cinematic` و`/sec/twin` والمشغّل المضمَّن (أمر المالك
- * ٢٠٢٦/١٠/٢٣: «راجع المرفقات للتحسين» و«اظف فديو موشن جرافيتي مختص بالتوأم الرقمي»).
+ * عقد «فيلم التوأم الرقمي» — صفحة `/cinematic`، وقسم الفيلم في **أسفل الرئيسية**، والمشغّل
+ * المضمَّن (أمر المالك ٢٠٢٦/١٠/٢٣: «راجع المرفقات للتحسين» و«اظف فديو موشن جرافيتي مختص
+ * بالتوأم الرقمي»؛ ثم أمره ٢٠٢٦/١٠/٢٩ «قم بنقل التوأم الرقمي والفديو للتوأم الرقمي في اسفل
+ * الصفحة الرئيسية للنظام»). **المشغّل يسكن اليوم في موضعين:** `/cinematic` و`/`
+ * (`src/components/home/HomeTwinSection.tsx`، كسولًا عند الاقتراب) — و`/sec/twin` بلا فيلم.
  *
  * ما يكسر الأمر ولا يراه tsc ولا البناء:
  *   • صورةٌ خارجية عند طرفٍ ثالث (`HERO_IMAGE`) أو أيّ رابط `http(s)://` في الصفحة — وفي الصورة
  *     القديمة واجهةٌ مخبوزة بأرقامٍ وأحداثٍ مختلَقة («٩٩٪ مستوى الالتزام» و«عاجل: بلاغ أمني …»)؛
- *   • `<iframe>` يضمّ /cinematic في /sec/twin (يحمل قشرة التطبيق مرّتين)؛
- *   • ألفاظ «البثّ المباشر» و«عاجل» و`LIVE` في الصفحتين أو المشغّل، أو رقمٌ في نصّهما — الفيلم
+ *   • `<iframe>` يضمّ /cinematic في صفحةٍ أخرى (يحمل قشرة التطبيق مرّتين)؛
+ *   • بقيّةٌ من قسم الفيلم تعود إلى /sec/twin (مشغّلٌ أو رابطٌ أو عنوان)، أو مشغّلٌ يُستورد
+ *     **ساكنًا** في سطح الرئيسية فيكبّر حزمتها، أو ذيل الصفحة بغير ترتيبه (الخاتمة ← الفيلم ←
+ *     الإفصاح)؛
+ *   • ألفاظ «البثّ المباشر» و«عاجل» و`LIVE` في الصفحات أو المشغّل، أو رقمٌ في نصّها — الفيلم
  *     **مُصيَّر مسبقًا** لا بثّ ولا بيانات تشغيلية (المادة ٢٧)؛
  *   • صفُّ روايةٍ لـ`/cinematic` يقول إن المشهد «يعمل داخل المتصفح لا ملف فيديو» — صار كاذبًا؛
  *   • عنوانٌ فوق الفيديو بتراكبٍ مطلق (يتداخل على الجوال) أو طبقاتٌ زخرفيةٌ أُسقطت تعود؛
@@ -51,6 +57,9 @@ const read = (p: string) => readFileSync(p, "utf8");
 
 const CINEMATIC = read("src/routes/cinematic.tsx");
 const SEC_TWIN = read("src/routes/_authenticated/sec.twin.tsx");
+const HOME_TWIN = read("src/components/home/HomeTwinSection.tsx");
+const HOME_PAGE = read("src/routes/-blueprint-page.tsx");
+const PLAYER_MODULE = "@/components/twin/TwinFilmPlayer";
 const PLAYER = read("src/components/twin/TwinFilmPlayer.tsx");
 const MODEL = read("src/components/twin/twin-film-model.ts");
 const FILM_CSS = read("src/styles/twin-film.css");
@@ -112,11 +121,81 @@ function textDigits(code: string): string[] {
   return out;
 }
 
-/** مقطع قسم الفيلم في /sec/twin: من وسمه إلى إغلاقه. */
-function filmSection(code: string): string {
-  const at = code.indexOf('aria-label="تجربة سديد السينمائية"');
-  if (at === -1) return "";
-  return code.slice(code.lastIndexOf("<section", at), code.indexOf("</section>", at) + 10);
+/**
+ * علامات قسم الفيلم كما كان في /sec/twin قبل نقله (٢٠٢٦/١٠/٢٩): المشغّل، ورابط /cinematic،
+ * والعنوان، ووسم القسم، ونصّ الرابط، واستيراد المشغّل. ما يبقى منها في الكود المنفَّذ بقيّة.
+ */
+const FILM_MARKERS = [
+  "<TwinFilmPlayer",
+  'to="/cinematic"',
+  "التوأم الرقمي السينمائي",
+  'aria-label="تجربة سديد السينمائية"',
+  "فتح التجربة السينمائية",
+  PLAYER_MODULE,
+] as const;
+const filmResidue = (code: string) => {
+  const body = strip(code);
+  return FILM_MARKERS.filter((marker) => body.includes(marker));
+};
+
+const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/** استيرادات `lazy(() => import("…"))` — ومعها وسيط النوع `lazy<…>(…)` — مساراتها بترتيبها. */
+const LAZY_IMPORT = /lazy(?:<[^>]*>)?\(\(\)\s*=>\s*import\("([^"]+)"\)/g;
+const lazyImports = (code: string) => [...strip(code).matchAll(LAZY_IMPORT)].map((m) => m[1]);
+
+/**
+ * استيرادٌ ساكن لوحدةٍ بعينها — سطر `import … from "…"` **أو** استيراد الأثر الجانبي `import "…"`
+ * (كلاهما يسحب الحزمة إلى حزمة الصفحة؛ الثاني كان ثقبًا في الكاشف، سُدّ ٢٠٢٦/١٠/٢٩) — منفَّذٌ لا معلَّق.
+ */
+const staticImportOf = (code: string, mod: string) =>
+  strip(code).match(new RegExp(`^import\\s+(?:[^;]*?from\\s+)?"${escapeRe(mod)}"`, "gm")) ?? [];
+
+/** مسار وسائط مكتوبٌ باليد — الملصق يأتي من ثابته `TWIN_FILM_POSTER` لا من نصّ. */
+const mediaPaths = (code: string) => strip(code).match(/["'`]\/media\/[^"'`]*["'`]/g) ?? [];
+
+/**
+ * سلاسل مكتوبة (لا `className`) فيها حرفٌ عربي أو مسافة ومعها رقم، **أو رقمٌ صِرف** بين علامتي
+ * اقتباس (`"2026"` — كان يفوت الكاشف، سُدّ ٢٠٢٦/١٠/٢٩) — تلتقط ما يفوت `textDigits` حين يكون
+ * النصّ المعروض تعبيرًا ثنائيّ اللغة لا نصًّا بين وسمين.
+ */
+function quotedDigits(code: string): string[] {
+  return [...code.matchAll(/"[^"\n]*"|`[^`]*`/g)]
+    .filter((m) => !code.slice(Math.max(0, (m.index ?? 0) - 10), m.index).endsWith("className="))
+    .map((m) => m[0])
+    .filter((s) => /[؀-ۿ]|\s/.test(s) || /^["`][0-9٠-٩۰-۹]+["`]$/.test(s))
+    .filter((s) => /[0-9٠-٩۰-۹]/.test(s));
+}
+
+/** ذيل الرئيسية بترتيبه: الخاتمة ← فيلم التوأم ← الإفصاح — كلٌّ مرّةً واحدة. */
+const HOME_TAIL = ["<HomeClosingBand />", "<HomeTwinSection />", "<footer"] as const;
+function tailBreaks(page: string): string[] {
+  const out: string[] = [];
+  const at = HOME_TAIL.map((n) => page.indexOf(n));
+  HOME_TAIL.forEach((n, i) => {
+    if (at[i] === -1) out.push(`${n} غائب`);
+    else if (page.indexOf(n, at[i] + 1) !== -1) out.push(`${n} مكرّر`);
+    else if (i > 0 && at[i - 1] !== -1 && at[i] < at[i - 1])
+      out.push(`${n} قبل ${HOME_TAIL[i - 1]}`);
+  });
+  return out;
+}
+
+/** سطح الرئيسية: الصفحة وما تستورده من `@/components/home/…` (المشي نفسه في عقد المُخطَّط). */
+function homeSurface(page: string): Map<string, string> {
+  const out = new Map<string, string>([["src/routes/-blueprint-page.tsx", page]]);
+  const queue = [page];
+  while (queue.length > 0) {
+    const src = queue.shift() as string;
+    for (const m of src.matchAll(/from "@\/components\/(home\/[\w.-]+)"/g)) {
+      const file = `src/components/${m[1]}.tsx`;
+      if (out.has(file) || !existsSync(file)) continue;
+      const code = read(file);
+      out.set(file, code);
+      queue.push(code);
+    }
+  }
+  return out;
 }
 
 /** سمات `<video>` المشغّل بين الفتح والإغلاق. */
@@ -676,29 +755,32 @@ describe("/cinematic — حشوة الأسفل تُخلي زرّ سَدِيد ا
   });
 });
 
-describe("/sec/twin — مشغّلٌ مضمَّن لا iframe، والنصوص الكاذبة حُذفت، والصندوقان المحدَّدان محذوفان", () => {
-  it("لا iframe ولا رابط خارجي ولا ألفاظ بثّ ولا رقمٌ في نصّ قسم الفيلم", () => {
+describe("/sec/twin — بلا iframe ولا بثّ، وقسم الفيلم نُقل إلى الرئيسية (أمر المالك ٢٠٢٦/١٠/٢٩)", () => {
+  it("لا iframe ولا رابط خارجي ولا ألفاظ بثّ", () => {
     expect(iframes(SEC_TWIN)).toEqual([]);
     expect(externalUrls(SEC_TWIN)).toEqual([]);
     expect(liveWords(SEC_TWIN, [WORK_ORDER_ACTION])).toEqual([]);
     expect(SEC_TWIN, "الاستثناء بلا موضع — يُحذف من القائمة").toContain(WORK_ORDER_ACTION);
-    expect(textDigits(filmSection(SEC_TWIN)), "رقمٌ في نصّ قسم الفيلم").toEqual([]);
   });
 
-  it("قسم الفيلم: المشغّل المضمَّن ورابط /cinematic، بلا زرّ فتحٍ ولا شرائح الإعلان القديمة", () => {
-    const section = filmSection(SEC_TWIN);
-    expect(section, "قسم الفيلم غائب").not.toBe("");
-    expect(section).toContain("<TwinFilmPlayer");
-    expect(section).toContain('to="/cinematic"');
-    // الرابط يسمّي ما يفعله (#18): ينتقل إلى صفحة التجربة، فلا يُسمّى «ملء الشاشة» وليس في هذه الصفحة
-    // أيّ شاشة كاملة (ملء الشاشة الحقيقي زرّ /cinematic وحده).
-    expect(section).toMatch(/<Link to="\/cinematic"[^>]*>\s*فتح التجربة السينمائية\s*<\/Link>/);
-    expect(strip(section), "رابط يسمّي التنقّل شاشةً كاملة").not.toMatch(/ملء الشاشة|Full screen/);
-    expect(section).not.toMatch(/cinemaOpen|setCinemaOpen|aria-expanded/);
-    // الجمل القديمة التي صارت كاذبةً أو مكرَّرة: «تفاعلي» و«شبكات الطاقة» و«ليس بثًا مباشرًا» و«البث الحقيقي».
-    expect(strip(section)).not.toMatch(
-      /تفاعلي|شبكات الطاقة|بثًا مباشرًا|البث الحقيقي|ثانية عند توفر الاتصال/,
-    );
+  it("لا بقيّة من قسم الفيلم: لا مشغّل ولا رابط /cinematic ولا عنوانه ولا استيراده — والكاشف يحمرّ على المزروع", () => {
+    expect(filmResidue(SEC_TWIN)).toEqual([]);
+    // يحمرّ على المزروع (المادة ٣٠): كل علامةٍ على حدة، والتعليق لا يُعدّ بقيّة.
+    expect(filmResidue(`${SEC_TWIN}\n<TwinFilmPlayer />`)).toEqual(["<TwinFilmPlayer"]);
+    expect(
+      filmResidue(
+        `${SEC_TWIN}\n<Link to="/cinematic" className="twin-film-btn nx-focus-ring">فتح التجربة السينمائية</Link>`,
+      ),
+    ).toEqual(['to="/cinematic"', "فتح التجربة السينمائية"]);
+    expect(
+      filmResidue(
+        `${SEC_TWIN}\n<section aria-label="تجربة سديد السينمائية"><h2>التوأم الرقمي السينمائي</h2></section>`,
+      ),
+    ).toEqual(["التوأم الرقمي السينمائي", 'aria-label="تجربة سديد السينمائية"']);
+    expect(filmResidue(`import { TwinFilmPlayer } from "${PLAYER_MODULE}";\n${SEC_TWIN}`)).toEqual([
+      PLAYER_MODULE,
+    ]);
+    expect(filmResidue(`${SEC_TWIN}\n{/* <TwinFilmPlayer /> */}`)).toEqual([]);
   });
 
   it("أمر المالك ٢٠٢٦/١٠/٢٣: صندوقا الشارة وتحديث البيانات والمشهد المرسوم محذوفان، وتبقى بطاقة العطل ووسم المحاكاة", () => {
@@ -728,6 +810,116 @@ describe("/sec/twin — مشغّلٌ مضمَّن لا iframe، والنصوص �
     ]) {
       expect(SEC_TWIN, `ضاع ما يجب أن يبقى: ${keep}`).toContain(keep);
     }
+  });
+});
+
+describe("الرئيسية — قسم فيلم التوأم في أسفل الصفحة (أمر المالك ٢٠٢٦/١٠/٢٩)", () => {
+  const code = strip(HOME_TWIN);
+  const page = strip(HOME_PAGE);
+
+  it("القسم مُسمًّى بعنوانه وسطره، ورابط /cinematic يسمّي ما يفعله بزرّ المشغّل وحلقة التركيز", () => {
+    expect(code).toMatch(/<section\s+aria-labelledby="nx-home-twin-title"/);
+    expect(code).toMatch(/<h2 id="nx-home-twin-title"[^>]*>\s*\{ar \? "التوأم الرقمي السينمائي"/);
+    expect(code).toContain(
+      "فيلم موشن جرافيك توضيحي يشرح فكرة التوأم الرقمي للأمن الصناعي، مستقلّ عن بيانات المراقبة الحقيقية.",
+    );
+    expect(code).toMatch(
+      /<Link to="\/cinematic" className="twin-film-btn nx-focus-ring">\s*\{ar \? "فتح التجربة السينمائية"/,
+    );
+    // الرابط ينتقل إلى صفحة التجربة — لا «ملء الشاشة» (ذاك زرّ /cinematic وحده) ولا لوحة تُفتح.
+    expect(code, "رابط يسمّي التنقّل شاشةً كاملة").not.toMatch(/ملء الشاشة|Full screen/);
+    expect(code).not.toMatch(/cinemaOpen|setCinemaOpen|aria-expanded/);
+    expect(code).not.toMatch(/speechSynthesis/);
+  });
+
+  it("المشغّل كسولٌ عند الاقتراب: lazy + Suspense + IntersectionObserver، ولا استيراد ساكن له في سطح الرئيسية", () => {
+    expect(lazyImports(HOME_TWIN)).toEqual([PLAYER_MODULE]);
+    // رفض الحزمة يُلتقط في الاستيراد نفسه (السلوك في `home-twin-section.contract.test.tsx`).
+    expect(code).toContain(".catch(() => ({ default: FilmUnavailable }))");
+    expect(code).toContain("<Suspense fallback={placeholder}>");
+    expect(code).toContain("new IntersectionObserver(");
+    expect(code).toContain("rootMargin: APPROACH_MARGIN");
+    // لا نافذة ولا مستند أثناء الرسم: الاقتراب حالٌ تبدأ `false` ويقلبها أثرٌ بعد التركيب.
+    expect(code).toContain("const [near, setNear] = useState(false);");
+    const surface = homeSurface(HOME_PAGE);
+    expect(surface.has("src/components/home/HomeTwinSection.tsx"), "القسم خارج السطح").toBe(true);
+    for (const [file, src] of surface) {
+      expect(staticImportOf(src, PLAYER_MODULE), `${file}: استيرادٌ ساكن للمشغّل`).toEqual([]);
+    }
+  });
+
+  it("لا iframe ولا رابط خارجي ولا ألفاظ بثّ ولا رقم في نصّه، والملصق من ثابته لا مسارٌ مكتوب", () => {
+    expect(iframes(HOME_TWIN)).toEqual([]);
+    expect(externalUrls(HOME_TWIN)).toEqual([]);
+    expect(liveWords(HOME_TWIN)).toEqual([]);
+    expect(textDigits(HOME_TWIN), "رقمٌ في نصّ القسم").toEqual([]);
+    expect(quotedDigits(code), "رقمٌ في سلسلةٍ معروضة").toEqual([]);
+    expect(mediaPaths(HOME_TWIN)).toEqual([]);
+    expect(code).toContain("src={TWIN_FILM_POSTER.src}");
+    expect(code).toContain("width={TWIN_FILM_POSTER.width}");
+    expect(code).toContain("height={TWIN_FILM_POSTER.height}");
+  });
+
+  it("ذيل الصفحة: الخاتمة ← فيلم التوأم ← الإفصاح، كلٌّ مرّةً واحدة", () => {
+    expect(tailBreaks(page)).toEqual([]);
+  });
+
+  it("والكواشف تحمرّ على المزروع (المادة ٣٠)", () => {
+    // استيرادٌ ساكن بدل الكسول، وكسولٌ غائب.
+    expect(
+      staticImportOf(
+        `import { TwinFilmPlayer } from "${PLAYER_MODULE}";\n${HOME_TWIN}`,
+        PLAYER_MODULE,
+      ),
+    ).toHaveLength(1);
+    expect(
+      staticImportOf(`// import { X } from "${PLAYER_MODULE}";\n${HOME_TWIN}`, PLAYER_MODULE),
+    ).toEqual([]);
+    // استيراد الأثر الجانبي يسحب الحزمة أيضًا — ثقبٌ سابق في الكاشف.
+    expect(staticImportOf(`import "${PLAYER_MODULE}";\n${HOME_TWIN}`, PLAYER_MODULE)).toHaveLength(
+      1,
+    );
+    expect(
+      staticImportOf(`import * as P from "${PLAYER_MODULE}";\n${HOME_TWIN}`, PLAYER_MODULE),
+    ).toHaveLength(1);
+    const eager = HOME_TWIN.replace(
+      /lazy(?:<[^>]*>)?\(\(\)\s*=>\s*import\("[^"]+"\)[^;]*;/,
+      "null;",
+    );
+    expect(eager).not.toBe(HOME_TWIN);
+    expect(lazyImports(eager)).toEqual([]);
+    expect(lazyImports('const X = lazy(() => import("@/x"));')).toEqual(["@/x"]);
+    expect(lazyImports('const X = lazy<ComponentType>(() => import("@/x"));')).toEqual(["@/x"]);
+    // مسار ملصقٍ مكتوب باليد، ورقمٌ في نصٍّ معروض، وإطارٌ يضمّ صفحة.
+    const handwritten = HOME_TWIN.replace(
+      "src={TWIN_FILM_POSTER.src}",
+      'src="/media/twin/sadeed-twin-poster.webp"',
+    );
+    expect(handwritten).not.toBe(HOME_TWIN);
+    expect(mediaPaths(handwritten)).toEqual(['"/media/twin/sadeed-twin-poster.webp"']);
+    expect(
+      quotedDigits(code.replace('"التوأم الرقمي السينمائي"', '"التوأم الرقمي السينمائي 2026"')),
+    ).toEqual(['"التوأم الرقمي السينمائي 2026"']);
+    // رقمٌ صِرف بلا مسافة ولا حرف — ثقبٌ سابق في الكاشف.
+    expect(quotedDigits('<p>{ar ? "2026" : "٢٠٢٦"}</p>')).toEqual(['"2026"', '"٢٠٢٦"']);
+    expect(quotedDigits('<p className="mt-2">x</p>')).toEqual([]);
+    expect(iframes(`${HOME_TWIN}\n<iframe src="/cinematic" />`)).toEqual(["<iframe"]);
+    // ذيلٌ مقلوب، ومكرّر، وغائب، وبعد الإفصاح.
+    const swapped = page.replace(
+      /<HomeClosingBand \/>([\s\S]*?)<HomeTwinSection \/>/,
+      "<HomeTwinSection />$1<HomeClosingBand />",
+    );
+    expect(swapped).not.toBe(page);
+    expect(tailBreaks(swapped)).toEqual(["<HomeTwinSection /> قبل <HomeClosingBand />"]);
+    expect(tailBreaks(`${page}\n<HomeTwinSection />`)).toEqual(["<HomeTwinSection /> مكرّر"]);
+    expect(tailBreaks(page.replace("<HomeTwinSection />", ""))).toEqual([
+      "<HomeTwinSection /> غائب",
+    ]);
+    const afterFooter = page
+      .replace("<HomeTwinSection />", "")
+      .replace("</footer>", "</footer>\n<HomeTwinSection />");
+    expect(afterFooter).not.toBe(page);
+    expect(tailBreaks(afterFooter)).toEqual(["<footer قبل <HomeTwinSection />"]);
   });
 });
 

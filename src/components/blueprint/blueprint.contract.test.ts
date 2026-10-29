@@ -456,7 +456,11 @@ const riskListCap = (body: string): number | null => {
   return m ? Number(m[1]) : null;
 };
 
-/** صفوف الرئيسية بترتيبها (المواصفة §4.0): المؤشرات ← الصدر ← التشغيل ← التحليلات ← الإفصاح. */
+/**
+ * صفوف الرئيسية بترتيبها (المواصفة §4.0): المؤشرات ← الصدر ← التشغيل ← التحليلات ← الخاتمة
+ * ← فيلم التوأم (أمر المالك ٢٠٢٦/١٠/٢٩ — نُقل من /sec/twin إلى الموضع المحدَّد بالأحمر فوق
+ * الإفصاح) ← الإفصاح.
+ */
 const ROW_SEQUENCE = [
   "<HomeKpiRow />",
   'className="nx-home-hero"',
@@ -464,6 +468,8 @@ const ROW_SEQUENCE = [
   "<HomeSadeedCard />",
   "<HomeOpsRow />",
   "<HomeAnalyticsRow />",
+  "<HomeClosingBand />",
+  "<HomeTwinSection />",
   "<footer",
 ] as const;
 /** مواضع تنكسر فيها السلسلة: غائبٌ، أو مكرّر، أو سابقٌ لما قبله. */
@@ -1397,7 +1403,7 @@ describe("الرئيسية — شبكات الصفوف وترتيبها", () => 
     expect(unsafeGridTracks(layout, [".nx-home-gone"])).toEqual([".nx-home-gone: غير معرَّفة"]);
   });
 
-  it("ترتيب DOM هو ترتيب العرض: المؤشرات ← الصدر (الخريطة ← سَدِيد) ← التشغيل ← التحليلات", () => {
+  it("ترتيب DOM هو ترتيب العرض: المؤشرات ← الصدر (الخريطة ← سَدِيد) ← التشغيل ← التحليلات ← الخاتمة ← فيلم التوأم ← الإفصاح", () => {
     // **كان اسمه «… المناطق ← سَدِيد ← توصياته»** وموضوعه الصدر الثلاثي: «سَدِيد
     // في المنتصف، وتوصياته على يسار بطاقته» (المالك ٢٠٢٦/٠٨/١٠). ونسخ الصدرَ وعقدَ
     // ترتيبه نصًّا قرارُ المالك ٢٠٢٦/١٠/١٣ (المواصفة ١٠ §٢: «the triad … and its
@@ -1474,6 +1480,17 @@ describe("الرئيسية — شبكات الصفوف وترتيبها", () => 
     );
     expect(swapped).not.toBe(page);
     expect(rowOrderBreaks(swapped)).toEqual(["<HomeSadeedCard /> قبل <HomeMapCard />"]);
+    // فيلم التوأم بعد الإفصاح، أو قبل الخاتمة (أمر المالك ٢٠٢٦/١٠/٢٩: بينهما) — يحمرّ.
+    const twinAfterFooter = page.replace("<HomeTwinSection />", "") + "\n<HomeTwinSection />";
+    expect(rowOrderBreaks(twinAfterFooter)).toEqual(["<footer قبل <HomeTwinSection />"]);
+    const twinBeforeClose = page.replace(
+      /<HomeClosingBand \/>([\s\S]*?)<HomeTwinSection \/>/,
+      "<HomeTwinSection />$1<HomeClosingBand />",
+    );
+    expect(twinBeforeClose).not.toBe(page);
+    expect(rowOrderBreaks(twinBeforeClose)).toEqual([
+      "<HomeTwinSection /> قبل <HomeClosingBand />",
+    ]);
     // بطاقة فِن **أسفل** سَدِيد في العمود نفسه (أمر المالك ٢٠٢٦/١٠/٢٣)، داخل الصدر لا بعده.
     const sadeedAt = page.indexOf("<HomeSadeedCard />");
     const finnAt = page.indexOf("<HomeFinnCard />");

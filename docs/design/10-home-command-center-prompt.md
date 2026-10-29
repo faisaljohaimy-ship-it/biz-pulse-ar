@@ -90,12 +90,27 @@ overload. It is the latest explicit owner text on the home page (Article 35), so
 | #   | Subject         | Consequence                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | --- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | M1  | Entrance        | **Supersedes** «Motion: static cards (owner 2026-08-09)» for the entrance only: KPI cards rise in a 40 ms stagger, their mini charts draw in, the map settles, the SADEED card rises — once per load, ≤ 520 ms each, no element waiting > 360 ms. Perpetual float and perpetual shimmer stay forbidden.                                                                                                                                                                                                                                         |
-| M2  | Below the fold  | Operations, analytics and the closing section lift 18 px as they enter the viewport, driven by the scroll position itself (`animation-timeline: view()` behind `@supports`) — no scroll capture, no smooth-scroll library; browsers without support show them still. Translate only: no opacity, so no half-faded text and no frozen half-drawn chart when the page opens mid-scroll.                                                                                                                                                           |
+| M2  | Below the fold  | Operations, analytics, the closing section and (since 2026-10-29) the twin film section lift 18 px as they enter the viewport, driven by the scroll position itself (`animation-timeline: view()` behind `@supports`) — no scroll capture, no smooth-scroll library; browsers without support show them still. Translate only: no opacity, so no half-faded text and no frozen half-drawn chart when the page opens mid-scroll.                                                                                                                 |
 | M3  | Access          | Every animation is opt-in: inside `@media (prefers-reduced-motion: no-preference)` and under `html:not([data-nx-motion="off"])`; safe mode drops all motion. First frame readable (entrance starts at `opacity: 0.6`, never 0). Press feedback (`scale: 0.98`) stays as an instant user response.                                                                                                                                                                                                                                               |
 | M4  | Tooling         | CSS only, in the lazy home chunk (`src/styles/home/home-motion.css`, ≈ 2.2 KB minified — lightningcss `minify`: 2,152 B without targets, 2,171 B with the browserslist targets, measured 2026-10-18). Motion for React stays for the route transition it already drives; GSAP, Lenis and Three.js are not added (budget: JS 9.94/10 MiB measured 2026-10-18; Lenis would take over scrolling; 3D adds weight with no product meaning). The fixed background film gets no parallax: its layers recomposite under the iOS P0 lesson (2026-10-14). |
-| M5  | Closing section | «جاهز لاتخاذ القرار؟» + one true sentence + two actions: «اسأل سَدِيد» (opens the one SADEED panel, composer focused) and the Industrial Security screen by its canonical name (`screenName("/sec")` = «الأمن الصناعي»). No numbers, customers, certifications or integrations are claimed. Placed after the analytics row, before the disclosure line.                                                                                                                                                                                         |
+| M5  | Closing section | «جاهز لاتخاذ القرار؟» + one true sentence + two actions: «اسأل سَدِيد» (opens the one SADEED panel, composer focused) and the Industrial Security screen by its canonical name (`screenName("/sec")` = «الأمن الصناعي»). No numbers, customers, certifications or integrations are claimed. Placed after the analytics row; before the disclosure line until 2026-10-29, since then before the twin film section (addendum below).                                                                                                              |
 
 Guard: `src/components/home/home-motion.contract.test.ts` (planted-red cases for every rule).
+
+**Addendum 2026-10-29 — the twin film moves to the bottom of the page.** Owner order (verbatim):
+«قم بنقل التوأم الرقمي والفديو للتوأم الرقمي في اسفل الصفحة الرئيسية للنظام (فالمكان المشار له
+باللون الاحمر فالمرفق)» — the attachment circles the disclosure line at the bottom of `/`. The film
+section that lived on `/sec/twin` (heading, one-line description, the «فتح التجربة السينمائية» link
+to `/cinematic`, the embedded `TwinFilmPlayer`) is now `HomeTwinSection`, placed **after the closing
+band and before the disclosure line**, so the frame now ends «closing → twin film → disclosure» and
+the disclosure stays the last line. The player is lazy-loaded on approach (600 px) with a placeholder
+that reserves its height (measured equal before/after the player mounts in the open gate; under
+reduced motion the player's hint line adds +33 px at 1280 / +57 px at 390, deliberately not
+reserved); `/cinematic` is untouched and `/sec/twin` keeps its tree. M5's placement clause and M2's
+lift list are superseded as written in their rows; M5's content is unchanged. Guards:
+`twin-film.contract.test.ts`, `blueprint.contract.test.ts` (`ROW_SEQUENCE`),
+`home-twin-section.contract.test.tsx` (a failed player chunk leaves the section and the disclosure
+in place).
 
 ### 2.3 Owner decision 2026-10-17 — the two brand plates («ضع هذه الصور المرفقة كعلامة كما هي»)
 
@@ -198,7 +213,8 @@ Coordinates below are physical (left → right), per D5.
 - An accessible `<h1>` stays in the DOM (visually hidden) carrying the product name.
 - Desktop grid (≥ 1280 px): sidebar 216–232 px · content column with 16 px gutters · rows:
   header → KPI row → hero row (map ≈ 5/7, SADEED AI ≈ 2/7) → operations row (4 cards) →
-  analytics row (4 cards) → disclosure line.
+  analytics row (4 cards) → closing band (§2.2 M5) → twin film section (2026-10-29 order, see the
+  §2.2 addendum) → disclosure line.
 - Tablet (768–1279): KPI row wraps 4+3; hero stacks (map, then SADEED AI); rows become 2×2.
 - Phone (≤ 767): single column; sidebar becomes the existing menu sheet; KPI row is a
   2-column grid; no horizontal overflow.

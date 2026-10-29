@@ -38,7 +38,8 @@
  * ## الصفوف بترتيبها (المواصفة §4.0)
  *
  *   الترويسة ← المؤشرات السبعة ← الصدر (الخريطة ≈ ٥/٧ · سَدِيد ≈ ٢/٧)
- *   ← التشغيل (٤ بطاقات) ← التحليلات (٤ بطاقات) ← الخاتمة ← سطر الإفصاح.
+ *   ← التشغيل (٤ بطاقات) ← التحليلات (٤ بطاقات) ← الخاتمة ← فيلم التوأم الرقمي
+ *   (أمر المالك ٢٠٢٦/١٠/٢٩ — نُقل من `/sec/twin`) ← سطر الإفصاح.
  *
  * ## الحركة (أمر المالك ٢٠٢٦/١٠/١٧ — ناسخٌ لـ«بطاقات الرئيسية ساكنة»)
  *
@@ -68,6 +69,7 @@ import { HomeFinnCard } from "@/components/finn/HomeFinnCard";
 import { HomeOpsRow } from "@/components/home/HomeOpsRow";
 import { HomeAnalyticsRow } from "@/components/home/HomeAnalyticsRow";
 import { HomeClosingBand } from "@/components/home/HomeClosingBand";
+import { HomeTwinSection } from "@/components/home/HomeTwinSection";
 import "@/styles/home/home-layout.css";
 import "@/styles/home/home-motion.css";
 
@@ -120,6 +122,12 @@ export function BlueprintPage() {
         {/* ════ الخاتمة: فعلان واضحان — سؤال سَدِيد أو الانتقال إلى الأمن
               الصناعي (أمر المالك ٢٠٢٦/١٠/١٧). */}
         <HomeClosingBand />
+
+        {/* ════ فيلم التوأم الرقمي — أمر المالك ٢٠٢٦/١٠/٢٩: «نقل التوأم الرقمي والفديو
+              للتوأم الرقمي … في اسفل الصفحة الرئيسية» — في الموضع المحدَّد بالأحمر في
+              مرفقه، فوق سطر الإفصاح مباشرةً. نُقل من `/sec/twin`؛ المشغّل يُطلب كسولًا
+              عند الاقتراب، والبديل يحجز ارتفاعه. */}
+        <HomeTwinSection />
 
         {/* الفاصل بالحبر الثالث ممزوجًا (خطٌّ هادئ لا نصّ)، والسطر بالحبر
               الثاني: كان بأخفّ الدرجات فهبط تباينه فوق قوس الفيلم إلى ١٫٤٢:١،

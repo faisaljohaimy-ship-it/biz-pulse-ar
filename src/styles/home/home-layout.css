@@ -133,3 +133,46 @@
     border-color: ButtonText;
   }
 }
+
+/* ── فيلم التوأم الرقمي: بين الخاتمة وسطر الإفصاح (أمر المالك ٢٠٢٦/١٠/٢٩) ────
+   بلغة الخاتمة نفسها: سطحٌ معتم وحدٌّ شعري وزاوية 16px. رأسٌ يلتفّ (العنوان والسطر
+   ثم رابط /cinematic بزرّ المشغّل نفسه `.twin-film-btn` من ورقته)، والمشغّل تحته في
+   عمودٍ موسَّط بعرض صفحة التوأم السابقة (56rem). والبديل قبل وصول حزمة المشغّل
+   يحجز ارتفاعه بأصناف ورقته — وشريطه الفارغ بارتفاع زرّ المشغّل (44px) ليس غير.
+   والحركة (رفعة التمرير) في home-motion.css مع الخاتمة. */
+.nx-home-twin {
+  padding: 20px 24px;
+  border: 1px solid var(--hairline);
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.nx-home-twin-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+}
+
+.nx-home-twin-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.nx-home-twin-text {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+.nx-home-twin-stage {
+  max-inline-size: 56rem;
+  margin: 16px auto 0;
+}
+
+.nx-home-twin-bar {
+  min-block-size: 44px;
+}

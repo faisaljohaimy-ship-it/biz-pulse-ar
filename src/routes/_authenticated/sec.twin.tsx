@@ -1,11 +1,10 @@
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { getTwinTree, type TwinTree } from "@/lib/sec.functions";
 import { SecPageHeader, statusClass, severityClass } from "@/components/sec/sec-shell";
-import { TwinFilmPlayer } from "@/components/twin/TwinFilmPlayer";
 import { useRegion } from "@/lib/region-context";
 import type { Region } from "@/lib/regions";
 // تدقيق تعبيرية الأيقونات ٢٠٢٦/٠٨/٢٧ — القاعدة الموثقة في sec-shell نفسها:
@@ -77,32 +76,7 @@ function TwinPage() {
         subtitle="مشهد مرسوم لكل منطقة، ونموذج هرمي تفاعلي لجميع الأصول الأمنية"
       />
 
-      {/* فيلم التوأم الرقمي: مشغّلٌ مضمَّن في الصفحة لا إطارٌ يضمّ /cinematic (كان الإطار يحمل قشرة
-          التطبيق مرّتين). الفيلم **مُصيَّر مسبقًا** — ملف فيديو توضيحي لا بثّ ولا بيانات تشغيلية،
-          وإفصاحه ووصفه النصّي في المشغّل نفسه فلا ينحرف عن /cinematic. وبياناتُ الأصول وشارة مصدرها
-          في القسم أعلاه؛ وشرائح الإعلان القديمة تحت الفيلم حُذفت: كانت تصف «العرض» لا الفيلم وتكرّر
-          ما في الشارة. */}
-      <section
-        className="rounded-2xl border border-cyan-300/40 bg-card p-4 shadow-sm"
-        aria-label="تجربة سديد السينمائية"
-      >
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-bold">التوأم الرقمي السينمائي</h2>
-            <p className="text-sm text-muted-foreground">
-              فيلم موشن جرافيك توضيحي يشرح فكرة التوأم الرقمي للأمن الصناعي، مستقلّ عن بيانات
-              المراقبة الحقيقية.
-            </p>
-          </div>
-          {/* ينتقل إلى صفحة التجربة (لا شاشة كاملة في هذه الصفحة): يُسمّى بما يفعله — #18. */}
-          <Link to="/cinematic" className="twin-film-btn nx-focus-ring">
-            فتح التجربة السينمائية
-          </Link>
-        </div>
-        <div className="mx-auto mt-4 w-full max-w-4xl">
-          <TwinFilmPlayer />
-        </div>
-      </section>
+      {/* قسم فيلم التوأم الرقمي نُقل إلى أسفل الرئيسية بأمر المالك ٢٠٢٦/١٠/٢٩ (`src/components/home/HomeTwinSection.tsx`). */}
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[420px_1fr]">
         <div className="rounded-xl border border-border bg-card p-3 max-h-[78vh] overflow-y-auto">

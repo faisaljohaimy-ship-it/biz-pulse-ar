@@ -118,7 +118,8 @@
   }
 }
 
-/* ── الظهور عند التمرير: بطاقات التشغيل والتحليلات والخاتمة ترتفع 18px وهي
+/* ── الظهور عند التمرير: بطاقات التشغيل والتحليلات والخاتمة وقسم فيلم التوأم
+   (٢٠٢٦/١٠/٢٩) ترتفع 18px وهي
    تدخل الإطار — مربوطةً بالتمرير نفسه لا بزمن، فلا تُحتجز الصفحة ولا يُسرق
    التمرير. ومن لا يدعم المخطّط الزمني للعرض يرى البطاقات ساكنةً كما هي.
    **والمدى ينتهي بتمام الدخول** (`entry 100%`): كان `cover 28%` فلا تبلغه
@@ -126,7 +127,8 @@
    (قِيس على 390–1920، ٢٠٢٦/١٠/١٨). */
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
-    html:not([data-nx-motion="off"]) :is(.nx-ops-card, .nx-ana-card, .nx-home-close) {
+    html:not([data-nx-motion="off"])
+      :is(.nx-ops-card, .nx-ana-card, .nx-home-close, .nx-home-twin) {
       animation: nxHomeLift linear backwards;
       animation-timeline: view();
       animation-range: entry 0% entry 100%;
