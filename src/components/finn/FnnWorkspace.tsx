@@ -35,7 +35,11 @@ class PrivateChatBoundary extends Component<
             ? "تعذّر تحميل المحادثة. أعد تحميل الصفحة للمحاولة مجددًا."
             : "Chat could not load. Reload the page to retry."}
         </p>
-        <button type="button" className="fnn-button" onClick={() => window.location.reload()}>
+        <button
+          type="button"
+          className="fnn-button min-h-11!"
+          onClick={() => window.location.reload()}
+        >
           {this.props.ar ? "إعادة التحميل" : "Reload"}
         </button>
       </div>
@@ -106,7 +110,12 @@ function GoogleSignIn({ ar, signedIn }: { ar: boolean; signedIn: boolean }) {
   };
   return (
     <div className="fnn-signin">
-      <button type="button" className="fnn-google" disabled={busy} onClick={() => void signIn()}>
+      <button
+        type="button"
+        className="fnn-google min-h-11!"
+        disabled={busy}
+        onClick={() => void signIn()}
+      >
         <span className="fnn-google-mark" aria-hidden>
           G
         </span>
@@ -151,7 +160,7 @@ function OwnerWorkspace({ userId, ar }: { userId: string; ar: boolean }) {
         </p>
         <button
           type="button"
-          className="fnn-button"
+          className="fnn-button min-h-11!"
           disabled={isFetching}
           onClick={() => void refetch()}
         >
@@ -244,7 +253,7 @@ export function FnnWorkspace() {
   return (
     <main className="fnn-workspace" dir={ar ? "rtl" : "ltr"} data-fnn-workspace>
       <header className="fnn-top">
-        <Link to="/" className="fnn-back">
+        <Link to="/" className="fnn-back min-h-11!">
           <ArrowRight size={18} aria-hidden />
           {ar ? "العودة إلى سديد" : "Back to SADEED"}
         </Link>
@@ -255,7 +264,7 @@ export function FnnWorkspace() {
         {user && (
           <button
             type="button"
-            className="fnn-back"
+            className="fnn-back min-h-11!"
             disabled={leaving}
             onClick={() => void signOut()}
           >
