@@ -71,12 +71,12 @@ describe("FNN home identity and separate session", () => {
     expect(HOME_IMAGES.finn.src).not.toBe(HOME_IMAGES.persona.src);
   });
 
-  it("keeps an English separation label and existing full-chat route", async () => {
+  it("keeps an English separation label and links to the standalone workspace", async () => {
     sim.locale = "en";
     mountCard();
     expect(await screen.findByRole("link", { name: /Open the Finn chat/ })).toHaveAttribute(
       "href",
-      "/finn",
+      "/fnn",
     );
     expect(screen.getByText("Separate from SADEED · Owner only")).toBeInTheDocument();
   });
