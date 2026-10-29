@@ -17,13 +17,13 @@ const loginFn = (src: string) => {
   const at = src.indexOf("function EmployeeLogin(");
   return at < 0 ? "" : src.slice(at, src.indexOf("\n}\n", at));
 };
-/** كل `toast.error(...)` في معالجَي الدخول يمرّ بالمحوِّل — لا نصّ خادم خام. */
+/** كل `toast.error(...)` في معالجَي الدخول يمرّ بالمحوِّل أو بنصّ الحالة الثابت — لا نصّ خادم خام. */
 const rawToasts = (src: string) => {
   const from = src.indexOf("async function handleGoogle");
   const to = src.indexOf("if (!accepted)", from);
   return [...src.slice(from, to).matchAll(/toast\.error\(([^;]*)\);/g)]
     .map((m) => m[1])
-    .filter((arg) => !arg.trim().startsWith("signinErrorMessage("));
+    .filter((arg) => !/^(signinErrorMessage|googleNoticeMessage)\(/.test(arg.trim()));
 };
 
 describe("«دخول الموظفين» — مدخلٌ إلى الدخول القائم", () => {
@@ -77,11 +77,18 @@ describe("«دخول الموظفين» — مدخلٌ إلى الدخول ال�
   it("أخطاء الدخول بلغة الواجهة بلا نصّ الخادم — وتسقط على المزروع (المادة ٣٠)", () => {
     expect(rawToasts(AUTH)).toEqual([]);
     const planted = AUTH.replace(
-      'toast.error(signinErrorMessage(result.error.message ?? "", isAr));',
-      "toast.error(result.error.message);",
+      'toast.error(signinErrorMessage(error.message ?? "", isAr));',
+      "toast.error(error.message);",
     );
     expect(planted).not.toBe(AUTH);
-    expect(rawToasts(planted)).toEqual(["result.error.message"]);
+    expect(rawToasts(planted)).toEqual(["error.message"]);
+    // نصّ حالة «غير معروف» ثابتٌ من المحوِّل، لا سلسلة حرّة تُكتب في الصفحة.
+    const plantedFree = AUTH.replace(
+      'toast.error(googleNoticeMessage("unknown", isAr));',
+      'toast.error("boom");',
+    );
+    expect(plantedFree).not.toBe(AUTH);
+    expect(rawToasts(plantedFree)).toEqual(['"boom"']);
   });
 });
 
@@ -121,5 +128,36 @@ describe("signinErrorMessage — رسالةٌ محايدة لا تكشف شيئ�
       expect(signinErrorMessage(raw)).toBe(
         "تعذّر الوصول إلى خدمة الدخول الآن — أعد المحاولة بعد قليل.",
       );
+  });
+});
+
+describe("زرّ Google في /auth — لا وسيط Lovable ولا طريق ميّت (٢٠٢٦/١٠/٣٠)", () => {
+  /** المخالفات: استيراد من الوسيط · مسار `/~oauth` · نداء `lovable.auth`. */
+  const brokerViolations = (src: string) =>
+    [
+      /from\s+["']@\/integrations\/lovable/.test(src) && "import",
+      /\/~oauth/.test(src) && "oauth-path",
+      /lovable\.auth/.test(src) && "lovable.auth",
+    ].filter(Boolean);
+
+  it("الصفحة لا تستورد من @/integrations/lovable ولا تذكر /~oauth ولا lovable.auth", () => {
+    expect(brokerViolations(AUTH)).toEqual([]);
+  });
+
+  it("الحارس يسقط على كل مخالفةٍ مزروعة (المادة ٣٠)", () => {
+    expect(
+      brokerViolations(`import { lovable } from "@/integrations/lovable/index";\n${AUTH}`),
+    ).toEqual(["import"]);
+    expect(brokerViolations(`${AUTH}\nfetch("/~oauth/initiate");`)).toEqual(["oauth-path"]);
+    expect(brokerViolations(`${AUTH}\nawait lovable.auth.signInWithOAuth("google");`)).toEqual([
+      "lovable.auth",
+    ]);
+  });
+
+  it("Google الأصلي: صفحة الدخول تستخدم المساعد الخالص وsupabase.auth.signInWithOAuth بلا تخطّي التوجيه", () => {
+    expect(AUTH).toContain('from "@/lib/auth/native-google"');
+    expect(AUTH).toContain("supabase.auth.signInWithOAuth(");
+    expect(AUTH).toContain('googleOAuthOptions(window.location.origin, redirectTo ?? "/")');
+    expect(AUTH).not.toContain("skipBrowserRedirect");
   });
 });

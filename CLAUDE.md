@@ -1294,6 +1294,24 @@ Disconnect_ لوقف مزامنته مع المستودع (وإلا بقيت ت�
 مطابقة البيانات بين المشروعين. فهي مرجَّحةٌ لا مثبتة، والحسم بخطوات الجرد في
 `docs/operations/LOVABLE_DECOUPLING_CHECKLIST_2026-10-24.md`.
 
+- **زرّ «المتابعة عبر Google» في `/auth` — لا وسيط Lovable بعد اليوم (٢٠٢٦/١٠/٣٠، بعد لقطة المالك لصفحة «404 Page not
+  found»).** **السبب (قِيس ٢٠٢٦/١٠/٢٩ على الإنتاج):** الزرّ كان يستدعي `lovable.auth.signInWithOAuth("google")` الذي
+  يتّجه إلى `/~oauth/initiate`، وهو مسارٌ تخدمه استضافة Lovable وحدها؛ والإنتاج على Vercel بمشروع Supabase
+  `cnaevysaoimzusnvpazr`، فيعود `GET https://neexios.com/~oauth/initiate` بـ404. **وهذا ينسخ قول الفقرة أعلاه إن
+  «تسجيل الدخول عبر `src/integrations/lovable`» بقي متّصلًا عمدًا — في صفحة `/auth` وحدها** (الملف المولَّد
+  `src/integrations/lovable/index.ts` لم يُحذف ولم يُعدَّل). **الإصلاح:** `src/routes/auth.tsx` لا يستورد من
+  `@/integrations/lovable` ولا يذكر `/~oauth`؛ يسأل مرّةً عند التحميل نقطة الصحة العامة `/api/fnn/auth-health`
+  (`src/lib/auth/native-google.ts`: `probeGoogleProvider` بمهلة 5 ث، و`safeAuthTarget` لمسارٍ من الأصل نفسه فقط،
+  و`googleOAuthOptions`)، فإن أكّدت التفعيل صراحةً نادى `supabase.auth.signInWithOAuth` الأصلي بتوجيه المتصفّح؛ وإن
+  قالت «غير مفعّل» عُطِّل الزرّ بسطر عربي/إنجليزي ظاهر تحته؛ وإن تعذّر التحقق (انقطاع، غير 200، جسم مشوَّه، مهلة) أُعيد
+  السؤال مرّةً عند النقر ثم ظهر toast محايد. **البريد وكلمة المرور يعملان في كل الحالات.** الحارس:
+  `src/lib/auth/native-google.test.ts` وآخر الفقرات في `src/components/nav/employee-login.contract.test.ts`
+  (بانتهاكات مزروعة). **وما بقي على المالك ولم يُنفَّذ:** إنشاء عميل Google OAuth وتفعيل المزوّد في مشروع Supabase
+  الإنتاجي، وإضافة روابط العودة المسموحة `https://neexios.com/**` و`https://www.neexios.com/**` (Authentication ←
+  URL Configuration). **قِيس ٢٠٢٦/١٠/٢٩:** `GET /api/fnn/auth-health` يردّ `{"checked":true,"googleEnabled":false}`
+  أي أن المزوّد معطَّل اليوم، فالزرّ سيظهر معطَّلًا بالسطر أعلاه حتى يُفعَّل. **ولم يُقَس** بعد: إكمال دورة دخول
+  Google فعليًّا على الإنتاج (لا عميل OAuth بعد)، ولا سلوك الزرّ على الإنتاج بعد هذا التغيير قبل نشره.
+
 ### السلسلة الملزِمة
 
 `Implementation → Tests → Build → Commit → Push to origin/main → **Publish (Vercel، عبر Claude — انظر أعلاه)** → Production verification`

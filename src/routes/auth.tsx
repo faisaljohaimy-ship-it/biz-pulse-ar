@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -12,8 +12,7 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
+import { isSupabaseConfigured, supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { brandFor, brandName } from "@/lib/domain";
 import { useI18n } from "@/lib/i18n";
@@ -37,6 +36,12 @@ import {
   type SignupFields,
 } from "@/lib/access/signup";
 import { STAFF_NUMBER_KEY } from "@/lib/access/staff-entry";
+import {
+  googleNoticeMessage,
+  googleOAuthOptions,
+  probeGoogleProvider,
+  type GoogleProviderState,
+} from "@/lib/auth/native-google";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -75,6 +80,12 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  // قدرة Google تُسأل من الخادم مرّةً عند التحميل (في أثرٍ لا أثناء الرسم). بلا إعدادٍ عامّ
+  // للهوية لا معنى للسؤال: الحالة «غير معروفة» من البداية.
+  const [googleState, setGoogleState] = useState<GoogleProviderState | "checking">(
+    isSupabaseConfigured ? "checking" : "unknown",
+  );
+  const probeRef = useRef<Promise<GoogleProviderState> | null>(null);
 
   const goNext = () => {
     // بعد الدخول: الرئيسية. كانت الوجهة /nx-cockpit حتى حُجبت القمرة بأمر
@@ -88,19 +99,43 @@ function AuthPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, authLoading]);
 
+  const runGoogleProbe = () => {
+    const pending = probeGoogleProvider((input, init) => fetch(input, init));
+    probeRef.current = pending;
+    void pending.then(setGoogleState);
+    return pending;
+  };
+
+  useEffect(() => {
+    if (isSupabaseConfigured && !probeRef.current) runGoogleProbe();
+  }, []);
+
   async function handleGoogle() {
+    if (busy) return;
     setBusy(true);
     try {
-      const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
-      });
-      if (result.error) {
-        toast.error(signinErrorMessage(result.error.message ?? "", isAr));
+      // «checking»: النقر ينتظر نتيجة السؤال الجاري. «unknown»: يُعاد السؤال مرّةً واحدة.
+      let state: GoogleProviderState;
+      if (googleState === "checking") state = await (probeRef.current ?? runGoogleProbe());
+      else if (googleState === "unknown" && isSupabaseConfigured) state = await runGoogleProbe();
+      else state = googleState;
+      if (state === "disabled") {
         setBusy(false);
         return;
       }
-      if (result.redirected) return;
-      goNext();
+      if (state === "unknown") {
+        toast.error(googleNoticeMessage("unknown", isAr));
+        setBusy(false);
+        return;
+      }
+      // المتصفّح يتولّى الانتقال إلى مزوّد الهوية (لا تخطّي للتوجيه).
+      const { error } = await supabase.auth.signInWithOAuth(
+        googleOAuthOptions(window.location.origin, redirectTo ?? "/"),
+      );
+      if (error) {
+        toast.error(signinErrorMessage(error.message ?? "", isAr));
+        setBusy(false);
+      }
     } catch (error) {
       toast.error(signinErrorMessage(error instanceof Error ? error.message : String(error), isAr));
       setBusy(false);
@@ -223,12 +258,22 @@ function AuthPage() {
           <Button
             type="button"
             onClick={() => void handleGoogle()}
-            disabled={busy}
+            disabled={busy || googleState === "disabled"}
+            aria-describedby={googleState === "disabled" ? "google-signin-note" : undefined}
             className="h-12 w-full bg-white text-slate-900 hover:bg-slate-100"
           >
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleIcon />}
             {isAr ? "المتابعة عبر Google" : "Continue with Google"}
           </Button>
+          {googleState === "disabled" && (
+            <p
+              id="google-signin-note"
+              role="status"
+              className="mt-2 text-center text-[12px] leading-relaxed text-white/75"
+            >
+              {googleNoticeMessage("disabled", isAr)}
+            </p>
+          )}
 
           <div className="my-5 flex items-center gap-3 text-[12px] uppercase tracking-[0.22em] text-white/35">
             <span className="h-px flex-1 bg-white/10" />
