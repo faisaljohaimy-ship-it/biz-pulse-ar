@@ -159,10 +159,13 @@ describe("③ حدّ الحزمة: لا يصل العميل ملفُّ خادم 
 
   it("الصفحة والمدخل وبطاقة الرئيسية يستوردون `access.functions` وحده من الخادم (دالة الخادم)", () => {
     // بطاقة الرئيسية (أمر المالك ٢٠٢٦/١٠/٢٣) حكمُها حكم المدخل نفسه: المالك وحده، من الخادم.
+    // ومدخل `/fnn` المستقل (فرع المالك ٢٠٢٦/١٠/٢٩ `fix/fnn-native-google-20261029`): صفحةٌ عامّة
+    // تتحقّق من الملكية بدالة الخادم نفسها قبل فتح الدردشة — حكمها حكم الصفحة.
     const allowed = new Set([
       "src/routes/_authenticated/finn.tsx",
       "src/components/finn/FinnNavEntry.tsx",
       "src/components/finn/HomeFinnCard.tsx",
+      "src/components/finn/FnnWorkspace.tsx",
     ]);
     for (const f of CLIENT_FILES) {
       const uses = /finn-agent\/access\.functions/.test(strip(read(f)));

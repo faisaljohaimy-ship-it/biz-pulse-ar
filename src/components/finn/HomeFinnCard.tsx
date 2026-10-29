@@ -174,11 +174,7 @@ function AccessNotice({
       </p>
       <Capabilities ar={ar} owner={false} />
       {state === "guest" ? (
-        <Link
-          to="/auth"
-          search={{ mode: "signin", redirect: "/#fnn" }}
-          className="nx-fn-open min-h-11!"
-        >
+        <Link to="/fnn" className="nx-fn-open min-h-11!">
           {ar ? "دخول المالك إلى فنن" : "Owner sign-in for FNN"}
         </Link>
       ) : retry ? (
@@ -222,7 +218,7 @@ function FinnCard({ userId }: { userId: string }) {
       </p>
       <Capabilities ar={ar} owner />
       <InlineChat engine={data.engine} ar={ar} />
-      <Link to="/finn" className="nx-fn-open min-h-11!">
+      <Link to="/fnn" className="nx-fn-open min-h-11!">
         <span>{ar ? OPEN_AR : OPEN_EN}</span>
         <Arrow aria-hidden className="nx-fn-open-ico" />
       </Link>

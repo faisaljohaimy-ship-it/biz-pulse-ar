@@ -55,7 +55,7 @@ describe("HomeFinnCard — public entry and private access", () => {
     expect(container.querySelector('[data-finn-access="guest"]')).not.toBeNull();
     expect(screen.getByRole("link", { name: /دخول المالك إلى فنن/ })).toHaveAttribute(
       "href",
-      "/auth",
+      "/fnn",
     );
     expect(screen.queryByRole("textbox")).toBeNull();
     expect(sim.access).not.toHaveBeenCalled();
@@ -93,13 +93,13 @@ describe("HomeFinnCard — public entry and private access", () => {
     expect(sim.access).toHaveBeenCalledTimes(2);
   });
 
-  it("owner sees the portrait, private route and unchanged warning", async () => {
+  it("owner sees the portrait, standalone route and unchanged warning", async () => {
     sim.user = { id: "owner" };
     sim.access.mockResolvedValue(OWNER);
     const { container } = renderCard();
     expect(await screen.findByRole("link", { name: /افتح محادثة فِن/ })).toHaveAttribute(
       "href",
-      "/finn",
+      "/fnn",
     );
     expect(screen.getByText(FINN_BANNER_AR)).toBeInTheDocument();
     const img = container.querySelector("img");
@@ -116,7 +116,7 @@ describe("HomeFinnCard — public entry and private access", () => {
     const { container } = renderCard();
     expect(await screen.findByRole("link", { name: /Open the Finn chat/ })).toHaveAttribute(
       "href",
-      "/finn",
+      "/fnn",
     );
     expect(screen.getByRole("heading", { name: "Finn" })).toBeInTheDocument();
     expect(container.querySelector("section")).toHaveAttribute("dir", "ltr");
@@ -154,7 +154,7 @@ describe("owner chat inline on the homepage", () => {
     expect(
       container.querySelector('[data-finn-chat="inline"]')?.closest("[data-finn-home-card]"),
     ).not.toBeNull();
-    expect(screen.getByRole("link", { name: /افتح محادثة فِن/ })).toHaveAttribute("href", "/finn");
+    expect(screen.getByRole("link", { name: /افتح محادثة فِن/ })).toHaveAttribute("href", "/fnn");
   });
 
   it("does not duplicate the safety banner, h1 or named section", async () => {
