@@ -12,9 +12,19 @@
  */
 import { readFileSync, existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { LABELLED_QUESTIONS } from "@/lib/retrieval/eval/labelled-set.server";
+import {
+  assertProbesAreNotTitles,
+  formatOfflineMeasureAr,
+  runOfflineMeasure,
+} from "@/lib/retrieval/eval/offline-measure.server";
+import { normalizeArStrict } from "@/lib/retrieval/normalize-ar.server";
+import { listSeedCorpusEntries } from "@/lib/retrieval/sources/seed-corpus.server";
+import { evaluateLabelledRuns, evaluateRetrieval } from "./evaluation";
 
 const SQL = readFileSync("supabase/preflight/rag_measure.sql", "utf8");
 const SH = readFileSync("scripts/rag-measure.sh", "utf8");
+const OFFLINE_SRC = readFileSync("src/lib/retrieval/eval/offline-measure.server.ts", "utf8");
 
 describe("المقياس لا يمسّ الإنتاج", () => {
   it("عنقودٌ مؤقّت يُنشأ ويُهدَم — لا اتصال بقاعدة حيّة", () => {
@@ -63,5 +73,133 @@ describe("الرقم يخرج ومعه حدوده", () => {
   it("القسمة على صفر تعطي NULL لا صفرًا (المادة ٢٧)", () => {
     // «لم يُقَس» ليست «صفر». أول تشغيل أعاد null فعلًا حين كان المتن فارغًا.
     expect(SQL).toMatch(/nullif\(count\(\*\), 0\)/);
+  });
+});
+
+/**
+ * الذراع غير المتّصلة (O6، ٢٠٢٦/١٠/٢٩): مقياسٌ واحد بذراع ثانية لا مقياس ثانٍ
+ * (المادة ٣١ — السطح الثاني). القاعدة نفسها: الرقم ومعه حدوده، لا ادّعاء فتح
+ * البوابة، `null` ⇐ «لم يُقَس»، والسؤال ليس عنوانًا.
+ */
+describe("الذراع غير المتّصلة — رقمٌ مع حدوده بلا قاعدة ولا مزوّد", () => {
+  // بيئة فارغة عمدًا: لا راية ولا مفتاح — الحالة التي يعمل بها CI.
+  const m = runOfflineMeasure({});
+
+  it("تعمل فورًا وN = حجم المجموعة الموسومة، والمقام = N، والفهرس من المحتوى المصدَّر", () => {
+    expect(m.n).toBe(LABELLED_QUESTIONS.length);
+    expect(m.scored).toBe(m.n);
+    expect(m.perQuestion).toHaveLength(m.n);
+    expect(m.index.docs).toBe(listSeedCorpusEntries().length);
+    expect(m.index.docs).toBe(m.index.seed + m.index.hcisNoScope);
+    expect(formatOfflineMeasureAr(m)).toContain(`(${m.n} في المقام)`);
+  });
+
+  it("المجمِّع الموسوم يقبل معرّف بذرة؛ ومزروع: مجمِّع المراسي يُسقطه من المقام فيصغر الرقم بصمت", () => {
+    const run = {
+      code: "platform-reference/incident-analysis-ar",
+      rankedCodes: ["platform-reference/incident-analysis-ar"],
+      insufficient: false,
+    };
+    expect(evaluateLabelledRuns([run]).scored).toBe(1);
+    expect(evaluateLabelledRuns([run]).hitAt5).toBe(1);
+    // لو استُبدل `evaluateRetrieval` بالمجمِّع الموسوم (تصفية على المراسي) لصار المقام 0
+    // على أسئلة البذرة — وهذا ما يرميه runOfflineMeasure بدل أن يطبعه.
+    const planted = evaluateRetrieval([run]);
+    expect(planted.scored).toBe(0);
+    expect(planted.hitAt5).toBeNull();
+  });
+
+  it("نصّ الحدود يحمل عباراته الثلاث ويُطبع مع الرقم في الجدول", () => {
+    expect(m.limits).toContain(`مجموعة موسومة ${m.n} سؤالًا من كاتب الاختبار`);
+    expect(m.limits).toContain("ليست استدعاء@5 على متن موثّق");
+    expect(m.limits).toContain("لا تُستعمل لرفع rag_enabled");
+    const table = formatOfflineMeasureAr(m);
+    expect(table).toContain("hit@5 = ");
+    expect(table).toContain(m.limits);
+    expect(table).toContain("بلا نصّ نطاق");
+  });
+
+  it("hit@5 رقم مقيس في [0,1] لأن N > 0 — لا null حين قِيس فعلًا", () => {
+    expect(typeof m.hitAt5).toBe("number");
+    expect(m.hitAt5).toBeGreaterThanOrEqual(0);
+    expect(m.hitAt5).toBeLessThanOrEqual(1);
+    expect(typeof m.mrr).toBe("number");
+  });
+
+  it("الذراع المتّجهية وأذرع القاعدة «لم يُقَس» لا صفر؛ والمخدوم 0 ببيئة بلا راية", () => {
+    expect(m.vector.hitAt5).toBeNull();
+    expect(m.vector.text).toBe("لم يُقَس");
+    expect(m.vector.served).toBe(0);
+    expect(m.vector.basis).toContain("ببناء الكود");
+    expect(m.dbLexical.hitAt5).toBeNull();
+    expect(m.dbLexical.text).toBe("لم يُقَس");
+    const table = formatOfflineMeasureAr(m);
+    expect(table).toMatch(/الذراع المتّجهية: hit@5 لم يُقَس/);
+    expect(table).toMatch(/أذرع القاعدة: hit@5 لم يُقَس/);
+  });
+
+  it("براية ومفتاح حاضرين: المخدوم null («لم يُقَس») لا 0 — لم تُنفَّذ هنا", () => {
+    const withVector = runOfflineMeasure({
+      SADEED_GEMINI_RAG_READY: "true",
+      GEMINI_API_KEY: "present",
+    });
+    expect(withVector.vector.served).toBeNull();
+    expect(formatOfflineMeasureAr(withVector)).toMatch(/مخدوم لم يُقَس/);
+  });
+
+  it("scored = 0 ⇐ كل المقاييس null (المادة ٢٧)", () => {
+    const empty = evaluateLabelledRuns([]);
+    expect(empty.scored).toBe(0);
+    expect(empty.hitAt5).toBeNull();
+    expect(empty.hitAt1).toBeNull();
+    expect(empty.mrr).toBeNull();
+  });
+
+  it("لا جسر إلى سجلّ التقييم ولا إلى الراية", () => {
+    expect(OFFLINE_SRC).not.toMatch(/toEvalRunRow|decideAutoEnable|rag_enabled\s*[:=]/);
+    // ولا مقارنة بعتبتَي الدستور.
+    expect(OFFLINE_SRC).not.toMatch(/0\.85|0\.95/);
+  });
+
+  it("السؤال ليس عنوانًا — ومزروع: العنوان بعلامة أو كلمة وصل أو رمز يُرفض كما العنوان نفسه", () => {
+    const entries = listSeedCorpusEntries();
+    expect(() => assertProbesAreNotTitles(LABELLED_QUESTIONS, entries)).not.toThrow();
+    for (const questionAr of [
+      "الأسوار الأمنيه",
+      "الأسوار الأمنية؟",
+      "ما الأسوار الأمنية",
+      "SEC-02 الأسوار الأمنية",
+      "SEC-02",
+    ]) {
+      const planted = [{ ...LABELLED_QUESTIONS[0], id: "planted", questionAr }];
+      expect(() => assertProbesAreNotTitles(planted, entries), questionAr).toThrow(/مجسّ عنوان/);
+    }
+  });
+
+  it("مزروع: حارسٌ يقارن النصّ المطويّ وحده يمرّر العنوان بعلامة أو كلمة وصل أو رمز — وحارس المقاطع يرفضه", () => {
+    const entries = listSeedCorpusEntries();
+    // الحارس القديم المزروع: مطابقة نصّية على العنوان المطويّ — يرى العنوان الحرفي فقط.
+    const byText = new Set(entries.map((e) => normalizeArStrict(e.title)));
+    const textOnlyGuard = (questionAr: string) => {
+      if (byText.has(normalizeArStrict(questionAr))) throw new Error("مجسّ عنوان (نصّ)");
+    };
+    // يرى الحرفي والمطويّ…
+    expect(() => textOnlyGuard("الأسوار الأمنية")).toThrow(/مجسّ عنوان/);
+    expect(() => textOnlyGuard("الأسوار الأمنيه")).toThrow(/مجسّ عنوان/);
+    // …ويمرّر الثلاثة التي ليست إلا العنوان بزيادة — وهي ما يرفضه حارس المقاطع.
+    for (const questionAr of ["الأسوار الأمنية؟", "ما الأسوار الأمنية", "SEC-02 الأسوار الأمنية"]) {
+      expect(() => textOnlyGuard(questionAr), questionAr).not.toThrow();
+      const planted = [{ ...LABELLED_QUESTIONS[0], id: "planted", questionAr }];
+      expect(() => assertProbesAreNotTitles(planted, entries), questionAr).toThrow(/مجسّ عنوان/);
+    }
+  });
+
+  it("السكربت يشغّل الذراع غير المتّصلة قبل Postgres ويبقى متخطّيًا بلا Postgres", () => {
+    const offlineAt = SH.indexOf("offline-measure.main.server.ts");
+    const pgAt = SH.indexOf("initdb");
+    expect(offlineAt).toBeGreaterThan(-1);
+    expect(offlineAt).toBeLessThan(pgAt);
+    expect(SH).toContain("esbuild");
+    expect(SH).toMatch(/exit 0/);
   });
 });

@@ -76,7 +76,9 @@ vi.mock("@/lib/sadeed/gemini-provider.server", () => ({
       : [],
 }));
 
-vi.mock("@/lib/sadeed/backup-provider.server", () => ({
+// `isSadeedBackupEnabled` تبقى الحقيقية: فحص المحرّك قبل الإنفاق يُقاس على قاعدة الطلب الصريح (O8ج).
+vi.mock("@/lib/sadeed/backup-provider.server", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
   createSadeedBackupModel: () =>
     sim.gatewayAvailable ? { tag: "gemini-gateway", modelId: "gateway-test" } : null,
   primaryCoolingDown: () => false,
@@ -375,6 +377,41 @@ describe("③ المالك: مفتاح الإيقاف والحدّ والحصّ�
     expect(res.status).toBe(503);
     expect(((await res.json()) as { error: string }).error).toBe("no_engine");
     expect(spend()).toEqual({ rate: 0, quota: 0, models: 0 });
+  });
+
+  // O8(ج) ٢٠٢٦/١٠/٢٩: كان المفتاح وحده يُرضي فحص المحرّك، فيُنفَق الحدّ والحصّة ثم تُتخطّى
+  // المحاولات الثلاث ⇒ 503. الآن الفحص يتّفق مع بانِي المحاولات (الطلب الصريح شرط البوّابة).
+  it("O8(ج): LOVABLE_API_KEY وحده بلا SADEED_BACKUP_PROVIDER ⇒ 503 no_engine وصفر حدّ وحصّة ونموذج", async () => {
+    vi.stubEnv("OPENAI_API_KEY", "");
+    vi.stubEnv("GEMINI_API_KEY", "");
+    vi.stubEnv("GOOGLE_GENERATIVE_AI_API_KEY", "");
+    vi.stubEnv("LOVABLE_API_KEY", "lovable-key-stub-not-a-secret");
+    vi.stubEnv("SADEED_BACKUP_PROVIDER", "");
+    sim.directAvailable = false;
+    // كما تعيده `createSadeedBackupModel` الحقيقية بلا الطلب الصريح: لا بوّابة.
+    sim.gatewayAvailable = false;
+    const res = await post(postReq());
+    expect(res.status).toBe(503);
+    expect(((await res.json()) as { error: string }).error).toBe("no_engine");
+    // كان قبل الإصلاح: { rate: 1, quota: 1, models: 0 }.
+    expect(spend()).toEqual({ rate: 0, quota: 0, models: 0 });
+  });
+
+  it("O8(ج) الإيجابي: SADEED_BACKUP_PROVIDER=lovable مع المفتاح ⇒ البوّابة تجيب بعد حدٍّ وحصّةٍ مرّة", async () => {
+    vi.stubEnv("OPENAI_API_KEY", "");
+    vi.stubEnv("GEMINI_API_KEY", "");
+    vi.stubEnv("GOOGLE_GENERATIVE_AI_API_KEY", "");
+    vi.stubEnv("LOVABLE_API_KEY", "lovable-key-stub-not-a-secret");
+    vi.stubEnv("SADEED_BACKUP_PROVIDER", "lovable");
+    sim.directAvailable = false;
+    sim.gatewayAvailable = true;
+    sim.script["gemini-gateway"] = () => parts([textPart("من البوّابة"), finishPart]);
+    const res = await post(postReq());
+    expect(res.status).toBe(200);
+    expect(res.headers.get("x-finn-engine")).toBe("gemini");
+    expect(res.headers.get("x-finn-fallback")).toBe("not_configured");
+    expect(spend()).toEqual({ rate: 1, quota: 1, models: 1 });
+    expect(sim.streamCalls.map((c) => c.tag)).toEqual(["gemini-gateway"]);
   });
 });
 

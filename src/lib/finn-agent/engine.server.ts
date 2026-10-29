@@ -37,6 +37,7 @@ import { resolveSadeedGeminiRuntimes } from "@/lib/sadeed/gemini-provider.server
 import {
   coolPrimary,
   createSadeedBackupModel,
+  isSadeedBackupEnabled,
   primaryCoolingDown,
   primaryCooldownFor,
 } from "@/lib/sadeed/backup-provider.server";
@@ -66,12 +67,27 @@ export function openAiKeyConfigured(env: EnvLike = process.env): boolean {
   return (env.OPENAI_API_KEY?.trim() ?? "").length > 0;
 }
 
-function geminiConfigured(env: EnvLike): boolean {
+/** مفتاح Gemini المباشر — الشرط نفسه الذي يقرأ به `resolveSadeedGeminiRuntimes` بيئته. */
+function geminiDirectConfigured(env: EnvLike): boolean {
   return (
     (env.GEMINI_API_KEY?.trim() ?? "").length > 0 ||
-    (env.GOOGLE_GENERATIVE_AI_API_KEY?.trim() ?? "").length > 0 ||
-    (env.LOVABLE_API_KEY?.trim() ?? "").length > 0
+    (env.GOOGLE_GENERATIVE_AI_API_KEY?.trim() ?? "").length > 0
   );
+}
+
+/**
+ * هل في الخادم محرّكٌ احتياطي **تُبنى له محاولةٌ فعلًا**؟ ذراعان بالشرطين اللذين يبني بهما
+ * `buildFinnAttempts` محاولتَي Gemini: المفتاح المباشر، أو بوّابة الاحتياط **بطلب المالك
+ * الصريح** (`SADEED_BACKUP_PROVIDER=lovable` مع المفتاح — `isSadeedBackupEnabled`؛ أمر المالك
+ * ٢٠٢٦/١٠/١٨: المفتاح وحده ليس إذنًا بالإنفاق).
+ *
+ * O8(ج) من تدقيق RAG ٢٠٢٦/١٠/٢٩: كان `LOVABLE_API_KEY` وحده يُرضي هذا الفحص بينما البوّابة لا
+ * تُبنى بلا الطلب الصريح، فينفق المسار حدّ المعدّل والحصّة ثم تُتخطّى المحاولات الثلاث ويعود
+ * `503 no_engine`. القاعدة: الفحص يصدق متى اتّفق مع بانِي المحاولات — ولا يُوسَّع هنا ما لا
+ * يُبنى هناك (الحارس: `engine-predicate.contract.test.ts`).
+ */
+function geminiConfigured(env: EnvLike): boolean {
+  return geminiDirectConfigured(env) || isSadeedBackupEnabled(env);
 }
 
 /** حالة المحرّكين للمالك — منطقيّات واسم نموذج، لا مفتاح ولا طوله. */
@@ -84,7 +100,10 @@ export function readFinnEngineStatus(env: EnvLike = process.env): FinnEngineStat
   };
 }
 
-/** هل في الخادم أيُّ محرّكٍ يمكنه الرد؟ — يُفحص قبل أن يُنفَق حدٌّ أو حصّة. */
+/**
+ * هل في الخادم أيُّ محرّكٍ يمكنه الرد؟ — يُفحص قبل أن يُنفَق حدٌّ أو حصّة، فصدقه شرط: صحيحٌ
+ * إذا وفقط إذا كانت محاولةٌ واحدة على الأقل من `buildFinnAttempts` لا تُتخطّى بالبيئة نفسها.
+ */
 export function finnHasAnyEngine(env: EnvLike = process.env): boolean {
   return openAiKeyConfigured(env) || geminiConfigured(env);
 }
@@ -205,8 +224,10 @@ export function buildFinnAttempts(
       ),
   };
 
+  // المباشر يقرأ `process.env` بنفسه (لا معامل بيئة له)؛ والبوّابة تُعطى البيئة نفسها التي قرأها
+  // `finnHasAnyEngine` كي لا يفترق الفحص عن المحاولة.
   const gemini = resolveSadeedGeminiRuntimes()[0];
-  const gateway = createSadeedBackupModel();
+  const gateway = createSadeedBackupModel(env);
   // مفتاح Gemini المباشر مخنوقٌ بالحصّة: لا يُنتظر، تُجرَّب البوّابة فورًا.
   const directUsable = Boolean(gemini) && !(gateway && primaryCoolingDown());
 

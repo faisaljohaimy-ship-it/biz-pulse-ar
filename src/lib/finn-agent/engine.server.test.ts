@@ -87,7 +87,9 @@ vi.mock("@/lib/sadeed/gemini-provider.server", () => ({
       : [],
 }));
 
-vi.mock("@/lib/sadeed/backup-provider.server", () => ({
+// `isSadeedBackupEnabled` تبقى الحقيقية: قاعدة الطلب الصريح هي ما يُقاس عليه فحص المحرّك (O8ج).
+vi.mock("@/lib/sadeed/backup-provider.server", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
   createSadeedBackupModel: () =>
     sim.gatewayAvailable ? { tag: "gemini-gateway", modelId: "gateway-test" } : null,
   primaryCoolingDown: () => sim.cooling,
@@ -227,7 +229,23 @@ describe("① GPT هو المحرّك الأساسي — والإعدادات ل
     expect(engine.readFinnEngineStatus({ OPENAI_API_KEY: "   " })).toMatchObject({ gpt: false });
     expect(engine.finnHasAnyEngine({})).toBe(false);
     expect(engine.finnHasAnyEngine({ OPENAI_API_KEY: "k" })).toBe(true);
-    expect(engine.finnHasAnyEngine({ LOVABLE_API_KEY: "k" })).toBe(true);
+    expect(engine.finnHasAnyEngine({ GOOGLE_GENERATIVE_AI_API_KEY: "k" })).toBe(true);
+  });
+
+  it("O8(ج): LOVABLE_API_KEY وحده ليس محرّكًا — بوّابة الاحتياط تُبنى بطلب المالك الصريح فقط", () => {
+    // كان هذا السطر `toBe(true)` ويثبّت العيب: المسار ينفق الحدّ والحصّة ثم 503 no_engine.
+    expect(engine.finnHasAnyEngine({ LOVABLE_API_KEY: "k" })).toBe(false);
+    expect(engine.readFinnEngineStatus({ LOVABLE_API_KEY: "k" })).toMatchObject({
+      gpt: false,
+      fallback: false,
+    });
+    expect(engine.finnHasAnyEngine({ SADEED_BACKUP_PROVIDER: "lovable" })).toBe(false);
+    expect(
+      engine.finnHasAnyEngine({ LOVABLE_API_KEY: "k", SADEED_BACKUP_PROVIDER: "openai" }),
+    ).toBe(false);
+    const optedIn = { LOVABLE_API_KEY: "k", SADEED_BACKUP_PROVIDER: "lovable" };
+    expect(engine.finnHasAnyEngine(optedIn)).toBe(true);
+    expect(engine.readFinnEngineStatus(optedIn)).toMatchObject({ gpt: false, fallback: true });
   });
 
   it("مفتاح الإيقاف يُرى في الحالة ويمنع الفتح قبل أي محاولة", async () => {

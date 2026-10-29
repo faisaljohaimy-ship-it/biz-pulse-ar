@@ -23,11 +23,47 @@
 # (0.85 استدعاء@5 · 0.95 دقة استشهاد) — تلك تُقاس على المسار الكامل
 # المنشور. هذا خطُّ أساسٍ للذراع المعجمية، يُقال بما هو.
 #
+# ## الذراع غير المتّصلة (O6، ٢٠٢٦/١٠/٢٩)
+#
+# قبل Postgres تُشغَّل ذراعٌ ثانية لا تحتاج قاعدة ولا مزوّدًا ولا شبكة: BM25
+# الذاكري (`src/lib/retrieval/bm25.server.ts`) فوق المتن المضمّن في المستودع
+# على المجموعة الموسومة (`src/lib/retrieval/eval/labelled-set.server.ts` —
+# أسئلة من كاتب الاختبار بمراجع ملف:سطر؛ عددها يُطبع في سطر الحدود
+# `offlineLimitsAr(n)` ولا يُكتب هنا كي لا ينحرف). رقمها يخرج **مع حدوده**:
+# ليست استدعاء@5 على متن موثّق ولا تُستعمل لرفع rag_enabled. وذراعا
+# المتّجهات والقاعدة فيها «لم يُقَس» لا صفر.
+#
 # الاستخدام: bash scripts/rag-measure.sh
-# المخرج:    JSON على stdout + جدول مقروء على stderr.
+# المخرج:    JSON على stdout (سطرٌ للذراع غير المتّصلة، ثم سطرٌ لذراع Postgres
+#            حين تتوفّر) + جدول مقروء على stderr.
 # ============================================================================
 set -uo pipefail
 
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
+# ── الذراع غير المتّصلة ─────────────────────────────────────────────────────
+# يُحزَم المدخل بـesbuild (تبعية تطوير قائمة في package.json) إلى ملف عابر
+# خارج المستودع ويُشغَّل بـnode. غياب esbuild تخطٍّ لا فشل؛ أمّا فشل الذراع
+# نفسها فعطلٌ في الكود لا في البيئة، فيُعاد 1.
+ESBUILD="$ROOT/node_modules/.bin/esbuild"
+if [ -x "$ESBUILD" ]; then
+  bundle_dir="$(mktemp -d)"
+  if "$ESBUILD" "$ROOT/src/lib/retrieval/eval/offline-measure.main.server.ts" \
+       --bundle --platform=node --format=esm --alias:@="$ROOT/src" \
+       --log-level=error --outfile="$bundle_dir/offline-measure.mjs" \
+     && node "$bundle_dir/offline-measure.mjs"; then
+    :
+  else
+    echo "✗ تعذّرت الذراع غير المتّصلة — عطل كود لا بيئة." >&2
+    rm -rf "$bundle_dir"
+    exit 1
+  fi
+  rm -rf "$bundle_dir"
+else
+  echo "⚠ esbuild غير متاح — الذراع غير المتّصلة تُتخطّى (ليس فشلًا)." >&2
+fi
+
+# ── ذراع Postgres المحلية ───────────────────────────────────────────────────
 PGBIN="${PGBIN:-/usr/lib/postgresql/16/bin}"
 [ -x "$PGBIN/initdb" ] || PGBIN="$(dirname "$(command -v initdb 2>/dev/null || echo /nonexistent)")"
 if [ ! -x "$PGBIN/initdb" ]; then

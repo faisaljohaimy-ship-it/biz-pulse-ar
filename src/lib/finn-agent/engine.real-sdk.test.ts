@@ -17,7 +17,9 @@ vi.mock("@ai-sdk/openai", () => ({
   createOpenAI: () => ({ responses: () => sim.model }),
 }));
 vi.mock("@/lib/sadeed/gemini-provider.server", () => ({ resolveSadeedGeminiRuntimes: () => [] }));
-vi.mock("@/lib/sadeed/backup-provider.server", () => ({
+// `isSadeedBackupEnabled` تبقى الحقيقية (يقرؤها فحص المحرّك عبر `platform_status`).
+vi.mock("@/lib/sadeed/backup-provider.server", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
   createSadeedBackupModel: () => null,
   primaryCoolingDown: () => false,
   coolPrimary: () => undefined,

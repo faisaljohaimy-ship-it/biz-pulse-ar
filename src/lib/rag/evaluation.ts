@@ -23,6 +23,14 @@
  * to jhutlofapjfjjeajawie, so no retrieval run exists — any score would be
  * fabricated. The runner (src/test/rag-live-eval.test.ts) stays skipped until
  * the operator applies the migrations and supplies a session JWT.
+ *
+ * ## الذراع غير المتّصلة (O6، ٢٠٢٦/١٠/٢٩) — ليست استثناءً من المنع أعلاه
+ *
+ * `evaluateLabelledRuns` في آخر الملف يجمّع تشغيلات **مجموعة موسومة** يكتبها
+ * كاتب الاختبار (`src/lib/retrieval/eval/labelled-set.server.ts`، كل سؤال
+ * بمرجع ملف:سطر لجوابه). هي دخانٌ للذراع المعجمية الذاكرية، لا مرساةً ولا
+ * سؤالَ بوابة: لا تدخل `GOLDEN_ANCHORS`، ولا `toEvalRunRow`، ولا تُقارن
+ * بعتبتَي الدستور، ولا ترفع `rag_enabled`. رقمها يُطبع دائمًا مع حدوده.
  */
 
 /** One retrieval anchor, sourced verbatim from the hcis_directives seed. */
@@ -147,10 +155,22 @@ export function firstHitRank(code: string, ranked: readonly (string | null)[]): 
 /**
  * Pure aggregation over runs. Runs whose code is not a known anchor are
  * ignored and lower `scored` — the caller sees the gap via total vs scored.
- * This computes nothing on its own: without real runs it returns zeros.
+ * This computes nothing on its own: without real runs it returns null
+ * metrics (scored = 0), never zeros — see `aggregateRanks`.
  */
 export function evaluateRetrieval(runs: readonly RetrievalRun[]): RetrievalMetrics {
   const known = new Set(GOLDEN_ANCHORS.map((a) => a.code));
+  return aggregateRanks(runs, (run) => known.has(run.code));
+}
+
+/**
+ * النواة المشتركة: تجمّع الرتب على ما يقبله `accept` وحده. لم تتغيّر دلالة
+ * `evaluateRetrieval` — فرعها `scored === 0 ⇐ null` باقٍ حرفيًّا هنا.
+ */
+function aggregateRanks(
+  runs: readonly RetrievalRun[],
+  accept: (run: RetrievalRun) => boolean,
+): RetrievalMetrics {
   let scored = 0;
   let hit1 = 0;
   let hit5 = 0;
@@ -159,7 +179,7 @@ export function evaluateRetrieval(runs: readonly RetrievalRun[]): RetrievalMetri
   let insufficient = 0;
   const misses: string[] = [];
   for (const run of runs) {
-    if (!known.has(run.code)) continue;
+    if (!accept(run)) continue;
     scored += 1;
     if (run.insufficient) insufficient += 1;
     const rank = firstHitRank(run.code, run.rankedCodes);
@@ -228,4 +248,14 @@ export function toEvalRunRow(
     citationAccuracy: metrics.hitAt1,
     corpusVerified: opts.corpusVerified,
   };
+}
+
+/**
+ * تجميع الذراع غير المتّصلة (O6): تشغيلات المجموعة الموسومة — `code` هنا معرّف
+ * الجواب المتوقَّع (رمز توجيه أو مصدر مدخل بذرة)، لا مرساة، فلا تصفية على
+ * `GOLDEN_ANCHORS`. المقاييس نفسها، و`scored === 0 ⇐ null` نفسه (المادة ٢٧).
+ * لا جسر من هنا إلى `toEvalRunRow` — فالسجلّ `rag_eval_runs` لا يُكتب بدخان.
+ */
+export function evaluateLabelledRuns(runs: readonly RetrievalRun[]): RetrievalMetrics {
+  return aggregateRanks(runs, () => true);
 }
