@@ -67,8 +67,10 @@ test("question and permit bounds remain enforced in the declared schemas", () =>
 test("MCP keeps OAuth and authenticated audience, with no new tool", () => {
   assert.equal(manifest.auth.type, "oauth");
   assert.deepEqual(manifest.auth.accepted_audiences, ["authenticated"]);
-  assert.deepEqual(
-    manifest.mcp.tools.map((value: { name: string }) => value.name).sort(),
-    ["ask_sadeed", "hcis_status", "ping", "ptw_active_permits"],
-  );
+  assert.deepEqual(manifest.mcp.tools.map((value: { name: string }) => value.name).sort(), [
+    "ask_sadeed",
+    "hcis_status",
+    "ping",
+    "ptw_active_permits",
+  ]);
 });

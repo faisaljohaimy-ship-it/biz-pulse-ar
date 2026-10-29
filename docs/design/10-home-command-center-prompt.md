@@ -167,6 +167,9 @@ release media ceilings, not the image ceiling.
     `SystemHeader`, → `/urgent-ops`, counts `urgent_open`, no «إشعار», simulation disclosed in
     its label). Keep `<QuickReport>` (lazy). The user chip shows the real name or «زائر» —
     never an invented name or role.
+    _Note 2026-10-29:_ the owner's order «احذف الموجود فالمرفق من النافذه فقط» removed 8 rows
+    from `SYSTEM_NAV` (now 12 items; routes untouched) — «20 items» here and in §4.2 describe
+    the 2026-10-13 mockup as received and are kept as history.
 12. **Delivery gate.** tsc → eslint → vitest → `npm run build` → performance budget →
     background contrast → `nexios-qa-guardian` clearance → commit → push to `main` (after
     `git fetch`, Article 35) → Lovable Publish → production check (`workflow_dispatch`),

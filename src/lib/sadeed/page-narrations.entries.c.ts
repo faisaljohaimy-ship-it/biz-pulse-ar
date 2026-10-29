@@ -568,8 +568,12 @@ export const ENTRIES_C: ReadonlyArray<readonly [string, PageNarration]> = [
       "every module classified by role with its one-line purpose and a cluster relationship diagram",
       "معرفة أين تذهب قبل أن تضغط",
       "knowing where to go before you click",
-      "الخريطة مبنيّة من سجلّ الوحدات الواحد، فلا تختلف عن الشريط الجانبي أبدًا",
-      "the map is built from the single module registry, so it can never drift from the sidebar",
+      // ٢٠٢٦/١٠/٢٩: كان السطر يَعِد بأن الخريطة «لا تختلف عن الشريط الجانبي
+      // أبدًا» — وهو غير صحيح منذ ٢٠٢٦/٠٩/٢٩: الخريطة تقرأ `MODULES` والشريط يقرأ
+      // `SYSTEM_NAV`، وأمر «من النافذه فقط» أسقط ثمانية صفوف من الشريط وحده
+      // فبقيت وحداتها في الخريطة. يُقال ما هو واقع لا وعدٌ لا يُحرَس.
+      "الخريطة مبنيّة من سجلّ الوحدات لا من قائمة الشريط الجانبي، فقد تعرض وحدةً حيّة لا صفّ لها في الشريط",
+      "the map is built from the module registry, not from the sidebar list, so it may show a live module that has no sidebar row",
     ),
   ],
   // صفٌّ محذوف: «الامتثال HCIS» على `/hcis`. الصفحة ومسارها وطبقة بياناتها

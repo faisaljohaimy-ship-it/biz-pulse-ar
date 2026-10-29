@@ -104,9 +104,10 @@ function Chrome({ children, film }: { children: ReactNode; film: boolean }) {
   const contentRef = useRef<HTMLDivElement>(null);
 
   /**
-   * «تخطَّ إلى المحتوى» (WCAG 2.4.1): عشرون رابطًا في الشريط وأدوات الترويسة
-   * تسبق المحتوى في كل صفحة. والهدف `<main>` الصفحة أيًّا كان مُصيّرها —
-   * يُعطى `tabindex="-1"` عند الحاجة فيقبل التركيز البرمجيّ، ولا يُغيَّر العنوان.
+   * «تخطَّ إلى المحتوى» (WCAG 2.4.1): روابط الشريط (عددها من `SYSTEM_NAV` لا من
+   * هنا) وأدوات الترويسة تسبق المحتوى في كل صفحة. والهدف `<main>` الصفحة أيًّا
+   * كان مُصيّرها — يُعطى `tabindex="-1"` عند الحاجة فيقبل التركيز البرمجيّ، ولا
+   * يُغيَّر العنوان.
    */
   const skipToContent = (e: MouseEvent<HTMLAnchorElement>) => {
     const box = contentRef.current;

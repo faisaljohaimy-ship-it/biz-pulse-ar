@@ -1,5 +1,7 @@
 /**
  * عقد الشريط الجانبي للنظام — «تفعيل جميع الأيقونات» (أمر المالك ٢٠٢٦/٠٩/٢٩).
+ * ومنذ ٢٠٢٦/١٠/٢٩ يحرس أيضًا أمر «احذف الموجود فالمرفق من النافذه فقط» (الفصل
+ * «حُذفت من النافذة فقط» أدناه).
  *
  * الرابط الميّت من النوع الذي لا يكسر بناءً ولا اختبارًا: `<Link to="/x">`
  * إلى مسارٍ محذوف أو محجوب يمرّ tsc (المسار نصّ) ويمرّ البناء، ولا يظهر إلا
@@ -10,7 +12,7 @@ import { existsSync, globSync, readFileSync, readdirSync } from "node:fs";
 import postcss from "postcss";
 import { describe, expect, it } from "vitest";
 import { isRouteHidden } from "@/lib/nav/hidden-routes";
-import { SYSTEM_NAV, systemNavDestinations } from "@/lib/nav/system-nav";
+import { SYSTEM_NAV, systemNavDestinations, type SystemNavItem } from "@/lib/nav/system-nav";
 import { SCREEN_NAMES } from "@/lib/nav/screen-names";
 
 const TREE = readFileSync("src/routeTree.gen.ts", "utf8");
@@ -65,9 +67,9 @@ describe("كلُّ وجهةٍ حيّة — لا رابط ميّت", () => {
   });
 });
 
-describe("عناصر التصميم العشرون، وبدائلُها معلنة", () => {
-  it("عشرون عنصرًا في المستوى الأعلى كما في التصميم", () => {
-    expect(SYSTEM_NAV.length).toBe(20);
+describe("عناصر التصميم الاثنا عشر، وبدائلُها معلنة", () => {
+  it("اثنا عشر عنصرًا في المستوى الأعلى — عشرون من التصميم ناقصَ ثمانية بأمر ٢٠٢٦/١٠/٢٩", () => {
+    expect(SYSTEM_NAV.length).toBe(12);
   });
 
   it("«مركز القيادة» يقرأ اسمه الكانوني والوجهةُ بديله الحيّ", () => {
@@ -83,6 +85,141 @@ describe("عناصر التصميم العشرون، وبدائلُها معلن
     const src = strip(readFileSync("src/components/nav/SystemSidebar.tsx", "utf8"));
     expect(src).toContain("REGIONS.map");
     expect(src, "اسم منطقةٍ مكتوبٌ في الشريط").not.toMatch(/الوسطى|الغربية|الشرقية|الجنوبية/);
+  });
+});
+
+/**
+ * **أمر المالك ٢٠٢٦/١٠/٢٩ (المادة ٣٥):** «احذف الموجود فالمرفق من النافذه فقط».
+ *
+ * المرفق لقطةٌ من نافذة الشريط الجانبي تُظهر ثمانية صفوف بعينها، وصفٌّ تاسع تحتها
+ * مشطوبٌ لا يُقرأ. فالمحروس ثلاثة أشياء معًا: الثمانية غائبة من السجلّ معرّفًا
+ * **واسمًا** (إعادة الصفّ باسمٍ عربيٍّ ومعرّفٍ جديد عودةٌ بصمت)؛ وصفحاتها حيّة
+ * غير محجوبة ومبلوغة من سطحٍ آخر («من النافذه فقط» لا «من النظام»)؛ والتاسع
+ * المشطوب — التقارير والتحليلات — باقٍ لأنّ ما لم يُقرأ لم يُؤمر به. الكواشف دوالّ
+ * خالصة على مصفوفة عناصر، فيُختبر المزروع عليها (المادة ٣٠).
+ */
+describe("أمر المالك ٢٠٢٦/١٠/٢٩ — حُذفت من النافذة فقط", () => {
+  const REMOVED = [
+    { id: "patrols", ar: "الدوريات", to: "/sec/patrols" },
+    { id: "people", ar: "الأفراد", to: "/sec/shifts" },
+    { id: "contractors", ar: "المقاولون", to: "/sec/contractors" },
+    { id: "assets", ar: "الأصول والمعدات", to: "/sec/maintenance" },
+    { id: "incidents", ar: "إدارة الحوادث", to: "/sec/incidents" },
+    { id: "risks", ar: "إدارة المخاطر", to: "/sec/risks" },
+    { id: "compliance", ar: "الامتثال والتدقيق", to: "/sec/governance" },
+    { id: "investigations", ar: "التحقيقات والأدلة", to: "/sec/timeline" },
+  ] as const;
+  const REMOVED_IDS = new Set<string>(REMOVED.map((r) => r.id));
+  const REMOVED_AR = new Set<string>(REMOVED.map((r) => r.ar));
+
+  /** كل عنصرٍ على كل مستوى — الأبناء المكتوبون أيضًا، لا «regions» المولَّدة. */
+  const flatten = (items: readonly SystemNavItem[]) =>
+    items.flatMap((i) =>
+      i.kind === "group" && i.children !== "regions" ? [i, ...i.children] : [i],
+    );
+  type Names = Readonly<Record<string, { readonly ar: string }>>;
+  /**
+   * الاسم العربي كما يُعرض: من سجلّ الأسماء إن كان محروسًا (`labelRoute`)، وإلا من
+   * العنصر. السجلّ معاملٌ لا مرجعٌ ثابت، فيُزرع عليه اسمٌ محروس في (هـ) بلا اعتمادٍ
+   * على ما يصادف أن يحويه `screen-names` اليوم (لا يحوي أيًّا من الثمانية — قِيس).
+   */
+  const arLabel = (i: { ar?: string; labelRoute?: string }, names: Names = SCREEN_NAMES) =>
+    i.labelRoute ? names[i.labelRoute]?.ar : i.ar;
+  /** (أ) معرّفات الثمانية الحاضرة. */
+  const removedIdsIn = (items: readonly SystemNavItem[]) =>
+    flatten(items)
+      .map((i) => i.id)
+      .filter((id) => REMOVED_IDS.has(id));
+  /** (ب) أسماء الثمانية العربية الحاضرة — بأيّ معرّف، مكتوبةً أو محروسة. */
+  const removedLabelsIn = (items: readonly SystemNavItem[], names: Names = SCREEN_NAMES) =>
+    flatten(items)
+      .map((i) => arLabel(i, names))
+      .filter((ar): ar is string => !!ar && REMOVED_AR.has(ar));
+  /**
+   * رابطٌ إلى المسار في سياق ربطٍ فعلًا — `to="/x"` في JSX أو `to: "/x"` في سجلّ —
+   * لا ذكرٌ عابر: وجهةُ توجيهٍ أو المسار نصًّا في قائمةٍ لا تربط يحويانه ولا يصلانه.
+   */
+  const linksTo = (surface: string, route: string) =>
+    new RegExp(`\\bto(?:=|:\\s*)"${route.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"`).test(surface);
+  /** مسارٌ لا يصله رابطٌ من أيٍّ من السطوح المقروءة. */
+  const unreachable = (routes: readonly string[], surfaces: readonly string[]) =>
+    routes.filter((r) => !surfaces.some((s) => linksTo(s, r)));
+
+  it("(أ) ولا معرّف من الثمانية في السجلّ", () => {
+    expect(removedIdsIn(SYSTEM_NAV)).toEqual([]);
+  });
+
+  it("(ب) ولا اسم من أسمائها العربية — بأيّ معرّف", () => {
+    expect(removedLabelsIn(SYSTEM_NAV)).toEqual([]);
+  });
+
+  it("(ج) وصفحاتها حيّة: في الشجرة المولَّدة، غير محجوبة، ومبلوغة من سطحٍ آخر", () => {
+    const routes = REMOVED.map((r) => r.to);
+    expect(
+      routes.filter((r) => !TREE.includes(`'${r}'`)),
+      "مسارٌ سقط من الشجرة",
+    ).toEqual([]);
+    expect(
+      routes.filter((r) => isRouteHidden(r)),
+      "مسارٌ حُجب — والأمر «من النافذه فقط»",
+    ).toEqual([]);
+    // المقيس ٢٠٢٦/١٠/٢٩: شريط الأمن الصناعي يصل سبعةً، و`/sec/contractors` من صفحة
+    // التحكم في الدخول ولوحة القيادة. السطوح تُقرأ منزوعةَ التعليقات (المادة ٣١).
+    const surfaces = [
+      "src/components/sec/sec-shell.tsx",
+      "src/routes/_authenticated/sec.access.tsx",
+      "src/routes/_authenticated/dashboard.tsx",
+      "src/components/home/HomeMapCard.tsx",
+    ].map((f) => strip(readFileSync(f, "utf8")));
+    expect(unreachable(routes, surfaces), "صفحةٌ بلا رابطٍ من أيّ سطح").toEqual([]);
+  });
+
+  it("(د) والصفّ التاسع المشطوب — التقارير والتحليلات — باقٍ حتى يحسمه المالك", () => {
+    const reports = SYSTEM_NAV.find((i) => i.id === "reports");
+    expect(reports && reports.kind === "link" && reports.to).toBe("/sec/reports");
+    expect(reports && arLabel(reports)).toBe("التقارير والتحليلات");
+  });
+
+  it("(هـ) والكواشف تحمرّ على المزروع (المادة ٣٠)", () => {
+    const icon = SYSTEM_NAV[0].icon;
+    // صفٌّ محذوف يعود بمعرّفه.
+    const byId: SystemNavItem = { kind: "link", id: "patrols", to: "/sec/patrols", icon };
+    expect(removedIdsIn([...SYSTEM_NAV, byId])).toEqual(["patrols"]);
+    // أو باسمه العربي تحت معرّفٍ جديد — وفي مجموعةٍ لا في المستوى الأعلى.
+    const byLabel: SystemNavItem = {
+      kind: "group",
+      id: "ops",
+      ar: "العمليات",
+      en: "Operations",
+      icon,
+      children: [{ id: "x1", to: "/sec/patrols", ar: "الدوريات", en: "Patrols", icon }],
+    };
+    expect(removedIdsIn([...SYSTEM_NAV, byLabel])).toEqual([]);
+    expect(removedLabelsIn([...SYSTEM_NAV, byLabel])).toEqual(["الدوريات"]);
+    // أو باسمٍ محروس يُقرأ من سجلّ الأسماء لا يُكتب في العنصر — على سجلٍّ مزروع، فلا
+    // شرط يُسقط الفحص حين لا يحوي `screen-names` الاسم (وهو لا يحويه اليوم).
+    const byRoute: SystemNavItem = { kind: "link", id: "x2", to: "/sec", labelRoute: "/x", icon };
+    const planted: Names = { ...SCREEN_NAMES, "/x": { ar: "إدارة الحوادث" } };
+    expect(removedLabelsIn([...SYSTEM_NAV, byRoute], planted)).toEqual(["إدارة الحوادث"]);
+    expect(removedLabelsIn([...SYSTEM_NAV, byRoute])).toEqual([]);
+    expect(
+      Object.values(SCREEN_NAMES).filter((n) => REMOVED_AR.has(n.ar)),
+      "صار في screen-names اسمٌ من الثمانية — فالكاشف (ب) يقرؤه عبر labelRoute",
+    ).toEqual([]);
+    // وحذف الصفحة نفسها يُمسَك: مسارٌ بلا رابط في أيّ سطح. والرابط بصيغتيه يُرضي
+    // الكاشف، أمّا الذكر العابر (وجهة توجيهٍ، أو المسار في قائمةٍ لا تربط) فلا.
+    expect(unreachable(["/sec/patrols"], ['<Link to="/sec/shifts">'])).toEqual(["/sec/patrols"]);
+    expect(unreachable(["/sec/patrols"], ['<Link to="/sec/patrols">'])).toEqual([]);
+    expect(unreachable(["/sec/patrols"], ['{ to: "/sec/patrols", label: "x" }'])).toEqual([]);
+    expect(
+      unreachable(
+        ["/sec/patrols"],
+        ['redirect({ href: "/sec/patrols" })', 'const HIDDEN = ["/sec/patrols"];'],
+      ),
+    ).toEqual(["/sec/patrols"]);
+    // ولا يحمرّ على السجلّ كما هو.
+    expect(removedIdsIn(SYSTEM_NAV)).toEqual([]);
+    expect(removedLabelsIn(SYSTEM_NAV)).toEqual([]);
   });
 });
 

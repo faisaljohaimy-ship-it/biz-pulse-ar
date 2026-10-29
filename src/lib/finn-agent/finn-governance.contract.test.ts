@@ -338,8 +338,9 @@ describe("⑤ لا لونَ خارج الرموز — الوضعان معًا (�
 });
 
 describe("⑥ التنقّل والرواية", () => {
-  it("المدخل خارج SYSTEM_NAV (عشرون) وخارج MODULES — لا يراه غير المالك", () => {
-    expect(SYSTEM_NAV.length).toBe(20);
+  it("المدخل خارج SYSTEM_NAV (اثنا عشر) وخارج MODULES — لا يراه غير المالك", () => {
+    // اثنا عشر منذ أمر المالك ٢٠٢٦/١٠/٢٩ («من النافذه فقط») — كانت عشرين.
+    expect(SYSTEM_NAV.length).toBe(12);
     expect(systemNavDestinations()).not.toContain("/finn");
     expect(MODULES.some((m) => m.to === "/finn")).toBe(false);
   });
