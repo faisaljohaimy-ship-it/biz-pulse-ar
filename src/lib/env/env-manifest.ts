@@ -15,6 +15,8 @@
  * NAMES and presence only, never values (constitution art. 7 & 13).
  */
 
+import { isConfigured, readN8nConfig } from "@/lib/n8n/config.server";
+
 /** How a capability's variables combine to be considered "ready". */
 export type Requirement = "all" | "one-of" | "optional";
 
@@ -29,11 +31,28 @@ export interface EnvVarSpec {
   description: string;
 }
 
+/**
+ * Truthful readiness for an OPTIONAL capability (owner order 2026/10/30, guardian finding: the two n8n
+ * capabilities were counted "ready" while unconfigured, because every optional capability is ready by
+ * definition). A capability that declares this is ready ONLY when `check` says it is actually configured;
+ * otherwise it is reported under `EnvReport.unconfigured` (never under `degraded`: absence of an optional
+ * capability is not a shortfall). Optional capabilities WITHOUT this field keep the old behaviour exactly
+ * (always ready), because tests pin it.
+ */
+export interface ConfiguredWhen {
+  /** Pure. A throw counts as "not configured" (fails closed). */
+  check: (env: EnvLike) => boolean;
+  /** Variable NAMES the capability needs; listed as `missing` when `check` is false. Names only. */
+  needs: readonly string[];
+}
+
 export interface CapabilitySpec {
   key: string;
   labelAr: string;
   requirement: Requirement;
   vars: readonly EnvVarSpec[];
+  /** Only meaningful for `requirement: "optional"`. See {@link ConfiguredWhen}. */
+  configuredWhen?: ConfiguredWhen;
 }
 
 const S = (name: string, description: string, sensitive = true): EnvVarSpec => ({
@@ -201,6 +220,12 @@ export const ENV_CAPABILITIES: readonly CapabilitySpec[] = [
     key: "sadeed-web-research",
     labelAr: "بحث الويب لسَدِيد عبر خدمة الأتمتة (اختياري، غيابه يعني لا بحث ولا خطأ)",
     requirement: "optional",
+    // جاهزة = مهيّأة فعلًا (أصل https صالح وسرّ صالح لسطح سَدِيد) بقاعدة العميل نفسها، لا مجرّد وجود اسم.
+    // وضع البحث ومفتاح الإيقاف مفتاحا تشغيل لا تهيئة: تقرؤهما لقطة الحالة (`n8nStatus`).
+    configuredWhen: {
+      check: (env) => isConfigured(readN8nConfig(env), "sadeed"),
+      needs: ["SADEED_N8N_BASE_URL", "SADEED_N8N_SECRET"],
+    },
     vars: [
       S(
         "SADEED_N8N_BASE_URL",
@@ -227,6 +252,11 @@ export const ENV_CAPABILITIES: readonly CapabilitySpec[] = [
     key: "fnn-n8n",
     labelAr: "وكيل الأتمتة والبرمجة للمالك عبر خدمة الأتمتة: البحث والمشغّل (اختياري)",
     requirement: "optional",
+    // الأصل مشترك مع سَدِيد فيلزم هنا أيضًا؛ وسرٌّ مكرّر عبر السطحين يعطّل الاثنين (انظر `readN8nConfig`).
+    configuredWhen: {
+      check: (env) => isConfigured(readN8nConfig(env), "fnn"),
+      needs: ["SADEED_N8N_BASE_URL", "FINN_N8N_SECRET"],
+    },
     vars: [
       S(
         "FINN_N8N_SECRET",
@@ -274,6 +304,11 @@ export interface CapabilityStatus {
 export interface EnvReport {
   ready: CapabilityStatus[];
   degraded: CapabilityStatus[];
+  /**
+   * Optional capabilities that declare `configuredWhen` and are NOT configured. Neither `ready` (that would
+   * be a lie) nor `degraded` (an optional capability's absence is not a shortfall, and `allReady` ignores it).
+   */
+  unconfigured: CapabilityStatus[];
   /** True when every non-optional capability has what it needs. */
   allReady: boolean;
 }
@@ -285,29 +320,54 @@ const isSet = (env: EnvLike, name: string): boolean => {
   return typeof v === "string" && v.trim().length > 0;
 };
 
+/** `check` never throws out of here: a throw means "not configured". */
+function isConfiguredNow(rule: ConfiguredWhen, env: EnvLike): boolean {
+  try {
+    return rule.check(env) === true;
+  } catch {
+    return false;
+  }
+}
+
+/** Names still to fix: the unset ones, or all of them when each is set but the combination is invalid. */
+function unmetNeeds(rule: ConfiguredWhen, env: EnvLike): string[] {
+  const unset = rule.needs.filter((n) => !isSet(env, n));
+  return unset.length > 0 ? unset : [...rule.needs];
+}
+
 function evaluate(cap: CapabilitySpec, env: EnvLike): CapabilityStatus {
   const setNames = cap.vars.filter((v) => isSet(env, v.name)).map((v) => v.name);
   const missing = cap.vars.filter((v) => !isSet(env, v.name)).map((v) => v.name);
   let ready: boolean;
-  if (cap.requirement === "optional") ready = true;
-  else if (cap.requirement === "one-of") ready = setNames.length > 0;
+  if (cap.requirement === "optional") {
+    ready = cap.configuredWhen ? isConfiguredNow(cap.configuredWhen, env) : true;
+  } else if (cap.requirement === "one-of") ready = setNames.length > 0;
   else ready = missing.length === 0;
   // For one-of, "missing" is only meaningful when NONE are set.
+  let reported = cap.requirement === "one-of" && ready ? [] : missing;
+  if (cap.requirement === "optional" && cap.configuredWhen) {
+    reported = ready ? [] : unmetNeeds(cap.configuredWhen, env);
+  }
   return {
     key: cap.key,
     labelAr: cap.labelAr,
     requirement: cap.requirement,
     ready,
-    missing: cap.requirement === "one-of" && ready ? [] : missing,
+    missing: reported,
   };
 }
 
-/** Pure: classify every capability as ready or degraded. Never throws. */
-export function validateEnv(env: EnvLike = readEnv()): EnvReport {
-  const statuses = ENV_CAPABILITIES.map((c) => evaluate(c, env));
+/** Pure: classify every capability as ready, degraded, or (optional only) unconfigured. Never throws. */
+export function validateEnv(
+  env: EnvLike = readEnv(),
+  capabilities: readonly CapabilitySpec[] = ENV_CAPABILITIES,
+): EnvReport {
+  const statuses = capabilities.map((c) => evaluate(c, env));
   const ready = statuses.filter((s) => s.ready);
-  const degraded = statuses.filter((s) => !s.ready);
-  return { ready, degraded, allReady: degraded.length === 0 };
+  const notReady = statuses.filter((s) => !s.ready);
+  const degraded = notReady.filter((s) => s.requirement !== "optional");
+  const unconfigured = notReady.filter((s) => s.requirement === "optional");
+  return { ready, degraded, unconfigured, allReady: degraded.length === 0 };
 }
 
 /**
@@ -332,9 +392,14 @@ export function formatEnvReport(report: EnvReport = validateEnv()): string {
   const degraded = report.degraded
     .map((s) => `${s.key} (missing: ${s.missing.join("/")})`)
     .join("; ");
+  // Optional capabilities that are not configured are named, never counted as ready or as a shortfall.
+  const optional =
+    report.unconfigured.length > 0
+      ? ` | optional, not configured: ${report.unconfigured.map((s) => s.key).join(", ")}`
+      : "";
   return report.allReady
-    ? `[env] all capabilities configured: ${readyKeys}`
-    : `[env] ready: ${readyKeys} — degraded (graceful): ${degraded}`;
+    ? `[env] all required capabilities configured: ${readyKeys}${optional}`
+    : `[env] ready: ${readyKeys} — degraded (graceful): ${degraded}${optional}`;
 }
 
 /** Read the ambient environment without assuming Node vs Vite. Never throws. */

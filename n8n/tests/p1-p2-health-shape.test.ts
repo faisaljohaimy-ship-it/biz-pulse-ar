@@ -258,3 +258,157 @@ describe("انتهاكات مزروعة: لو غيّر التطبيق شكل ر�
     expect(ok(renamed)).toBe("down");
   });
 });
+
+// ── كتلتا n8n (`n8n` و`web_research`): المراقب يقرأ التطبيق الحقيقي وهما فيه ولا يتأثر بهما ──────────
+//
+// المراقب يحكم على `status` و`subsystems.*.status` و`ok` و`gate` و`key_present` فقط. الكتلتان حقلان
+// إضافيان في المعالجين الحقيقيين، ويجب أن يبقيا بلا أثر على حكمه مهما كانت قيمتهما: n8n اختياري، وغيابه
+// أو قاطعه المفتوح أو مفتاح إيقافه لا يُنذر ولا يُنزل التطبيق. لا n8n حقيقي هنا ولا شبكة.
+
+const N8N_ENV_NAMES = [
+  "SADEED_N8N_BASE_URL",
+  "SADEED_N8N_SECRET",
+  "FINN_N8N_SECRET",
+  "SADEED_WEB_RESEARCH",
+  "SADEED_WEB_DISABLED",
+];
+/** سرّان حارسان يُبنيان وقت التشغيل (لا مفتاحًا حرفيًّا). */
+const SENTINEL_SECRETS = {
+  sadeed: "canary-shape-sadeed-" + "0f1e2d3c".repeat(5),
+  fnn: "canary-shape-fnn-" + "4b5a6978".repeat(5),
+};
+
+function withN8nEnv(env: Record<string, string>) {
+  for (const k of N8N_ENV_NAMES) vi.stubEnv(k, env[k] ?? "");
+}
+
+/** الأحكام الثلاثة كما تقرؤها شيفرة المراقب من جسمَي المعالجين (والمزوّد ثابت سليم). */
+function verdictOf(appBody: unknown, chatBody: unknown) {
+  const http = (body: unknown) => ({ statusCode: 200, headers: {}, data: JSON.stringify(body) });
+  return CANARY.canaryEvaluate({
+    health: { app: http(appBody), chat: http(chatBody), provider: http({}) },
+    now: NOW,
+  });
+}
+
+describe("كتلتا n8n في المعالجين الحقيقيين: المراقب لا يتأثر بهما", () => {
+  afterEach(() => withN8nEnv({}));
+
+  it("الحقول التي يقرؤها المراقب ما زالت تُنتَج بأنواعها (لو غابت لحمرّ هذا)", async () => {
+    const app = JSON.parse((await appRoute("/api/public/health")).body);
+    const chat = JSON.parse((await appRoute("/api/chat/health")).body);
+    expect(["ok", "degraded", "down"]).toContain(app.status);
+    expect(typeof app.subsystems).toBe("object");
+    for (const s of Object.values(app.subsystems) as any[]) {
+      expect(["ok", "unknown", "degraded", "down"]).toContain(s.status);
+    }
+    expect(chat.ok).toBe(true);
+    expect(["verified", "degraded", "closed"]).toContain(chat.gate);
+    expect(typeof chat.key_present).toBe("boolean");
+  });
+
+  it("الكتلتان حاضرتان في الردّين الحقيقيين بالشكل المعلن، وخارج subsystems", async () => {
+    const app = JSON.parse((await appRoute("/api/public/health")).body);
+    const chat = JSON.parse((await appRoute("/api/chat/health")).body);
+    expect(Object.keys(app.n8n).sort()).toEqual(["breaker", "configured", "mode"]);
+    expect(Object.keys(chat.web_research).sort()).toEqual([
+      "armed",
+      "breaker",
+      "configured",
+      "kill_switch",
+      "last_ok_at",
+      "mode",
+      "p95_ms",
+      "samples",
+    ]);
+    expect(app.subsystems).not.toHaveProperty("n8n");
+  });
+
+  it("حكم المراقب مع الكتلتين = حكمه بدونهما، مطفأً أو مهيّأً بالكامل أو موقوفًا", async () => {
+    const cases: Record<string, Record<string, string>>[] = [
+      { env: {} },
+      {
+        env: {
+          SADEED_N8N_BASE_URL: "https://n8n-canary-shape.example.com",
+          SADEED_N8N_SECRET: SENTINEL_SECRETS.sadeed,
+          FINN_N8N_SECRET: SENTINEL_SECRETS.fnn,
+          SADEED_WEB_RESEARCH: "all",
+        },
+      },
+      {
+        env: {
+          SADEED_N8N_BASE_URL: "https://n8n-canary-shape.example.com",
+          SADEED_N8N_SECRET: SENTINEL_SECRETS.sadeed,
+          FINN_N8N_SECRET: SENTINEL_SECRETS.fnn,
+          SADEED_WEB_RESEARCH: "members",
+          SADEED_WEB_DISABLED: "1",
+        },
+      },
+    ];
+    for (const { env } of cases) {
+      withN8nEnv(env);
+      const app = JSON.parse((await appRoute("/api/public/health")).body);
+      const chat = JSON.parse((await appRoute("/api/chat/health")).body);
+      const bareApp = { ...app };
+      const bareChat = { ...chat };
+      delete bareApp.n8n;
+      delete bareChat.web_research;
+      expect(verdictOf(app, chat)).toEqual(verdictOf(bareApp, bareChat));
+      expect(verdictOf(app, chat).observed).toBe("ok");
+    }
+  });
+
+  it("أسوأ قيمٍ ممكنة للكتلتين (قاطع مفتوح · إيقاف · غير مقروء null) لا تغيّر الحكم", async () => {
+    const app = JSON.parse((await appRoute("/api/public/health")).body);
+    const chat = JSON.parse((await appRoute("/api/chat/health")).body);
+    const base = verdictOf(app, chat);
+    const worstApp = { ...app, n8n: { configured: true, mode: "all", breaker: "open" } };
+    const worstChat = {
+      ...chat,
+      web_research: {
+        mode: "all",
+        kill_switch: true,
+        configured: { sadeed: true, fnn: true },
+        armed: false,
+        breaker: { sadeed: "open", fnn: "open" },
+        last_ok_at: null,
+        p95_ms: null,
+        samples: 0,
+      },
+    };
+    expect(verdictOf(worstApp, worstChat)).toEqual(base);
+    expect(verdictOf({ ...app, n8n: null }, { ...chat, web_research: null })).toEqual(base);
+  });
+
+  it("مزروع: لو دخلت كتلة n8n في subsystems بحالة down لرآها المراقب تنزل التطبيق (فالاختبار يعضّ)", async () => {
+    const app = JSON.parse((await appRoute("/api/public/health")).body);
+    const chat = JSON.parse((await appRoute("/api/chat/health")).body);
+    const planted = {
+      ...app,
+      status: "down",
+      subsystems: { ...app.subsystems, n8n: { status: "down" } },
+    };
+    const v = verdictOf(planted, chat);
+    expect(checkOf(v, "app")).toMatchObject({ status: "down" });
+    expect(checkOf(v, "app").detail).toContain("n8n");
+    expect(v.observed).toBe("down");
+  });
+
+  it("مزروع: إسقاط الكتلة من الجسم لا يغيّر الحكم، لكن إسقاط gate يغيّره (فالتمييز حقيقي)", async () => {
+    const chat = JSON.parse((await appRoute("/api/chat/health")).body);
+    const app = JSON.parse((await appRoute("/api/public/health")).body);
+    const noBlock = { ...chat };
+    delete noBlock.web_research;
+    expect(verdictOf(app, noBlock)).toEqual(verdictOf(app, chat));
+    gate.unavailable = true;
+    gate.state = "open";
+    // فحص المخزن يُحفظ 15 ث في المعزول: دقيقةٌ تفصل القراءتين.
+    vi.setSystemTime(Date.now() + 60_000);
+    const closed = JSON.parse((await appRoute("/api/chat/health")).body);
+    expect(closed.gate).toBe("closed");
+    expect(checkOf(verdictOf(app, closed), "chat")).toMatchObject({
+      status: "degraded",
+      detail: "gate_closed",
+    });
+  });
+});

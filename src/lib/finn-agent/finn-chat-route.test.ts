@@ -23,6 +23,7 @@ const sim = vi.hoisted(() => ({
   script: {} as Record<string, () => AsyncIterable<Record<string, unknown>>>,
   gatewayAvailable: false,
   directAvailable: true,
+  n8nInputs: [] as Array<Record<string, unknown>>,
 }));
 
 vi.mock("@/lib/governance/rate-limit.server", async (importOriginal) => ({
@@ -40,6 +41,29 @@ vi.mock("@/lib/governance/ai-quota.server", async (importOriginal) => ({
     sim.quotaCalls.push(opts);
     return sim.quota;
   },
+}));
+
+// عميل n8n كاملًا مُراقَب (لا شبكة ولا n8n): كل نداءٍ يُسجَّل. الغرض إثبات أن أداة web_research لا تُبنى ولا
+// تُنفَّذ إلا على مسار المالك، لا اختبار القناة (لها اختباراتها).
+vi.mock("@/lib/n8n/client.server", () => ({
+  researchViaN8n: async (input: Record<string, unknown>) => {
+    sim.n8nInputs.push(input);
+    return { served: false, reason: "not_configured", latencyMs: 0 };
+  },
+  runViaN8n: async (input: Record<string, unknown>) => {
+    sim.n8nInputs.push(input);
+    return { served: false, reason: "not_configured", latencyMs: 0 };
+  },
+  n8nStatus: () => ({
+    surface: "fnn",
+    configured: false,
+    disabled: false,
+    mode: null,
+    breaker: "closed",
+    last_ok_at: null,
+    p95_ms: null,
+    samples: 0,
+  }),
 }));
 
 vi.mock("@/lib/hook-auth.server", () => ({
@@ -206,6 +230,7 @@ beforeEach(() => {
   sim.script = {};
   sim.gatewayAvailable = false;
   sim.directAvailable = true;
+  sim.n8nInputs = [];
   vi.stubEnv("FINN_OWNER_USER_IDS", OWNER);
   vi.stubEnv("OPENAI_API_KEY", SECRET_KEY);
   vi.stubEnv("FINN_OPENAI_MODEL", "");
@@ -974,5 +999,69 @@ describe("⑨ المصادقة والخصوصية", () => {
   it("مالكٌ واحد يتحقّق مرّةً واحدة لكل طلب", async () => {
     await post(postReq());
     expect(sim.verifyCalls).toBe(1);
+  });
+});
+
+describe("⑩ web_research: لا تُبنى ولا تُنفَّذ إلا على مسار المالك (٢٠٢٦/١٠/٣٠)", () => {
+  type Exec = (input: unknown, opts: unknown) => Promise<Record<string, unknown>>;
+  const toolsOfFirstCall = () =>
+    sim.streamCalls[0]!.args.tools as Record<string, { execute: Exec }>;
+
+  it("كل صنوف غير المالك ⇒ 404 ولا مجموعة أدوات تُبنى ولا نداء إلى n8n", async () => {
+    for (const make of [
+      () => postReq(undefined, { token: null }),
+      () => postReq(undefined, { token: "garbage" }),
+      () => postReq(undefined, { token: jwtFor(OTHER) }),
+    ]) {
+      const res = await post(make());
+      expect(res.status).toBe(404);
+    }
+    expect(sim.streamCalls).toHaveLength(0);
+    expect(sim.n8nInputs).toHaveLength(0);
+  });
+
+  it("المالك: المجموعة تحمل web_research، وبناؤها لا ينادي n8n، وتنفيذها ينادي العميل مرّةً بالسطح fnn", async () => {
+    const res = await post(postReq());
+    await res.text();
+    const tools = toolsOfFirstCall();
+    expect(Object.keys(tools)).toContain("web_research");
+    expect(sim.n8nInputs).toHaveLength(0);
+    const out = await tools.web_research.execute(
+      { query: "vite build cache", mode: "docs" },
+      { toolCallId: "t1", messages: [] },
+    );
+    // غير مهيّأ في هذه المحاكاة ⇒ فشلٌ مغلق هادئ، لا استثناء ولا مصطلح مصادقة.
+    expect(out).toMatchObject({ ok: false, reason: "not_configured" });
+    expect(sim.n8nInputs).toHaveLength(1);
+    expect(sim.n8nInputs[0]).toMatchObject({ surface: "fnn", mode: "docs" });
+    expect(Object.keys(sim.n8nInputs[0]!).sort()).toEqual([
+      "brief",
+      "maxResults",
+      "mode",
+      "surface",
+    ]);
+  });
+
+  it("مفتاح الإيقاف مرفوع ⇒ 503 قبل أي أداة، ولا نداء إلى n8n", async () => {
+    vi.stubEnv("SADEED_AI_DISABLED", "1");
+    const res = await post(postReq());
+    expect(res.status).toBe(503);
+    expect(sim.streamCalls).toHaveLength(0);
+    expect(sim.n8nInputs).toHaveLength(0);
+  });
+
+  it("لا محرّك مهيّأ ⇒ الرد المحلّي بلا نموذج لا يُنادي n8n ولا يعرض الأداة", async () => {
+    stubNoEngine();
+    const res = await post(postReq());
+    expect(res.status).toBe(200);
+    expect(res.headers.get("x-finn-engine")).toBe("local");
+    const names = (await events(res)).filter((e) => e.type === "tool").map((e) => e.name);
+    expect(names).toEqual([
+      "platform_status",
+      "platform_status",
+      "knowledge_search",
+      "knowledge_search",
+    ]);
+    expect(sim.n8nInputs).toHaveLength(0);
   });
 });

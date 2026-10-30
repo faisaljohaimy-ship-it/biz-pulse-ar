@@ -22,6 +22,14 @@
  *   B1 معرّف البناء          — أيّ commit يخدمه الموقع (`/api/public/health` أو
  *                              `/build-info.json`)؛ مع `EXPECTED_SHA` يصير حكمًا.
  *
+ *   N1/N2/N3 قناة n8n        : (أمر المالك ٢٠٢٦/١٠/٣٠) كتلتا الصحّة `n8n` في `/api/public/health`
+ *                              و`web_research` في `/api/chat/health`. **استشاريّة**: تمرّ متى
+ *                              وُجدت الكتلة بشكلها المعلن وبلا تسرّب، أيًّا كانت قيمة `configured`.
+ *                              غير مهيّأ ⇐ info لا fail (هو الحال قبل التفعيل). غياب الكتلة ⇐ warn
+ *                              (بناءٌ أقدم) ولا يسقط إلا مع STRICT=1. الشكل المشوَّه أو التسرّب ⇐ fail.
+ *                              EXPECT_N8N=1 يحوّل «غير مهيّأ» إلى fail (للتحقّق بعد التفعيل). لا شبكة
+ *                              إلى n8n من هنا أبدًا: القراءة من نقطتَي الصحّة وحدهما.
+ *
  *   PRODUCTION_URL=https://example.com node scripts/smoke-production.mjs
  *   EXHAUSTIVE=1 STRICT=1 PRODUCTION_URL=… node scripts/smoke-production.mjs
  *   EXPECTED_SHA=<sha> PRODUCTION_URL=… node scripts/smoke-production.mjs
@@ -31,6 +39,7 @@ import { writeFileSync } from "node:fs";
 const BASE = (process.env.PRODUCTION_URL || "").replace(/\/$/, "");
 const EXHAUSTIVE = /^(1|true)$/i.test(process.env.EXHAUSTIVE ?? "");
 const STRICT = /^(1|true)$/i.test(process.env.STRICT ?? "");
+const EXPECT_N8N = /^(1|true)$/i.test(process.env.EXPECT_N8N ?? "");
 if (!BASE) {
   console.error("PRODUCTION_URL غير محدَّد — لا شيء يُفحص.");
   process.exit(1);
@@ -253,6 +262,140 @@ if (h2.ok && h2.status === 200 && h2.json?.ok === true && h2.json.key_present ==
   );
 } else {
   note("H2 chat/health", "fail", h2.ok ? `http ${h2.status}: ${h2.text.slice(0, 120)}` : h2.error);
+}
+
+// ── N1/N2/N3 قناة n8n (استشاريّة) ─────────────────────────────────────────────
+// الكتلتان قراءةٌ محلية في الخادم بلا قيم: أسماء وحالات فقط. القائمة البيضاء للمفاتيح هي العقد؛
+// مفتاحٌ زائد أو قيمةٌ تشبه عنوانًا أو سرًّا ⇐ fail (تسرّب لا يُغتفر ولو كان الباقي سليمًا).
+const N8N_MODES = ["off", "members", "all"];
+const N8N_BREAKERS = ["closed", "open", "half-open"];
+const N8N_PUBLIC_KEYS = ["breaker", "configured", "mode"];
+const N8N_CHAT_KEYS = [
+  "armed",
+  "breaker",
+  "configured",
+  "kill_switch",
+  "last_ok_at",
+  "mode",
+  "p95_ms",
+  "samples",
+];
+const N8N_LEAK = /https?:|\/webhook\/|[A-Fa-f0-9]{32,}|secret|N8N_|WEB_RESEARCH|WEB_DISABLED/i;
+const sameKeys = (o, keys) => JSON.stringify(Object.keys(o).sort()) === JSON.stringify(keys);
+const isBool = (v) => typeof v === "boolean";
+
+/** يعيد قائمة العيوب في كتلة العامّة (فارغة ⇐ سليمة). */
+function publicBlockProblems(b) {
+  const bad = [];
+  if (!sameKeys(b, N8N_PUBLIC_KEYS))
+    bad.push(`مفاتيح خارج القائمة المعلنة: ${Object.keys(b).join(",")}`);
+  if (!isBool(b.configured)) bad.push("configured ليس منطقيًّا");
+  if (!N8N_MODES.includes(b.mode)) bad.push(`mode غير معروف: ${String(b.mode).slice(0, 20)}`);
+  if (!N8N_BREAKERS.includes(b.breaker))
+    bad.push(`breaker غير معروف: ${String(b.breaker).slice(0, 20)}`);
+  if (N8N_LEAK.test(JSON.stringify(b))) bad.push("قيمة تشبه عنوانًا أو سرًّا أو اسم متغيّر");
+  return bad;
+}
+
+/** يعيد قائمة العيوب في كتلة سَدِيد التفصيلية (فارغة ⇐ سليمة). */
+function chatBlockProblems(b) {
+  const bad = [];
+  if (!sameKeys(b, N8N_CHAT_KEYS))
+    bad.push(`مفاتيح خارج القائمة المعلنة: ${Object.keys(b).join(",")}`);
+  if (!N8N_MODES.includes(b.mode)) bad.push(`mode غير معروف: ${String(b.mode).slice(0, 20)}`);
+  if (!isBool(b.kill_switch)) bad.push("kill_switch ليس منطقيًّا");
+  if (!isBool(b.armed)) bad.push("armed ليس منطقيًّا");
+  const perSurface = (v, ok) =>
+    v && typeof v === "object" && sameKeys(v, ["fnn", "sadeed"]) && ok(v.sadeed) && ok(v.fnn);
+  if (!perSurface(b.configured, isBool)) bad.push("configured ليس {sadeed,fnn} منطقيَّين");
+  if (!perSurface(b.breaker, (x) => N8N_BREAKERS.includes(x)))
+    bad.push("breaker ليس {sadeed,fnn} معروفَين");
+  if (b.last_ok_at !== null && typeof b.last_ok_at !== "string")
+    bad.push("last_ok_at ليس نصًّا أو null");
+  if (
+    b.p95_ms !== null &&
+    !(typeof b.p95_ms === "number" && Number.isFinite(b.p95_ms) && b.p95_ms >= 0)
+  )
+    bad.push("p95_ms ليس رقمًا غير سالب أو null");
+  if (!(Number.isInteger(b.samples) && b.samples >= 0))
+    bad.push("samples ليس عددًا صحيحًا غير سالب");
+  if (b.samples === 0 && b.p95_ms !== null) bad.push("p95_ms بلا عيّنات (رقم مختلَق)");
+  if (N8N_LEAK.test(JSON.stringify(b))) bad.push("قيمة تشبه عنوانًا أو سرًّا أو اسم متغيّر");
+  return bad;
+}
+
+/** يقرأ كتلة من جسم صحّة: absent (غائبة) · null (غير مقروءة) · bad (مشوَّهة) · ok. */
+function readBlock(res, key, problemsOf) {
+  if (!res.ok || !res.json || typeof res.json !== "object") return { kind: "nobody" };
+  if (!(key in res.json)) return { kind: "absent" };
+  const b = res.json[key];
+  if (b === null) return { kind: "null" };
+  if (typeof b !== "object" || Array.isArray(b))
+    return { kind: "bad", problems: ["الكتلة ليست كائنًا"] };
+  const problems = problemsOf(b);
+  return problems.length ? { kind: "bad", problems } : { kind: "ok", block: b };
+}
+
+function noteN8nBlock(id, key, r) {
+  if (r.kind === "nobody") note(id, "info", `لا جسم صحّة لقراءة ${key} (انظر H1/H2)`);
+  else if (r.kind === "absent")
+    note(id, STRICT ? "fail" : "warn", `لا كتلة ${key}: البناء المنشور أقدم من دفعة قناة n8n`);
+  else if (r.kind === "null")
+    note(id, "warn", `${key} = null: المعالج لم يستطع قراءة الحالة (غير مقروء، لا «مطفأ»)`);
+  else if (r.kind === "bad") note(id, "fail", `${key} مشوَّهة: ${r.problems.join(" · ")}`);
+  else note(id, "pass", `${key} سليمة الشكل: ${JSON.stringify(r.block)}`);
+}
+
+{
+  const pub = readBlock(h1, "n8n", publicBlockProblems);
+  const web = readBlock(h2, "web_research", chatBlockProblems);
+  noteN8nBlock("N1 n8n public/health", "n8n", pub);
+  noteN8nBlock("N2 n8n chat/health", "web_research", web);
+
+  // N3: الحال التشغيلية، استشاريّة وحاسمة فقط مع EXPECT_N8N=1.
+  const notes = [];
+  let level = "info";
+  const raise = (to) => {
+    const rank = { info: 0, pass: 1, warn: 2, fail: 3 };
+    if (rank[to] > rank[level]) level = to;
+  };
+  const p = pub.kind === "ok" ? pub.block : null;
+  const w = web.kind === "ok" ? web.block : null;
+  if (!p && !w) {
+    notes.push("لا كتلة سليمة تُحكَم عليها");
+  } else {
+    const configured = p ? p.configured : w.configured.sadeed || w.configured.fnn;
+    const mode = (w ?? p).mode;
+    if (!configured) {
+      notes.push("غير مهيّأ (متوقَّع قبل التفعيل؛ البحث معطَّل والجواب المعتاد يعمل)");
+      if (mode !== "off") {
+        notes.push(
+          `الراية مرفوعة (mode=${mode}) ولا قناة مهيّأة: البحث سيتدهور إلى الجواب المعتاد`,
+        );
+        raise("warn");
+      }
+      if (EXPECT_N8N) {
+        notes.push("EXPECT_N8N: القناة غير مهيّأة");
+        raise("fail");
+      }
+    } else {
+      notes.push(`مهيّأ · mode=${mode}`);
+      if (EXPECT_N8N && w && !w.configured.sadeed) {
+        notes.push("EXPECT_N8N: سطح سَدِيد غير مهيّأ (سرٌّ مكرَّر أو ناقص؟)");
+        raise("fail");
+      }
+      const breaker = p ? p.breaker : null;
+      if (breaker === "open" || (w && w.breaker.sadeed === "open")) {
+        notes.push("قاطع n8n مفتوح: البحث يتدهور إلى الجواب المعتاد حتى يُغلق");
+        raise("warn");
+      }
+    }
+    if (w?.kill_switch) notes.push("مفتاح الإيقاف مرفوع: كل نداء إلى n8n متوقف");
+    if (w && w.samples === 0) notes.push("لم يُقَس زمن (لا نداء ناجح في هذا المعزول)");
+  }
+  // التوقُّع المعلن (EXPECT_N8N) الذي تحقّق ⇐ pass؛ وبدونه تبقى الحال استشاريّة (info/warn).
+  if (EXPECT_N8N && level === "info" && (p || w)) level = "pass";
+  note("N3 n8n advisory", level, notes.join(" · "));
 }
 
 // ── A1 المصادقة لا تُتجاوز ───────────────────────────────────────────────────

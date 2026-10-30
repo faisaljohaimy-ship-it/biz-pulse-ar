@@ -6,6 +6,11 @@
 #
 # يُشغَّل يدويًّا فقط: كل تشغيلٍ ينفق نداءَي نموذجٍ على الأقل (وحتى تسعة مع
 # `exhaustive`). ويقيس البناء **المنشور** — فيُشغَّل بعد Publish لا بعد الدفع.
+#
+# قناة n8n (أمر المالك ٢٠٢٦/١٠/٣٠): الفحص يقرأ كتلتَي الصحّة `n8n` و`web_research` ويحكم على
+# شكلهما وخلوّهما من القيم، ولا ينادي n8n. وهو استشاريّ: غير مهيّأ لا يُسقطه. `expect_n8n`
+# يحوّل «غير مهيّأ» إلى سقوط، ويُستعمل بعد تفعيل القناة فقط. (الجدولة الأسبوعية في
+# weekly-regression.yml تشغّل السكربت نفسه بلا هذا المُدخل فتبقى استشاريّة.)
 name: Production smoke
 
 on:
@@ -29,6 +34,11 @@ on:
         description: "الـcommit الذي يجب أن يخدمه الموقع (اتركه فارغًا للشهادة بلا حكم)"
         required: false
         type: string
+      expect_n8n:
+        description: "اعتبار قناة n8n غير المهيّأة سقوطًا (بعد التفعيل فقط؛ الافتراضي استشاريّ ولا يُسقط)"
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: production-smoke
@@ -63,6 +73,7 @@ jobs:
           EXHAUSTIVE: ${{ inputs.exhaustive && '1' || '' }}
           STRICT: ${{ inputs.strict && '1' || '' }}
           EXPECTED_SHA: ${{ inputs.expected_sha }}
+          EXPECT_N8N: ${{ inputs.expect_n8n && '1' || '' }}
         run: node scripts/smoke-production.mjs
 
       - name: Summary

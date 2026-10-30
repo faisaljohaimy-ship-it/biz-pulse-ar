@@ -7,6 +7,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import { buildStamp } from "@/lib/build/build-info.server";
+import type { PublicN8nHealth } from "@/lib/n8n/health.server";
 
 type SubsystemStatus = "ok" | "degraded" | "down" | "unknown";
 interface Subsystem {
@@ -104,6 +105,18 @@ export const Route = createFileRoute("/api/public/health")({
               : { status: "unknown", detail: "not_configured" },
         };
 
+        // قناة n8n (أمر المالك ٢٠٢٦/١٠/٣٠): كتلة `n8n` ثلاثة حقول عامّة لا غير، من قراءةٍ محلية
+        // متزامنة (لا شبكة ولا `fetch`). **خارج `subsystems` وخارج الحالة الكلّية عمدًا**: n8n اختياري،
+        // فغير مهيّأ أو قاطعٌ مفتوح لا يُسقط التطبيق ولا يُنذر المراقب. `null` = غير مقروء (لا `off`
+        // مختلَقة). الاستيراد ديناميكي داخل try كي لا تُسقط قناةٌ اختيارية فحص الصحّة نفسه.
+        let n8n: PublicN8nHealth | null = null;
+        try {
+          const { readPublicN8nHealth } = await import("@/lib/n8n/health.server");
+          n8n = readPublicN8nHealth();
+        } catch {
+          n8n = null;
+        }
+
         const worst = Object.values(subsystems)
           .map((s) => s.status)
           .reduce<SubsystemStatus>((acc, s) => {
@@ -124,6 +137,7 @@ export const Route = createFileRoute("/api/public/health")({
             timestamp: new Date().toISOString(),
             uptime_hint: "stateless-worker",
             subsystems,
+            n8n,
           },
           {
             status: worst === "down" ? 503 : 200,

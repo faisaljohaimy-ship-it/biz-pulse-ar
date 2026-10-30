@@ -18,7 +18,9 @@
  *    تُمسح داخليًا، ويُثبَّت أن العميل يستورد منها `aiKillSwitchOn` وحدها.
  * ٥. الأسرار وعنوان n8n يُقرآن في `config.server.ts` وحده (و`env-manifest.ts` يسمّيها)، ولا بادئة VITE_.
  * ٦. كل مستورِدٍ للعميل يفحص مفتاح الإيقاف قبل أول نداء له، ولا يستورده ملفُّ عميل. والقائمة مغلقة
- *    (فارغة في P1): كل مستهلكٍ لاحق يُضاف هنا باسمه أو يُدان.
+ *    (فارغة في P1، وفيها منذ أداة FNN `web_research` مستورِدٌ واحد): كل مستهلكٍ لاحق يُضاف هنا
+ *    باسمه أو يُدان. واستثناءٌ واحدٌ مسمّى لملفٍّ غير خادميّ: `env-manifest.ts` يقرأ `config.server`
+ *    وحده ليحكم على التهيئة الفعلية للقدرتين الاختياريتين (انظر ⑥).
  */
 import { execSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
@@ -187,10 +189,30 @@ const retrievalModulesOf = (src: string): string[] =>
 // ── القوائم المغلقة ─────────────────────────────────────────────────────────
 
 /**
- * مستورِدو العميل المسموحون — فارغة في P1 (لا موصول). كل مرحلةٍ لاحقة (`/api/chat` · وكيل FNN)
- * تضيف مسارها هنا باسمه، فيُطبَّق عليه `importerViolations` تلقائيًّا.
+ * مستورِدو العميل المسموحون (قائمة مغلقة): كل مستهلكٍ يُضاف باسمه أو يُدان. كانت فارغة في P1 (لا موصول).
+ * كلاهما خادميّ، ويفحص مفتاح الإيقاف قبل أول نداء (`importerViolations`)، ولا يستورد العميلَ غيرُهما:
+ *
+ * - `src/lib/finn-agent/web-research.server.ts`: أداة `web_research` لوكيل FNN (المالك وحده). تستورده
+ *   `tools.server.ts` وحدها (يثبّته ⑥ وحارس ⑩ في `finn-governance.contract.test.ts`).
+ * - `src/lib/sadeed/web-research.server.ts` (٢٠٢٦/١٠/٣٠، ذراع ويب سَدِيد في `/api/chat`، الراية مطفأة): وحدة
+ *   القرار والكتلة والرصد. و`/api/chat` نفسه **لا** يستورد العميل بل يستورد هذه الوحدة وحدها
+ *   (`src/lib/sadeed/web-arm.contract.test.ts` يحرس ذلك).
+ *
+ * ولا مستورِدَ ثالثًا: كتلتا الصحة تستوردان `health.server.ts` لا العميل (قراءةُ حالةٍ لا نداء).
  */
-const ALLOWED_IMPORTERS: readonly string[] = [];
+const ALLOWED_IMPORTERS: readonly string[] = [
+  "src/lib/finn-agent/web-research.server.ts",
+  "src/lib/sadeed/web-research.server.ts",
+];
+
+/**
+ * الاستثناء المسمّى الوحيد لملفٍّ غير خادميٍّ خارج المجلد يستورد منه: `env-manifest.ts` يحتاج حكم
+ * `config.server` على التهيئة (أصلٌ صالح وسرٌّ صالح) كي لا تُعدّ قدرةٌ اختيارية «جاهزة» وهي غير
+ * مهيّأة. لا يُسمح له إلا بهذا الملف، ولا يستورده غير الخادم (يحرسه الاختبار في ⑥).
+ */
+const NON_SERVER_N8N_IMPORTS: Readonly<Record<string, readonly string[]>> = {
+  "src/lib/env/env-manifest.ts": ["@/lib/n8n/config.server"],
+};
 
 /** الملفات خارج المجلد التي يحقّ لها ذكر أسماء الربط. */
 const ENV_NAME_READERS: readonly string[] = ["src/lib/env/env-manifest.ts"];
@@ -489,14 +511,46 @@ describe("⑥ مستورِدو العميل: قائمة مغلقة، كلٌّ ي
     expect(importerViolations(path, read(path))).toEqual([]);
   });
 
+  /** مواصفات n8n التي يستوردها ملفٌّ خارج المجلد، ولم يسمح لها الاستثناء المسمّى. */
+  const n8nImportViolations = (file: string, src: string): string[] => {
+    const allowed = NON_SERVER_N8N_IMPORTS[file] ?? [];
+    return importsOf(src)
+      .filter((i) => N8N_SPEC.test(i.spec) || i.spec === "@/lib/n8n")
+      .map((i) => i.spec)
+      .filter((spec) => !allowed.includes(spec));
+  };
+
   it("ولا مستورِدٌ من مجلد العميل الخالص: components/ وصفحات الواجهة لا تستورد مجلد n8n كلّه", () => {
     const clientSide = SRC_FILES.filter(
       (f) => !isTest(f) && !f.startsWith(`${N8N_DIR}/`) && !/\.server\.tsx?$/.test(f),
     ).filter((f) => !f.startsWith("src/routes/api/"));
-    const offenders = clientSide.filter((f) =>
-      importsOf(read(f)).some((i) => N8N_SPEC.test(i.spec) || i.spec === "@/lib/n8n"),
-    );
+    const offenders = clientSide.filter((f) => n8nImportViolations(f, read(f)).length > 0);
     expect(offenders.sort()).toEqual([]);
+    // والاستثناء المسمّى حيٌّ فعلًا (المادة ٣٠): الملف يستورد ما سُمح له بالضبط.
+    for (const [file, allowed] of Object.entries(NON_SERVER_N8N_IMPORTS)) {
+      const specs = importsOf(read(file))
+        .filter((i) => N8N_SPEC.test(i.spec))
+        .map((i) => i.spec);
+      expect(specs.sort(), file).toEqual([...allowed].sort());
+    }
+  });
+
+  it("وصاحب الاستثناء لا يبلغ العميل: لا يستورده إلا ملفٌّ خادميّ (`.server`) أو اختبار", () => {
+    for (const file of Object.keys(NON_SERVER_N8N_IMPORTS)) {
+      const stem = file.replace(/\.tsx?$/, "");
+      const importers = SRC_FILES.filter((f) => !isTest(f) && f !== file).filter((f) =>
+        importsOf(read(f)).some(
+          (i) =>
+            !i.typeOnly &&
+            (i.spec === stem.replace(/^src\//, "@/") ||
+              i.spec.endsWith(`/${stem.split("/").pop()}`)),
+        ),
+      );
+      const nonServer = importers.filter((f) => !/\.server\.tsx?$/.test(f));
+      expect(nonServer, `${file} يبلغه ملفٌّ غير خادميّ`).toEqual([]);
+      // الأرضية: له مستورِدٌ خادميٌّ فعلًا، وإلا كان «الصفر» فراغًا.
+      expect(importers.length, file).toBeGreaterThanOrEqual(1);
+    }
   });
 });
 
@@ -670,6 +724,39 @@ describe("⑦ إثبات الأدوات (المادة ٣٠) — انتهاكات
       );
       expect(found).toBe(true);
       expect([...ALLOWED_IMPORTERS]).not.toContain(planted);
+    });
+  });
+
+  describe("الاستثناء المسمّى لملفٍّ غير خادميّ", () => {
+    const FILE = "src/lib/env/env-manifest.ts";
+    const allowed = NON_SERVER_N8N_IMPORTS[FILE] ?? [];
+    const violations = (file: string, src: string): string[] =>
+      importsOf(src)
+        .filter((i) => N8N_SPEC.test(i.spec) || i.spec === "@/lib/n8n")
+        .map((i) => i.spec)
+        .filter((spec) => !(NON_SERVER_N8N_IMPORTS[file] ?? []).includes(spec));
+
+    it("سليم: استيراد config.server وحده من صاحب الاستثناء", () => {
+      expect(violations(FILE, 'import { isConfigured } from "@/lib/n8n/config.server";')).toEqual(
+        [],
+      );
+      expect(allowed).toEqual(["@/lib/n8n/config.server"]);
+    });
+
+    it("مزروع: صاحب الاستثناء يستورد العميل أو غيره من المجلد ⇒ يُدان", () => {
+      expect(violations(FILE, 'import { n8nStatus } from "@/lib/n8n/client.server";')).toEqual([
+        "@/lib/n8n/client.server",
+      ]);
+      expect(violations(FILE, 'import { x } from "@/lib/n8n/brief.server";')).toHaveLength(1);
+    });
+
+    it("مزروع: ملفٌّ آخر غير خادميّ يستورد config.server ⇒ يُدان (الاستثناء بالاسم لا بالنمط)", () => {
+      expect(
+        violations(
+          "src/components/Foo.tsx",
+          'import { readN8nConfig } from "@/lib/n8n/config.server";',
+        ),
+      ).toEqual(["@/lib/n8n/config.server"]);
     });
   });
 

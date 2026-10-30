@@ -1,8 +1,9 @@
 // @vitest-environment node
 /** موجز البحث: كلمات ورموز بلا الجملة، بلا PII، بسقوفه، وفارغٌ ⇒ null (لا نداء). */
 import { describe, expect, it } from "vitest";
+import { ilikeTerms } from "@/lib/retrieval/ilike-terms.server";
 import { isHcisReferenceQuery } from "@/lib/sadeed/hcis-reference";
-import { buildBrief, BRIEF_INPUT_MAX_CHARS, sadeedModeFor } from "./brief.server";
+import { buildBrief, BRIEF_INPUT_MAX_CHARS, foldForMatch, sadeedModeFor } from "./brief.server";
 import { briefSchema } from "./schema";
 
 const json = (q: string) => JSON.stringify(buildBrief(q));
@@ -118,6 +119,81 @@ describe("وضع سَدِيد: الأطر الحاكمة في المادة ٩ ك
   });
 });
 
+describe("وضع سَدِيد يقرأ النصّ الموحَّد: كتابةٌ أخرى للإطار نفسه لا تُخرجه من regulatory (مراجعة الإصلاح ٢٠٢٦/١٠/٣٠، المادة ٩)", () => {
+  // المصنِّف يطوي الهمزات والتاء المربوطة والتشكيل ويقبل السؤال، فيجب أن يطويها المختار؛ وإلا بحث سؤالٌ عن نظامٍ
+  // في Brave وويكيبيديا وOpenAlex وWikidata وقال الكتلة إنها تدعم «نظامًا».
+  const FOLDED_FRAMES = [
+    // التاء المربوطة هاءً، وبلا همزة، وبتشكيل
+    "ثغره جديده في نظام حمايه البيانات الشخصيه",
+    "اخبار الفوتره الالكترونيه للمنشآت",
+    "ما هي ضوابط الامن السيبراني الجديده",
+    "حِمَايَةِ الْبَيَانَاتِ الشَّخْصِيَّةِ أخبار",
+    "حـمـايـة البيانات الشخصية",
+    // أسماء إنجليزية بلا اختصار
+    "latest news on the Saudi personal data protection law amendments for security patrols",
+    "latest news National Cybersecurity Authority controls",
+    "news about Zakat, Tax and Customs Authority e-invoicing phase for security patrols",
+    "question about e-invoicing deadlines",
+    "What are the Essential Cybersecurity Controls requirements",
+    "Saudi Data and AI Authority guidance",
+    "Saudi Data & Artificial Intelligence Authority policy",
+    // الكود والمواصفات السعودية الحكومية (نصٌّ إلزامي)
+    "ما متطلبات كود البناء السعودي SBC 801 للحماية من الحريق؟",
+    "ما المتطلبات الحالية في المواصفة القياسية السعودية للحريق؟",
+    "اشتراطات الهيئة السعودية للمواصفات والمقاييس والجودة",
+    "اشتراطات الهيئه السعوديه للمواصفات",
+    "ما الكود السعودي للحريق",
+    "Saudi Building Code fire requirements",
+    "SBC-801 egress width",
+    "SASO technical regulation for fire extinguishers",
+    "اسم الهيئه العليا للامن الصناعي بلا همزة",
+  ];
+  // سقف الإفراط: معايير دولية وأسئلة بلا إطار تبقى general (الخطأ بالزيادة يُسكت نتائج مشروعة).
+  const STAY_GENERAL = [
+    "ما متطلبات معيار ISO 45001 للسلامة المهنية؟",
+    "What are the clauses of IEC 62443-3-3?",
+    "latest OSHA fall protection rule update",
+    "NFPA 101 means of egress",
+    "NCAA basketball scores",
+    "personal data of a character in the novel",
+    "ما هو الكود الدولي للمباني",
+  ];
+
+  it.each(FOLDED_FRAMES)("إطارٌ بكتابةٍ مطوية ⇒ regulatory: %s", (q) => {
+    expect(sadeedModeFor(q)).toBe("regulatory");
+  });
+
+  it.each(STAY_GENERAL)("بلا إطارٍ ⇒ general: %s", (q) => {
+    expect(sadeedModeFor(q)).toBe("general");
+  });
+
+  it("الحارس ليس على فراغ: المختار القديم (الحرفي وحده) كان يفوته معظم هذه الكتابات", () => {
+    // نسخةٌ مزروعة من منطق ما قبل الإصلاح: بالنصّ الحرفي ومعجمٍ بكتابةٍ واحدة. تُدان بسؤالٍ بكتابةٍ مطوية.
+    const legacyArabic = /حماية\s+البيانات\s+الشخصية|الأمن\s+السيبراني|الفوترة\s+الإلكترونية/;
+    const legacyLatin = /\b(?:pdpl|zatca|nca|sdaia)\b/i;
+    const legacy = (q: string) => legacyArabic.test(q) || legacyLatin.test(q);
+    const missed = FOLDED_FRAMES.filter((q) => !legacy(q));
+    expect(missed.length).toBeGreaterThanOrEqual(10);
+    for (const q of missed) expect(sadeedModeFor(q), q).toBe("regulatory");
+  });
+
+  it("foldForMatch: مصدر واحد للمصنِّف والمختار (همزات · تاء مربوطة · تشكيل · تطويل · أرقام هندية · NFKC)", () => {
+    expect(foldForMatch("أإآ ى ة")).toBe("ااا ي ه");
+    expect(foldForMatch("٢٠٢٦ ۱۲")).toBe("2026 12");
+    expect(foldForMatch("حِمَايَة")).toBe("حمايه");
+    expect(foldForMatch("ＰＤＰＬ")).toBe("pdpl");
+    expect(foldForMatch("x".repeat(BRIEF_INPUT_MAX_CHARS + 50)).length).toBe(BRIEF_INPUT_MAX_CHARS);
+  });
+
+  it("المختار والمصنِّف متفقان: كل سؤالٍ يقبله المصنِّف إطارًا تنظيميًّا يحمل وضع regulatory", async () => {
+    const { classifyWebNeed } = await import("@/lib/sadeed/web-need.server");
+    for (const q of FOLDED_FRAMES) {
+      const need = classifyWebNeed(q);
+      if (need.need && need.kind === "regulatory") expect(sadeedModeFor(q), q).toBe("regulatory");
+    }
+  });
+});
+
 describe("الحجب: لا يغادر شيءٌ شخصي", () => {
   const q =
     "راسلني على ahmed.salem@example.com أو اتصل 055 123 4567 ورقم هويتي 1234567890 ورقمي الوظيفي 12345 عن أسوار المحطة";
@@ -166,6 +242,168 @@ describe("الحجب: لا يغادر شيءٌ شخصي", () => {
       expect(out, leak).not.toContain(leak);
     }
     expect(buildBrief(`مفتاحي ${openAiShape} عن الأسوار`)!.terms).toContain("أسوار");
+  });
+});
+
+describe("معرّف UUID وSHA ملصوقان في السؤال لا تغادر شظاياهما (دمج ٢٠٢٦/١٠/٣٠)", () => {
+  const UUID = "123e4567-e89b-42d3-a456-426614174000";
+  const SHA = "d807f638e93f5aa9f54d513f0c4c426478fee6d1";
+  const FRAGMENTS = [
+    "123e4567",
+    "e89b",
+    "42d3",
+    "a456",
+    "d807f638",
+    "e93f5aa9",
+    "fee6d1",
+    "426614174000",
+  ];
+  const surfaces = [
+    ["sadeed", { surface: "sadeed" as const }],
+    ["fnn", { surface: "fnn" as const }],
+  ] as const;
+
+  it("المقطِّع وحده يفتّت المعرّف كلماتٍ (فالحارس ليس على فراغ: لولا النزع لخرجت الشظايا)", () => {
+    const raw = ilikeTerms(`nfpa ${UUID}`);
+    expect(raw).toEqual(expect.arrayContaining(["123e4567", "e89b", "42d3"]));
+  });
+
+  it.each(surfaces)(
+    "%s: UUID بحالتَيه وبلا شرطات وSHA كاملة ⇒ لا شظية في الموجز، والكلمات الحقيقية باقية",
+    (_n, opts) => {
+      for (const q of [
+        `ما متطلبات NFPA 101 للمخارج؟ المعرّف ${UUID}`,
+        `${UUID.toUpperCase()} ما متطلبات NFPA 101 للمخارج؟`,
+        `ما متطلبات NFPA 101 للمخارج؟ ${UUID.replace(/-/g, "")}`,
+        `ما متطلبات NFPA 101 للمخارج؟ commit ${SHA}`,
+      ]) {
+        const brief = buildBrief(q, opts)!;
+        const out = JSON.stringify(brief);
+        for (const frag of FRAGMENTS) expect(out, `${q} ⇒ ${frag}`).not.toContain(frag);
+        expect(brief.terms, q).toEqual(expect.arrayContaining(["nfpa", "مخارج"]));
+      }
+    },
+  );
+
+  it("معرّفٌ وحده بلا كلمات ⇒ null (لا بحث عن لا شيء)", () => {
+    for (const q of [UUID, SHA, `${UUID} ${SHA}`]) {
+      expect(buildBrief(q), q).toBeNull();
+      expect(buildBrief(q, { surface: "fnn" }), q).toBeNull();
+    }
+  });
+
+  it("ما دون 16 حرفًا سداسيًّا يبقى كلمةً (لا إفراط في الحجب): facade · decade · SHA قصيرة", () => {
+    const out = buildBrief("facade decade deadbeef", { surface: "fnn" })!;
+    expect(out.terms).toEqual(expect.arrayContaining(["facade", "decade", "deadbeef"]));
+  });
+
+  it("لا يمسّ ما احتفظ به سطح FNN: CVE والإصدار الثلاثي باقيان بجوار المعرّف", () => {
+    const b = buildBrief(`CVE-2026-12345 node 22.22.0 build ${UUID} ${SHA}`, { surface: "fnn" })!;
+    expect(b.codes).toContain("CVE-2026-12345");
+    expect(b.terms).toContain("22.22.0");
+    expect(JSON.stringify(b)).not.toMatch(/e89b|d807f638/);
+  });
+});
+
+describe("معرّفات بحدودٍ غير نظيفة وأسرارٌ بالسياق (مراجعة الإصلاح ٢٠٢٦/١٠/٣٠)", () => {
+  const surfaces = [
+    ["sadeed", { surface: "sadeed" as const }],
+    ["fnn", { surface: "fnn" as const }],
+  ] as const;
+  const UUID = "123e4567-e89b-42d3-a456-426614174000";
+  const Q = "ما متطلبات NFPA 101 للمخارج؟";
+  /** كل ما يخرج في الموجز مجموعًا، بحروفٍ صغيرة. */
+  const out = (q: string, opts?: { surface: "sadeed" | "fnn" }) =>
+    JSON.stringify(buildBrief(q, opts)).toLowerCase();
+
+  it.each(surfaces)(
+    "%s: UUID ملصوقٌ بكلمةٍ أو بشرطةٍ سفلية أو مفصولٌ بشرطاتٍ سفلية ⇒ لا شظية (كان `\\b` يفشل عند `_`)",
+    (_n, opts) => {
+      for (const glued of [
+        `id_${UUID}`,
+        `uid${UUID}`,
+        UUID.replace(/-/g, "_"),
+        `user_${UUID.replace(/-/g, "_")}`,
+      ]) {
+        const o = out(`${Q} ${glued}`, opts);
+        for (const frag of ["123e4567", "e89b", "42d3", "a456", "426614174000"]) {
+          expect(o, `${glued} ⇒ ${frag}`).not.toContain(frag);
+        }
+        expect(JSON.parse(o).terms).toEqual(expect.arrayContaining(["nfpa", "مخارج"]));
+      }
+    },
+  );
+
+  it.each(surfaces)(
+    "%s: سداسيٌّ من 8 أحرفٍ فأكثر يخلط رقمًا وحرفًا (12 حرفًا · SHA مختصرة بتسعة) ⇒ يسقط، والكلمات القصيرة تبقى",
+    (_n, opts) => {
+      for (const id of ["1c2d3e4f5a6b", "7c78dd480", "9f8e7d6c5b4a3", "id7c78dd480"]) {
+        expect(out(`${Q} المستخدم ${id}`, opts), id).not.toContain(id.replace(/^id/, ""));
+      }
+      // أحرفٌ سداسية وحدها أو أرقام وحدها أو أقصر من ثمانية: كلماتٌ عادية (لا إفراط).
+      const kept = JSON.parse(out("facade decade deadbeef dec2025 ISO 9001", opts)).terms;
+      expect(kept).toEqual(expect.arrayContaining(["facade", "decade", "deadbeef", "dec2025"]));
+    },
+  );
+
+  it.each(surfaces)(
+    "%s: الرقم الوظيفي بأقل من خمس خانات بعد عبارته ⇒ يُنزع مع عبارته (والأرقام العامة تبقى)",
+    (_n, opts) => {
+      for (const phrase of [
+        "الرقم الوظيفي 4567",
+        "رقمي الوظيفي 4567",
+        "رقم الموظف E4567",
+        "employee id E4567",
+        "Employee No. 4567",
+        "emp id 4567",
+        "badge number 4567",
+      ]) {
+        const o = out(`${Q} ${phrase}`, opts);
+        expect(o, phrase).not.toContain("4567");
+        expect(JSON.parse(o).terms, phrase).toEqual(expect.arrayContaining(["nfpa", "مخارج"]));
+      }
+      expect(JSON.parse(out("ISO 9001", opts)).terms).toEqual(
+        expect.arrayContaining(["iso", "9001"]),
+      );
+      expect(JSON.parse(out("تقرير 2026 للأسوار", opts)).terms).toContain("2026");
+    },
+  );
+
+  it.each(surfaces)(
+    "%s: سرٌّ من أحرفٍ وحدها بعد Bearer أو token= أو password: ⇒ يُنزع، وكلمةٌ لاتينية طويلة بلا رقم (≥ 24) تسقط",
+    (_n, opts) => {
+      const letters = "abcdefghijklmnopqrstuvwxyzabcdefgh";
+      for (const secret of [
+        `Authorization: Bearer ${letters}`,
+        // أقصر من 24 حرفًا: لا يلتقطه مرشّح الكلمة الطويلة، فيجب أن ينزعه السياق وحده (كانت `Bearer` وحدها تُستهلك).
+        `Authorization: Bearer abcdefghijklmnopqrst`,
+        `authorization = Basic dXNlcjpwYXNzd29yZA`,
+        `Bearer ${letters}`,
+        `token=abc123def456ghi789`,
+        `api_key: ${letters}`,
+        `password = hunter2hunter2`,
+      ]) {
+        const o = out(`${Q} ${secret}`, opts);
+        for (const frag of [
+          letters,
+          "abc123def456",
+          "hunter2",
+          "abcdefghijklmnopqrst",
+          "dxnlcjpwyxnzd29yzg",
+        ]) {
+          expect(o, `${secret} ⇒ ${frag}`).not.toContain(frag);
+        }
+        expect(JSON.parse(o).terms).toEqual(expect.arrayContaining(["nfpa", "مخارج"]));
+      }
+      // كلمةٌ لاتينية طويلة بلا إشارة سياق (≥ 24 حرفًا) شكلُ رمزٍ لا كلمة.
+      expect(out(`${Q} ${letters}`, opts)).not.toContain(letters);
+      // ولا إفراط: كلمة إنجليزية عادية طويلة (< 24) تبقى.
+      expect(out(`${Q} internationalization`, opts)).toContain("internationalization");
+    },
+  );
+
+  it("حدٌّ قائم موثَّق لا ثغرة مُغلقة: SHA بسبعة أحرف (اختصار git) تبقى كلمةً", () => {
+    expect(buildBrief(`${Q} commit 7c78dd4`)!.terms).toContain("7c78dd4");
   });
 });
 

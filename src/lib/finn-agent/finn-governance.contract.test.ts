@@ -17,9 +17,12 @@ import { FINN_NAV_ENTRY } from "@/lib/nav/owner-nav";
 import { SCREEN_NAMES } from "@/lib/nav/screen-names";
 import { SYSTEM_NAV, systemNavDestinations } from "@/lib/nav/system-nav";
 import { ENV_CAPABILITIES, validateEnv } from "@/lib/env/env-manifest";
+import { ARM_DEADLINE_MS, RESEARCH_MODES } from "@/lib/n8n/protocol";
 import { isSilentRoute, narrationFor } from "@/lib/sadeed/page-narrations";
 import { FINN_BANNER_AR } from "./copy";
-import { FINN_TOOL_NAMES } from "./tool-names";
+import { FINN_TOOL_LABEL_AR, FINN_TOOL_NAMES } from "./tool-names";
+import { FINN_MAX_STEPS } from "./tools.server";
+import { webResearchInputSchema } from "./web-research.server";
 import { FINN_IDENTITY } from "./identity";
 
 const read = (p: string) => readFileSync(p, "utf8");
@@ -446,15 +449,17 @@ describe("⑧ التوثيق: الاسم لا ينقض قرار ٢٠٢٦/٠٨/٠
 });
 
 /**
- * المجموعة المغلقة كما أقرّها المالك: **أربعٌ بالاسم** (ثلاثٌ منذ ٢٠٢٦/١٠/٢٤، والرابعة
- * `knowledge_search` ٢٠٢٦/١٠/٣٠). مكتوبةٌ هنا حرفيًّا لا مشتقّةً من `FINN_TOOL_NAMES`: لو اشتُقّت لمرّ
- * تعديلُ القائمة والتسجيل معًا بصمت. تغييرها قرارٌ يُعدَّل هنا عمدًا ومعه الموجِّه (`prompt.ts`).
+ * المجموعة المغلقة كما أقرّها المالك: **خمسٌ بالاسم** (ثلاثٌ منذ ٢٠٢٦/١٠/٢٤، والرابعة
+ * `knowledge_search` والخامسة `web_research` ٢٠٢٦/١٠/٣٠). مكتوبةٌ هنا حرفيًّا لا مشتقّةً من
+ * `FINN_TOOL_NAMES`: لو اشتُقّت لمرّ تعديلُ القائمة والتسجيل معًا بصمت. تغييرها قرارٌ يُعدَّل هنا عمدًا
+ * ومعه الموجِّه (`prompt.ts`).
  */
 const PINNED_TOOLS = [
   "github_activity",
   "knowledge_search",
   "platform_status",
   "vercel_deployments",
+  "web_research",
 ] as const;
 
 /** فروق المجموعة المسجَّلة والقائمة المعلَنة عن المثبَّتة: زائدٌ وناقصٌ وعدد. فارغةٌ = سليمة. */
@@ -589,23 +594,23 @@ function localReplyPlacementProblems(handlePost: string): string[] {
   return out;
 }
 
+/** كل طريقةٍ غير GET، أو مضيفٌ خارج القائمة المغلقة، أو واجهة تنفيذٍ/كتابة. */
+const toolViolations = (code: string): string[] => {
+  const out: string[] = [];
+  for (const m of code.matchAll(/method:\s*["'](POST|PUT|PATCH|DELETE)["']/gi)) out.push(m[0]);
+  for (const m of code.matchAll(/https?:\/\/[A-Za-z0-9.-]+/g)) {
+    if (!["https://api.github.com", "https://api.vercel.com"].includes(m[0])) out.push(m[0]);
+  }
+  for (const m of code.matchAll(
+    /child_process|\bexecSync?\b|\bspawn\b|\beval\(|new Function|writeFile|supabaseAdmin|client\.server|createClient|\.insert\(|\.update\(|\.delete\(|\.rpc\(/g,
+  )) {
+    out.push(m[0]);
+  }
+  return out;
+};
+
 describe("⑨ أدوات فِن: قراءةٌ فقط، مضيفان ثابتان، بلا تنفيذ (٢٠٢٦/١٠/٢٤)", () => {
   const TOOLS = strip(read("src/lib/finn-agent/tools.server.ts"));
-
-  /** كل طريقةٍ غير GET، أو مضيفٌ خارج القائمة المغلقة، أو واجهة تنفيذٍ/كتابة. */
-  const toolViolations = (code: string): string[] => {
-    const out: string[] = [];
-    for (const m of code.matchAll(/method:\s*["'](POST|PUT|PATCH|DELETE)["']/gi)) out.push(m[0]);
-    for (const m of code.matchAll(/https?:\/\/[A-Za-z0-9.-]+/g)) {
-      if (!["https://api.github.com", "https://api.vercel.com"].includes(m[0])) out.push(m[0]);
-    }
-    for (const m of code.matchAll(
-      /child_process|\bexecSync?\b|\bspawn\b|\beval\(|new Function|writeFile|supabaseAdmin|client\.server|createClient|\.insert\(|\.update\(|\.delete\(|\.rpc\(/g,
-    )) {
-      out.push(m[0]);
-    }
-    return out;
-  };
 
   it("وحدات الأداة نظيفة: لا كتابة ولا تنفيذ ولا قاعدة ولا مضيفٌ خارج القائمة (الأداة الرابعة مشمولة)", () => {
     for (const f of TOOL_MODULE_FILES) {
@@ -640,7 +645,7 @@ describe("⑨ أدوات فِن: قراءةٌ فقط، مضيفان ثابتان
     expect(TOOLS).toMatch(/audit:\s*\(entry\)\s*=>\s*console\.info\("\[finn\] tool", entry\)/);
   });
 
-  it("المسجَّل في المجموعة = القائمة المغلقة = المثبَّت حرفيًّا: أربعٌ بالضبط (لا زائدة ولا ناقصة)", async () => {
+  it("المسجَّل في المجموعة = القائمة المغلقة = المثبَّت حرفيًّا: خمسٌ بالضبط (لا زائدة ولا ناقصة)", async () => {
     const { registeredFinnToolNames } = await import("./tools.server");
     const names = registeredFinnToolNames(() => ({
       gpt: false,
@@ -657,21 +662,29 @@ describe("⑨ أدوات فِن: قراءةٌ فقط، مضيفان ثابتان
     const names = [...PINNED_TOOLS];
     expect(toolSetDrift([...names, "run_shell"], FINN_TOOL_NAMES)).toEqual([
       "زائد في التسجيل: run_shell",
-      "عدد المسجَّل 5 ≠ 4",
+      "عدد المسجَّل 6 ≠ 5",
     ]);
     expect(toolSetDrift(names, [...FINN_TOOL_NAMES, "run_shell"])).toEqual([
       "زائد في القائمة المعلَنة: run_shell",
     ]);
   });
 
-  it("مزروع: الرابعة تختفي من التسجيل أو من القائمة المعلَنة ⇒ الحارس يحمرّ", () => {
+  it("مزروع: الرابعة أو الخامسة تختفي من التسجيل أو من القائمة المعلَنة ⇒ الحارس يحمرّ", () => {
     const withoutFourth = PINNED_TOOLS.filter((n) => n !== "knowledge_search");
     expect(toolSetDrift(withoutFourth, FINN_TOOL_NAMES)).toEqual([
       "ناقص من التسجيل: knowledge_search",
-      "عدد المسجَّل 3 ≠ 4",
+      "عدد المسجَّل 4 ≠ 5",
     ]);
     expect(toolSetDrift(PINNED_TOOLS, withoutFourth)).toEqual([
       "ناقص من القائمة المعلَنة: knowledge_search",
+    ]);
+    const withoutFifth = PINNED_TOOLS.filter((n) => n !== "web_research");
+    expect(toolSetDrift(withoutFifth, FINN_TOOL_NAMES)).toEqual([
+      "ناقص من التسجيل: web_research",
+      "عدد المسجَّل 4 ≠ 5",
+    ]);
+    expect(toolSetDrift(PINNED_TOOLS, withoutFifth)).toEqual([
+      "ناقص من القائمة المعلَنة: web_research",
     ]);
     // وبدّلنا اسمًا باسم (العدد سليم والمجموعة غير المقرّة) ⇒ زائدٌ وناقصٌ معًا.
     expect(toolSetDrift([...withoutFourth, "other_tool"], FINN_TOOL_NAMES)).toEqual([
@@ -846,6 +859,279 @@ describe("⑨ أدوات فِن: قراءةٌ فقط، مضيفان ثابتان
     expect(toolViolations('fetch("https://api.github.com/repos/x", { method: "GET" })')).toEqual(
       [],
     );
+  });
+});
+
+/* ── ⑩ أداة web_research: الاستيراد الوحيد لعميل n8n داخل فِن ───────────────────── */
+
+const WEB_RESEARCH_FILE = "src/lib/finn-agent/web-research.server.ts";
+/** استيراد عميل n8n الوحيد المسموح في الوحدة، بأسمائه. */
+const N8N_CLIENT_IMPORT = /import\s*\{([^}]*)\}\s*from\s*"@\/lib\/n8n\/client\.server";?/;
+const N8N_CLIENT_ALLOWED_NAMES = [
+  "n8nStatus",
+  "researchViaN8n",
+  "ResearchInput",
+  "ResearchOutcome",
+];
+
+/** انتهاكات وحدة بحث الويب (على نصّها بلا تعليقات). فارغةٌ = سليمة. */
+function webResearchViolations(source: string): string[] {
+  const code = strip(source);
+  const out: string[] = [];
+  const imp = N8N_CLIENT_IMPORT.exec(code);
+  if (!imp) out.push("لا استيراد لعميل n8n");
+  const names = (imp?.[1] ?? "")
+    .split(",")
+    .map((n) => n.replace(/\btype\b/, "").trim())
+    .filter(Boolean);
+  for (const n of names) {
+    if (!N8N_CLIENT_ALLOWED_NAMES.includes(n)) out.push(`اسمٌ غير مسموح من عميل n8n: ${n}`);
+  }
+  // سائر الفحوص بعد نزع الاستيراد المسموح: أي ذكرٍ آخر لـclient.server (قاعدة) يُدان بكاشف الأدوات نفسه.
+  out.push(...toolViolations(code.replace(N8N_CLIENT_IMPORT, "")));
+  if (/\bfetch\(/.test(code)) out.push("fetch(");
+  if (/\bmethod:/.test(code)) out.push("method:");
+  if (/process\.env/.test(code)) out.push("process.env");
+  if (/\bconsole\./.test(code)) out.push("console.");
+  if (/\brunViaN8n\b|RUNNER_WORKFLOWS|fnn-runner|[Ii]dempotenc/.test(code)) out.push("مشغّل");
+  const surfaces = [...code.matchAll(/\bsurface:\s*"(\w+)"/g)].map((m) => m[1]);
+  if (surfaces.length === 0) out.push("لا سطح");
+  for (const sf of surfaces) if (sf !== "fnn") out.push(`سطح ${sf}`);
+  if (!/z\.strictObject\(/.test(code)) out.push("المدخل ليس strictObject");
+  // مفتاح الإيقاف قبل أول نداء: دلاليًّا (المنفذ) ونصيًّا (حارس القناة).
+  const gate = code.indexOf("ports.killSwitch()");
+  const call = code.indexOf("ports.research(");
+  if (gate < 0 || call < 0 || gate > call) out.push("مفتاح الإيقاف بعد النداء");
+  const textGate = code.search(/\baiKillSwitchOn\(/);
+  const textCall = code.search(/\bresearchViaN8n\(/);
+  if (textGate < 0 || textCall < 0 || textGate > textCall)
+    out.push("مفتاح الإيقاف نصيًّا بعد النداء");
+  return out;
+}
+
+/** الملفات غير الاختبارية في src التي يطابق نصّها (بلا تعليقات) النمط. */
+const sourceFilesMatching = (re: RegExp): string[] =>
+  globSync("src/**/*.{ts,tsx}")
+    .filter((f) => !/\.test\.tsx?$|\.test-support\.ts$/.test(f) && re.test(strip(read(f))))
+    .sort();
+
+/**
+ * هل يستورد `file` (نصّه `src`) الوحدة `target` (مسار من الجذر بلا امتداد)؟ يُحَلّ المحدِّد إلى مسار:
+ * في المستودع وحدتان بالاسم نفسه `web-research.server.ts` (واحدة لسَدِيد في `src/lib/sadeed/` وواحدة لفِن هنا)،
+ * فالمطابقة على اسم الملف وحده تنسب إلى فِن استيرادَ `/api/chat` لوحدة سَدِيد (وُجد عند الدمج ٢٠٢٦/١٠/٣٠).
+ */
+function importsModule(file: string, src: string, target: string): boolean {
+  const code = strip(src);
+  const specs = [
+    ...[...code.matchAll(/\bfrom\s*["']([^"']+)["']/g)].map((m) => m[1]),
+    ...[...code.matchAll(/\bimport\(\s*["']([^"']+)["']\s*\)/g)].map((m) => m[1]),
+  ];
+  return specs.some((spec) => {
+    const resolved = spec.startsWith("@/")
+      ? `src/${spec.slice(2)}`
+      : spec.startsWith(".")
+        ? join(dirname(file), spec).split("\\").join("/")
+        : spec;
+    return resolved.replace(/\.tsx?$/, "") === target;
+  });
+}
+
+/** الملفات غير الاختبارية في src التي تستورد الوحدة `target` فعلًا (بالمسار المحلَّل لا بالاسم). */
+const sourceImportersOf = (target: string): string[] =>
+  globSync("src/**/*.{ts,tsx}")
+    .filter(
+      (f) => !/\.test\.tsx?$|\.test-support\.ts$/.test(f) && importsModule(f, read(f), target),
+    )
+    .sort();
+
+describe("⑩ web_research: عميل n8n يُستورد من وحدةٍ واحدة، للمالك وحده، قراءةٌ فقط (٢٠٢٦/١٠/٣٠)", () => {
+  const SRC = read(WEB_RESEARCH_FILE);
+
+  it("الوحدة نظيفة: استيرادٌ واحد مسمّى، سطح fnn وحده، لا fetch ولا قاعدة ولا مشغّل ولا مضيف", () => {
+    expect(existsSync(WEB_RESEARCH_FILE)).toBe(true);
+    expect(webResearchViolations(SRC)).toEqual([]);
+    // أرضية (المادة ٣٠): الكاشف يرى فعلًا النداء والمنفذ والمخطَّط.
+    const code = strip(SRC);
+    expect(code).toContain("researchViaN8n(");
+    expect(code).toContain("ports.research(");
+    expect(code).toContain("z.strictObject(");
+  });
+
+  it("مزروع: كل انتهاكٍ يُلتقط (fetch · POST · مشغّل · سطح سَدِيد · قاعدة · env · بلا مفتاح إيقاف)", () => {
+    const planted = (from: string, to: string) => SRC.replace(from, to);
+    const cases: ReadonlyArray<readonly [string, string, string]> = [
+      [
+        "fetch(",
+        "research: (input) => researchViaN8n(input),",
+        "research: (input) => fetch(String(input)) as never,",
+      ],
+      ["مشغّل", "import {\n  n8nStatus,", "import {\n  runViaN8n,\n  n8nStatus,"],
+      ["سطح sadeed", 'surface: "fnn",\n      mode:', 'surface: "sadeed",\n      mode:'],
+      [
+        "process.env",
+        "export const WEB_RESEARCH_MAX_RESULTS",
+        "const leak = process.env.X;\nexport const WEB_RESEARCH_MAX_RESULTS",
+      ],
+      [
+        "console.",
+        "export const WEB_RESEARCH_MAX_RESULTS",
+        "console.log(1);\nexport const WEB_RESEARCH_MAX_RESULTS",
+      ],
+      [
+        "method:",
+        "export const WEB_RESEARCH_MAX_RESULTS",
+        'const init = { method: "GET" };\nexport const WEB_RESEARCH_MAX_RESULTS',
+      ],
+      [
+        "supabaseAdmin",
+        "export const WEB_RESEARCH_MAX_RESULTS",
+        'import { supabaseAdmin } from "@/integrations/supabase/client.server";\nexport const WEB_RESEARCH_MAX_RESULTS',
+      ],
+      ["المدخل ليس strictObject", "z.strictObject(", "z.object("],
+      ["مفتاح الإيقاف بعد النداء", 'if (ports.killSwitch()) return fail("disabled");', ""],
+    ];
+    for (const [needle, from, to] of cases) {
+      const hit = webResearchViolations(planted(from, to));
+      expect(hit.join("|"), needle).toContain(needle);
+    }
+    // استيراد اسمٍ غير مسموح من العميل نفسه.
+    expect(
+      webResearchViolations(SRC.replace("  n8nStatus,", "  n8nStatus,\n  researchViaN8nUnsafe,")),
+    ).toEqual(["اسمٌ غير مسموح من عميل n8n: researchViaN8nUnsafe"]);
+    // الذكر في تعليقٍ لا يُدان.
+    expect(webResearchViolations(`/* runViaN8n process.env fetch( */\n${SRC}`)).toEqual([]);
+  });
+
+  it("لا يستوردها غير tools.server.ts، ولا يستورد عميلَ n8n غيرُها داخل فِن", () => {
+    expect(sourceImportersOf("src/lib/finn-agent/web-research.server")).toEqual([
+      "src/lib/finn-agent/tools.server.ts",
+    ]);
+    expect(
+      sourceFilesMatching(/n8n\/client\.server/).filter((f) => f.startsWith("src/lib/finn-agent/")),
+    ).toEqual([WEB_RESEARCH_FILE]);
+  });
+
+  it("مزروع: الاسم المتكرّر لا يخلط وحدتَين (سَدِيد وفِن)، والمحدِّد النسبي والمستعار يُحلّان إلى مسار", () => {
+    const FNN = "src/lib/finn-agent/web-research.server";
+    // استيرادُ وحدة سَدِيد (كما يفعل /api/chat) ليس استيرادًا لوحدة فِن.
+    expect(
+      importsModule(
+        "src/routes/api/chat.ts",
+        'import { startWebArm } from "@/lib/sadeed/web-research.server";',
+        FNN,
+      ),
+    ).toBe(false);
+    // ولا ملفٌّ في مجلد سَدِيد يستورد «./web-research.server» (وحدتَه هو).
+    expect(
+      importsModule(
+        "src/lib/sadeed/other.server.ts",
+        'import { x } from "./web-research.server";',
+        FNN,
+      ),
+    ).toBe(false);
+    // أمّا استيرادُ وحدة فِن بالمستعار أو بالنسبي من مجلدها أو بالديناميكي فيُلتقط.
+    expect(
+      importsModule(
+        "src/lib/finn-agent/tools.server.ts",
+        'import { x } from "./web-research.server";',
+        FNN,
+      ),
+    ).toBe(true);
+    expect(
+      importsModule(
+        "src/routes/api/x.ts",
+        'import { x } from "@/lib/finn-agent/web-research.server";',
+        FNN,
+      ),
+    ).toBe(true);
+    expect(
+      importsModule(
+        "src/routes/api/x.ts",
+        'const m = await import("../../lib/finn-agent/web-research.server");',
+        FNN,
+      ),
+    ).toBe(true);
+    // والتعليق لا يُحسب.
+    expect(
+      importsModule(
+        "src/routes/api/x.ts",
+        '// import { x } from "@/lib/finn-agent/web-research.server";\nconst a = 1;',
+        FNN,
+      ),
+    ).toBe(false);
+  });
+
+  it("لا أداة مشغّل/أتمتة: لا ذكر لـrunViaN8n ولا كتالوج المشغّل في أي ملف من فِن (قرارٌ منفصل للمالك)", () => {
+    const hits = sourceFilesMatching(/\brunViaN8n\b|RUNNER_WORKFLOWS|fnn-runner-v1/).filter((f) =>
+      f.startsWith("src/lib/finn-agent/"),
+    );
+    expect(hits).toEqual([]);
+    // مزروع: ملفٌّ يذكره يُلتقط بالكاشف نفسه.
+    expect(/\brunViaN8n\b|RUNNER_WORKFLOWS|fnn-runner-v1/.test(strip("await runViaN8n(x);"))).toBe(
+      true,
+    );
+  });
+
+  it("المالك وحده: الأدوات تُبنى في المحرّك وحده، والمحرّك لا يُفتح قبل بوّابة المالك", () => {
+    // (١) buildFinnTools( لا يُنادى إلا من المحرّك.
+    expect(
+      sourceFilesMatching(/\bbuildFinnTools\(/).filter(
+        (f) => f !== "src/lib/finn-agent/tools.server.ts",
+      ),
+    ).toEqual(["src/lib/finn-agent/engine.server.ts"]);
+    // (٢) openFinnChatStream( لا يُنادى خارج المحرّك إلا من مسار فِن، وبعد resolveFinnOwner فيه.
+    expect(
+      sourceFilesMatching(/\bopenFinnChatStream\(/).filter(
+        (f) => f !== "src/lib/finn-agent/engine.server.ts",
+      ),
+    ).toEqual(["src/routes/api/finn/chat.ts"]);
+    const route = strip(read("src/routes/api/finn/chat.ts"));
+    const handler = route.slice(route.indexOf("POST: async"));
+    const owner = handler.indexOf("resolveFinnOwner(");
+    expect(owner).toBeGreaterThan(-1);
+    // فتح الدفق والرد المحلّي داخل handlePost وحده (يسبق Route)، ولا يُستدعى إلا بعد بوّابة المالك.
+    const post = route.slice(
+      route.indexOf("async function handlePost"),
+      route.indexOf("export const Route"),
+    );
+    expect(post).toContain("openFinnChatStream(");
+    expect(post).toContain("openFinnLocalReply(");
+    expect(handler).not.toMatch(/openFinnChatStream\(|openFinnLocalReply\(/);
+    expect(route.match(/\bhandlePost\(/g)).toHaveLength(2); // التعريف + نداءٌ واحد
+    expect(owner).toBeLessThan(handler.indexOf("handlePost("));
+    // (٣) الرد المحلّي بلا نموذج لا يشغّل بحث الويب: لا ذكر له في المسار المحلّي.
+    const local = strip(read("src/lib/finn-agent/local-reply.server.ts"));
+    expect(local).not.toMatch(/web_research|web-research|n8n/);
+    // مزروع: مسارٌ يفتح الدفق قبل بوّابة المالك.
+    const planted =
+      "async function h(){ await openFinnChatStream(m); const o = await resolveFinnOwner(r); }";
+    expect(planted.indexOf("resolveFinnOwner(")).toBeGreaterThan(
+      planted.indexOf("openFinnChatStream("),
+    );
+  });
+
+  it("المدخل: استعلامٌ ووضعٌ مغلق فقط، والوضع من أوضاع FNN في العقد حرفيًّا", () => {
+    expect([...RESEARCH_MODES.fnn]).toEqual(["docs", "code", "security", "general"]);
+    expect(
+      webResearchInputSchema.safeParse({ query: "vite build cache", mode: "docs" }).success,
+    ).toBe(true);
+    expect(webResearchInputSchema.safeParse({ query: "x", mode: "regulatory" }).success).toBe(
+      false,
+    );
+  });
+
+  it("سقف الخطوات والمهلة محفوظان: أربع خطوات، وذراع بحث FNN 6 ثوانٍ", () => {
+    expect(FINN_MAX_STEPS).toBe(4);
+    expect(strip(read("src/lib/finn-agent/engine.server.ts"))).toMatch(
+      /stopWhen:\s*stepCountIs\(FINN_MAX_STEPS\)/,
+    );
+    expect(ARM_DEADLINE_MS["fnn-research-v1"]).toBe(6_000);
+  });
+
+  it("حزمة العميل لا تعرف n8n: لا ذكر له في ملفات الواجهة ولا في tool-names", () => {
+    for (const f of CLIENT_FILES) expect(strip(read(f)), f).not.toMatch(/n8n/i);
+    expect(FINN_TOOL_NAMES).toContain("web_research");
+    expect(FINN_TOOL_LABEL_AR.web_research).toBe("بحث الويب");
   });
 });
 

@@ -497,6 +497,7 @@ describe("②-ج أدوات القراءة (٢٠٢٦/١٠/٢٤): تُمرَّر 
         "knowledge_search",
         "platform_status",
         "vercel_deployments",
+        "web_research",
       ]);
       expect(call.extra.stopWhen).toBeDefined();
     }
@@ -513,6 +514,7 @@ describe("②-ج أدوات القراءة (٢٠٢٦/١٠/٢٤): تُمرَّر 
       "knowledge_search",
       "platform_status",
       "vercel_deployments",
+      "web_research",
     ]);
   });
 
@@ -594,6 +596,34 @@ describe("②-ج أدوات القراءة (٢٠٢٦/١٠/٢٤): تُمرَّر 
     expect(toolEvents).toHaveLength(2);
     for (const e of toolEvents) expect(Object.keys(e).sort()).toEqual(["name", "phase", "type"]);
     expect(JSON.stringify(events)).not.toMatch(/PRIVATE|toolCallId|c1/);
+  });
+
+  it("web_research على السلك: اسمٌ ومرحلةٌ فقط، لا الاستعلام ولا النتائج ولا الروابط، وفشلها error", async () => {
+    sim.script.openai = () =>
+      stream([
+        toolCall("web_research", { query: "PRIVATE-QUERY vite cache", mode: "docs" }),
+        toolResult("web_research", {
+          ok: true,
+          untrusted: true,
+          items: [{ title: "PRIVATE-TITLE", url: "https://private.example/PRIVATE-PATH" }],
+        }),
+        toolCall("web_research", { query: "PRIVATE-QUERY-2 zod strict" }),
+        toolResult("web_research", { ok: false, reason: "unavailable" }),
+        textPart("x"),
+        finishPart(),
+      ]);
+    const r = await open();
+    if (!r.ok) throw new Error("expected ok");
+    const events = await all(r.events as AsyncGenerator<Record<string, unknown>>);
+    const toolEvents = events.filter((e) => e.type === "tool");
+    expect(toolEvents.map((e) => `${e.name}:${e.phase}`)).toEqual([
+      "web_research:start",
+      "web_research:done",
+      "web_research:start",
+      "web_research:error",
+    ]);
+    for (const e of toolEvents) expect(Object.keys(e).sort()).toEqual(["name", "phase", "type"]);
+    expect(JSON.stringify(events)).not.toMatch(/PRIVATE|private\.example|unavailable|untrusted/);
   });
 
   it("أداةٌ ثم صمتٌ بلا نصّ ⇒ تسقط عند مهلة أول نصّ (الأداة لا تُطيل المهلة)", async () => {

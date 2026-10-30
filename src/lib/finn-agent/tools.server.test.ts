@@ -59,12 +59,13 @@ const schemaOf = (tools: ToolSet, name: string) =>
     .inputSchema;
 
 describe("المجموعة مغلقة ومسمّاة", () => {
-  it("أربع أدواتٍ بالضبط، بأسمائها", () => {
+  it("خمس أدواتٍ بالضبط، بأسمائها", () => {
     expect(registeredFinnToolNames(() => ENGINE)).toEqual([
       "github_activity",
       "knowledge_search",
       "platform_status",
       "vercel_deployments",
+      "web_research",
     ]);
   });
 });

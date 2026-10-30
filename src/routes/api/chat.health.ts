@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { enforceRateLimit, gateDegradedMode } from "@/lib/governance/rate-limit.server";
+import type { ChatWebResearchHealth } from "@/lib/n8n/health.server";
 import { GEMINI_EMBEDDING_MODEL } from "@/lib/sadeed/gemini-embeddings.server";
 import { describeProviderPlan } from "@/lib/sadeed/llm/provider-plan.server";
 import { isGeminiRagReady } from "@/lib/sadeed/rag.server";
@@ -41,6 +42,16 @@ export const Route = createFileRoute("/api/chat/health")({
           : gateDegradedMode() === "closed"
             ? "closed"
             : "degraded";
+        // ذراع بحث الويب عبر n8n (أمر المالك ٢٠٢٦/١٠/٣٠): قراءةٌ محلية متزامنة بلا شبكة. أسماء
+        // وحالات فقط (لا سرّ ولا عنوان). `null` = غير مقروء. الاستيراد ديناميكي داخل try كي لا تُسقط
+        // قناةٌ اختيارية فحص الجاهزية الذي تقرؤه الشارة والمراقب.
+        let webResearch: ChatWebResearchHealth | null = null;
+        try {
+          const { readChatWebResearchHealth } = await import("@/lib/n8n/health.server");
+          webResearch = readChatWebResearchHealth();
+        } catch {
+          webResearch = null;
+        }
         return Response.json(
           {
             ok: true,
@@ -60,6 +71,7 @@ export const Route = createFileRoute("/api/chat/health")({
             retrieval: describeRetrievalReadiness(),
             voice_configured: elevenLabsPresent,
             transcription_configured: geminiPresent,
+            web_research: webResearch,
           },
           {
             headers: {

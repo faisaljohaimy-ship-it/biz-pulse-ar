@@ -1,0 +1,2187 @@
+{
+  "default-env/guest-regulatory-recency": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "anonymous"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-sadeed-retrieval", "lexical"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 3046,
+    "bodySha256": "4e3320d04a21f57957eee246011bcf208fbecc5c6c54908982d97f23a55909a0",
+    "modelCalls": 1,
+    "retrievalCalls": 1,
+    "networkCalls": 0,
+    "tablesRead": ["hcis_directives", "hcis_approval_stages", "hcis_sectors"],
+    "systemChars": 48779,
+    "systemSha256": "c8a8f18d9fc1d1ff3280ea1771676cf96ce025ae265ccf6c9eee3ab16d2ccde3",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "log:[api/chat] provider",
+      "info:[sadeed/rag] outcome",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "default-env/member-standard-requirements": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "verified"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-sadeed-retrieval", "lexical"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 1181,
+    "bodySha256": "181d5314369a5b6eb06a43663f2c9c05cb630f01d2982bf209cea44d1413f50c",
+    "modelCalls": 1,
+    "retrievalCalls": 1,
+    "networkCalls": 0,
+    "tablesRead": [
+      "org_members",
+      "hcis_directives",
+      "hcis_approval_stages",
+      "hcis_sectors",
+      "finn_knowledge",
+      "sec_knowledge_articles",
+      "finn_document_chunks",
+      "finn_adaptive_preferences",
+      "finn_interactions",
+      "threads",
+      "messages",
+      "threads",
+      "threads"
+    ],
+    "systemChars": 47851,
+    "systemSha256": "773bdb9bdaf4ae7aa50587e4a7e55a102f52140b47badd94f7c2793e9297a6db",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "log:[api/chat] provider",
+      "info:[sadeed/rag] arm skipped",
+      "info:[sadeed/rag] outcome",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "default-env/member-news-fire": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "verified"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-sadeed-retrieval", "lexical"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 2396,
+    "bodySha256": "25152da203e1eb04e538371a7f12b7fcc01484b8095ddaf671157054a5d4b3b7",
+    "modelCalls": 1,
+    "retrievalCalls": 1,
+    "networkCalls": 0,
+    "tablesRead": [
+      "org_members",
+      "hcis_directives",
+      "hcis_approval_stages",
+      "hcis_sectors",
+      "finn_knowledge",
+      "sec_knowledge_articles",
+      "finn_document_chunks",
+      "finn_adaptive_preferences",
+      "finn_interactions",
+      "threads",
+      "messages",
+      "threads",
+      "threads"
+    ],
+    "systemChars": 48556,
+    "systemSha256": "b26d3cf0869194fa2ff7f6cbc4dd083e84d67c2a92bf5282ef3c0ef4f8be2cf9",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "log:[api/chat] provider",
+      "info:[sadeed/rag] arm skipped",
+      "info:[sadeed/rag] outcome",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "default-env/guest-plain-ops": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "anonymous"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-sadeed-retrieval", "lexical"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 2165,
+    "bodySha256": "0ec17c4f953634494999685406f957f1f402774a89940e95bc9029611026d320",
+    "modelCalls": 1,
+    "retrievalCalls": 1,
+    "networkCalls": 0,
+    "tablesRead": ["hcis_directives", "hcis_approval_stages", "hcis_sectors"],
+    "systemChars": 48140,
+    "systemSha256": "0b35849dfddcdf9c92de4fa77d41176909082c5978b115ec91362a047fd2f08d",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "log:[api/chat] provider",
+      "info:[sadeed/rag] outcome",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "default-env/unverified-regulatory": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "unverified"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-sadeed-retrieval", "lexical"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 3046,
+    "bodySha256": "4e3320d04a21f57957eee246011bcf208fbecc5c6c54908982d97f23a55909a0",
+    "modelCalls": 1,
+    "retrievalCalls": 1,
+    "networkCalls": 0,
+    "tablesRead": ["hcis_directives", "hcis_approval_stages", "hcis_sectors"],
+    "systemChars": 48779,
+    "systemSha256": "c8a8f18d9fc1d1ff3280ea1771676cf96ce025ae265ccf6c9eee3ab16d2ccde3",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "warn:[api/chat] session verification timed out — serving as guest",
+      "log:[api/chat] provider",
+      "info:[sadeed/rag] outcome",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "default-env/member-hcis-amendment": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "verified"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-sadeed-retrieval", "lexical"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 2237,
+    "bodySha256": "a9862fd2bf9bc33c4667f9c88ef2f6c1b4a984252fa6906b024777302c701d1b",
+    "modelCalls": 1,
+    "retrievalCalls": 1,
+    "networkCalls": 0,
+    "tablesRead": [
+      "org_members",
+      "hcis_directives",
+      "hcis_approval_stages",
+      "hcis_sectors",
+      "finn_knowledge",
+      "finn_knowledge",
+      "sec_knowledge_articles",
+      "finn_document_chunks",
+      "finn_adaptive_preferences",
+      "finn_interactions",
+      "threads",
+      "messages",
+      "threads",
+      "threads"
+    ],
+    "systemChars": 48117,
+    "systemSha256": "6ad09b7c2c93c09d4424a541d2d25078f0b88487f7d264a34c06af1676c5276e",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "log:[api/chat] provider",
+      "info:[sadeed/rag] arm skipped",
+      "info:[sadeed/rag] outcome",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "default-env/guest-english-framework": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "anonymous"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-sadeed-retrieval", "lexical"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 1477,
+    "bodySha256": "ce5828e715c1d692d3ac4248293d5984ed5a98a205e9d542b02ec1176b160024",
+    "modelCalls": 1,
+    "retrievalCalls": 1,
+    "networkCalls": 0,
+    "tablesRead": ["hcis_directives", "hcis_approval_stages", "hcis_sectors"],
+    "systemChars": 48091,
+    "systemSha256": "0298af9df712d5ffef21339b03d61fb48c1332d65988014b0240f2c846fca037",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "log:[api/chat] provider",
+      "info:[sadeed/rag] outcome",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "default-env/out-of-scope": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "anonymous"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "scope-guard"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 287,
+    "bodySha256": "518bbca35b1dbdbf05b27642ab01cb99636fa29d5790cc1c85ce290a876552ba",
+    "modelCalls": 0,
+    "retrievalCalls": 0,
+    "networkCalls": 0,
+    "tablesRead": [],
+    "systemChars": null,
+    "systemSha256": null,
+    "generate": [],
+    "logLines": []
+  },
+  "default-env/fast-recall": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "anonymous"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "fast-recall"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 284,
+    "bodySha256": "56a1a53297e26b9b1554dedc9f0a0cad4aae150e08692ce0a8d0f74f66801445",
+    "modelCalls": 0,
+    "retrievalCalls": 0,
+    "networkCalls": 0,
+    "tablesRead": [],
+    "systemChars": null,
+    "systemSha256": null,
+    "generate": [],
+    "logLines": []
+  },
+  "default-env/ungrounded": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "anonymous"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 856,
+    "bodySha256": "db14f7dee51b66ff0fe0b8eb4ca30a948642a3fcbdc8ec14cbcdabe567b781fa",
+    "modelCalls": 1,
+    "retrievalCalls": 0,
+    "networkCalls": 0,
+    "tablesRead": [],
+    "systemChars": 46364,
+    "systemSha256": "a25218806b9eb32158ffcccdaf3366c6ea0785d23b2276ef3907456d83eca023",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "log:[api/chat] provider",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "configured-switch-unset/guest-regulatory-recency": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "anonymous"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-sadeed-retrieval", "lexical"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 3046,
+    "bodySha256": "4e3320d04a21f57957eee246011bcf208fbecc5c6c54908982d97f23a55909a0",
+    "modelCalls": 1,
+    "retrievalCalls": 1,
+    "networkCalls": 0,
+    "tablesRead": ["hcis_directives", "hcis_approval_stages", "hcis_sectors"],
+    "systemChars": 48779,
+    "systemSha256": "c8a8f18d9fc1d1ff3280ea1771676cf96ce025ae265ccf6c9eee3ab16d2ccde3",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "log:[api/chat] provider",
+      "info:[sadeed/rag] outcome",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "configured-switch-unset/member-standard-requirements": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "verified"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-sadeed-retrieval", "lexical"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 1181,
+    "bodySha256": "181d5314369a5b6eb06a43663f2c9c05cb630f01d2982bf209cea44d1413f50c",
+    "modelCalls": 1,
+    "retrievalCalls": 1,
+    "networkCalls": 0,
+    "tablesRead": [
+      "org_members",
+      "hcis_directives",
+      "hcis_approval_stages",
+      "hcis_sectors",
+      "finn_knowledge",
+      "sec_knowledge_articles",
+      "finn_document_chunks",
+      "finn_adaptive_preferences",
+      "finn_interactions",
+      "threads",
+      "messages",
+      "threads",
+      "threads"
+    ],
+    "systemChars": 47851,
+    "systemSha256": "773bdb9bdaf4ae7aa50587e4a7e55a102f52140b47badd94f7c2793e9297a6db",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "log:[api/chat] provider",
+      "info:[sadeed/rag] arm skipped",
+      "info:[sadeed/rag] outcome",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "configured-switch-unset/member-news-fire": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "verified"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-sadeed-retrieval", "lexical"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 2396,
+    "bodySha256": "25152da203e1eb04e538371a7f12b7fcc01484b8095ddaf671157054a5d4b3b7",
+    "modelCalls": 1,
+    "retrievalCalls": 1,
+    "networkCalls": 0,
+    "tablesRead": [
+      "org_members",
+      "hcis_directives",
+      "hcis_approval_stages",
+      "hcis_sectors",
+      "finn_knowledge",
+      "sec_knowledge_articles",
+      "finn_document_chunks",
+      "finn_adaptive_preferences",
+      "finn_interactions",
+      "threads",
+      "messages",
+      "threads",
+      "threads"
+    ],
+    "systemChars": 48556,
+    "systemSha256": "b26d3cf0869194fa2ff7f6cbc4dd083e84d67c2a92bf5282ef3c0ef4f8be2cf9",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "log:[api/chat] provider",
+      "info:[sadeed/rag] arm skipped",
+      "info:[sadeed/rag] outcome",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "configured-switch-unset/guest-plain-ops": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "anonymous"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-sadeed-retrieval", "lexical"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 2165,
+    "bodySha256": "0ec17c4f953634494999685406f957f1f402774a89940e95bc9029611026d320",
+    "modelCalls": 1,
+    "retrievalCalls": 1,
+    "networkCalls": 0,
+    "tablesRead": ["hcis_directives", "hcis_approval_stages", "hcis_sectors"],
+    "systemChars": 48140,
+    "systemSha256": "0b35849dfddcdf9c92de4fa77d41176909082c5978b115ec91362a047fd2f08d",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "log:[api/chat] provider",
+      "info:[sadeed/rag] outcome",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "configured-switch-unset/unverified-regulatory": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "unverified"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-sadeed-retrieval", "lexical"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 3046,
+    "bodySha256": "4e3320d04a21f57957eee246011bcf208fbecc5c6c54908982d97f23a55909a0",
+    "modelCalls": 1,
+    "retrievalCalls": 1,
+    "networkCalls": 0,
+    "tablesRead": ["hcis_directives", "hcis_approval_stages", "hcis_sectors"],
+    "systemChars": 48779,
+    "systemSha256": "c8a8f18d9fc1d1ff3280ea1771676cf96ce025ae265ccf6c9eee3ab16d2ccde3",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "warn:[api/chat] session verification timed out — serving as guest",
+      "log:[api/chat] provider",
+      "info:[sadeed/rag] outcome",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "configured-switch-unset/member-hcis-amendment": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "verified"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-sadeed-retrieval", "lexical"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 2237,
+    "bodySha256": "a9862fd2bf9bc33c4667f9c88ef2f6c1b4a984252fa6906b024777302c701d1b",
+    "modelCalls": 1,
+    "retrievalCalls": 1,
+    "networkCalls": 0,
+    "tablesRead": [
+      "org_members",
+      "hcis_directives",
+      "hcis_approval_stages",
+      "hcis_sectors",
+      "finn_knowledge",
+      "finn_knowledge",
+      "sec_knowledge_articles",
+      "finn_document_chunks",
+      "finn_adaptive_preferences",
+      "finn_interactions",
+      "threads",
+      "messages",
+      "threads",
+      "threads"
+    ],
+    "systemChars": 48117,
+    "systemSha256": "6ad09b7c2c93c09d4424a541d2d25078f0b88487f7d264a34c06af1676c5276e",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "log:[api/chat] provider",
+      "info:[sadeed/rag] arm skipped",
+      "info:[sadeed/rag] outcome",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "configured-switch-unset/guest-english-framework": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "anonymous"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-sadeed-retrieval", "lexical"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 1477,
+    "bodySha256": "ce5828e715c1d692d3ac4248293d5984ed5a98a205e9d542b02ec1176b160024",
+    "modelCalls": 1,
+    "retrievalCalls": 1,
+    "networkCalls": 0,
+    "tablesRead": ["hcis_directives", "hcis_approval_stages", "hcis_sectors"],
+    "systemChars": 48091,
+    "systemSha256": "0298af9df712d5ffef21339b03d61fb48c1332d65988014b0240f2c846fca037",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "log:[api/chat] provider",
+      "info:[sadeed/rag] outcome",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "configured-switch-unset/out-of-scope": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "anonymous"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "scope-guard"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 287,
+    "bodySha256": "518bbca35b1dbdbf05b27642ab01cb99636fa29d5790cc1c85ce290a876552ba",
+    "modelCalls": 0,
+    "retrievalCalls": 0,
+    "networkCalls": 0,
+    "tablesRead": [],
+    "systemChars": null,
+    "systemSha256": null,
+    "generate": [],
+    "logLines": []
+  },
+  "configured-switch-unset/fast-recall": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "anonymous"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "fast-recall"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 284,
+    "bodySha256": "56a1a53297e26b9b1554dedc9f0a0cad4aae150e08692ce0a8d0f74f66801445",
+    "modelCalls": 0,
+    "retrievalCalls": 0,
+    "networkCalls": 0,
+    "tablesRead": [],
+    "systemChars": null,
+    "systemSha256": null,
+    "generate": [],
+    "logLines": []
+  },
+  "configured-switch-unset/ungrounded": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "anonymous"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 856,
+    "bodySha256": "db14f7dee51b66ff0fe0b8eb4ca30a948642a3fcbdc8ec14cbcdabe567b781fa",
+    "modelCalls": 1,
+    "retrievalCalls": 0,
+    "networkCalls": 0,
+    "tablesRead": [],
+    "systemChars": 46364,
+    "systemSha256": "a25218806b9eb32158ffcccdaf3366c6ea0785d23b2276ef3907456d83eca023",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "log:[api/chat] provider",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "configured-mode-off/guest-regulatory-recency": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "anonymous"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-sadeed-retrieval", "lexical"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 3046,
+    "bodySha256": "4e3320d04a21f57957eee246011bcf208fbecc5c6c54908982d97f23a55909a0",
+    "modelCalls": 1,
+    "retrievalCalls": 1,
+    "networkCalls": 0,
+    "tablesRead": ["hcis_directives", "hcis_approval_stages", "hcis_sectors"],
+    "systemChars": 48779,
+    "systemSha256": "c8a8f18d9fc1d1ff3280ea1771676cf96ce025ae265ccf6c9eee3ab16d2ccde3",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "log:[api/chat] provider",
+      "info:[sadeed/rag] outcome",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "configured-mode-off/member-standard-requirements": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "verified"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-sadeed-retrieval", "lexical"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 1181,
+    "bodySha256": "181d5314369a5b6eb06a43663f2c9c05cb630f01d2982bf209cea44d1413f50c",
+    "modelCalls": 1,
+    "retrievalCalls": 1,
+    "networkCalls": 0,
+    "tablesRead": [
+      "org_members",
+      "hcis_directives",
+      "hcis_approval_stages",
+      "hcis_sectors",
+      "finn_knowledge",
+      "sec_knowledge_articles",
+      "finn_document_chunks",
+      "finn_adaptive_preferences",
+      "finn_interactions",
+      "threads",
+      "messages",
+      "threads",
+      "threads"
+    ],
+    "systemChars": 47851,
+    "systemSha256": "773bdb9bdaf4ae7aa50587e4a7e55a102f52140b47badd94f7c2793e9297a6db",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "log:[api/chat] provider",
+      "info:[sadeed/rag] arm skipped",
+      "info:[sadeed/rag] outcome",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "configured-mode-off/member-news-fire": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "verified"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-sadeed-retrieval", "lexical"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 2396,
+    "bodySha256": "25152da203e1eb04e538371a7f12b7fcc01484b8095ddaf671157054a5d4b3b7",
+    "modelCalls": 1,
+    "retrievalCalls": 1,
+    "networkCalls": 0,
+    "tablesRead": [
+      "org_members",
+      "hcis_directives",
+      "hcis_approval_stages",
+      "hcis_sectors",
+      "finn_knowledge",
+      "sec_knowledge_articles",
+      "finn_document_chunks",
+      "finn_adaptive_preferences",
+      "finn_interactions",
+      "threads",
+      "messages",
+      "threads",
+      "threads"
+    ],
+    "systemChars": 48556,
+    "systemSha256": "b26d3cf0869194fa2ff7f6cbc4dd083e84d67c2a92bf5282ef3c0ef4f8be2cf9",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "log:[api/chat] provider",
+      "info:[sadeed/rag] arm skipped",
+      "info:[sadeed/rag] outcome",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "configured-mode-off/guest-plain-ops": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "anonymous"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-sadeed-retrieval", "lexical"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 2165,
+    "bodySha256": "0ec17c4f953634494999685406f957f1f402774a89940e95bc9029611026d320",
+    "modelCalls": 1,
+    "retrievalCalls": 1,
+    "networkCalls": 0,
+    "tablesRead": ["hcis_directives", "hcis_approval_stages", "hcis_sectors"],
+    "systemChars": 48140,
+    "systemSha256": "0b35849dfddcdf9c92de4fa77d41176909082c5978b115ec91362a047fd2f08d",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "log:[api/chat] provider",
+      "info:[sadeed/rag] outcome",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "configured-mode-off/unverified-regulatory": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "unverified"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-sadeed-retrieval", "lexical"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 3046,
+    "bodySha256": "4e3320d04a21f57957eee246011bcf208fbecc5c6c54908982d97f23a55909a0",
+    "modelCalls": 1,
+    "retrievalCalls": 1,
+    "networkCalls": 0,
+    "tablesRead": ["hcis_directives", "hcis_approval_stages", "hcis_sectors"],
+    "systemChars": 48779,
+    "systemSha256": "c8a8f18d9fc1d1ff3280ea1771676cf96ce025ae265ccf6c9eee3ab16d2ccde3",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "warn:[api/chat] session verification timed out — serving as guest",
+      "log:[api/chat] provider",
+      "info:[sadeed/rag] outcome",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "configured-mode-off/member-hcis-amendment": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "verified"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-sadeed-retrieval", "lexical"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 2237,
+    "bodySha256": "a9862fd2bf9bc33c4667f9c88ef2f6c1b4a984252fa6906b024777302c701d1b",
+    "modelCalls": 1,
+    "retrievalCalls": 1,
+    "networkCalls": 0,
+    "tablesRead": [
+      "org_members",
+      "hcis_directives",
+      "hcis_approval_stages",
+      "hcis_sectors",
+      "finn_knowledge",
+      "finn_knowledge",
+      "sec_knowledge_articles",
+      "finn_document_chunks",
+      "finn_adaptive_preferences",
+      "finn_interactions",
+      "threads",
+      "messages",
+      "threads",
+      "threads"
+    ],
+    "systemChars": 48117,
+    "systemSha256": "6ad09b7c2c93c09d4424a541d2d25078f0b88487f7d264a34c06af1676c5276e",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "log:[api/chat] provider",
+      "info:[sadeed/rag] arm skipped",
+      "info:[sadeed/rag] outcome",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "configured-mode-off/guest-english-framework": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "anonymous"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-sadeed-retrieval", "lexical"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 1477,
+    "bodySha256": "ce5828e715c1d692d3ac4248293d5984ed5a98a205e9d542b02ec1176b160024",
+    "modelCalls": 1,
+    "retrievalCalls": 1,
+    "networkCalls": 0,
+    "tablesRead": ["hcis_directives", "hcis_approval_stages", "hcis_sectors"],
+    "systemChars": 48091,
+    "systemSha256": "0298af9df712d5ffef21339b03d61fb48c1332d65988014b0240f2c846fca037",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "log:[api/chat] provider",
+      "info:[sadeed/rag] outcome",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "configured-mode-off/out-of-scope": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "anonymous"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "scope-guard"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 287,
+    "bodySha256": "518bbca35b1dbdbf05b27642ab01cb99636fa29d5790cc1c85ce290a876552ba",
+    "modelCalls": 0,
+    "retrievalCalls": 0,
+    "networkCalls": 0,
+    "tablesRead": [],
+    "systemChars": null,
+    "systemSha256": null,
+    "generate": [],
+    "logLines": []
+  },
+  "configured-mode-off/fast-recall": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "anonymous"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "fast-recall"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 284,
+    "bodySha256": "56a1a53297e26b9b1554dedc9f0a0cad4aae150e08692ce0a8d0f74f66801445",
+    "modelCalls": 0,
+    "retrievalCalls": 0,
+    "networkCalls": 0,
+    "tablesRead": [],
+    "systemChars": null,
+    "systemSha256": null,
+    "generate": [],
+    "logLines": []
+  },
+  "configured-mode-off/ungrounded": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "anonymous"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 856,
+    "bodySha256": "db14f7dee51b66ff0fe0b8eb4ca30a948642a3fcbdc8ec14cbcdabe567b781fa",
+    "modelCalls": 1,
+    "retrievalCalls": 0,
+    "networkCalls": 0,
+    "tablesRead": [],
+    "systemChars": 46364,
+    "systemSha256": "a25218806b9eb32158ffcccdaf3366c6ea0785d23b2276ef3907456d83eca023",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "log:[api/chat] provider",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "configured-mode-garbage/guest-regulatory-recency": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "anonymous"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-sadeed-retrieval", "lexical"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 3046,
+    "bodySha256": "4e3320d04a21f57957eee246011bcf208fbecc5c6c54908982d97f23a55909a0",
+    "modelCalls": 1,
+    "retrievalCalls": 1,
+    "networkCalls": 0,
+    "tablesRead": ["hcis_directives", "hcis_approval_stages", "hcis_sectors"],
+    "systemChars": 48779,
+    "systemSha256": "c8a8f18d9fc1d1ff3280ea1771676cf96ce025ae265ccf6c9eee3ab16d2ccde3",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "log:[api/chat] provider",
+      "info:[sadeed/rag] outcome",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "configured-mode-garbage/member-standard-requirements": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "verified"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-sadeed-retrieval", "lexical"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 1181,
+    "bodySha256": "181d5314369a5b6eb06a43663f2c9c05cb630f01d2982bf209cea44d1413f50c",
+    "modelCalls": 1,
+    "retrievalCalls": 1,
+    "networkCalls": 0,
+    "tablesRead": [
+      "org_members",
+      "hcis_directives",
+      "hcis_approval_stages",
+      "hcis_sectors",
+      "finn_knowledge",
+      "sec_knowledge_articles",
+      "finn_document_chunks",
+      "finn_adaptive_preferences",
+      "finn_interactions",
+      "threads",
+      "messages",
+      "threads",
+      "threads"
+    ],
+    "systemChars": 47851,
+    "systemSha256": "773bdb9bdaf4ae7aa50587e4a7e55a102f52140b47badd94f7c2793e9297a6db",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "log:[api/chat] provider",
+      "info:[sadeed/rag] arm skipped",
+      "info:[sadeed/rag] outcome",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "configured-mode-garbage/member-news-fire": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "verified"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-sadeed-retrieval", "lexical"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 2396,
+    "bodySha256": "25152da203e1eb04e538371a7f12b7fcc01484b8095ddaf671157054a5d4b3b7",
+    "modelCalls": 1,
+    "retrievalCalls": 1,
+    "networkCalls": 0,
+    "tablesRead": [
+      "org_members",
+      "hcis_directives",
+      "hcis_approval_stages",
+      "hcis_sectors",
+      "finn_knowledge",
+      "sec_knowledge_articles",
+      "finn_document_chunks",
+      "finn_adaptive_preferences",
+      "finn_interactions",
+      "threads",
+      "messages",
+      "threads",
+      "threads"
+    ],
+    "systemChars": 48556,
+    "systemSha256": "b26d3cf0869194fa2ff7f6cbc4dd083e84d67c2a92bf5282ef3c0ef4f8be2cf9",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "log:[api/chat] provider",
+      "info:[sadeed/rag] arm skipped",
+      "info:[sadeed/rag] outcome",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "configured-mode-garbage/guest-plain-ops": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "anonymous"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-sadeed-retrieval", "lexical"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 2165,
+    "bodySha256": "0ec17c4f953634494999685406f957f1f402774a89940e95bc9029611026d320",
+    "modelCalls": 1,
+    "retrievalCalls": 1,
+    "networkCalls": 0,
+    "tablesRead": ["hcis_directives", "hcis_approval_stages", "hcis_sectors"],
+    "systemChars": 48140,
+    "systemSha256": "0b35849dfddcdf9c92de4fa77d41176909082c5978b115ec91362a047fd2f08d",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "log:[api/chat] provider",
+      "info:[sadeed/rag] outcome",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "configured-mode-garbage/unverified-regulatory": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "unverified"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-sadeed-retrieval", "lexical"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 3046,
+    "bodySha256": "4e3320d04a21f57957eee246011bcf208fbecc5c6c54908982d97f23a55909a0",
+    "modelCalls": 1,
+    "retrievalCalls": 1,
+    "networkCalls": 0,
+    "tablesRead": ["hcis_directives", "hcis_approval_stages", "hcis_sectors"],
+    "systemChars": 48779,
+    "systemSha256": "c8a8f18d9fc1d1ff3280ea1771676cf96ce025ae265ccf6c9eee3ab16d2ccde3",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "warn:[api/chat] session verification timed out — serving as guest",
+      "log:[api/chat] provider",
+      "info:[sadeed/rag] outcome",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "configured-mode-garbage/member-hcis-amendment": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "verified"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-sadeed-retrieval", "lexical"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 2237,
+    "bodySha256": "a9862fd2bf9bc33c4667f9c88ef2f6c1b4a984252fa6906b024777302c701d1b",
+    "modelCalls": 1,
+    "retrievalCalls": 1,
+    "networkCalls": 0,
+    "tablesRead": [
+      "org_members",
+      "hcis_directives",
+      "hcis_approval_stages",
+      "hcis_sectors",
+      "finn_knowledge",
+      "finn_knowledge",
+      "sec_knowledge_articles",
+      "finn_document_chunks",
+      "finn_adaptive_preferences",
+      "finn_interactions",
+      "threads",
+      "messages",
+      "threads",
+      "threads"
+    ],
+    "systemChars": 48117,
+    "systemSha256": "6ad09b7c2c93c09d4424a541d2d25078f0b88487f7d264a34c06af1676c5276e",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "log:[api/chat] provider",
+      "info:[sadeed/rag] arm skipped",
+      "info:[sadeed/rag] outcome",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "configured-mode-garbage/guest-english-framework": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "anonymous"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-sadeed-retrieval", "lexical"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 1477,
+    "bodySha256": "ce5828e715c1d692d3ac4248293d5984ed5a98a205e9d542b02ec1176b160024",
+    "modelCalls": 1,
+    "retrievalCalls": 1,
+    "networkCalls": 0,
+    "tablesRead": ["hcis_directives", "hcis_approval_stages", "hcis_sectors"],
+    "systemChars": 48091,
+    "systemSha256": "0298af9df712d5ffef21339b03d61fb48c1332d65988014b0240f2c846fca037",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "log:[api/chat] provider",
+      "info:[sadeed/rag] outcome",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "configured-mode-garbage/out-of-scope": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "anonymous"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "scope-guard"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 287,
+    "bodySha256": "518bbca35b1dbdbf05b27642ab01cb99636fa29d5790cc1c85ce290a876552ba",
+    "modelCalls": 0,
+    "retrievalCalls": 0,
+    "networkCalls": 0,
+    "tablesRead": [],
+    "systemChars": null,
+    "systemSha256": null,
+    "generate": [],
+    "logLines": []
+  },
+  "configured-mode-garbage/fast-recall": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "anonymous"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "fast-recall"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 284,
+    "bodySha256": "56a1a53297e26b9b1554dedc9f0a0cad4aae150e08692ce0a8d0f74f66801445",
+    "modelCalls": 0,
+    "retrievalCalls": 0,
+    "networkCalls": 0,
+    "tablesRead": [],
+    "systemChars": null,
+    "systemSha256": null,
+    "generate": [],
+    "logLines": []
+  },
+  "configured-mode-garbage/ungrounded": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "anonymous"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 856,
+    "bodySha256": "db14f7dee51b66ff0fe0b8eb4ca30a948642a3fcbdc8ec14cbcdabe567b781fa",
+    "modelCalls": 1,
+    "retrievalCalls": 0,
+    "networkCalls": 0,
+    "tablesRead": [],
+    "systemChars": 46364,
+    "systemSha256": "a25218806b9eb32158ffcccdaf3366c6ea0785d23b2276ef3907456d83eca023",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "log:[api/chat] provider",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "configured-all-but-web-disabled/guest-regulatory-recency": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "anonymous"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-sadeed-retrieval", "lexical"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 3046,
+    "bodySha256": "4e3320d04a21f57957eee246011bcf208fbecc5c6c54908982d97f23a55909a0",
+    "modelCalls": 1,
+    "retrievalCalls": 1,
+    "networkCalls": 0,
+    "tablesRead": ["hcis_directives", "hcis_approval_stages", "hcis_sectors"],
+    "systemChars": 48779,
+    "systemSha256": "c8a8f18d9fc1d1ff3280ea1771676cf96ce025ae265ccf6c9eee3ab16d2ccde3",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "log:[api/chat] provider",
+      "info:[sadeed/rag] outcome",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "configured-all-but-web-disabled/member-standard-requirements": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "verified"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-sadeed-retrieval", "lexical"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 1181,
+    "bodySha256": "181d5314369a5b6eb06a43663f2c9c05cb630f01d2982bf209cea44d1413f50c",
+    "modelCalls": 1,
+    "retrievalCalls": 1,
+    "networkCalls": 0,
+    "tablesRead": [
+      "org_members",
+      "hcis_directives",
+      "hcis_approval_stages",
+      "hcis_sectors",
+      "finn_knowledge",
+      "sec_knowledge_articles",
+      "finn_document_chunks",
+      "finn_adaptive_preferences",
+      "finn_interactions",
+      "threads",
+      "messages",
+      "threads",
+      "threads"
+    ],
+    "systemChars": 47851,
+    "systemSha256": "773bdb9bdaf4ae7aa50587e4a7e55a102f52140b47badd94f7c2793e9297a6db",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "log:[api/chat] provider",
+      "info:[sadeed/rag] arm skipped",
+      "info:[sadeed/rag] outcome",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "configured-all-but-web-disabled/member-news-fire": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "verified"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-sadeed-retrieval", "lexical"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 2396,
+    "bodySha256": "25152da203e1eb04e538371a7f12b7fcc01484b8095ddaf671157054a5d4b3b7",
+    "modelCalls": 1,
+    "retrievalCalls": 1,
+    "networkCalls": 0,
+    "tablesRead": [
+      "org_members",
+      "hcis_directives",
+      "hcis_approval_stages",
+      "hcis_sectors",
+      "finn_knowledge",
+      "sec_knowledge_articles",
+      "finn_document_chunks",
+      "finn_adaptive_preferences",
+      "finn_interactions",
+      "threads",
+      "messages",
+      "threads",
+      "threads"
+    ],
+    "systemChars": 48556,
+    "systemSha256": "b26d3cf0869194fa2ff7f6cbc4dd083e84d67c2a92bf5282ef3c0ef4f8be2cf9",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "log:[api/chat] provider",
+      "info:[sadeed/rag] arm skipped",
+      "info:[sadeed/rag] outcome",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "configured-all-but-web-disabled/guest-plain-ops": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "anonymous"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-sadeed-retrieval", "lexical"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 2165,
+    "bodySha256": "0ec17c4f953634494999685406f957f1f402774a89940e95bc9029611026d320",
+    "modelCalls": 1,
+    "retrievalCalls": 1,
+    "networkCalls": 0,
+    "tablesRead": ["hcis_directives", "hcis_approval_stages", "hcis_sectors"],
+    "systemChars": 48140,
+    "systemSha256": "0b35849dfddcdf9c92de4fa77d41176909082c5978b115ec91362a047fd2f08d",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "log:[api/chat] provider",
+      "info:[sadeed/rag] outcome",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "configured-all-but-web-disabled/unverified-regulatory": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "unverified"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-sadeed-retrieval", "lexical"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 3046,
+    "bodySha256": "4e3320d04a21f57957eee246011bcf208fbecc5c6c54908982d97f23a55909a0",
+    "modelCalls": 1,
+    "retrievalCalls": 1,
+    "networkCalls": 0,
+    "tablesRead": ["hcis_directives", "hcis_approval_stages", "hcis_sectors"],
+    "systemChars": 48779,
+    "systemSha256": "c8a8f18d9fc1d1ff3280ea1771676cf96ce025ae265ccf6c9eee3ab16d2ccde3",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "warn:[api/chat] session verification timed out — serving as guest",
+      "log:[api/chat] provider",
+      "info:[sadeed/rag] outcome",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "configured-all-but-web-disabled/member-hcis-amendment": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "verified"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-sadeed-retrieval", "lexical"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 2237,
+    "bodySha256": "a9862fd2bf9bc33c4667f9c88ef2f6c1b4a984252fa6906b024777302c701d1b",
+    "modelCalls": 1,
+    "retrievalCalls": 1,
+    "networkCalls": 0,
+    "tablesRead": [
+      "org_members",
+      "hcis_directives",
+      "hcis_approval_stages",
+      "hcis_sectors",
+      "finn_knowledge",
+      "finn_knowledge",
+      "sec_knowledge_articles",
+      "finn_document_chunks",
+      "finn_adaptive_preferences",
+      "finn_interactions",
+      "threads",
+      "messages",
+      "threads",
+      "threads"
+    ],
+    "systemChars": 48117,
+    "systemSha256": "6ad09b7c2c93c09d4424a541d2d25078f0b88487f7d264a34c06af1676c5276e",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "log:[api/chat] provider",
+      "info:[sadeed/rag] arm skipped",
+      "info:[sadeed/rag] outcome",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "configured-all-but-web-disabled/guest-english-framework": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "anonymous"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-sadeed-retrieval", "lexical"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 1477,
+    "bodySha256": "ce5828e715c1d692d3ac4248293d5984ed5a98a205e9d542b02ec1176b160024",
+    "modelCalls": 1,
+    "retrievalCalls": 1,
+    "networkCalls": 0,
+    "tablesRead": ["hcis_directives", "hcis_approval_stages", "hcis_sectors"],
+    "systemChars": 48091,
+    "systemSha256": "0298af9df712d5ffef21339b03d61fb48c1332d65988014b0240f2c846fca037",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "log:[api/chat] provider",
+      "info:[sadeed/rag] outcome",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "configured-all-but-web-disabled/out-of-scope": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "anonymous"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "scope-guard"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 287,
+    "bodySha256": "518bbca35b1dbdbf05b27642ab01cb99636fa29d5790cc1c85ce290a876552ba",
+    "modelCalls": 0,
+    "retrievalCalls": 0,
+    "networkCalls": 0,
+    "tablesRead": [],
+    "systemChars": null,
+    "systemSha256": null,
+    "generate": [],
+    "logLines": []
+  },
+  "configured-all-but-web-disabled/fast-recall": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "anonymous"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "fast-recall"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 284,
+    "bodySha256": "56a1a53297e26b9b1554dedc9f0a0cad4aae150e08692ce0a8d0f74f66801445",
+    "modelCalls": 0,
+    "retrievalCalls": 0,
+    "networkCalls": 0,
+    "tablesRead": [],
+    "systemChars": null,
+    "systemSha256": null,
+    "generate": [],
+    "logLines": []
+  },
+  "configured-all-but-web-disabled/ungrounded": {
+    "status": 200,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["connection", "keep-alive"],
+      ["content-type", "text/event-stream"],
+      ["referrer-policy", "no-referrer"],
+      ["x-accel-buffering", "no"],
+      ["x-content-type-options", "nosniff"],
+      ["x-sadeed-auth", "anonymous"],
+      ["x-sadeed-gate", "verified"],
+      ["x-sadeed-reply-source", "model"],
+      ["x-sadeed-request-id", "req-flag-off-0001"],
+      ["x-vercel-ai-ui-message-stream", "v1"]
+    ],
+    "bodyChars": 856,
+    "bodySha256": "db14f7dee51b66ff0fe0b8eb4ca30a948642a3fcbdc8ec14cbcdabe567b781fa",
+    "modelCalls": 1,
+    "retrievalCalls": 0,
+    "networkCalls": 0,
+    "tablesRead": [],
+    "systemChars": 46364,
+    "systemSha256": "a25218806b9eb32158ffcccdaf3366c6ea0785d23b2276ef3907456d83eca023",
+    "generate": [
+      {
+        "messages": 1,
+        "maxOutputTokens": 16000,
+        "maxRetries": 0
+      }
+    ],
+    "logLines": [
+      "log:[api/chat] provider",
+      "log:[api/chat] streaming",
+      "log:[api/chat] buffered finish"
+    ]
+  },
+  "ai-kill-switch/guest-regulatory-recency": {
+    "status": 503,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["content-type", "application/json; charset=utf-8"],
+      ["retry-after", "300"]
+    ],
+    "bodyChars": 92,
+    "bodySha256": "9da28159a8869e11267ef570db2d0caa0218494d32644d328aa576ac6f8e7f38",
+    "modelCalls": 0,
+    "retrievalCalls": 0,
+    "networkCalls": 0,
+    "tablesRead": [],
+    "systemChars": null,
+    "systemSha256": null,
+    "generate": [],
+    "logLines": []
+  },
+  "ai-kill-switch/member-standard-requirements": {
+    "status": 503,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["content-type", "application/json; charset=utf-8"],
+      ["retry-after", "300"]
+    ],
+    "bodyChars": 92,
+    "bodySha256": "9da28159a8869e11267ef570db2d0caa0218494d32644d328aa576ac6f8e7f38",
+    "modelCalls": 0,
+    "retrievalCalls": 0,
+    "networkCalls": 0,
+    "tablesRead": [],
+    "systemChars": null,
+    "systemSha256": null,
+    "generate": [],
+    "logLines": []
+  },
+  "ai-kill-switch/member-news-fire": {
+    "status": 503,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["content-type", "application/json; charset=utf-8"],
+      ["retry-after", "300"]
+    ],
+    "bodyChars": 92,
+    "bodySha256": "9da28159a8869e11267ef570db2d0caa0218494d32644d328aa576ac6f8e7f38",
+    "modelCalls": 0,
+    "retrievalCalls": 0,
+    "networkCalls": 0,
+    "tablesRead": [],
+    "systemChars": null,
+    "systemSha256": null,
+    "generate": [],
+    "logLines": []
+  },
+  "ai-kill-switch/guest-plain-ops": {
+    "status": 503,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["content-type", "application/json; charset=utf-8"],
+      ["retry-after", "300"]
+    ],
+    "bodyChars": 92,
+    "bodySha256": "9da28159a8869e11267ef570db2d0caa0218494d32644d328aa576ac6f8e7f38",
+    "modelCalls": 0,
+    "retrievalCalls": 0,
+    "networkCalls": 0,
+    "tablesRead": [],
+    "systemChars": null,
+    "systemSha256": null,
+    "generate": [],
+    "logLines": []
+  },
+  "ai-kill-switch/unverified-regulatory": {
+    "status": 503,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["content-type", "application/json; charset=utf-8"],
+      ["retry-after", "300"]
+    ],
+    "bodyChars": 92,
+    "bodySha256": "9da28159a8869e11267ef570db2d0caa0218494d32644d328aa576ac6f8e7f38",
+    "modelCalls": 0,
+    "retrievalCalls": 0,
+    "networkCalls": 0,
+    "tablesRead": [],
+    "systemChars": null,
+    "systemSha256": null,
+    "generate": [],
+    "logLines": []
+  },
+  "ai-kill-switch/member-hcis-amendment": {
+    "status": 503,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["content-type", "application/json; charset=utf-8"],
+      ["retry-after", "300"]
+    ],
+    "bodyChars": 92,
+    "bodySha256": "9da28159a8869e11267ef570db2d0caa0218494d32644d328aa576ac6f8e7f38",
+    "modelCalls": 0,
+    "retrievalCalls": 0,
+    "networkCalls": 0,
+    "tablesRead": [],
+    "systemChars": null,
+    "systemSha256": null,
+    "generate": [],
+    "logLines": []
+  },
+  "ai-kill-switch/guest-english-framework": {
+    "status": 503,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["content-type", "application/json; charset=utf-8"],
+      ["retry-after", "300"]
+    ],
+    "bodyChars": 92,
+    "bodySha256": "9da28159a8869e11267ef570db2d0caa0218494d32644d328aa576ac6f8e7f38",
+    "modelCalls": 0,
+    "retrievalCalls": 0,
+    "networkCalls": 0,
+    "tablesRead": [],
+    "systemChars": null,
+    "systemSha256": null,
+    "generate": [],
+    "logLines": []
+  },
+  "ai-kill-switch/out-of-scope": {
+    "status": 503,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["content-type", "application/json; charset=utf-8"],
+      ["retry-after", "300"]
+    ],
+    "bodyChars": 92,
+    "bodySha256": "9da28159a8869e11267ef570db2d0caa0218494d32644d328aa576ac6f8e7f38",
+    "modelCalls": 0,
+    "retrievalCalls": 0,
+    "networkCalls": 0,
+    "tablesRead": [],
+    "systemChars": null,
+    "systemSha256": null,
+    "generate": [],
+    "logLines": []
+  },
+  "ai-kill-switch/fast-recall": {
+    "status": 503,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["content-type", "application/json; charset=utf-8"],
+      ["retry-after", "300"]
+    ],
+    "bodyChars": 92,
+    "bodySha256": "9da28159a8869e11267ef570db2d0caa0218494d32644d328aa576ac6f8e7f38",
+    "modelCalls": 0,
+    "retrievalCalls": 0,
+    "networkCalls": 0,
+    "tablesRead": [],
+    "systemChars": null,
+    "systemSha256": null,
+    "generate": [],
+    "logLines": []
+  },
+  "ai-kill-switch/ungrounded": {
+    "status": 503,
+    "headers": [
+      ["cache-control", "no-store"],
+      ["content-type", "application/json; charset=utf-8"],
+      ["retry-after", "300"]
+    ],
+    "bodyChars": 92,
+    "bodySha256": "9da28159a8869e11267ef570db2d0caa0218494d32644d328aa576ac6f8e7f38",
+    "modelCalls": 0,
+    "retrievalCalls": 0,
+    "networkCalls": 0,
+    "tablesRead": [],
+    "systemChars": null,
+    "systemSha256": null,
+    "generate": [],
+    "logLines": []
+  }
+}
