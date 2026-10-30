@@ -1121,9 +1121,9 @@ export function buildSadeedTools(
             route: "chat-tool:search_knowledge",
           });
           if (outcome.gate_result !== "passed") {
-            // Article 26: no capture inside the request path. The unanswered
-            // question is read after the fact from rag_query_log, never written
-            // here (a gap-recording RPC used to sit at this spot).
+            // Article 26: no capture inside the request path. Gap capture is the
+            // job of the after-the-fact reader, never written here (a
+            // gap-recording RPC used to sit at this spot).
             const mentions = unverifiedMentions(outcome);
             return {
               ok: false,

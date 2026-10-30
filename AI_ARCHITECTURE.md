@@ -54,7 +54,7 @@ Other AI surfaces (executive briefing, agent runtime, MCP `ask_sadeed`, transcri
 
 ## 4. Memory & RAG
 
-The retrieval items below describe the code of 2026-10-30 (four commits on top of `origin/main` `9168cceec`; the QA clearance is recorded in the commit messages).
+The retrieval items below describe the code of 2026-10-30 (four commits on top of `origin/main` `9168cceec`; the QA clearance line is in the message of the last commit of the series).
 
 - Retrieval before the model: `gatherRagContext` runs several arms in parallel, each with its own deadline, on every turn, guests included. Lexical arms need no model, no key and no flag: the in-repo index and the live `hcis_*` tables for everyone; `finn_knowledge`, `sec_knowledge_articles` and unverified `finn_document_chunks` for signed-in users under their own JWT. The vector arm (`sadeed_match_*` over the `finn_*` tables) and the two memory writes stay behind `SADEED_GEMINI_RAG_READY` and an embedding key. Retrieved text is injected as untrusted data; uploaded chunks only as context marked unverified, never as a `[DOC:]` citation.
 - The governed gate (`retrieveWithEvidenceGate`, used by the `search_knowledge` tool) degrades to a lexical read over the caller's own org articles when no embedding exists. Those hits stay under the gate (`lexical_only`) and may be mentioned, never cited. The gap RPC is no longer called in the request path.

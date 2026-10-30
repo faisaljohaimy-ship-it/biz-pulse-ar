@@ -362,8 +362,8 @@
 
 ## طبقة المعرفة (RAG): الاسترجاع المعجمي يعمل، وترحيلات `20260728*` غير مطبَّقة
 
-**حالة القاعدة اليوم (٢٠٢٦/١٠/٣٠):** كل ملفات `supabase/migrations/20260728*`
-(الطبقة المحكومة `rag_*`) مكتوبة ولم يُنفَّذ منها شيء على الإنتاج، كما كانت.
+**حالة طبقة `rag_*` المحكومة اليوم (٢٠٢٦/١٠/٣٠): لم يُشغَّل — القاعدة غير مطبَّقة.**
+كل ملفات `supabase/migrations/20260728*` مكتوبة ولم يُنفَّذ منها شيء على الإنتاج، كما كانت.
 **وطُبِّق ترحيلٌ واحد إضافيّ فقط:**
 `supabase/migrations/20261030120000_sadeed_match_functions.sql` على مشروع الإنتاج
 `cnaevysaoimzusnvpazr` بـ`apply_migration` باسم `sadeed_match_functions`، بإذن
@@ -866,8 +866,9 @@ rebase (المادة ٣٥). **وعبر `/api/chat` بلا
 **ما بقي مفتوحًا بعد الخطوة ٣ (قائمة مغلقة من رسائل الـcommits الأربعة):**
 
 1. رقم البوّابة المشتقّ من RRF (`similarity` و`max_similarity`) ما زال يصل JSON الأداة
-   الذي يقرؤه النموذج في `search_knowledge` و`rag.search_verified`. رقم البوّابة نفسه
-   (0.35) لم يُمسّ.
+   الذي يقرؤه النموذج في `search_knowledge` و`rag.search_verified`، و`max_similarity`
+   في الثانية `0` لا `null` لنتيجة معجمية (`tool-registry.server.ts`): صفرٌ يعني «لم يُقَس»
+   هناك. رقم البوّابة نفسه (0.35) لم يُمسّ.
 2. `model_version` لم يُضَف إلى `RagCitation` لأن لا مصدر يعيده.
 3. أداة الوكلاء `rag.record_gap` ما زالت تنادي `rag_record_gap_for_org`
    (`src/lib/exec/tool-registry.server.ts`).

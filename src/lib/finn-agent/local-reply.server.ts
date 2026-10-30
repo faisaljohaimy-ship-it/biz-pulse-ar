@@ -75,7 +75,7 @@ const MAX_LISTED_KEYS = 4;
  * اسم القدرة بالعربية من بيان البيئة نفسه (`labelAr` — مصدرٌ واحد) مقصوصًا قبل أول قوس: القوس
  * يحمل اسم المزوّد وشرطةً طويلة. لا يُعرض مفتاح القدرة الإنجليزي ولا اسمُ متغيّر بيئة، ولا
  * مفتاحٌ بلا اسم عربي في البيان (يُحسب ضمن «أخرى»). الحارس: لا حرف لاتيني في أي اسم سوى
- * GitHub وVercel (اسمَي الأداتين المعروضين في الواجهة).
+ * GitHub وVercel وGoogle (أسماء الأدوات ومزوّد الدخول المعروضة في الواجهة).
  */
 const CAPABILITY_LABEL_BY_KEY: ReadonlyMap<string, string> = new Map(
   ENV_CAPABILITIES.map((c) => [c.key, c.labelAr.split(" (")[0].replace(/\s+/g, " ").trim()]),

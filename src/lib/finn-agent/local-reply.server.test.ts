@@ -202,13 +202,13 @@ describe("قسم المنصّة", () => {
     expect(text).not.toContain("x_y");
   });
 
-  it("كل قدرةٍ في بيان البيئة لها اسمٌ عربي معروض بلا حرف لاتيني (عدا GitHub وVercel) ولا شرطة طويلة ولا قوس", () => {
+  it("كل قدرةٍ في بيان البيئة لها اسمٌ عربي معروض بلا حرف لاتيني (عدا GitHub وVercel وGoogle) ولا شرطة طويلة ولا قوس", () => {
     expect(ENV_CAPABILITIES.length).toBeGreaterThanOrEqual(10);
     for (const c of ENV_CAPABILITIES) {
       const label = capabilityLabelAr(c.key);
       expect(label, c.key).not.toBeNull();
       expect(label!.length, c.key).toBeGreaterThan(2);
-      expect(label!.replace(/GitHub|Vercel/g, ""), c.key).not.toMatch(/[A-Za-z]/);
+      expect(label!.replace(/GitHub|Vercel|Google/g, ""), c.key).not.toMatch(/[A-Za-z]/);
       expect(label!, c.key).not.toMatch(/[\u2014\u2013()]/);
     }
     expect(capabilityLabelAr("not-a-capability")).toBeNull();
@@ -288,7 +288,7 @@ describe("قسم المعرفة", () => {
 
 describe("الدفاع الثاني: أيّ شكل سرٍّ يُحجب من الناتج كلّه", () => {
   const SECRETS = [
-    "sk-AAAAAAAAAAAAAAAAAAAAAAAA",
+    "sk-" + "A".repeat(24),
     "ghp_" + "B".repeat(30),
     "github_pat_" + "C".repeat(30),
     "sb_secret_" + "D".repeat(30),
