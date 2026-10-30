@@ -1073,13 +1073,14 @@ const ragSearchVerified: ToolExecutor = {
   input: ragSearchVerifiedInputSchema,
   async execute(input, ctx) {
     const data = input as z.infer<typeof ragSearchVerifiedInputSchema>;
-    const [{ retrieveWithEvidenceGate }, { safeExcerpt }] = await Promise.all([
+    const [{ retrieveWithEvidenceGate, unverifiedMentions }, { safeExcerpt }] = await Promise.all([
       import("@/lib/sadeed/rag/retrieve.server"),
       import("@/lib/sadeed/rag/sanitize.server"),
     ]);
     const outcome = await retrieveWithEvidenceGate(ctx.supabase, {
       query: data.query,
       orgId: ctx.orgId,
+      userId: ctx.actorId,
       categoryCode: data.category_code ?? null,
       limit: data.limit,
       route: "agent-tool:rag.search_verified",
@@ -1102,6 +1103,8 @@ const ragSearchVerified: ToolExecutor = {
                 similarity: hit.similarity,
               }))
             : [],
+        // Text-matched hits when embeddings are unavailable: mention only, never evidence.
+        unverified_matches: unverifiedMentions(outcome),
       },
     };
   },

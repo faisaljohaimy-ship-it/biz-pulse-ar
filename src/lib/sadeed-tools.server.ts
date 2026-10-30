@@ -1096,7 +1096,7 @@ export function buildSadeedTools(
 
     search_knowledge: tool({
       description:
-        "Search the current tenant's verified industrial-security corpus through Gemini embeddings, hybrid retrieval and the SADEED evidence gate. Use for policies, procedures and domain references. Never cite a result unless gate_result is passed.",
+        "Search the current tenant's verified industrial-security corpus through Gemini embeddings, hybrid retrieval and the SADEED evidence gate. Use for policies, procedures and domain references. Never cite a result unless gate_result is passed. When embeddings are unavailable the search degrades to text matching: those matches arrive as unverified_matches, which you may mention but must never cite as verified evidence.",
       inputSchema: z.object({
         query: z.string().trim().min(3).max(2000),
         limit: z.number().int().min(2).max(12).default(8),
@@ -1105,44 +1105,54 @@ export function buildSadeedTools(
         if (!runtime.orgId) {
           return { ok: false, gate_result: "error", reason: "missing_org_context" };
         }
-        const [{ retrieveWithEvidenceGate }, { safeExcerpt }] = await Promise.all([
-          import("@/lib/sadeed/rag/retrieve.server"),
-          import("@/lib/sadeed/rag/sanitize.server"),
-        ]);
-        const outcome = await retrieveWithEvidenceGate(supabase, {
-          query: args.query,
-          orgId: runtime.orgId,
-          limit: args.limit,
-          route: "chat-tool:search_knowledge",
-        });
-        if (outcome.gate_result !== "passed") {
-          // Safe learning loop: remember the missing question, never the
-          // model's answer. This backlog cannot enter retrieval by itself.
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          await (supabase as any)
-            .rpc("rag_record_gap_for_org", { _org_id: runtime.orgId, _query: args.query })
-            .catch(() => undefined);
+        try {
+          const [
+            { retrieveWithEvidenceGate, unverifiedMentions, UNVERIFIED_MENTION_NOTE },
+            { safeExcerpt },
+          ] = await Promise.all([
+            import("@/lib/sadeed/rag/retrieve.server"),
+            import("@/lib/sadeed/rag/sanitize.server"),
+          ]);
+          const outcome = await retrieveWithEvidenceGate(supabase, {
+            query: args.query,
+            orgId: runtime.orgId,
+            userId,
+            limit: args.limit,
+            route: "chat-tool:search_knowledge",
+          });
+          if (outcome.gate_result !== "passed") {
+            // Article 26: no capture inside the request path. The unanswered
+            // question is read after the fact from rag_query_log, never written
+            // here (a gap-recording RPC used to sit at this spot).
+            const mentions = unverifiedMentions(outcome);
+            return {
+              ok: false,
+              gate_result: outcome.gate_result,
+              reason: outcome.reason ?? "insufficient_evidence",
+              results: [],
+              ...(mentions.length > 0
+                ? { unverified_matches: mentions, unverified_note: UNVERIFIED_MENTION_NOTE }
+                : {}),
+            };
+          }
+          const results = outcome.hits.map((hit) => ({
+            id: hit.id,
+            citation: `[KB:${hit.doc_code ?? hit.id}]`,
+            title: hit.title_ar ?? hit.title_en ?? hit.doc_code ?? hit.id,
+            excerpt: safeExcerpt(hit.summary_ar ?? hit.summary_en ?? "", 900),
+            similarity: hit.similarity,
+          }));
           return {
-            ok: false,
+            ok: true,
             gate_result: outcome.gate_result,
-            reason: outcome.reason ?? "insufficient_evidence",
-            results: [],
+            max_similarity: outcome.max_similarity,
+            citation_count: outcome.citation_count,
+            results,
           };
+        } catch {
+          // Honest and non-throwing: nothing citable, and the model is told so.
+          return { ok: false, gate_result: "error", reason: "retrieval_failed", results: [] };
         }
-        const results = outcome.hits.map((hit) => ({
-          id: hit.id,
-          citation: `[KB:${hit.doc_code ?? hit.id}]`,
-          title: hit.title_ar ?? hit.title_en ?? hit.doc_code ?? hit.id,
-          excerpt: safeExcerpt(hit.summary_ar ?? hit.summary_en ?? "", 900),
-          similarity: hit.similarity,
-        }));
-        return {
-          ok: true,
-          gate_result: outcome.gate_result,
-          max_similarity: outcome.max_similarity,
-          citation_count: outcome.citation_count,
-          results,
-        };
       },
     }),
 

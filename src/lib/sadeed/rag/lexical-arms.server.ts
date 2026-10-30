@@ -100,7 +100,7 @@
  * مراجعة ثالثة ٢٠٢٦/١٠/٢٩).
  */
 import { stripPersonIdentity } from "@/lib/maintenance/person-identity.server";
-import { ARM_NAMES } from "@/lib/retrieval/aggregate.server";
+import { ARM_NAMES, LEXICAL_ARM_DEADLINE_MS } from "@/lib/retrieval/aggregate.server";
 import {
   assertSearchLimit,
   BM25_MAX_DOC_CHARS,
@@ -698,6 +698,141 @@ export function secKnowledgeArm(client: LexicalDbClient): RetrievalArm {
       }
     },
   };
+}
+
+// ── تدهور البوابة المحكومة: مقالات المؤسسة وحدها ───────────────────────────
+
+/** أعمدة النصّ التي يُجلَب بها المرشّحون من `sec_knowledge_articles`. */
+const ORG_ARTICLE_FETCH_COLUMNS = [
+  "title_ar",
+  "title_en",
+  "summary_ar",
+  "summary_en",
+  "search_text_ar",
+] as const;
+const ORG_ARTICLE_SELECT =
+  "id,doc_code,title_ar,title_en,summary_ar,summary_en,purpose_ar,keywords_ar,risk_level,priority,org_id,status";
+const ORG_ARTICLE_SUMMARY_CHARS = 900;
+/**
+ * موعد قراءة المقالات للبوابة المحكومة: موعد الأذرع المعجمية نفسه. يطبّقه
+ * المستدعي (`retrieve.server.ts`) بإشارة إلغاء يمرّرها إلى `signal`؛ ويُصدَّر
+ * من هنا لأن هذه الوحدة هي المستهلك المسموح للنواة (عقد البنية).
+ */
+export const ORG_ARTICLE_READ_DEADLINE_MS = LEXICAL_ARM_DEADLINE_MS;
+
+interface OrgArticleSearchInput {
+  query: string;
+  /** إلزامي: بلا مؤسسة لا استعلام — لا بحث واسع أبدًا (المادة ٣٢). */
+  orgId: string;
+  categoryCode?: string | null;
+  limit: number;
+  signal?: AbortSignal;
+}
+
+interface OrgArticleMatch {
+  id: string;
+  doc_code: string | null;
+  title_ar: string | null;
+  title_en: string | null;
+  summary_ar: string | null;
+  summary_en: string | null;
+  category_code: string | null;
+  risk_level: string | null;
+  priority: string | null;
+}
+
+const strOrNull = (v: unknown): string | null => (typeof v === "string" && v !== "" ? v : null);
+
+/**
+ * بحث معجمي في مقالات **مؤسسة المستدعي** وحدها، للبوابة المحكومة حين يتعذّر
+ * التضمين (`retrieve.server.ts`). يرمي عند عطل القاعدة كي يفرّق المستدعي بين
+ * «لا مطابقة» و«تعذّرت القراءة».
+ *
+ * ## لماذا المسند في الكود لا في RLS
+ *
+ * مستدعو البوابة منهم من يحمل عميل `service_role` (`orchestrator/agents.ts`،
+ * `agent-runtime.server.ts`) وهو **يتجاوز RLS**؛ فالسياسة لا تحمي قراءتهم.
+ * والقراءة العابرة للمؤسسات أعلى خروقات المادة ٣٢ خطورةً. لذلك يُكتب
+ * `org_id = المؤسسة` و`status = published` في الاستعلام نفسه (`eq` لا `or`:
+ * المقالات العامة `org_id is null` **خارج** هذا المسار عمدًا، وأضيق من الـRPC
+ * الهجين الذي يضمّها)، ثم يُعاد الفحص على كل صفٍّ مرتجع — فعميل يتجاهل المسند
+ * أو يعيد صفوفًا لا يملكها لا يمرّر صفًّا من مؤسسة أخرى.
+ *
+ * الترتيب بنواة BM25 نفسها (`rankCandidates`) ومطبِّعاتها: لا مقسِّم ثانٍ.
+ */
+export async function searchOrgArticlesLexical(
+  client: LexicalDbClient,
+  input: OrgArticleSearchInput,
+): Promise<OrgArticleMatch[]> {
+  const orgId = typeof input.orgId === "string" ? input.orgId.trim() : "";
+  if (!orgId) throw new Error("org_required");
+  assertSearchLimit(input.limit);
+  const terms = ilikeTerms(input.query);
+  if (terms.length === 0 || input.limit === 0) return [];
+
+  const category = input.categoryCode?.trim() || null;
+  // الانضمام الداخلي يقيّد بالتصنيف؛ الخارجي يجلب رمزه فقط للعرض.
+  const select = category
+    ? `${ORG_ARTICLE_SELECT},sec_knowledge_categories!inner(code)`
+    : `${ORG_ARTICLE_SELECT},sec_knowledge_categories(code)`;
+  let b = client
+    .from("sec_knowledge_articles")
+    .select(select)
+    .eq("org_id", orgId)
+    .eq("status", "published");
+  if (category) b = b.eq("sec_knowledge_categories.code", category);
+  b = b.or(ilikeOrFilter(ORG_ARTICLE_FETCH_COLUMNS, terms)).limit(CANDIDATE_ROW_LIMIT);
+  const fetched = await runQuery(withSignal(b, input.signal) as PromiseLike<QueryOutcome>);
+
+  const rows = new Map<string, Row>();
+  for (const r of fetched) {
+    // دفاعٌ في العمق: المسند وحده لا يكفي إن تجاهله عميل أو أعاد صفًّا غريبًا.
+    if (typeof r.id !== "string" || r.org_id !== orgId || r.status !== "published") continue;
+    rows.set(r.id, r);
+  }
+  const candidates = Array.from(rows.values()).map<Candidate>((r) => {
+    const keywords = Array.isArray(r.keywords_ar) ? r.keywords_ar.map(str).join(" ") : "";
+    return {
+      id: str(r.id),
+      text: matchWindow(
+        [r.title_ar, r.title_en, r.summary_ar, r.summary_en, r.purpose_ar, keywords]
+          .map(str)
+          .join("\n"),
+        terms,
+        BM25_MAX_DOC_CHARS,
+      ).text,
+      hit: {
+        id: str(r.id),
+        source: "knowledge",
+        title: cleanTitle(r.title_ar),
+        excerpt: "",
+        provenance: {
+          table: "sec_knowledge_articles",
+          docId: cleanSource(r.doc_code) || str(r.id),
+          // مطابقة نصّية غير مقيسة العتبة: تُذكر ولا يُستشهد بها (قرار البوابة).
+          citable: false,
+          label: "مطابقة نصّية",
+        },
+      },
+    };
+  });
+
+  return rankCandidates(candidates, input.query, input.limit).map((h) => {
+    const r = rows.get(h.id)!;
+    const cat = r.sec_knowledge_categories;
+    const catRow = (Array.isArray(cat) ? cat[0] : cat) as Row | null | undefined;
+    return {
+      id: h.id,
+      doc_code: strOrNull(cleanSource(r.doc_code)),
+      title_ar: strOrNull(cleanTitle(r.title_ar)),
+      title_en: strOrNull(cleanTitle(r.title_en)),
+      summary_ar: strOrNull(safeExcerpt(str(r.summary_ar), ORG_ARTICLE_SUMMARY_CHARS)),
+      summary_en: strOrNull(safeExcerpt(str(r.summary_en), ORG_ARTICLE_SUMMARY_CHARS)),
+      category_code: strOrNull(catRow?.code),
+      risk_level: strOrNull(r.risk_level),
+      priority: strOrNull(r.priority),
+    };
+  });
 }
 
 // ── (د) finn_document_chunks — سياقٌ «غير موثّق» ────────────────────────────

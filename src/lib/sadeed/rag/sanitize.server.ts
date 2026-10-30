@@ -25,6 +25,38 @@ export function redactPii(input: string): string {
     .replace(KSA_PHONE, "[هاتف محذوف]");
 }
 
+// --- PII redaction for the STORED copy of a query ---------------------
+//
+// `redactPii` reads ASCII digits written without separators. That is enough
+// for text that is only shown or embedded, but a stored query is kept
+// (rag_query_log.query_text), and two gaps mattered there (O3 review,
+// 2026-10-30): Arabic-Indic digits, the usual way many Arabic users type a
+// number, and a mobile number written in groups ("055 123 4567",
+// "+966 55 123 4567") both passed straight through. This function closes both
+// for the stored copy and leaves `redactPii` (used on retrieved text) as it is.
+//
+// In order: digits of the Arabic-Indic, Persian and full-width sets are written
+// as ASCII (in the stored copy only), the contiguous rules above run, then a
+// KSA mobile written in groups is masked: up to two separator characters (space,
+// dot, hyphen or a format character such as an LRM) between digits. The grouped
+// shape is exact-length, so a number written right after it is not merged into
+// the match. A date-like run that happens to have the same digit layout is
+// masked too; over-masking is the safe failure for a stored copy.
+const NON_ASCII_DIGIT = /[\u0660-\u0669\u06F0-\u06F9\uFF10-\uFF19]/g;
+const foldDigitsToAscii = (s: string): string =>
+  s.replace(NON_ASCII_DIGIT, (d) => String.fromCharCode(0x30 + (d.charCodeAt(0) & 0x0f)));
+
+const SEP = "[\\s\\p{Cf}.\\-]{0,2}";
+const GROUPED_KSA_PHONE = new RegExp(
+  `(?<!\\d)(?:(?:\\+|00)?966${SEP}(?:\\(?0\\)?${SEP})?|0${SEP})?5(?:${SEP}\\d){8}(?!\\d)`,
+  "gu",
+);
+
+export function redactPiiForStorage(input: string): string {
+  if (!input) return "";
+  return redactPii(foldDigitsToAscii(input)).replace(GROUPED_KSA_PHONE, "[هاتف محذوف]");
+}
+
 // --- Injection neutralization for retrieved content ------------------
 
 // Strip common model control tokens and fence-abused system blocks so
