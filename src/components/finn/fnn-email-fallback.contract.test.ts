@@ -72,9 +72,12 @@ describe("/fnn — بديل الدخول بالبريد وكلمة المرور 
     // سقوط min-h-11!.
     expect(emailFallbackGaps(SRC.replace("w-full min-h-11!", "w-full"))).toEqual(["بلا min-h-11!"]);
     // نصّ ثنائي اللغة ناقص.
-    expect(emailFallbackGaps(SRC.replace("Sign in with email and password", "Email"))).toEqual([
-      "نصّ إنجليزي غائب",
-    ]);
+    // (داخل الرابط وحده: النصّ نفسه صار في موضعٍ سابق من الملفّ، فاستبدال أول ظهورٍ لا يمسّ الرابط).
+    expect(
+      emailFallbackGaps(
+        SRC.replace(link, link.replace("Sign in with email and password", "Email")),
+      ),
+    ).toEqual(["نصّ إنجليزي غائب"]);
     // رابطٌ معلَّق لا يُحتسب.
     expect(emailFallbackGaps(SRC.replace(link, `{/* ${link} */}`))).toEqual([
       "لا رابط إلى /auth في بطاقة الدخول",
