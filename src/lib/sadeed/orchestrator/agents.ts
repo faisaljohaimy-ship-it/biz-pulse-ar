@@ -14,6 +14,11 @@ import type { SadeedIntent } from "../executive-reasoning.server";
 import { runExecutiveBrain } from "../executive-brain/brain.server";
 import { toBrainRequest } from "./context.server";
 import { buildReport, KIND_LABEL_AR_MAP } from "@/lib/reports-agent/engine";
+import {
+  computedSimilarityPercent,
+  hybridHitCosine,
+  similarityLabelAr,
+} from "@/lib/sadeed/similarity-label";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -429,11 +434,18 @@ const knowledgeAgent: ExecutiveAgent = {
       const evidence = outcome.hits.slice(0, 6).map((h) => {
         const title = h.title_ar || h.title_en || h.doc_code || h.id;
         const summary = h.summary_ar || h.summary_en || "";
-        const score = (h.similarity * 100).toFixed(0);
-        return `${title} — ${summary} [مرجع ${h.doc_code ?? h.id} · تطابق ${score}%]`;
+        // O7 (د): نسبةٌ لكوساين محسوب وحده — المعجمي «مطابقة نصّية» وغير المقيس «لم يُقَس»،
+        // لا `0%` ولا `NaN%` (المادة ٢٧). والمصدر `dense_score` لا `h.similarity`: الأخير رقم
+        // البوّابة، ولضربةٍ بلا كوساين يُشتقّ من RRF (`hybridHitCosine`).
+        const match = similarityLabelAr(hybridHitCosine(h), { lexical: h.arm === "lexical" });
+        return `${title} — ${summary} [مرجع ${h.doc_code ?? h.id} · ${match}]`;
       });
       const sources = outcome.hits.slice(0, 6).map((h) => `kb:${h.doc_code ?? h.id}`);
-      const textAr = `استرجع وكيل المعرفة ${outcome.hits.length} مقاطع مرجعية (أعلى تطابق ${(outcome.max_similarity * 100).toFixed(0)}%).`;
+      // أعلى كوساين محسوب بين الضربات نفسها، لا `outcome.max_similarity` (رقم البوّابة).
+      const topPercent = computedSimilarityPercent(
+        Math.max(0, ...outcome.hits.map((h) => hybridHitCosine(h) ?? 0)),
+      );
+      const textAr = `استرجع وكيل المعرفة ${outcome.hits.length} مقاطع مرجعية${topPercent === null ? "" : ` (أعلى تطابق ${topPercent}%)`}.`;
       return done("knowledge", { text_ar: textAr, evidence, sources }, startedMs);
     } catch (err) {
       return unavailable(

@@ -39,6 +39,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { SecPageHeader } from "@/components/sec/sec-shell";
+import { SimilarityLabel } from "@/components/sadeed/SimilarityLabel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -268,11 +269,11 @@ function KbPage() {
                   >
                     <div className="flex items-center justify-between gap-2">
                       <div className="text-sm font-semibold">{h.title_ar}</div>
-                      {h.similarity != null && (
-                        <span className="text-[12px] text-cyan-500">
-                          {(h.similarity * 100).toFixed(0)}%
-                        </span>
-                      )}
+                      <SimilarityLabel
+                        value={h.similarity}
+                        lexical={semQ.data.mode !== "semantic"}
+                        className="text-[12px] text-cyan-500"
+                      />
                     </div>
                     <div className="mt-1 text-xs text-muted-foreground line-clamp-2">
                       {h.summary_ar}

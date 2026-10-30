@@ -6,6 +6,8 @@
  * و`provider`). لا قيمة مفتاحٍ في الجسم أبدًا. محكمٌ بلا خرج شبكي: الفحص وحده مزروع.
  */
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { readFileSync } from "node:fs";
+import { isVendorSafe } from "@/lib/sadeed/vendor-mask";
 
 vi.stubEnv("GEMINI_API_KEY", "test-key-not-a-secret");
 vi.stubEnv("SUPABASE_URL", "https://stub.invalid");
@@ -159,5 +161,112 @@ describe("/api/chat/health — حال البوّابة بجانب المفتاح
     await health();
     const opts = probe.options[0] as { deadlineMs?: number };
     expect(opts?.deadlineMs).toBeLessThanOrEqual(2_000);
+  });
+});
+
+describe("/api/chat/health: كتلة الاسترجاع (O7 ب)", () => {
+  /** الأربعة التي يقرؤها فحص الإنتاج وقرّاء الجاهزية: لا تُسقَط ولا يُعاد تسميتها. */
+  const PRESERVED = ["rag_ready", "rag_embedding_model", "key_present", "provider"] as const;
+  const preservedOk = (body: Record<string, unknown>) => PRESERVED.every((k) => k in body);
+  const KEY = "embedding-key-not-a-secret-000";
+
+  /** الراية والمفتاح من البيئة كما هما: مفتاح الدردشة منفصل عن مفتاح التضمين. */
+  async function retrieval(flag: string, embeddingKey: string) {
+    vi.stubEnv("SADEED_GEMINI_RAG_READY", flag);
+    vi.stubEnv("GEMINI_API_KEY", embeddingKey);
+    vi.stubEnv("GOOGLE_GENERATIVE_AI_API_KEY", "");
+    return health();
+  }
+
+  it("الشكل: ثلاثة مفاتيح بأنواعها، ولا شيء آخر داخل الكتلة", async () => {
+    const { body } = await retrieval("", "");
+    const block = body.retrieval as Record<string, unknown>;
+    expect(Object.keys(block).sort()).toEqual([
+      "embedding_provider",
+      "lexical_ready",
+      "vector_ready",
+    ]);
+    expect(typeof block.lexical_ready).toBe("boolean");
+    expect(typeof block.vector_ready).toBe("boolean");
+    expect(typeof block.embedding_provider).toBe("string");
+  });
+
+  it("الحالة الإنتاجية اليوم (لا راية ولا مفتاح تضمين): معجمي جاهز، متّجهي لا، المزوّد none", async () => {
+    const { body } = await retrieval("", "");
+    expect(body.retrieval).toEqual({
+      lexical_ready: true,
+      vector_ready: false,
+      embedding_provider: "none",
+    });
+  });
+
+  it.each([
+    ["", "", false, "none"],
+    ["true", "", false, "none"],
+    ["", KEY, false, "primary"],
+    ["false", KEY, false, "primary"],
+    ["true", KEY, true, "primary"],
+  ] as const)(
+    "الراية=%j والمفتاح=%j ⇒ vector_ready=%s والمزوّد=%s، والمعجمي جاهز دائمًا",
+    async (flag, key, vectorReady, provider) => {
+      const { body } = await retrieval(flag, key);
+      expect(body.retrieval).toEqual({
+        lexical_ready: true,
+        vector_ready: vectorReady,
+        embedding_provider: provider,
+      });
+    },
+  );
+
+  it("مفتاح GOOGLE_GENERATIVE_AI_API_KEY يكفي كمفتاح تضمين، كما في حلّال المفتاح نفسه", async () => {
+    vi.stubEnv("SADEED_GEMINI_RAG_READY", "true");
+    vi.stubEnv("GEMINI_API_KEY", "");
+    vi.stubEnv("GOOGLE_GENERATIVE_AI_API_KEY", KEY);
+    const { body } = await health();
+    expect(body.retrieval).toMatchObject({ vector_ready: true, embedding_provider: "primary" });
+  });
+
+  it("الراية بلا مفتاح: rag_ready القديم يبقى true بمعناه (الراية) وvector_ready false بمعناه الأدقّ", async () => {
+    const { body } = await retrieval("true", "");
+    expect(body.rag_ready).toBe(true);
+    expect((body.retrieval as { vector_ready: boolean }).vector_ready).toBe(false);
+  });
+
+  it("الحقول الأربعة القديمة باقية بأسمائها وأنواعها وقيمها", async () => {
+    const { body } = await retrieval("true", KEY);
+    expect(preservedOk(body)).toBe(true);
+    expect(body.rag_ready).toBe(true);
+    expect(body.rag_embedding_model).toBe("gemini-embedding-2");
+    expect(body.key_present).toBe(true);
+    expect(body.provider).toBe("google-gemini");
+    expect(body.ok).toBe(true);
+  });
+
+  it("مزروع: إسقاط أي حقل من الأربعة يُدان بالفاحص نفسه", async () => {
+    const { body } = await retrieval("true", KEY);
+    expect(preservedOk(body)).toBe(true);
+    for (const dropped of PRESERVED) {
+      const copy = { ...body };
+      delete copy[dropped];
+      expect(preservedOk(copy), dropped).toBe(false);
+    }
+  });
+
+  it("الكتلة محايدة: لا اسم مزوّد ولا قيمة مفتاح داخلها (قناع المزوّدين)", async () => {
+    const { body } = await retrieval("true", KEY);
+    const json = JSON.stringify(body.retrieval);
+    expect(isVendorSafe(json)).toBe(true);
+    expect(json).not.toContain(KEY);
+  });
+
+  it("المصدر: الحقول الأربعة تُكتب في الجسم كما كانت، والكتلة من describeRetrievalReadiness", () => {
+    const src = readFileSync("src/routes/api/chat.health.ts", "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/^[ \t]*\/\/.*$/gm, "");
+    expect(src).toMatch(/provider:\s*plan\.provider/);
+    expect(src).toMatch(/key_present:\s*plan\.configured/);
+    expect(src).toMatch(/rag_embedding_model:\s*GEMINI_EMBEDDING_MODEL/);
+    expect(src).toMatch(/rag_ready:\s*isGeminiRagReady\(\)/);
+    expect(src).toMatch(/retrieval:\s*describeRetrievalReadiness\(\)/);
   });
 });

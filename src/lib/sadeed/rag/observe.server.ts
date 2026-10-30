@@ -13,14 +13,56 @@
  * لا نصّ استعلام ولا نصّ مسترجَع ولا هوية مستخدم في أي حدث — أسماء أذرع
  * ورموز أسباب وأعداد وأزمنة ومعرّف الطلب فقط.
  *
+ * ## الترويسة وحقول الحدث (O7 أ، ٢٠٢٦/١٠/٣٠)
+ *
+ * `retrievalHeaderValue(servedArms)` يشتقّ قيمة `X-SADEED-Retrieval` من الأذرع
+ * **التي خدمت فعلًا** لا التي جُرِّبت: `none` · `lexical` · `vector` ·
+ * `vector+lexical`. ذراعٌ خدمت بنتيجة فارغة خدمت (الفراغ الصادق نتيجة)، وذراعٌ
+ * انتهت مهلتها أو رمت أو تُخطّيت (`flag_off` …) لم تخدم. ودالّةٌ نقيّة متزامنة:
+ * لا قراءة ولا انتظار — الترويسة تُحسب من نتيجةٍ حُسمت أصلًا.
+ *
+ * وحدث `rag.outcome` يحمل بجانب حقوله الأقدم (`servedArms` · `hitCount` ·
+ * `latencyMs` · `arms`، باقية لقرّاء السجلّ السابق) الحقول الجديدة:
+ * `retrieval` · `arms_tried` (ما شُغِّل فعلًا، دون ما أُسقط قبل التشغيل
+ * `db_unavailable` و`empty_query`) · `arms_served` · `hits` · `latency_ms` ·
+ * `reason_codes` (أسباب الأذرع التي لم تخدم، فريدة مرتّبة) · `auth_state`
+ * (`anonymous` · `verified` · `unverified` — رمزٌ مغلق لا هوية). **لا معرّف شخص
+ * في الحدث لأي حال جلسة**: المُدخلات اسم الذراع ورمز السبب والعدّ والزمن،
+ * ولا `userId` ولا بريد ولا نصّ استعلام في أي موضع من هذا الملف
+ * (`retrieval-header.contract.test.ts` يحرس الشكل والمصدر معًا).
+ *
  * النسب المئوية التسعون والخمس (p95) لكمون كل ذراع وعدد مرشّحيها تُحسب على
  * نافذة منزلقة في ذاكرة المعزول (`RAG_LATENCY_WINDOW` عيّنة لكل ذراع) — رقمٌ
  * مقيس على ما مرّ بهذا المعزول، لا على الأسطول؛ ويُطبع «لم يُقَس» (`null`)
  * حين لا عيّنة.
  */
-import type { AggregateOutcome } from "@/lib/retrieval/aggregate.server";
+import { ARM_NAMES, type AggregateOutcome } from "@/lib/retrieval/aggregate.server";
 
 export const RAG_LATENCY_WINDOW = 200;
+
+/** قيم ترويسة `X-SADEED-Retrieval`: ما خدم الاسترجاع في هذا الدور، لا ما جُرِّب. */
+export type RetrievalHeaderValue = "none" | "lexical" | "vector" | "vector+lexical";
+
+/**
+ * كل ذراعٍ غير المتّجهية معجمية بالبناء (`ARM_NAMES`: الفهرس الداخلي · `hcis_*`
+ * · `finn_knowledge` · `sec_knowledge_articles` · مقاطع المستندات) — والذراع
+ * المتّجهية وحدها تُنتج كوساين. الاسم الجديد غير المصنَّف يُعدّ معجميًّا، ويُدان
+ * في الاختبار حتى يُصنَّف صراحةً.
+ */
+export function retrievalHeaderValue(servedArms: readonly string[]): RetrievalHeaderValue {
+  const vector = servedArms.includes(ARM_NAMES.vector);
+  const lexical = servedArms.some((arm) => arm !== ARM_NAMES.vector);
+  if (vector && lexical) return "vector+lexical";
+  if (vector) return "vector";
+  return lexical ? "lexical" : "none";
+}
+
+/** حال الجلسة كما تصل الحدث — رمزٌ مغلق، لا هوية. */
+export type RagAuthState = "anonymous" | "verified" | "unverified";
+const AUTH_STATES: ReadonlySet<string> = new Set(["anonymous", "verified", "unverified"]);
+
+/** أسبابٌ تعني أن الذراع لم تُشغَّل أصلًا (أُسقطت قبل التشغيل) — ليست «جُرِّبت». */
+const NOT_RUN_REASONS: ReadonlySet<string> = new Set(["db_unavailable", "empty_query"]);
 
 /** أسباب عدم الخدمة التي هي حالة لا عطل: تُسجَّل `info` لا `warn`. */
 export const EXPECTED_SKIP_REASONS: ReadonlySet<string> = new Set([
@@ -79,6 +121,21 @@ export interface RagOutcomeEvent {
   event: "rag.outcome";
   requestId: string | null;
   audience: string;
+  /** حال الجلسة (`anonymous` · `verified` · `unverified`)، أو `null` إن لم يمرّرها المستدعي. */
+  auth_state: RagAuthState | null;
+  /** قيمة الترويسة `X-SADEED-Retrieval` نفسها. */
+  retrieval: RetrievalHeaderValue;
+  /** الأذرع التي شُغِّلت فعلًا (دون ما أُسقط قبل التشغيل). */
+  arms_tried: string[];
+  /** الأذرع التي خدمت — الفراغ الصادق منها خدمة. */
+  arms_served: string[];
+  /** عدد النتائج المدموجة. */
+  hits: number;
+  /** زمن المجمِّع بمللي ثانية. */
+  latency_ms: number;
+  /** رموز أسباب الأذرع التي لم تخدم: فريدة مرتّبة، رمزٌ قصير لا نصّ حرّ. */
+  reason_codes: string[];
+  /** الحقول الأقدم أدناه باقية لقرّاء السجلّ السابق (CLAUDE.md «بوّابة المخزن»). */
   servedArms: string[];
   hitCount: number;
   latencyMs: number;
@@ -88,11 +145,13 @@ export interface RagOutcomeEvent {
 /** يسجّل العيّنات ويبني الحدث؛ معرَّض للقياس (يُعيد ما طُبع). */
 export function observeRagOutcome(
   outcome: AggregateOutcome,
-  meta: { requestId?: string | null; audience: string },
+  meta: { requestId?: string | null; audience: string; authState?: string | null },
   log: Pick<typeof console, "info" | "warn"> = console,
 ): RagOutcomeEvent {
   const arms: Record<string, ArmObservation> = {};
+  const reasonCodes = new Set<string>();
   for (const a of outcome.arms) {
+    if (!a.served) reasonCodes.add(reasonCode(a.reason));
     if (a.served) recordArmSample(a.arm, a.latencyMs, a.hits.length);
     else {
       const code = reasonCode(a.reason);
@@ -121,6 +180,17 @@ export function observeRagOutcome(
     event: "rag.outcome",
     requestId: meta.requestId ?? null,
     audience: meta.audience,
+    // قيمةٌ خارج المفردات المغلقة تُردّ `null` — لا نصّ حرّ يصل الحدث من الحقل.
+    auth_state:
+      meta.authState && AUTH_STATES.has(meta.authState) ? (meta.authState as RagAuthState) : null,
+    retrieval: retrievalHeaderValue(outcome.servedArms),
+    arms_tried: outcome.arms
+      .filter((a) => a.served || !NOT_RUN_REASONS.has(reasonCode(a.reason)))
+      .map((a) => a.arm),
+    arms_served: outcome.servedArms,
+    hits: outcome.fused.length,
+    latency_ms: outcome.latencyMs,
+    reason_codes: [...reasonCodes].sort(),
     servedArms: outcome.servedArms,
     hitCount: outcome.fused.length,
     latencyMs: outcome.latencyMs,

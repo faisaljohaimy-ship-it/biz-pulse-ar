@@ -23,6 +23,7 @@ import {
 } from "@/lib/sadeed/documents.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { SimilarityLabel } from "@/components/sadeed/SimilarityLabel";
 import { cn } from "@/lib/utils";
 import { userFacingError } from "@/lib/errors/user-facing-error";
 
@@ -258,9 +259,10 @@ function SadeedDocumentsConsole() {
                 >
                   <div className="flex items-center justify-between mb-1">
                     <span className="font-medium text-primary text-xs">{m.title}</span>
-                    <span className="text-[12px] text-muted-foreground">
-                      تطابق {Math.round(m.similarity * 100)}%
-                    </span>
+                    <SimilarityLabel
+                      value={m.similarity}
+                      className="text-[12px] text-muted-foreground"
+                    />
                   </div>
                   <p className="text-foreground/90 leading-relaxed whitespace-pre-wrap line-clamp-4">
                     {m.content}

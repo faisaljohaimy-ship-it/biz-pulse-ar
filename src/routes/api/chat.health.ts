@@ -3,6 +3,7 @@ import { enforceRateLimit, gateDegradedMode } from "@/lib/governance/rate-limit.
 import { GEMINI_EMBEDDING_MODEL } from "@/lib/sadeed/gemini-embeddings.server";
 import { describeProviderPlan } from "@/lib/sadeed/llm/provider-plan.server";
 import { isGeminiRagReady } from "@/lib/sadeed/rag.server";
+import { describeRetrievalReadiness } from "@/lib/sadeed/rag/readiness.server";
 
 /**
  * نتيجة فحص المخزن تُحفظ 15 ث في المعزول: الشارة تُسأل مع كل زيارةٍ للرئيسية، والفحص
@@ -54,6 +55,9 @@ export const Route = createFileRoute("/api/chat/health")({
             zero_cost_ready: true,
             rag_embedding_model: GEMINI_EMBEDDING_MODEL,
             rag_ready: isGeminiRagReady(),
+            // O7 (ب): الاسترجاع المعجمي جاهز دائمًا (فهرس داخلي بلا مزوّد)، والمتّجهي
+            // = الراية والمفتاح معًا. الحقول الأربعة أعلاه باقية بأسمائها لفحص الإنتاج.
+            retrieval: describeRetrievalReadiness(),
             voice_configured: elevenLabsPresent,
             transcription_configured: geminiPresent,
           },

@@ -39,13 +39,22 @@ function armFailedShapeOk(payload: Record<string, unknown>): boolean {
   );
 }
 
+// الحقول الأقدم (camelCase) باقية لقرّاء السجلّ السابق، والجديدة (O7 أ) snake_case:
+// `retrieval-header.contract.test.ts` يحرس قيمها ودلالاتها.
 const OUTCOME_KEYS = [
   "arms",
+  "arms_served",
+  "arms_tried",
   "audience",
+  "auth_state",
   "event",
   "hitCount",
+  "hits",
   "latencyMs",
+  "latency_ms",
+  "reason_codes",
   "requestId",
+  "retrieval",
   "servedArms",
 ];
 

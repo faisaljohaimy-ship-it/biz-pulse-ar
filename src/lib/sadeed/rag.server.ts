@@ -42,15 +42,17 @@ import {
   secKnowledgeArm,
   type LexicalDbClient,
 } from "./rag/lexical-arms.server";
-import { observeRagOutcome } from "./rag/observe.server";
+import { observeRagOutcome, retrievalHeaderValue } from "./rag/observe.server";
 import {
   neutralizeCitationMarkers,
   redactPii,
   sanitizeRetrievedContent,
 } from "./rag/sanitize.server";
 import { isGeminiRagReady, vectorArm } from "./rag/vector-arm.server";
+import { computedSimilarityPercent, LEXICAL_MATCH_LABEL_AR } from "./similarity-label";
 
-export { isGeminiRagReady };
+export { isGeminiRagReady, retrievalHeaderValue };
+export type { RetrievalHeaderValue } from "./rag/observe.server";
 
 export type RagCitation = {
   kind: "document" | "knowledge" | "memory";
@@ -111,6 +113,11 @@ export type GatherRagOptions = {
   /** البوّابة تعرف أن المخزن معطّل (`rate.unavailable`) ⇐ لا ذراع قاعدية تُشغَّل. */
   dbUnavailable?: boolean;
   requestId?: string;
+  /**
+   * حال الجلسة في هذا الدور (`anonymous` · `verified` · `unverified`) — يصل حدث
+   * `rag.outcome` رمزًا مغلقًا فيُرى أن «غير متحقَّق» خُدم زائرًا. لا هوية.
+   */
+  authState?: string;
   env?: Record<string, string | undefined>;
 };
 
@@ -146,7 +153,7 @@ export function evaluateRagCoverage(answer: string, citations: RagCitation[]): R
 }
 
 export const UNVERIFIED_TAG_AR = "غير موثّق";
-export const LEXICAL_LABEL_AR: MatchLabel = "مطابقة نصّية";
+export const LEXICAL_LABEL_AR: MatchLabel = LEXICAL_MATCH_LABEL_AR;
 
 const emptyRetrieval = (): RagRetrievalSummary => ({
   servedArms: [],
@@ -185,10 +192,15 @@ const tagTitle = (title: string) =>
 const safeSource = (src: string | null | undefined): string | null =>
   src == null ? null : oneLine(redactPii(sanitizeRetrievedContent(src))).slice(0, 120);
 
-/** درجة الذراع المتّجهية إن أسهمت — الكوساين المحسوب؛ وإلا `null`. */
+/**
+ * درجة الذراع المتّجهية إن أسهمت — الكوساين المحسوب؛ وإلا `null`. درجةٌ غير
+ * منتهية أو لا تُقرَّب إلى 1% (صفر «لم يُقَس» · `NaN` · سالب) ليست كوساين محسوبًا
+ * فتعود `null` — لا يصير `similarity` في JSON الاستشهاد ولا `(sim 0%)` في الكتلة
+ * رقمًا لم يقسه أحد (O7 ج، المادة ٢٧).
+ */
 function vectorSimilarity(hit: FusedHit): number | null {
   const v = hit.contributions.find((c) => c.arm === ARM_NAMES.vector);
-  return v ? v.score : null;
+  return v && computedSimilarityPercent(v.score) !== null ? v.score : null;
 }
 
 /** سطرٌ واحد بلا علامات مصدر مزوّرة — المقتطف مرّ بـ`safeExcerpt` في ذراعه، وهذا سياجٌ ثانٍ على كل ذراع. */
@@ -287,9 +299,11 @@ export function assembleRagContext(outcome: AggregateOutcome): RagContext {
   const armOf = (h: FusedHit) => h.contributions[0]?.arm ?? "";
   const labelOf = (h: FusedHit): MatchLabel =>
     h.contributions.some((c) => c.arm !== ARM_NAMES.vector) ? LEXICAL_LABEL_AR : "تشابه دلالي";
+  // `(sim NN%)` لكوساين محسوب وحده؛ وما عداه يطبع وسم ذراعه بين قوسين —
+  // `(مطابقة نصّية)` للمعجمي، ولا نسبة معه أبدًا (O7 ج، المادة ٢٧).
   const simText = (h: FusedHit) => {
-    const sim = vectorSimilarity(h);
-    return sim === null ? LEXICAL_LABEL_AR : `(sim ${Math.round(sim * 100)}%)`;
+    const percent = computedSimilarityPercent(vectorSimilarity(h));
+    return percent === null ? `(${labelOf(h)})` : `(sim ${percent}%)`;
   };
 
   // العنوان والمصدر بالمرشّحات نفسها في الوسم والسطر وJSON — لا حقل خام يصل النموذج أو العميل.
@@ -407,7 +421,11 @@ export async function gatherRagContext(
     }
     // الرصد والبناء داخل السياج نفسه: رميٌ منهما كان يرفض الوعد الذي يسابقه
     // `/api/chat` في `Promise.all` فيصير 500 لا «إجابة بلا سياق».
-    observeRagOutcome(outcome, { requestId: opts.requestId, audience });
+    observeRagOutcome(outcome, {
+      requestId: opts.requestId,
+      audience,
+      authState: opts.authState,
+    });
     return assembleRagContext(outcome);
   } catch (error) {
     // المجمِّع لا يرمي ببنائه؛ هذا سياجٌ أخير: الإجابة تمضي بلا سياق، والسبب في السجلّ.

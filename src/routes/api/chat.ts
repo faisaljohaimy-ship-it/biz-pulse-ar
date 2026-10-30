@@ -819,6 +819,10 @@ When the user attaches files (<attachment> text blocks, images, or PDFs):
         let ragCounts = { memories: 0, knowledge: 0, documents: 0, unverified: 0 };
         let ragCitations: import("@/lib/sadeed/rag.server").RagCitation[] = [];
         let ragServedArms: string[] = [];
+        // ترويسة `X-SADEED-Retrieval` (O7 أ): ما خدم الاسترجاع فعلًا في هذا الدور.
+        // `null` = مرحلة الاسترجاع لم تعمل أصلًا (`grounded: false` أو دورٌ بلا نصّ) فلا ترويسة —
+        // وغيابها يفرّق «لم يعمل» عن `none` («عمل ولم تخدم ذراع»).
+        let retrievalHeader: import("@/lib/sadeed/rag.server").RetrievalHeaderValue | null = null;
         let liveDataAvailable = false;
         let councilTrace: {
           missionId: string;
@@ -834,7 +838,8 @@ When the user attaches files (<attachment> text blocks, images, or PDFs):
           // والمتّجهية خلف الراية. والقراءة المباشرة لصفوف HCIS التي كانت هنا
           // بـ`similarity: 1` طُويت في الذراع المعجمية بالوسم `[KB:title]` نفسه.
           // المخزن المعطّل (`rate.unavailable`) يُسقط الأذرع القاعدية قبل أن تُشغَّل.
-          const { gatherRagContext, emptyRagContext } = await import("@/lib/sadeed/rag.server");
+          const { gatherRagContext, emptyRagContext, retrievalHeaderValue } =
+            await import("@/lib/sadeed/rag.server");
           const emptyRag = emptyRagContext();
           // الاسترجاع بمهلة (VIBE 5.1): قاعدةٌ لا تجيب تعني سياقًا أقلّ، لا تعليقًا.
           // المجمِّع نفسه يُنهي كل ذراع بموعدها (≤ 2 ث) فتصل المعجمية قبل هذا السباق.
@@ -845,6 +850,7 @@ When the user attaches files (<attachment> text blocks, images, or PDFs):
                   anonClient: anonSupabase,
                   dbUnavailable: rate.unavailable === true,
                   requestId,
+                  authState,
                 })
               : Promise.resolve(emptyRag),
             CONTEXT_DB_DEADLINE_MS,
@@ -879,6 +885,10 @@ When the user attaches files (<attachment> text blocks, images, or PDFs):
             ragCitations = rag.citations;
             ragServedArms = rag.retrieval?.servedArms ?? [];
           }
+          // مهلةٌ أو سياقٌ فارغ ⇒ لا ذراع خدمت ⇒ `none`؛ دالّةٌ نقيّة متزامنة، بلا انتظار جديد.
+          // أما دورٌ بلا نصّ مستخدم (مرفقٌ وحده) فالمجمِّع لم يُستدعَ أصلًا ولا حدث `rag.outcome`:
+          // المرحلة لم تعمل ⇒ لا ترويسة، لا `none` (التي تعني «عمل ولم تخدم ذراع»).
+          retrievalHeader = lastUserText ? retrievalHeaderValue(ragServedArms) : null;
 
           if (liveDataAvailable) {
             // الكتلة الحيّة وحدها هنا — كتلة المعرفة المسترجعة لها قسمها أدناه
@@ -1478,6 +1488,7 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
             "X-SADEED-Reply-Source": replySource,
             "X-SADEED-Gate": gateMode,
             "X-SADEED-Auth": authState,
+            ...(retrievalHeader ? { "X-SADEED-Retrieval": retrievalHeader } : {}),
             // طُلب المحوّل بالترويسة وأُذن له: يُشهَد للعميل بالمورّد الذي أجاب فعلًا.
             ...(useOpenAi
               ? {
