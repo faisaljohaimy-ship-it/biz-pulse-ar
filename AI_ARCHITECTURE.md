@@ -1,6 +1,6 @@
 # SADEED — AI Architecture
 
-> هذه الوثيقة تصف **ما يفعله الكود فعلًا** (قِيس ٢٠٢٦/١٠/١٨). النسخة السابقة كانت
+> هذه الوثيقة تصف **ما يفعله الكود فعلًا** (قِيس ٢٠٢٦/١٠/١٨؛ وقسم ٤ حُدِّث ٢٠٢٦/١٠/٣٠). النسخة السابقة كانت
 > تقول «Lovable AI Gateway، الافتراض `openai/gpt-5`، والاحتياط `gemini-1.5-flash`» —
 > ولم يكن شيء من ذلك صحيحًا: لم يوجد أيّ مسار إلى OpenAI، والمزوّد كان Gemini مباشرةً.
 
@@ -54,8 +54,12 @@ Other AI surfaces (executive briefing, agent runtime, MCP `ask_sadeed`, transcri
 
 ## 4. Memory & RAG
 
-- Tenant knowledge: `finn_*` tables, retrieved by `gatherRagContext` for signed-in users, injected as untrusted data.
-- The `20260728*` RAG migrations are **not applied** in production (see CLAUDE.md); no recall or citation figure exists.
+The retrieval items below describe the code of 2026-10-30 (four commits on top of `origin/main` `9168cceec`; the QA clearance is recorded in the commit messages).
+
+- Retrieval before the model: `gatherRagContext` runs several arms in parallel, each with its own deadline, on every turn, guests included. Lexical arms need no model, no key and no flag: the in-repo index and the live `hcis_*` tables for everyone; `finn_knowledge`, `sec_knowledge_articles` and unverified `finn_document_chunks` for signed-in users under their own JWT. The vector arm (`sadeed_match_*` over the `finn_*` tables) and the two memory writes stay behind `SADEED_GEMINI_RAG_READY` and an embedding key. Retrieved text is injected as untrusted data; uploaded chunks only as context marked unverified, never as a `[DOC:]` citation.
+- The governed gate (`retrieveWithEvidenceGate`, used by the `search_knowledge` tool) degrades to a lexical read over the caller's own org articles when no embedding exists. Those hits stay under the gate (`lexical_only`) and may be mentioned, never cited. The gap RPC is no longer called in the request path.
+- Honest labels: the reply carries `X-SADEED-Retrieval` (`none`, `lexical`, `vector`, `vector+lexical`; absent when retrieval did not run). `/api/chat/health` has a `retrieval` block (`lexical_ready`, `vector_ready`, `embedding_provider`). A similarity percentage is shown only for a computed cosine; lexical matches are labelled «مطابقة نصّية» and anything else «تطابق لم يُقَس».
+- `sadeed_match_documents`, `sadeed_match_knowledge` and `sadeed_match_memory` were applied to the production project `cnaevysaoimzusnvpazr` on 2026-10-30 (additive; `aria_match_*` untouched). The `20260728*` RAG migrations are **not applied** in production (see CLAUDE.md). No recall, citation or retrieval latency figure exists on production («لم يُقَس»).
 
 ## 5. Voice
 
