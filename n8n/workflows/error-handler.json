@@ -1,0 +1,185 @@
+{
+  "active": false,
+  "connections": {
+    "Email Alert": {
+      "main": [
+        [
+          {
+            "index": 1,
+            "node": "Join Alerts",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Format",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Format": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Telegram Alert",
+            "type": "main"
+          },
+          {
+            "index": 0,
+            "node": "Email Alert",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Join Alerts": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Delivery Check",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Telegram Alert": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Join Alerts",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "name": "error-handler",
+  "nodes": [
+    {
+      "id": "556c7994-363b-4542-a7dd-d37323e4d5b4",
+      "name": "Error Trigger",
+      "parameters": {},
+      "position": [
+        0,
+        200
+      ],
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1
+    },
+    {
+      "id": "3bb5a93a-77a5-45ff-afa5-48c50e075328",
+      "name": "Format",
+      "parameters": {
+        "jsCode": "const CanaryEvaluate = (function () {\n  const module = { exports: {} };\n  /**\n   * canary-evaluate: يقرّر هل يُرسل المراقب تنبيهًا، من ردود فحوص الصحة.\n   *\n   * نقية: الحالة والوقت يُمرَّران ويُعادان. القاعدة: تنبيه عند تغيّر الحالة فقط،\n   * وتذكير كل 6 ساعات ما دامت الحالة غير سليمة، وإشعار تعافٍ واحد.\n   *\n   * التثبيت: تغيّر الحالة لا يُعتمد إلا بعد رصدين متتاليين (confirmations=2)\n   * حتى لا يُنتج فحص واحد فاشل تنبيهًا وتعافيًا في دقيقتين. الرصد الأول بعد\n   * التشغيل يُعتمد فورًا، وتنبيهه فقط إن لم يكن سليمًا.\n   *\n   * الفحوص الثلاثة:\n   *   app      من /api/public/health : status = ok | degraded | down\n   *   chat     من /api/chat/health   : gate = verified | degraded | closed\n   *   provider نداء بحث بلا مفتاح يثبت أن n8n يصل إلى الويب (يخفّض إلى degraded فقط)\n   *\n   * يضم الملف أيضًا تنسيق رسالة الخطأ المنقّحة لـerror-handler: اسم المسار\n   * والعقدة وأول 200 حرف من الرسالة بعد حذف الأسرار، ولا شيء من بيانات المدخلات.\n   *\n   * ردود الفحوص بشكل ناتج عقدة HTTP في n8n الحقيقي (ردّ نصّي كامل): {statusCode, headers, data}\n   * والمتن في data (outputPropertyName)، لا في body.\n   *\n   * التسليم: رسالة تيليجرام تُرسل بوضع HTML بعد تهريب & و< و> (toTelegramHtml)، لأن الوضع\n   * الافتراضي Markdown القديم يرفض الرسالة عند شرطة سفلية مفردة (gate_closed) فيضيع التنبيه.\n   * deliveryOutcome يقرّر هل وصل التنبيه، وplanDeliveryFailure يعيد الحالة إلى ما قبل التقييم\n   * (تنبيه لم يصل كأنه لم يقع) ويقرّر هل يُرفع خطأ ظاهر (مرة كل 30 دقيقة كحدّ أقصى).\n   */\n  const REMINDER_MS = 6 * 3600 * 1000;\n  const CONFIRMATIONS = 2;\n  const RANK = { ok: 0, degraded: 1, down: 2 };\n  const LABELS = { app: \"الصحة العامة\", chat: \"الدردشة\", provider: \"مزوّد الويب\" };\n  const STATUS_AR = { ok: \"سليمة\", degraded: \"متدهورة\", down: \"متوقفة\" };\n  const DELIVERY_RAISE_EVERY_MS = 30 * 60 * 1000;\n\n  function parseBody(body) {\n    if (body && typeof body === \"object\") return body;\n    if (typeof body !== \"string\" || body.length === 0 || body.length > 262144) return null;\n    try {\n      const value = JSON.parse(body);\n      return value && typeof value === \"object\" ? value : null;\n    } catch (error) {\n      return null;\n    }\n  }\n\n  function reached(res) {\n    return res && typeof res === \"object\" && typeof res.statusCode === \"number\";\n  }\n\n  function checkApp(res) {\n    if (!reached(res)) return { name: \"app\", status: \"down\", detail: \"unreachable\" };\n    const body = parseBody(res.data);\n    if (!body) return { name: \"app\", status: \"down\", detail: \"bad_body\" };\n    const bad = [];\n    const subsystems = body.subsystems && typeof body.subsystems === \"object\" ? body.subsystems : {};\n    for (const key of Object.keys(subsystems)) {\n      const s = subsystems[key] && subsystems[key].status;\n      if (s === \"down\" || s === \"degraded\") bad.push(key);\n    }\n    const detail = bad.slice(0, 5).join(\",\");\n    if (body.status === \"ok\") return { name: \"app\", status: \"ok\", detail: \"\" };\n    if (body.status === \"degraded\") return { name: \"app\", status: \"degraded\", detail };\n    return { name: \"app\", status: \"down\", detail: detail || \"status_\" + String(body.status) };\n  }\n\n  function checkChat(res) {\n    if (!reached(res) || res.statusCode !== 200) {\n      return { name: \"chat\", status: \"down\", detail: \"unreachable\" };\n    }\n    const body = parseBody(res.data);\n    if (!body || body.ok !== true) return { name: \"chat\", status: \"down\", detail: \"bad_body\" };\n    if (body.gate === \"closed\") return { name: \"chat\", status: \"degraded\", detail: \"gate_closed\" };\n    if (body.gate === \"degraded\")\n      return { name: \"chat\", status: \"degraded\", detail: \"gate_degraded\" };\n    if (body.key_present === false) return { name: \"chat\", status: \"degraded\", detail: \"no_key\" };\n    return { name: \"chat\", status: \"ok\", detail: \"\" };\n  }\n\n  function checkProvider(res) {\n    if (!reached(res) || res.statusCode !== 200) {\n      return { name: \"provider\", status: \"degraded\", detail: \"unreachable\" };\n    }\n    const body = parseBody(res.data);\n    if (!body) return { name: \"provider\", status: \"degraded\", detail: \"bad_body\" };\n    return { name: \"provider\", status: \"ok\", detail: \"\" };\n  }\n\n  function worst(checks) {\n    let status = \"ok\";\n    for (const check of checks) if (RANK[check.status] > RANK[status]) status = check.status;\n    return status;\n  }\n\n  function hoursText(ms) {\n    const hours = Math.max(1, Math.round(ms / 3600000));\n    return hours === 1 ? \"نحو ساعة\" : \"نحو \" + hours + \" ساعات\";\n  }\n\n  /** رسالة تنبيه عربية قصيرة. لا أسرار ولا بيانات مدخلات. */\n  function formatAlert(input) {\n    const lines = [];\n    const status = STATUS_AR[input.status] || \"غير معروفة\";\n    if (input.type === \"recovery\") {\n      lines.push(\"تعافى سَدِيد. كل الفحوص سليمة الآن.\");\n    } else if (input.type === \"reminder\") {\n      lines.push(\"تذكير: الحالة ما زالت \" + status + \" منذ \" + hoursText(input.sinceMs || 0) + \".\");\n    } else {\n      lines.push(\"تنبيه: حالة سَدِيد الآن \" + status + \".\");\n    }\n    if (input.type !== \"recovery\") {\n      for (const check of input.checks) {\n        if (check.status === \"ok\") continue;\n        lines.push(\n          \"- \" +\n            LABELS[check.name] +\n            \": \" +\n            STATUS_AR[check.status] +\n            (check.detail ? \" (\" + check.detail + \")\" : \"\"),\n        );\n      }\n    }\n    return lines.join(\"\\n\");\n  }\n\n  /**\n   * @param {object} input\n   * @param {{app: object, chat: object, provider: object}} input.health ردود HTTP كما وصلت\n   * @param {object} [input.state]\n   * @param {number} input.now\n   */\n  function canaryEvaluate(input) {\n    const now =\n      input && typeof input.now === \"number\" && isFinite(input.now) ? input.now : Date.now();\n    const health = (input && input.health) || {};\n    const checks = [checkApp(health.app), checkChat(health.chat), checkProvider(health.provider)];\n    const observed = worst(checks);\n    const prev = input && input.state && typeof input.state === \"object\" ? input.state : {};\n    const known = RANK[prev.status] !== undefined;\n    const next = {\n      status: known ? prev.status : observed,\n      since: typeof prev.since === \"number\" ? prev.since : now,\n      lastNotifiedAt: typeof prev.lastNotifiedAt === \"number\" ? prev.lastNotifiedAt : 0,\n      pendingStatus: \"\",\n      pendingCount: 0,\n    };\n    let notify = false;\n    let type = \"none\";\n\n    if (!known) {\n      next.since = now;\n      if (observed !== \"ok\") {\n        notify = true;\n        type = \"initial\";\n      }\n    } else if (observed === prev.status) {\n      if (observed !== \"ok\" && now - next.lastNotifiedAt >= REMINDER_MS) {\n        notify = true;\n        type = \"reminder\";\n      }\n    } else {\n      const count = prev.pendingStatus === observed ? (Number(prev.pendingCount) || 0) + 1 : 1;\n      if (count >= CONFIRMATIONS) {\n        next.status = observed;\n        next.since = now;\n        notify = true;\n        type = observed === \"ok\" ? \"recovery\" : \"change\";\n      } else {\n        next.pendingStatus = observed;\n        next.pendingCount = count;\n      }\n    }\n    if (notify) next.lastNotifiedAt = now;\n\n    const message = notify\n      ? formatAlert({\n          type,\n          status: next.status,\n          checks,\n          sinceMs: now - next.since,\n        })\n      : \"\";\n    return { observed, status: next.status, notify, type, checks, state: next, message };\n  }\n\n  /** تهريب نصّ لتيليجرام بوضع HTML: & و< و> وحدها. لا وسوم منسّقة في تنبيهاتنا. */\n  function toTelegramHtml(text) {\n    return String(text === undefined || text === null ? \"\" : text)\n      .replace(/&/g, \"&amp;\")\n      .replace(/</g, \"&lt;\")\n      .replace(/>/g, \"&gt;\");\n  }\n\n  function isRecord(value) {\n    return value !== null && typeof value === \"object\" && !Array.isArray(value);\n  }\n\n  /**\n   * هل وصل التنبيه؟ يكفي نجاح قناة واحدة. ناتج تيليجرام الناجح يحمل ok أو result؛ والفاشل\n   * يحمل error (عقدتا التنبيه بمتابعة عند الخطأ فيصل الخطأ كعنصر).\n   * @param {{telegram?: object[], email?: object[]}} input عناصر json لكل قناة\n   */\n  function deliveryOutcome(input) {\n    const tg = input && Array.isArray(input.telegram) ? input.telegram : [];\n    const em = input && Array.isArray(input.email) ? input.email : [];\n    const telegram =\n      tg.length > 0 &&\n      tg.every((j) => isRecord(j) && !j.error && (j.ok === true || j.result !== undefined));\n    const email = em.length > 0 && em.every((j) => isRecord(j) && !j.error);\n    return { delivered: telegram || email, telegram, email };\n  }\n\n  /**\n   * تنبيه لم يصل: يعيد حالة المراقب إلى ما قبل التقييم فيُعاد في الدقيقة التالية، ويقرّر رفع\n   * خطأ ظاهر في سجلّ التنفيذات (فيعمل معالج الأخطاء) مرة كل 30 دقيقة فقط حتى لا يفيض.\n   * @param {{prevState?: object, raisedAt?: number, now: number}} input\n   */\n  function planDeliveryFailure(input) {\n    const now =\n      input && typeof input.now === \"number\" && isFinite(input.now) ? input.now : Date.now();\n    const prev = input && isRecord(input.prevState) ? input.prevState : {};\n    const raisedAt = input && typeof input.raisedAt === \"number\" ? input.raisedAt : 0;\n    const raise = now - raisedAt >= DELIVERY_RAISE_EVERY_MS;\n    return {\n      state: JSON.parse(JSON.stringify(prev)),\n      raise,\n      raisedAt: raise ? now : raisedAt,\n    };\n  }\n\n  /** يحذف الأسرار الشائعة من نص خطأ، ثم يقصّه إلى `max` حرفًا. */\n  function redactErrorMessage(text, max) {\n    let out = typeof text === \"string\" ? text : \"\";\n    out = out\n      .replace(/https?:\\/\\/[^\\s)'\"]+/gi, (url) => url.split(\"?\")[0].split(\"#\")[0])\n      .replace(/\\b(bearer|basic)\\s+[A-Za-z0-9._~+/=-]{6,}/gi, \"$1 [محجوب]\")\n      .replace(\n        /\\b(api[_-]?key|key|token|secret|password|authorization|sig|signature)=([^&\\s]+)/gi,\n        \"$1=[محجوب]\",\n      )\n      .replace(/\\b[A-Za-z0-9_-]{28,}\\b/g, \"[محجوب]\")\n      .replace(/\\s+/g, \" \")\n      .trim();\n    const chars = Array.from(out);\n    return chars.length > max ? chars.slice(0, max).join(\"\") : out;\n  }\n\n  /** رسالة معالج الأخطاء: المسار والعقدة وأول 200 حرف منقّحة. لا مدخلات أبدًا. */\n  function formatErrorAlert(input) {\n    const workflow = redactErrorMessage(input && input.workflow, 80) || \"غير معروف\";\n    const node = redactErrorMessage(input && input.node, 80) || \"غير معروفة\";\n    const message = redactErrorMessage(input && input.message, 200) || \"بلا رسالة\";\n    return [\n      \"تنبيه: فشل مسار في n8n.\",\n      \"المسار: \" + workflow,\n      \"العقدة: \" + node,\n      \"الرسالة: \" + message,\n    ].join(\"\\n\");\n  }\n\n  if (typeof module !== \"undefined\" && module.exports) {\n    module.exports = {\n      canaryEvaluate,\n      formatAlert,\n      formatErrorAlert,\n      redactErrorMessage,\n      toTelegramHtml,\n      deliveryOutcome,\n      planDeliveryFailure,\n      REMINDER_MS,\n      CONFIRMATIONS,\n      DELIVERY_RAISE_EVERY_MS,\n    };\n  }\n  return module.exports;\n})();\n\nconst j = $input.first().json || {};\nconst execution = j.execution || {};\nconst error = execution.error || {};\nconst message = CanaryEvaluate.formatErrorAlert({\n  workflow: j.workflow && j.workflow.name,\n  node: execution.lastNodeExecuted,\n  message: error.message,\n});\nreturn [{ json: { message, telegramText: CanaryEvaluate.toTelegramHtml(message), chatId: $env.NX_ALERT_CHAT_ID || \"\" } }];\n",
+        "language": "javaScript",
+        "mode": "runOnceForAllItems"
+      },
+      "position": [
+        240,
+        200
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "credentials": {
+        "telegramApi": {
+          "id": null,
+          "name": "Nx Telegram Alert Bot"
+        }
+      },
+      "id": "12d96bc9-7543-4f9f-a96d-ccdae68c4d4c",
+      "name": "Telegram Alert",
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        },
+        "chatId": "={{ $json.chatId }}",
+        "operation": "sendMessage",
+        "resource": "message",
+        "text": "={{ $json.telegramText }}"
+      },
+      "position": [
+        1500,
+        120
+      ],
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2
+    },
+    {
+      "credentials": {
+        "smtp": {
+          "id": null,
+          "name": "Nx SMTP Alert"
+        }
+      },
+      "id": "c6ac58f9-a3e9-4271-ad02-d64f3db68d5e",
+      "name": "Email Alert",
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "emailFormat": "text",
+        "fromEmail": "={{ $env.NX_ALERT_EMAIL_FROM }}",
+        "options": {},
+        "subject": "تنبيه سَدِيد",
+        "text": "={{ $json.message }}",
+        "toEmail": "={{ $env.NX_ALERT_EMAIL_TO }}"
+      },
+      "position": [
+        1500,
+        280
+      ],
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1
+    },
+    {
+      "id": "0995c23f-4613-463a-ade1-2320dab1ca0b",
+      "name": "Join Alerts",
+      "parameters": {
+        "mode": "append",
+        "numberInputs": 2
+      },
+      "position": [
+        1740,
+        200
+      ],
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3
+    },
+    {
+      "id": "7eefb5ac-42ca-45f2-a2d0-683a2c70a41f",
+      "name": "Delivery Check",
+      "parameters": {
+        "jsCode": "const CanaryEvaluate = (function () {\n  const module = { exports: {} };\n  /**\n   * canary-evaluate: يقرّر هل يُرسل المراقب تنبيهًا، من ردود فحوص الصحة.\n   *\n   * نقية: الحالة والوقت يُمرَّران ويُعادان. القاعدة: تنبيه عند تغيّر الحالة فقط،\n   * وتذكير كل 6 ساعات ما دامت الحالة غير سليمة، وإشعار تعافٍ واحد.\n   *\n   * التثبيت: تغيّر الحالة لا يُعتمد إلا بعد رصدين متتاليين (confirmations=2)\n   * حتى لا يُنتج فحص واحد فاشل تنبيهًا وتعافيًا في دقيقتين. الرصد الأول بعد\n   * التشغيل يُعتمد فورًا، وتنبيهه فقط إن لم يكن سليمًا.\n   *\n   * الفحوص الثلاثة:\n   *   app      من /api/public/health : status = ok | degraded | down\n   *   chat     من /api/chat/health   : gate = verified | degraded | closed\n   *   provider نداء بحث بلا مفتاح يثبت أن n8n يصل إلى الويب (يخفّض إلى degraded فقط)\n   *\n   * يضم الملف أيضًا تنسيق رسالة الخطأ المنقّحة لـerror-handler: اسم المسار\n   * والعقدة وأول 200 حرف من الرسالة بعد حذف الأسرار، ولا شيء من بيانات المدخلات.\n   *\n   * ردود الفحوص بشكل ناتج عقدة HTTP في n8n الحقيقي (ردّ نصّي كامل): {statusCode, headers, data}\n   * والمتن في data (outputPropertyName)، لا في body.\n   *\n   * التسليم: رسالة تيليجرام تُرسل بوضع HTML بعد تهريب & و< و> (toTelegramHtml)، لأن الوضع\n   * الافتراضي Markdown القديم يرفض الرسالة عند شرطة سفلية مفردة (gate_closed) فيضيع التنبيه.\n   * deliveryOutcome يقرّر هل وصل التنبيه، وplanDeliveryFailure يعيد الحالة إلى ما قبل التقييم\n   * (تنبيه لم يصل كأنه لم يقع) ويقرّر هل يُرفع خطأ ظاهر (مرة كل 30 دقيقة كحدّ أقصى).\n   */\n  const REMINDER_MS = 6 * 3600 * 1000;\n  const CONFIRMATIONS = 2;\n  const RANK = { ok: 0, degraded: 1, down: 2 };\n  const LABELS = { app: \"الصحة العامة\", chat: \"الدردشة\", provider: \"مزوّد الويب\" };\n  const STATUS_AR = { ok: \"سليمة\", degraded: \"متدهورة\", down: \"متوقفة\" };\n  const DELIVERY_RAISE_EVERY_MS = 30 * 60 * 1000;\n\n  function parseBody(body) {\n    if (body && typeof body === \"object\") return body;\n    if (typeof body !== \"string\" || body.length === 0 || body.length > 262144) return null;\n    try {\n      const value = JSON.parse(body);\n      return value && typeof value === \"object\" ? value : null;\n    } catch (error) {\n      return null;\n    }\n  }\n\n  function reached(res) {\n    return res && typeof res === \"object\" && typeof res.statusCode === \"number\";\n  }\n\n  function checkApp(res) {\n    if (!reached(res)) return { name: \"app\", status: \"down\", detail: \"unreachable\" };\n    const body = parseBody(res.data);\n    if (!body) return { name: \"app\", status: \"down\", detail: \"bad_body\" };\n    const bad = [];\n    const subsystems = body.subsystems && typeof body.subsystems === \"object\" ? body.subsystems : {};\n    for (const key of Object.keys(subsystems)) {\n      const s = subsystems[key] && subsystems[key].status;\n      if (s === \"down\" || s === \"degraded\") bad.push(key);\n    }\n    const detail = bad.slice(0, 5).join(\",\");\n    if (body.status === \"ok\") return { name: \"app\", status: \"ok\", detail: \"\" };\n    if (body.status === \"degraded\") return { name: \"app\", status: \"degraded\", detail };\n    return { name: \"app\", status: \"down\", detail: detail || \"status_\" + String(body.status) };\n  }\n\n  function checkChat(res) {\n    if (!reached(res) || res.statusCode !== 200) {\n      return { name: \"chat\", status: \"down\", detail: \"unreachable\" };\n    }\n    const body = parseBody(res.data);\n    if (!body || body.ok !== true) return { name: \"chat\", status: \"down\", detail: \"bad_body\" };\n    if (body.gate === \"closed\") return { name: \"chat\", status: \"degraded\", detail: \"gate_closed\" };\n    if (body.gate === \"degraded\")\n      return { name: \"chat\", status: \"degraded\", detail: \"gate_degraded\" };\n    if (body.key_present === false) return { name: \"chat\", status: \"degraded\", detail: \"no_key\" };\n    return { name: \"chat\", status: \"ok\", detail: \"\" };\n  }\n\n  function checkProvider(res) {\n    if (!reached(res) || res.statusCode !== 200) {\n      return { name: \"provider\", status: \"degraded\", detail: \"unreachable\" };\n    }\n    const body = parseBody(res.data);\n    if (!body) return { name: \"provider\", status: \"degraded\", detail: \"bad_body\" };\n    return { name: \"provider\", status: \"ok\", detail: \"\" };\n  }\n\n  function worst(checks) {\n    let status = \"ok\";\n    for (const check of checks) if (RANK[check.status] > RANK[status]) status = check.status;\n    return status;\n  }\n\n  function hoursText(ms) {\n    const hours = Math.max(1, Math.round(ms / 3600000));\n    return hours === 1 ? \"نحو ساعة\" : \"نحو \" + hours + \" ساعات\";\n  }\n\n  /** رسالة تنبيه عربية قصيرة. لا أسرار ولا بيانات مدخلات. */\n  function formatAlert(input) {\n    const lines = [];\n    const status = STATUS_AR[input.status] || \"غير معروفة\";\n    if (input.type === \"recovery\") {\n      lines.push(\"تعافى سَدِيد. كل الفحوص سليمة الآن.\");\n    } else if (input.type === \"reminder\") {\n      lines.push(\"تذكير: الحالة ما زالت \" + status + \" منذ \" + hoursText(input.sinceMs || 0) + \".\");\n    } else {\n      lines.push(\"تنبيه: حالة سَدِيد الآن \" + status + \".\");\n    }\n    if (input.type !== \"recovery\") {\n      for (const check of input.checks) {\n        if (check.status === \"ok\") continue;\n        lines.push(\n          \"- \" +\n            LABELS[check.name] +\n            \": \" +\n            STATUS_AR[check.status] +\n            (check.detail ? \" (\" + check.detail + \")\" : \"\"),\n        );\n      }\n    }\n    return lines.join(\"\\n\");\n  }\n\n  /**\n   * @param {object} input\n   * @param {{app: object, chat: object, provider: object}} input.health ردود HTTP كما وصلت\n   * @param {object} [input.state]\n   * @param {number} input.now\n   */\n  function canaryEvaluate(input) {\n    const now =\n      input && typeof input.now === \"number\" && isFinite(input.now) ? input.now : Date.now();\n    const health = (input && input.health) || {};\n    const checks = [checkApp(health.app), checkChat(health.chat), checkProvider(health.provider)];\n    const observed = worst(checks);\n    const prev = input && input.state && typeof input.state === \"object\" ? input.state : {};\n    const known = RANK[prev.status] !== undefined;\n    const next = {\n      status: known ? prev.status : observed,\n      since: typeof prev.since === \"number\" ? prev.since : now,\n      lastNotifiedAt: typeof prev.lastNotifiedAt === \"number\" ? prev.lastNotifiedAt : 0,\n      pendingStatus: \"\",\n      pendingCount: 0,\n    };\n    let notify = false;\n    let type = \"none\";\n\n    if (!known) {\n      next.since = now;\n      if (observed !== \"ok\") {\n        notify = true;\n        type = \"initial\";\n      }\n    } else if (observed === prev.status) {\n      if (observed !== \"ok\" && now - next.lastNotifiedAt >= REMINDER_MS) {\n        notify = true;\n        type = \"reminder\";\n      }\n    } else {\n      const count = prev.pendingStatus === observed ? (Number(prev.pendingCount) || 0) + 1 : 1;\n      if (count >= CONFIRMATIONS) {\n        next.status = observed;\n        next.since = now;\n        notify = true;\n        type = observed === \"ok\" ? \"recovery\" : \"change\";\n      } else {\n        next.pendingStatus = observed;\n        next.pendingCount = count;\n      }\n    }\n    if (notify) next.lastNotifiedAt = now;\n\n    const message = notify\n      ? formatAlert({\n          type,\n          status: next.status,\n          checks,\n          sinceMs: now - next.since,\n        })\n      : \"\";\n    return { observed, status: next.status, notify, type, checks, state: next, message };\n  }\n\n  /** تهريب نصّ لتيليجرام بوضع HTML: & و< و> وحدها. لا وسوم منسّقة في تنبيهاتنا. */\n  function toTelegramHtml(text) {\n    return String(text === undefined || text === null ? \"\" : text)\n      .replace(/&/g, \"&amp;\")\n      .replace(/</g, \"&lt;\")\n      .replace(/>/g, \"&gt;\");\n  }\n\n  function isRecord(value) {\n    return value !== null && typeof value === \"object\" && !Array.isArray(value);\n  }\n\n  /**\n   * هل وصل التنبيه؟ يكفي نجاح قناة واحدة. ناتج تيليجرام الناجح يحمل ok أو result؛ والفاشل\n   * يحمل error (عقدتا التنبيه بمتابعة عند الخطأ فيصل الخطأ كعنصر).\n   * @param {{telegram?: object[], email?: object[]}} input عناصر json لكل قناة\n   */\n  function deliveryOutcome(input) {\n    const tg = input && Array.isArray(input.telegram) ? input.telegram : [];\n    const em = input && Array.isArray(input.email) ? input.email : [];\n    const telegram =\n      tg.length > 0 &&\n      tg.every((j) => isRecord(j) && !j.error && (j.ok === true || j.result !== undefined));\n    const email = em.length > 0 && em.every((j) => isRecord(j) && !j.error);\n    return { delivered: telegram || email, telegram, email };\n  }\n\n  /**\n   * تنبيه لم يصل: يعيد حالة المراقب إلى ما قبل التقييم فيُعاد في الدقيقة التالية، ويقرّر رفع\n   * خطأ ظاهر في سجلّ التنفيذات (فيعمل معالج الأخطاء) مرة كل 30 دقيقة فقط حتى لا يفيض.\n   * @param {{prevState?: object, raisedAt?: number, now: number}} input\n   */\n  function planDeliveryFailure(input) {\n    const now =\n      input && typeof input.now === \"number\" && isFinite(input.now) ? input.now : Date.now();\n    const prev = input && isRecord(input.prevState) ? input.prevState : {};\n    const raisedAt = input && typeof input.raisedAt === \"number\" ? input.raisedAt : 0;\n    const raise = now - raisedAt >= DELIVERY_RAISE_EVERY_MS;\n    return {\n      state: JSON.parse(JSON.stringify(prev)),\n      raise,\n      raisedAt: raise ? now : raisedAt,\n    };\n  }\n\n  /** يحذف الأسرار الشائعة من نص خطأ، ثم يقصّه إلى `max` حرفًا. */\n  function redactErrorMessage(text, max) {\n    let out = typeof text === \"string\" ? text : \"\";\n    out = out\n      .replace(/https?:\\/\\/[^\\s)'\"]+/gi, (url) => url.split(\"?\")[0].split(\"#\")[0])\n      .replace(/\\b(bearer|basic)\\s+[A-Za-z0-9._~+/=-]{6,}/gi, \"$1 [محجوب]\")\n      .replace(\n        /\\b(api[_-]?key|key|token|secret|password|authorization|sig|signature)=([^&\\s]+)/gi,\n        \"$1=[محجوب]\",\n      )\n      .replace(/\\b[A-Za-z0-9_-]{28,}\\b/g, \"[محجوب]\")\n      .replace(/\\s+/g, \" \")\n      .trim();\n    const chars = Array.from(out);\n    return chars.length > max ? chars.slice(0, max).join(\"\") : out;\n  }\n\n  /** رسالة معالج الأخطاء: المسار والعقدة وأول 200 حرف منقّحة. لا مدخلات أبدًا. */\n  function formatErrorAlert(input) {\n    const workflow = redactErrorMessage(input && input.workflow, 80) || \"غير معروف\";\n    const node = redactErrorMessage(input && input.node, 80) || \"غير معروفة\";\n    const message = redactErrorMessage(input && input.message, 200) || \"بلا رسالة\";\n    return [\n      \"تنبيه: فشل مسار في n8n.\",\n      \"المسار: \" + workflow,\n      \"العقدة: \" + node,\n      \"الرسالة: \" + message,\n    ].join(\"\\n\");\n  }\n\n  if (typeof module !== \"undefined\" && module.exports) {\n    module.exports = {\n      canaryEvaluate,\n      formatAlert,\n      formatErrorAlert,\n      redactErrorMessage,\n      toTelegramHtml,\n      deliveryOutcome,\n      planDeliveryFailure,\n      REMINDER_MS,\n      CONFIRMATIONS,\n      DELIVERY_RAISE_EVERY_MS,\n    };\n  }\n  return module.exports;\n})();\n\nconst read = (name) => {\n  try {\n    return $(name).all().map((i) => i.json);\n  } catch (e) {\n    return [];\n  }\n};\nconst out = CanaryEvaluate.deliveryOutcome({ telegram: read(\"Telegram Alert\"), email: read(\"Email Alert\") });\nif (!out.delivered) throw new Error(\"alert_delivery_failed\");\nreturn [{ json: { delivered: true, telegram: out.telegram, email: out.email } }];\n",
+        "language": "javaScript",
+        "mode": "runOnceForAllItems"
+      },
+      "position": [
+        1980,
+        200
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    }
+  ],
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "executionTimeout": 30,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "none",
+    "saveExecutionProgress": false,
+    "saveManualExecutions": true,
+    "timezone": "Asia/Riyadh"
+  }
+}

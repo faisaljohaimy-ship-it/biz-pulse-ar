@@ -1,0 +1,5 @@
+{
+  "private": true,
+  "type": "commonjs",
+  "description": "شيفرة عقد n8n: CommonJS صرف (المستودع كلّه ESM). تُضمَّن حرفيًّا في عقد Code وتُحمَّل في الاختبار بـ createRequire."
+}

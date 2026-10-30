@@ -37,3 +37,12 @@ src/routes/\[.well-known\]/
 # فما يُكتب يدويًّا في docs/audit/ يبقى تحت التنسيق.
 docs/audit/SADEED_V10_AUDIT_*.md
 docs/audit/sadeed-v10-audit-data-*.json
+
+# مسارات n8n المولَّدة وREADME المولَّد (n8n/ يملك المولّد شكلها): scripts/build-n8n-workflows.mjs
+# يكتب JSON بمفاتيح مرتّبة وإزاحة ثابتة، وprettier يطوي المصفوفات القصيرة في سطر واحد؛ فلو ترك
+# autoformat على main هذه الملفات تحت التنسيق لدخل المولِّد والمنسِّق في التناوب الذي أُغلق أعلاه،
+# وحمرّ حارس «المتعقَّب = المولَّد» (n8n/tests/n8n-workflows.contract.test.ts) بلا عطل حقيقي.
+# شيفرة المولّد نفسها (scripts/) وn8n/code وn8n/tests تبقى تحت prettier.
+n8n/workflows/
+n8n/workflows.stub/
+n8n/README.md

@@ -84,3 +84,6 @@ public/build-info.json
 # تشغيل (رموز JWT تجريبية بسرٍّ عشوائي) وثنائي PostgREST المحمَّل — لا يُدفعان.
 tests/integration/.env.integration
 tests/integration/bin/
+
+# ملف stub لمسارات n8n (يُولَّد محليًّا للتجربة ضد n8n حقيقي بلا إنترنت): لا يُتعقَّب.
+n8n/workflows.stub/
