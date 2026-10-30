@@ -72,10 +72,13 @@ function importsRetrieval(src: string): boolean {
  * القاعدية والمتّجهية والرصد تحت `src/lib/sadeed/rag/`. وأضاف O8(أ) (٢٠٢٦/١٠/٣٠) خامسًا:
  * أداة `knowledge_search` في وكيل فِن، **على الفهرس الداخلي وحده**
  * (`sources/seed-corpus.server`) — وحصر استيراداتها في قائمة بيضاء يحرسه
- * `src/lib/finn-agent/finn-governance.contract.test.ts` (⑨).
+ * `src/lib/finn-agent/finn-governance.contract.test.ts` (⑨). وأضافت P1 من خطة n8n (٢٠٢٦/١٠/٣٠)
+ * سادسًا: `src/lib/n8n/brief.server.ts` يستورد من `ilike-terms.server` وحدها (`ilikeTerms` وما يلزمها) لاشتقاق
+ * كلمات موجز البحث الخارجي — لا يلمس الفهارس ولا القاعدة، ويحرس ذلك `n8n-client.contract.test.ts`.
  */
 const ALLOWED_CONSUMERS: readonly string[] = [
   "src/lib/finn-agent/knowledge-search.server.ts",
+  "src/lib/n8n/brief.server.ts",
   "src/lib/sadeed/rag.server.ts",
   "src/lib/sadeed/rag/lexical-arms.server.ts",
   "src/lib/sadeed/rag/observe.server.ts",

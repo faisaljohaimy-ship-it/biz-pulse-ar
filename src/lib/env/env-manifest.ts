@@ -196,6 +196,45 @@ export const ENV_CAPABILITIES: readonly CapabilitySpec[] = [
     ],
   },
   {
+    // بحث الويب لسَدِيد عبر n8n (أمر المالك ٢٠٢٦/١٠/٣٠): قدرةٌ اختيارية — غيابها `not_configured` لا خطأ.
+    // العميل في `src/lib/n8n/client.server.ts` وحده يقرأها (حارس `n8n-client.contract.test.ts`).
+    key: "sadeed-web-research",
+    labelAr: "بحث الويب لسَدِيد عبر خدمة الأتمتة (اختياري، غيابه يعني لا بحث ولا خطأ)",
+    requirement: "optional",
+    vars: [
+      S(
+        "SADEED_N8N_BASE_URL",
+        "https origin of the always-on n8n (no path, no trailing slash); webhook URL = base + /webhook/ + closed path. Shared by the SADEED and FNN surfaces",
+        false,
+      ),
+      S(
+        "SADEED_N8N_SECRET",
+        "HMAC secret (at least 32 chars) for the SADEED research path; must differ from FINN_N8N_SECRET",
+      ),
+      S(
+        "SADEED_WEB_RESEARCH",
+        "off (default) | members | all — who SADEED may research the web for; any other value means off",
+        false,
+      ),
+      S(
+        "SADEED_WEB_DISABLED",
+        "1/on/true switches every n8n call off at once, without a deploy",
+        false,
+      ),
+    ],
+  },
+  {
+    key: "fnn-n8n",
+    labelAr: "وكيل الأتمتة والبرمجة للمالك عبر خدمة الأتمتة: البحث والمشغّل (اختياري)",
+    requirement: "optional",
+    vars: [
+      S(
+        "FINN_N8N_SECRET",
+        "HMAC secret (at least 32 chars) for the FNN research and runner paths; domain-separated from SADEED_N8N_SECRET (equal secrets disable both surfaces)",
+      ),
+    ],
+  },
+  {
     key: "outbound-email",
     labelAr: "البريد الصادر (Resend)",
     requirement: "all",
