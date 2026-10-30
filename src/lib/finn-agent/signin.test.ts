@@ -39,9 +39,9 @@ describe("FNN native provider discovery", () => {
   });
   it("bounds a body that ignores cancellation", async () => {
     const response = { ok: true, json: () => new Promise(() => {}) } as unknown as Response;
-    expect(
-      await probeFinnGoogleProvider(async () => response, { ...config, timeoutMs: 10 }),
-    ).toBe("unknown");
+    expect(await probeFinnGoogleProvider(async () => response, { ...config, timeoutMs: 10 })).toBe(
+      "unknown",
+    );
   });
   it("does not start a request after cancellation", async () => {
     const controller = new AbortController();
