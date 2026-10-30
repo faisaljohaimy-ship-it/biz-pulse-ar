@@ -51,7 +51,6 @@ import { cn } from "@/lib/utils";
 // commit 34dea62. Keep react-markdown here.
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { ExecutiveCard } from "./ExecutiveCard";
 import { useSadeedPresenceState, sadeedState } from "@/lib/sadeed/sadeed-state";
 import { SadeedAudioBus } from "@/lib/sadeed/audio-bus";
 import { SadeedVideoAvatar } from "@/components/sadeed/SadeedVideoAvatar";
@@ -2643,12 +2642,6 @@ export function SadeedCopilot() {
                 )}
               >
                 {messageList}
-              </div>
-            )}
-
-            {!convMode && !showPresentation && (
-              <div className="relative z-10">
-                <ExecutiveCard />
               </div>
             )}
 
