@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { PASSWORD_MIN } from "@/lib/access/signup";
 import {
   RECOVERY_COOLDOWN_MS,
   RECOVERY_RETURN_PATH,
@@ -121,6 +122,9 @@ describe("recoveryErrorKind", () => {
     expect(recoveryErrorKind("TypeError: Failed to fetch")).toBe("network");
     expect(recoveryErrorKind("503 Service Unavailable")).toBe("network");
     expect(recoveryErrorKind("something unexpected")).toBe("other");
+    // «rate» كلمةً لا جزءًا من كلمة: generate/accurate لا تُصنَّف «محاولات كثيرة».
+    expect(recoveryErrorKind("could not generate the message")).toBe("other");
+    expect(recoveryErrorKind("accurate response")).toBe("other");
     expect(recoveryErrorKind("")).toBe("other");
   });
 });
@@ -154,8 +158,9 @@ describe("recoveryMessage", () => {
     expect(en).not.toMatch(/not registered|no account|not found/i);
   });
 
-  it("الحدّ الأدنى في الرسالة هو حدّ القاعدة (٨)", () => {
-    expect(recoveryMessage("short", true)).toContain("8");
+  it("الحدّ الأدنى في الرسالة هو حدّ القاعدة (٨ بالعربية، 8 بالإنجليزية)", () => {
+    expect(PASSWORD_MIN).toBe(8);
+    expect(recoveryMessage("short", true)).toContain("٨");
     expect(recoveryMessage("short", false)).toContain("8");
   });
 

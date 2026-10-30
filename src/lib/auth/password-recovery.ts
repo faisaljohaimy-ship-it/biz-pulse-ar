@@ -37,21 +37,9 @@ export function isEmailShape(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
 
-/**
- * هل الرابط الحالي عائدٌ من رسالة استعادة؟ التدفّق الضمني يضع `type=recovery` في الجزء بعد `#`،
- * والتدفّق ذو الرمز (PKCE) يضع `code` في الاستعلام وتحمل وجهتُنا `mode=reset` أصلًا.
- */
-export function isRecoveryUrl(href: string): boolean {
-  try {
-    const url = new URL(href, "https://origin.invalid");
-    if (url.searchParams.get("mode") === "reset") return true;
-    return new URLSearchParams(url.hash.replace(/^#/, "")).get("type") === "recovery";
-  } catch {
-    return false;
-  }
-}
+export { isRecoveryUrl } from "./recovery-url";
 
-export type NewPasswordError = "short" | "mismatch";
+type NewPasswordError = "short" | "mismatch";
 
 /** `null` حين تصحّ كلمة المرور الجديدة؛ وإلا سبب الرفض. القاعدة هي قاعدة التسجيل نفسها. */
 export function newPasswordError(password: string, confirm: string): NewPasswordError | null {
@@ -64,7 +52,7 @@ export type RecoveryErrorKind = "rate" | "network" | "weak" | "same" | "expired"
 
 /** رسالة الخدمة الخام ← صنفٌ ثابت. النصّ الخام لا يصل المستخدم أبدًا. */
 export function recoveryErrorKind(raw: string): RecoveryErrorKind {
-  if (/rate|too many|over_email_send_rate_limit|security purposes/i.test(raw)) return "rate";
+  if (/\brate\b|too many|over_email_send_rate_limit|security purposes/i.test(raw)) return "rate";
   if (/same_password|different from the old/i.test(raw)) return "same";
   if (/weak_password|password should|at least \d+ char/i.test(raw)) return "weak";
   if (/session[_ ]missing|session_not_found|jwt expired|invalid jwt|expired/i.test(raw))
@@ -84,7 +72,7 @@ export function recoveryMessage(kind: RecoveryNotice, isAr: boolean): string {
   const ar: Record<RecoveryNotice, string> = {
     sent: "إن كان هذا البريد مسجَّلًا فقد أرسلنا إليه رابط الاستعادة. افتح الرسالة ثم اتبع الرابط. قد تصل خلال دقيقة، وراجع الرسائل غير المرغوبة.",
     email_invalid: "اكتب بريدًا إلكترونيًا صحيحًا.",
-    short: `كلمة المرور ${PASSWORD_MIN} أحرف على الأقل.`,
+    short: "كلمة المرور ٨ أحرف على الأقل.",
     mismatch: "كلمتا المرور غير متطابقتين.",
     updated: "تم تحديث كلمة المرور. مرحبًا بعودتك.",
     link_expired: "رابط الاستعادة منتهٍ أو استُعمل من قبل. اطلب رابطًا جديدًا.",

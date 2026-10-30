@@ -2,6 +2,19 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { authLog, installAuthDiagnostics } from "@/lib/auth-diagnostics";
+import { isRecoveryUrl } from "@/lib/auth/recovery-url";
+
+/**
+ * هل هبط المستخدم من رسالة استعادة كلمة المرور؟ يُقرأ عند تحميل الوحدة، أي قبل أن ينشئ أي أثرٍ
+ * عميلَ الهوية: العميل يستهلك الجزء بعد `#` ويزيله من الرابط بعد أول طلب، فمن يقرأ الرابط
+ * لاحقًا (مكوّن صفحة الدخول) قد يجده فارغًا. قِيس: على شبكة سريعة سبق التوجيه الحدثَ فهبط
+ * المستخدم على الرئيسية مسجَّلًا دون خطوة كلمة المرور. تُصفَّر عند إغلاق نموذج الاستعادة.
+ */
+let recoveryLanding = typeof window !== "undefined" && isRecoveryUrl(window.location.href);
+export const recoveryLandingPending = () => recoveryLanding;
+export const clearRecoveryLanding = () => {
+  recoveryLanding = false;
+};
 
 type AuthCtx = {
   user: User | null;
@@ -48,6 +61,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         userId: session?.user?.id ?? null,
       });
       if (!active) return;
+      // رابط الاستعادة قد يهبط على غير /auth (مثلًا تحويل الخدمة إلى الرابط الأساسي): الجلسة حُفظت
+      // قبل هذا الحدث، فالانتقال الكامل إلى نموذج كلمة المرور الجديدة لا يفقد شيئًا.
+      if (event === "PASSWORD_RECOVERY" && window.location.pathname !== "/auth") {
+        window.location.replace("/auth?mode=reset");
+        return;
+      }
       setUser(session?.user ?? null);
       window.clearTimeout(authWatchdog);
       releaseLoading(`event:${event}`);

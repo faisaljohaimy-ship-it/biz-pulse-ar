@@ -274,7 +274,9 @@ describe("نموذج «مستخدم جديد»", () => {
     expect(AUTH).toContain("مستخدم جديد");
     // `?mode=signup` يتخطّى بوابة العرض — كان الزائر يهبط على «شاهد النظام أولًا».
     // (ومعه `?mode=signin` من «دخول الموظفين»، ٢٠٢٦/١٠/١٨: أيّ وضعٍ صريح يتخطّاها.)
-    expect(AUTH).toContain("initialMode !== undefined || hasExecutiveAcceptance");
+    expect(AUTH).toMatch(
+      /initialMode !== undefined \|\|\s*recoveryLandingPending\(\) \|\|\s*hasExecutiveAcceptance/,
+    );
     expect(AUTH).toContain('search.mode === "signup"');
     // التبويب المحدَّد برمزين (≥4.5) لا `bg-primary` (3.68 في الفاتح)، والحقول
     // بحلقة التركيز الصريحة.

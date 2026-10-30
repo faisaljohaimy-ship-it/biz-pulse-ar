@@ -73,7 +73,9 @@ describe("«دخول الموظفين» — مدخلٌ إلى الدخول ال�
   it("/auth تقبل mode=signin وتتخطّى بها العرض التنفيذي كما تفعل signup", () => {
     expect(AUTH).toContain('search.mode === "signin"');
     expect(AUTH).toContain('? ("signin" as const)');
-    expect(AUTH).toContain("initialMode !== undefined || hasExecutiveAcceptance(");
+    expect(AUTH).toMatch(
+      /initialMode !== undefined \|\|\s*recoveryLandingPending\(\) \|\|\s*hasExecutiveAcceptance\(/,
+    );
   });
 
   it("أخطاء الدخول بلغة الواجهة بلا نصّ الخادم — وتسقط على المزروع (المادة ٣٠)", () => {

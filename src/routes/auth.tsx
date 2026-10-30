@@ -13,7 +13,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { isSupabaseConfigured, supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/lib/auth-context";
+import { clearRecoveryLanding, recoveryLandingPending, useAuth } from "@/lib/auth-context";
 import { brandFor, brandName } from "@/lib/domain";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
@@ -85,16 +85,23 @@ function AuthPage() {
   // رسالة الاستعادة. يبدأ «set» من الرابط نفسه (`mode=reset` أو `type=recovery` في الجزء بعد `#`)
   // قبل أي حدث: جلسة الاستعادة تُنشأ من الرابط، فلا يجوز أن يسبقها التوجيه إلى الرئيسية.
   const [recovery, setRecovery] = useState<null | "request" | "set">(() =>
-    typeof window !== "undefined" && isRecoveryUrl(window.location.href) ? "set" : null,
+    recoveryLandingPending() ||
+    (typeof window !== "undefined" && isRecoveryUrl(window.location.href))
+      ? "set"
+      : null,
   );
   // `?mode=signup` (من ملاحظة نماذج الإنشاء) يتخطّى بوابة العرض التنفيذي: الزائر
   // جاء ليُنشئ حسابًا ويسجّل بلاغًا، لا ليشاهد عرض التفعيل المؤسسي — قاسه حارس
   // الجودة: كان يهبط على «شاهد النظام أولًا» بلا تبويبٍ ولا نموذج.
   // و`?mode=signin` (زرّ «دخول الموظفين» في الترويسة) يتخطّاها للسبب نفسه: الموظف جاء ليدخل.
+  // والعائد من رسالة الاستعادة كذلك: متصفّحٌ جديد بلا قبولٍ سابق كان يهبط على العرض التنفيذي
+  // بدل نموذج كلمة المرور الجديدة (قاسه الحارس).
   const [accepted, setAccepted] = useState(() =>
     typeof window === "undefined"
       ? false
-      : initialMode !== undefined || hasExecutiveAcceptance(window.localStorage),
+      : initialMode !== undefined ||
+        recoveryLandingPending() ||
+        hasExecutiveAcceptance(window.localStorage),
   );
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -191,9 +198,16 @@ function AuthPage() {
 
   const [recoveryEmail, setRecoveryEmail] = useState("");
   const [recoverySent, setRecoverySent] = useState(false);
-  const [recoveryCooldownUntil, setRecoveryCooldownUntil] = useState(0);
+  const [recoveryCooling, setRecoveryCooling] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [newPasswordConfirm, setNewPasswordConfirm] = useState("");
+
+  // الفاصل يُرفع بمؤقّتٍ لا بمقارنة وقتٍ عند الرسم: بلا إعادة رسم يبقى الزرّ مقفلًا بعد انقضاء الدقيقة (قِيس).
+  useEffect(() => {
+    if (!recoveryCooling) return;
+    const timer = window.setTimeout(() => setRecoveryCooling(false), RECOVERY_COOLDOWN_MS);
+    return () => window.clearTimeout(timer);
+  }, [recoveryCooling]);
 
   function openRecovery() {
     setRecoveryEmail(email);
@@ -203,7 +217,7 @@ function AuthPage() {
 
   async function handleRecoveryRequest(event: FormEvent) {
     event.preventDefault();
-    if (busy || Date.now() < recoveryCooldownUntil) return;
+    if (busy || recoveryCooling) return;
     const target = recoveryEmail.trim();
     if (!isEmailShape(target)) {
       toast.error(recoveryMessage("email_invalid", isAr));
@@ -217,7 +231,7 @@ function AuthPage() {
       if (error) throw error;
       // الرسالة واحدة وجد الحساب أم لم يجد: لا يُكشف أيّ البريدات مسجَّل.
       setRecoverySent(true);
-      setRecoveryCooldownUntil(Date.now() + RECOVERY_COOLDOWN_MS);
+      setRecoveryCooling(true);
     } catch (error) {
       toast.error(
         recoveryMessage(
@@ -245,6 +259,7 @@ function AuthPage() {
       toast.success(recoveryMessage("updated", isAr));
       setNewPassword("");
       setNewPasswordConfirm("");
+      clearRecoveryLanding();
       setRecovery(null);
       goNext();
     } catch (error) {
@@ -368,7 +383,7 @@ function AuthPage() {
               email={recoveryEmail}
               onEmail={setRecoveryEmail}
               sent={recoverySent}
-              cooling={Date.now() < recoveryCooldownUntil}
+              cooling={recoveryCooling}
               password={newPassword}
               confirm={newPasswordConfirm}
               onPassword={setNewPassword}
@@ -376,6 +391,7 @@ function AuthPage() {
               onRequest={handleRecoveryRequest}
               onSetPassword={handleNewPassword}
               onBack={() => {
+                clearRecoveryLanding();
                 setRecovery(null);
                 setRecoverySent(false);
               }}
@@ -750,7 +766,11 @@ function RecoveryPanel({
   if (view === "set") {
     if (authLoading) {
       return (
-        <div role="status" className="grid place-items-center py-8 text-primary">
+        <div
+          role="status"
+          aria-label={isAr ? "جارٍ التحقق من الرابط" : "Checking the link"}
+          className="grid place-items-center py-8 text-primary"
+        >
           <Loader2 className="h-5 w-5 animate-spin" />
         </div>
       );
@@ -846,9 +866,13 @@ function RecoveryPanel({
         <Button type="submit" disabled={busy || cooling} className="h-12 w-full text-sm font-black">
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}
           {sent
-            ? isAr
-              ? "إعادة إرسال الرابط بعد دقيقة"
-              : "Resend the link in a minute"
+            ? cooling
+              ? isAr
+                ? "إعادة إرسال الرابط بعد دقيقة"
+                : "Resend the link in a minute"
+              : isAr
+                ? "إعادة إرسال الرابط"
+                : "Resend the link"
             : isAr
               ? "أرسل رابط الاستعادة"
               : "Send recovery link"}
