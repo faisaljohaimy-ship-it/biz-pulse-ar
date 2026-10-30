@@ -54,6 +54,8 @@ export async function streamFinnReply(options: {
   /** نشاط أداةٍ هندسية (اسمٌ ومرحلةٌ فقط). اختياري: غيابه لا يغيّر شيئًا في الرد. */
   readonly onTool?: (event: { name: FinnToolName; phase: FinnToolPhase }) => void;
 }): Promise<FinnTransportResult> {
+  // Abort events are not replayed for a signal cancelled before this call.
+  if (options.signal.aborted) return { ok: false, aborted: true };
   const controller = new AbortController();
   const forward = () => controller.abort();
   options.signal.addEventListener("abort", forward, { once: true });
@@ -80,9 +82,17 @@ export async function streamFinnReply(options: {
         signal: controller.signal,
         cache: "no-store",
       });
-    } catch {
+    } catch (error) {
       if (options.signal.aborted) return { ok: false, aborted: true };
-      return failed(timedOut ? "timeout" : "network");
+      const sessionTimedOut =
+        typeof error === "object" && error !== null && "name" in error &&
+        error.name === "TimeoutError";
+      return failed(timedOut || sessionTimedOut ? "timeout" : "network");
+    }
+
+    if (options.signal.aborted || timedOut) {
+      void response.body?.cancel().catch(() => undefined);
+      return options.signal.aborted ? { ok: false, aborted: true } : failed("timeout");
     }
 
     if (!response.ok) {
@@ -106,6 +116,13 @@ export async function streamFinnReply(options: {
     const body = response.body;
     if (!body) return failed("interrupted");
     const reader = body.getReader();
+    const cancelReader = () => {
+      // cancel() rejects asynchronously when the stream has already errored.
+      // Handle that promise too; a synchronous try/catch is not sufficient.
+      void reader.cancel().catch(() => undefined);
+    };
+    controller.signal.addEventListener("abort", cancelReader, { once: true });
+    if (controller.signal.aborted) cancelReader();
     const decoder = new TextDecoder();
     const parser = createFinnEventParser();
 
@@ -114,6 +131,12 @@ export async function streamFinnReply(options: {
     const handle = (events: FinnStreamEvent[]) => {
       for (const event of events) {
         if (state.outcome) return;
+        if (options.signal.aborted || timedOut) {
+          state.outcome = options.signal.aborted
+            ? { ok: false, aborted: true }
+            : failed("timeout");
+          return;
+        }
         if (event.type === "delta") options.onDelta(event.text);
         else if (event.type === "tool") options.onTool?.({ name: event.name, phase: event.phase });
         else if (event.type === "done") state.outcome = { ok: true, truncated: event.truncated };
@@ -124,6 +147,8 @@ export async function streamFinnReply(options: {
     try {
       for (;;) {
         const { done, value } = await reader.read();
+        if (options.signal.aborted) return { ok: false, aborted: true };
+        if (timedOut) return failed("timeout");
         if (done) break;
         handle(parser.push(decoder.decode(value, { stream: true })));
         if (state.outcome) break;
@@ -134,12 +159,12 @@ export async function streamFinnReply(options: {
       if (options.signal.aborted) return { ok: false, aborted: true };
       return failed(timedOut ? "timeout" : "interrupted");
     } finally {
-      try {
-        void reader.cancel();
-      } catch {
-        /* أُغلق. */
-      }
+      controller.signal.removeEventListener("abort", cancelReader);
+      cancelReader();
+      reader.releaseLock();
     }
+    if (options.signal.aborted) return { ok: false, aborted: true };
+    if (timedOut) return failed("timeout");
     return state.outcome ?? failed("interrupted");
   } finally {
     cleanup();
