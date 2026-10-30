@@ -1,4 +1,13 @@
-import { Component, lazy, Suspense, useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  Component,
+  lazy,
+  Suspense,
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, Code2, LockKeyhole, LogOut, RefreshCw, ShieldCheck } from "lucide-react";
@@ -15,6 +24,11 @@ import {
   verifiedGoogleAuthorizeUrl,
   withFinnDeadline,
 } from "@/lib/finn-agent/native-google";
+import { probeFinnGoogleProvider } from "@/lib/finn-agent/signin";
+import { signinErrorMessage } from "@/lib/access/signup";
+import { isEmailShape } from "@/lib/auth/password-recovery";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import "@/styles/fnn-workspace.css";
 
 const FinnChat = lazy(() => import("./FinnChat"));
@@ -48,15 +62,33 @@ class PrivateChatBoundary extends Component<
   }
 }
 
-function GoogleSignIn({ ar, signedIn }: { ar: boolean; signedIn: boolean }) {
+function GoogleSignIn({
+  ar,
+  signedIn,
+  onBusyChange,
+  onSignedIn,
+}: {
+  ar: boolean;
+  signedIn: boolean;
+  onBusyChange?: (busy: boolean) => void;
+  onSignedIn?: () => void;
+}) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [needsReload, setNeedsReload] = useState(false);
+  // One synchronous lock for BOTH methods; a timed-out SDK password request may still finish.
+  const pendingMethod = useRef<"google" | "email" | null>(null);
   const attempt = useRef(0);
   const active = useRef(true);
   const abort = useRef<AbortController | null>(null);
   useEffect(() => {
     active.current = true;
     const reset = () => {
+      if (pendingMethod.current === "email") return;
+      pendingMethod.current = null;
+      onBusyChange?.(false);
       attempt.current++;
       abort.current?.abort();
       setBusy(false);
@@ -67,11 +99,14 @@ function GoogleSignIn({ ar, signedIn }: { ar: boolean; signedIn: boolean }) {
       attempt.current++;
       abort.current?.abort();
       window.removeEventListener("pageshow", reset);
+      onBusyChange?.(false);
     };
-  }, []);
+  }, [onBusyChange]);
 
   const signIn = async () => {
-    if (busy) return;
+    if (pendingMethod.current || needsReload) return;
+    pendingMethod.current = "google";
+    onBusyChange?.(true);
     const id = ++attempt.current;
     const current = () => active.current && id === attempt.current;
     const controller = new AbortController();
@@ -80,19 +115,15 @@ function GoogleSignIn({ ar, signedIn }: { ar: boolean; signedIn: boolean }) {
     setError(null);
     try {
       if (!isSupabaseConfigured) throw new Error("google_not_configured");
-      const health = await withFinnDeadline(
-        (async () => {
-          const res = await fetch("/api/fnn/auth-health", {
-            cache: "no-store",
-            signal: controller.signal,
-          });
-          if (!res.ok) throw new Error("auth_unavailable");
-          return (await res.json()) as { checked?: boolean; googleEnabled?: boolean };
-        })(),
-      );
+      const capability = await probeFinnGoogleProvider((input, init) => fetch(input, init), {
+        publicUrl: import.meta.env.VITE_SUPABASE_URL,
+        publicKey:
+          import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        signal: controller.signal,
+      });
       if (!current()) return;
-      if (health.checked !== true) throw new Error("auth_unavailable");
-      if (health.googleEnabled !== true) throw new Error("google_not_configured");
+      if (capability === "unknown") throw new Error("auth_unavailable");
+      if (capability === "disabled") throw new Error("google_not_configured");
       // Keep the existing session until Google authenticates the chosen account.
       // The owner workspace is keyed by user ID and cannot retain another user's draft.
       const result = await withFinnDeadline(
@@ -106,7 +137,65 @@ function GoogleSignIn({ ar, signedIn }: { ar: boolean; signedIn: boolean }) {
       if (current()) setError(finnGoogleError(cause, ar));
     } finally {
       controller.abort();
-      if (current()) setBusy(false);
+      if (current()) {
+        pendingMethod.current = null;
+        setBusy(false);
+        onBusyChange?.(false);
+      }
+    }
+  };
+
+  const signInWithEmail = async (event: FormEvent) => {
+    event.preventDefault();
+    if (pendingMethod.current || needsReload) return;
+    if (!isEmailShape(email.trim()) || !password) {
+      setError(ar ? "أدخل البريد وكلمة المرور." : "Enter your email and password.");
+      return;
+    }
+    if (!isSupabaseConfigured) {
+      setError(ar ? "خدمة الدخول غير مهيّأة بعد." : "Sign-in is not configured yet.");
+      return;
+    }
+    pendingMethod.current = "email";
+    onBusyChange?.(true);
+    const id = ++attempt.current;
+    const current = () => active.current && id === attempt.current;
+    setBusy(true);
+    setError(null);
+    let timedOut = false;
+    try {
+      const result = await withFinnDeadline(
+        supabase.auth.signInWithPassword({ email: email.trim(), password }),
+        15_000,
+      );
+      if (!current()) return;
+      if (result.error) throw result.error;
+      if (!result.data.session) throw new Error("signin_failed");
+      // AuthProvider receives the SDK event. No client-side owner grant or redirect loop.
+      onSignedIn?.();
+    } catch (cause) {
+      if (!current()) return;
+      timedOut = cause instanceof Error && cause.message === "fnn_timeout";
+      if (timedOut) {
+        setNeedsReload(true);
+        setError(
+          ar
+            ? "تعذّر تأكيد الدخول في الوقت المحدد. أعد تحميل الصفحة قبل محاولة أخرى."
+            : "Sign-in could not be confirmed in time. Reload before trying again.",
+        );
+      } else {
+        setError(signinErrorMessage(cause instanceof Error ? cause.message : "", ar));
+      }
+    } finally {
+      if (current()) {
+        setPassword("");
+        setBusy(false);
+        // Promise timeout is not SDK cancellation. Do not race a second login/sign-out against it.
+        if (!timedOut) {
+          pendingMethod.current = null;
+          onBusyChange?.(false);
+        }
+      }
     }
   };
   return (
@@ -114,7 +203,7 @@ function GoogleSignIn({ ar, signedIn }: { ar: boolean; signedIn: boolean }) {
       <button
         type="button"
         className="fnn-google min-h-11!"
-        disabled={busy}
+        disabled={busy || needsReload}
         onClick={() => void signIn()}
       >
         <span className="fnn-google-mark" aria-hidden>
@@ -132,6 +221,55 @@ function GoogleSignIn({ ar, signedIn }: { ar: boolean; signedIn: boolean }) {
               ? "المتابعة باستخدام Google"
               : "Continue with Google"}
       </button>
+      <form className="mt-4 grid gap-3 text-start" onSubmit={signInWithEmail}>
+        <Label htmlFor="fnn-email">{ar ? "البريد الإلكتروني" : "Email address"}</Label>
+        <Input
+          id="fnn-email"
+          type="email"
+          autoComplete="username"
+          autoCapitalize="none"
+          spellCheck={false}
+          dir="ltr"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          disabled={busy || needsReload}
+          required
+          className="min-h-11 text-base"
+        />
+        <Label htmlFor="fnn-password">{ar ? "كلمة المرور" : "Password"}</Label>
+        <Input
+          id="fnn-password"
+          type="password"
+          autoComplete="current-password"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          disabled={busy || needsReload}
+          required
+          className="min-h-11 text-base"
+        />
+        <button type="submit" className="fnn-button min-h-11!" disabled={busy || needsReload}>
+          {busy
+            ? ar
+              ? "جارٍ التحقق…"
+              : "Checking…"
+            : signedIn
+              ? ar
+                ? "الدخول بحساب بريد آخر"
+                : "Use another email account"
+              : ar
+                ? "الدخول بالبريد وكلمة المرور"
+                : "Sign in with email and password"}
+        </button>
+      </form>
+      {needsReload && (
+        <button
+          type="button"
+          className="fnn-button min-h-11!"
+          onClick={() => window.location.reload()}
+        >
+          {ar ? "إعادة تحميل الصفحة" : "Reload page"}
+        </button>
+      )}
       {error && (
         <p className="fnn-notice" role="alert">
           {error}
@@ -141,7 +279,15 @@ function GoogleSignIn({ ar, signedIn }: { ar: boolean; signedIn: boolean }) {
   );
 }
 
-function OwnerWorkspace({ userId, ar }: { userId: string; ar: boolean }) {
+function OwnerWorkspace({
+  userId,
+  ar,
+  onSignInBusy,
+}: {
+  userId: string;
+  ar: boolean;
+  onSignInBusy: (busy: boolean) => void;
+}) {
   const { data, isPending, isError, isFetching, refetch } = useQuery({
     queryKey: ["finn-access", userId, "standalone"],
     queryFn: () => withFinnDeadline(getFinnAccess()),
@@ -186,7 +332,12 @@ function OwnerWorkspace({ userId, ar }: { userId: string; ar: boolean }) {
             ? "نجاح تسجيل الدخول لا يمنح صلاحية المالك. اختر الحساب المعتمد؛ المحادثة وبياناتها محمية."
             : "Signing in does not grant owner access. Choose the authorized account; chat and its data remain protected."}
         </p>
-        <GoogleSignIn ar={ar} signedIn />
+        <GoogleSignIn
+          ar={ar}
+          signedIn
+          onBusyChange={onSignInBusy}
+          onSignedIn={() => void refetch()}
+        />
       </div>
     );
   return (
@@ -210,6 +361,7 @@ export function FnnWorkspace() {
   const ar = locale === "ar";
   const [notice, setNotice] = useState<string | null>(null);
   const [leaving, setLeaving] = useState(false);
+  const [signingIn, setSigningIn] = useState(false);
   const [locked, setLocked] = useState(false);
   const portrait = HOME_IMAGES.finn;
   useEffect(() => {
@@ -234,7 +386,7 @@ export function FnnWorkspace() {
     setLocked(false);
   }, [user?.id]);
   const signOut = async () => {
-    if (leaving) return;
+    if (leaving || signingIn) return;
     setLeaving(true);
     setLocked(true); // Unmount private state immediately, including when sign-out is slow.
     setNotice(null);
@@ -266,7 +418,7 @@ export function FnnWorkspace() {
           <button
             type="button"
             className="fnn-back min-h-11!"
-            disabled={leaving}
+            disabled={leaving || signingIn}
             onClick={() => void signOut()}
           >
             <LogOut size={18} aria-hidden />
@@ -284,8 +436,8 @@ export function FnnWorkspace() {
           </h1>
           <p>
             {ar
-              ? "مساعدك لمراجعة الكود وتحليل الأخطاء وتصميم خطط الأتمتة. دخول موحّد عبر Google، ومحادثة مستقلة عن سديد."
-              : "Your assistant for code review, debugging and automation planning. Google sign-in, with a conversation separate from SADEED."}
+              ? "مساعدك لمراجعة الكود وتحليل الأخطاء وتصميم خطط الأتمتة. دخول عبر Google أو البريد وكلمة المرور، ومحادثة مستقلة عن سديد."
+              : "Your assistant for code review, debugging and automation planning. Google or email/password sign-in, with a conversation separate from SADEED."}
           </p>
           <div className="fnn-features">
             <span>
@@ -319,13 +471,13 @@ export function FnnWorkspace() {
       ) : !user ? (
         <section className="fnn-entry" aria-label={ar ? "الدخول إلى فنن" : "FNN sign-in"}>
           <LockKeyhole aria-hidden size={28} />
-          <h2>{ar ? "ادخل بحساب Google المعتمد" : "Use your authorized Google account"}</h2>
+          <h2>{ar ? "ادخل بحسابك المعتمد" : "Use your authorized account"}</h2>
           <p>
             {ar
-              ? "لا تحتاج إلى كلمة مرور منفصلة لفنن. بعد العودة نتحقق من صلاحية المالك قبل فتح المحادثة."
-              : "No separate FNN password. Owner permission is checked after you return, before chat opens."}
+              ? "استخدم Google أو البريد وكلمة المرور المسجّلة. نتحقق من صلاحية المالك قبل فتح المحادثة."
+              : "Use Google or your registered email and password. Owner permission is checked before chat opens."}
           </p>
-          <GoogleSignIn ar={ar} signedIn={false} />
+          <GoogleSignIn ar={ar} signedIn={false} onBusyChange={setSigningIn} />
           {/* بديلٌ يعمل متى كان مزوّد Google غير مفعَّل في خدمة الهوية (قِيس ٢٠٢٦/١٠/٢٩: `googleEnabled:false`
               على الإنتاج؛ لقطة المالك ٢٠٢٦/١٠/٣٠): البريد وكلمة المرور من صفحة `/auth` ذاتها ثم عودةٌ إلى هنا،
               والصلاحية يحكم فيها الخادم بعد العودة كما بعد Google — لا طريق دخول جديد ولا منحٌ تلقائي. */}
@@ -347,7 +499,7 @@ export function FnnWorkspace() {
           {ar ? "المحادثة مقفلة أثناء تسجيل الخروج." : "Chat is locked while signing out."}
         </p>
       ) : (
-        <OwnerWorkspace key={user.id} userId={user.id} ar={ar} />
+        <OwnerWorkspace key={user.id} userId={user.id} ar={ar} onSignInBusy={setSigningIn} />
       )}
       <footer className="fnn-footer">
         {ar
