@@ -42,12 +42,21 @@ import {
   probeGoogleProvider,
   type GoogleProviderState,
 } from "@/lib/auth/native-google";
+import {
+  RECOVERY_COOLDOWN_MS,
+  isEmailShape,
+  isRecoveryUrl,
+  newPasswordError,
+  recoveryErrorKind,
+  recoveryMessage,
+  recoveryRedirectTo,
+} from "@/lib/auth/password-recovery";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
   validateSearch: (
     search: Record<string, unknown>,
-  ): { redirect?: string; mode?: "signup" | "signin" } => ({
+  ): { redirect?: string; mode?: "signup" | "signin" | "reset" } => ({
     redirect: typeof search.redirect === "string" ? search.redirect : undefined,
     // «مستخدم جديد» مباشرةً من رابط (نموذج البلاغ للزائر يوجّه إليه)، و«دخول الموظفين»
     // من الترويسة (أمر المالك ٢٠٢٦/١٠/١٨) — كلاهما جاء ليدخل لا ليشاهد العرض التنفيذي.
@@ -56,7 +65,9 @@ export const Route = createFileRoute("/auth")({
         ? ("signup" as const)
         : search.mode === "signin"
           ? ("signin" as const)
-          : undefined,
+          : search.mode === "reset"
+            ? ("reset" as const)
+            : undefined,
   }),
   component: AuthPage,
 });
@@ -67,7 +78,15 @@ function AuthPage() {
   const isAr = locale === "ar";
   const navigate = useNavigate();
   const { redirect: redirectTo, mode: initialMode } = Route.useSearch();
-  const [mode, setMode] = useState<"signin" | "signup">(initialMode ?? "signin");
+  const [mode, setMode] = useState<"signin" | "signup">(
+    initialMode === "signup" ? "signup" : "signin",
+  );
+  // استعادة كلمة المرور: «request» نموذج طلب الرابط، و«set» نموذج كلمة المرور الجديدة بعد العودة من
+  // رسالة الاستعادة. يبدأ «set» من الرابط نفسه (`mode=reset` أو `type=recovery` في الجزء بعد `#`)
+  // قبل أي حدث: جلسة الاستعادة تُنشأ من الرابط، فلا يجوز أن يسبقها التوجيه إلى الرئيسية.
+  const [recovery, setRecovery] = useState<null | "request" | "set">(() =>
+    typeof window !== "undefined" && isRecoveryUrl(window.location.href) ? "set" : null,
+  );
   // `?mode=signup` (من ملاحظة نماذج الإنشاء) يتخطّى بوابة العرض التنفيذي: الزائر
   // جاء ليُنشئ حسابًا ويسجّل بلاغًا، لا ليشاهد عرض التفعيل المؤسسي — قاسه حارس
   // الجودة: كان يهبط على «شاهد النظام أولًا» بلا تبويبٍ ولا نموذج.
@@ -95,9 +114,23 @@ function AuthPage() {
   };
 
   useEffect(() => {
-    if (!authLoading && user) goNext();
+    // جلسة الاستعادة تُنشأ من الرابط نفسه: التوجيه إلى الرئيسية قبل أن يختار كلمة مروره
+    // الجديدة يتركه داخلًا بلا كلمة مرور يعرفها.
+    if (!authLoading && user && recovery !== "set") goNext();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, authLoading]);
+  }, [user, authLoading, recovery]);
+
+  // العودة من رسالة الاستعادة إلى هذه الصفحة بلا `mode=reset` (مثلًا بعد تحويل الخدمة إلى
+  // الرابط الأساسي): الحدث نفسه يفتح نموذج كلمة المرور الجديدة.
+  useEffect(() => {
+    if (!isSupabaseConfigured) return;
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") setRecovery("set");
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   const runGoogleProbe = () => {
     const pending = probeGoogleProvider((input, init) => fetch(input, init));
@@ -151,6 +184,76 @@ function AuthPage() {
       goNext();
     } catch (error) {
       toast.error(signinErrorMessage(error instanceof Error ? error.message : String(error), isAr));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const [recoveryEmail, setRecoveryEmail] = useState("");
+  const [recoverySent, setRecoverySent] = useState(false);
+  const [recoveryCooldownUntil, setRecoveryCooldownUntil] = useState(0);
+  const [newPassword, setNewPassword] = useState("");
+  const [newPasswordConfirm, setNewPasswordConfirm] = useState("");
+
+  function openRecovery() {
+    setRecoveryEmail(email);
+    setRecoverySent(false);
+    setRecovery("request");
+  }
+
+  async function handleRecoveryRequest(event: FormEvent) {
+    event.preventDefault();
+    if (busy || Date.now() < recoveryCooldownUntil) return;
+    const target = recoveryEmail.trim();
+    if (!isEmailShape(target)) {
+      toast.error(recoveryMessage("email_invalid", isAr));
+      return;
+    }
+    setBusy(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(target, {
+        redirectTo: recoveryRedirectTo(window.location.origin),
+      });
+      if (error) throw error;
+      // الرسالة واحدة وجد الحساب أم لم يجد: لا يُكشف أيّ البريدات مسجَّل.
+      setRecoverySent(true);
+      setRecoveryCooldownUntil(Date.now() + RECOVERY_COOLDOWN_MS);
+    } catch (error) {
+      toast.error(
+        recoveryMessage(
+          recoveryErrorKind(error instanceof Error ? error.message : String(error)),
+          isAr,
+        ),
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleNewPassword(event: FormEvent) {
+    event.preventDefault();
+    if (busy) return;
+    const problem = newPasswordError(newPassword, newPasswordConfirm);
+    if (problem) {
+      toast.error(recoveryMessage(problem, isAr));
+      return;
+    }
+    setBusy(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      toast.success(recoveryMessage("updated", isAr));
+      setNewPassword("");
+      setNewPasswordConfirm("");
+      setRecovery(null);
+      goNext();
+    } catch (error) {
+      toast.error(
+        recoveryMessage(
+          recoveryErrorKind(error instanceof Error ? error.message : String(error)),
+          isAr,
+        ),
+      );
     } finally {
       setBusy(false);
     }
@@ -255,135 +358,172 @@ function AuthPage() {
             </p>
           </div>
 
-          <Button
-            type="button"
-            onClick={() => void handleGoogle()}
-            disabled={busy || googleState === "disabled"}
-            aria-describedby={googleState === "disabled" ? "google-signin-note" : undefined}
-            className="h-12 w-full bg-white text-slate-900 hover:bg-slate-100"
-          >
-            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleIcon />}
-            {isAr ? "المتابعة عبر Google" : "Continue with Google"}
-          </Button>
-          {googleState === "disabled" && (
-            <p
-              id="google-signin-note"
-              role="status"
-              className="mt-2 text-center text-[12px] leading-relaxed text-white/75"
-            >
-              {googleNoticeMessage("disabled", isAr)}
-            </p>
-          )}
-
-          <div className="my-5 flex items-center gap-3 text-[12px] uppercase tracking-[0.22em] text-white/35">
-            <span className="h-px flex-1 bg-white/10" />
-            {isAr ? "أو" : "or"}
-            <span className="h-px flex-1 bg-white/10" />
-          </div>
-
-          {/* تبويبا الدخول والتسجيل (أمر المالك ٢٠٢٦/٠٩/٢٩: «تحت خانة مستخدم جديد»). */}
-          <div
-            role="tablist"
-            aria-label={isAr ? "نوع الدخول" : "Access type"}
-            className="mb-4 grid grid-cols-2 gap-1 rounded-xl border border-white/10 p-1"
-          >
-            {(
-              [
-                ["signin", isAr ? "تسجيل الدخول" : "Sign in"],
-                ["signup", isAr ? "مستخدم جديد" : "New user"],
-              ] as const
-            ).map(([key, label]) => (
-              <button
-                key={key}
-                type="button"
-                role="tab"
-                aria-selected={mode === key}
-                onClick={() => setMode(key)}
-                className={`nx-focus-ring min-h-11 rounded-lg text-sm font-black transition-colors ${
-                  // الرمزان لا `bg-primary`: كان التبويب المحدَّد 3.68:1 في الفاتح
-                  // (قاسه حارس الجودة) — `--tone-blue` تحت `--surface` ≥ 4.5 في الوضعين.
-                  mode === key
-                    ? "bg-[color:var(--tone-blue)] text-[color:var(--surface)]"
-                    : "text-white/65 hover:text-white"
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-
-          {mode === "signup" ? (
-            <SignupForm isAr={isAr} onSignedIn={goNext} />
-          ) : (
-            <form onSubmit={handleEmail} className="space-y-4">
-              <div>
-                <Label htmlFor="email" className="text-xs text-white/60">
-                  {isAr ? "البريد المؤسسي" : "Work email"}
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  className="mt-1.5 h-12"
-                  autoComplete="email"
-                  inputMode="email"
-                />
-              </div>
-              <div>
-                <Label htmlFor="password" className="text-xs text-white/60">
-                  {isAr ? "كلمة المرور" : "Password"}
-                </Label>
-                <Input
-                  id="password"
-                  type="password"
-                  required
-                  minLength={8}
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  className="mt-1.5 h-12"
-                  autoComplete="current-password"
-                />
-              </div>
-              <Button type="submit" disabled={busy} className="h-12 w-full text-sm font-black">
-                {busy ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <KeyRound className="h-4 w-4" />
-                )}
-                {isAr ? "دخول مساحة القيادة" : "Enter command workspace"}
-              </Button>
-            </form>
-          )}
-
-          <div className="mt-5 grid gap-2 border-t border-white/8 pt-4 text-center">
-            {/* كان «اطلب تفعيلًا مؤسسيًا» ← /request-demo. وبأمر المالك ٢٠٢٦/٠٩/٢٩
-                صار التسجيل ذاتيًّا فوريًّا، فالرابط القديم يناقض النموذج فوقه. */}
-            <button
-              type="button"
-              onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
-              className="nx-focus-ring min-h-11 text-xs font-semibold text-primary hover:text-[#3AE8FF]"
-            >
-              {mode === "signup"
-                ? isAr
-                  ? "لديك حساب؟ سجّل الدخول"
-                  : "Have an account? Sign in"
-                : isAr
-                  ? "ليس لديك حساب؟ أنشئ حسابًا — مستخدم جديد"
-                  : "No account? Create one — new user"}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                clearExecutiveAcceptance(window.localStorage);
-                setAccepted(false);
+          {recovery !== null ? (
+            <RecoveryPanel
+              isAr={isAr}
+              view={recovery}
+              busy={busy}
+              signedIn={!!user}
+              authLoading={authLoading}
+              email={recoveryEmail}
+              onEmail={setRecoveryEmail}
+              sent={recoverySent}
+              cooling={Date.now() < recoveryCooldownUntil}
+              password={newPassword}
+              confirm={newPasswordConfirm}
+              onPassword={setNewPassword}
+              onConfirm={setNewPasswordConfirm}
+              onRequest={handleRecoveryRequest}
+              onSetPassword={handleNewPassword}
+              onBack={() => {
+                setRecovery(null);
+                setRecoverySent(false);
               }}
-              className="text-[12px] text-white/40 transition hover:text-white/75"
-            >
-              {isAr ? "إعادة مشاهدة العرض" : "Watch the presentation again"}
-            </button>
-          </div>
+              onNewLink={() => {
+                setRecoverySent(false);
+                setRecovery("request");
+              }}
+            />
+          ) : (
+            <>
+              <Button
+                type="button"
+                onClick={() => void handleGoogle()}
+                disabled={busy || googleState === "disabled"}
+                aria-describedby={googleState === "disabled" ? "google-signin-note" : undefined}
+                className="h-12 w-full bg-white text-slate-900 hover:bg-slate-100"
+              >
+                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleIcon />}
+                {isAr ? "المتابعة عبر Google" : "Continue with Google"}
+              </Button>
+              {googleState === "disabled" && (
+                <p
+                  id="google-signin-note"
+                  role="status"
+                  className="mt-2 text-center text-[12px] leading-relaxed text-white/75"
+                >
+                  {googleNoticeMessage("disabled", isAr)}
+                </p>
+              )}
+
+              <div className="my-5 flex items-center gap-3 text-[12px] uppercase tracking-[0.22em] text-white/35">
+                <span className="h-px flex-1 bg-white/10" />
+                {isAr ? "أو" : "or"}
+                <span className="h-px flex-1 bg-white/10" />
+              </div>
+
+              {/* تبويبا الدخول والتسجيل (أمر المالك ٢٠٢٦/٠٩/٢٩: «تحت خانة مستخدم جديد»). */}
+              <div
+                role="tablist"
+                aria-label={isAr ? "نوع الدخول" : "Access type"}
+                className="mb-4 grid grid-cols-2 gap-1 rounded-xl border border-white/10 p-1"
+              >
+                {(
+                  [
+                    ["signin", isAr ? "تسجيل الدخول" : "Sign in"],
+                    ["signup", isAr ? "مستخدم جديد" : "New user"],
+                  ] as const
+                ).map(([key, label]) => (
+                  <button
+                    key={key}
+                    type="button"
+                    role="tab"
+                    aria-selected={mode === key}
+                    onClick={() => setMode(key)}
+                    className={`nx-focus-ring min-h-11 rounded-lg text-sm font-black transition-colors ${
+                      // الرمزان لا `bg-primary`: كان التبويب المحدَّد 3.68:1 في الفاتح
+                      // (قاسه حارس الجودة) — `--tone-blue` تحت `--surface` ≥ 4.5 في الوضعين.
+                      mode === key
+                        ? "bg-[color:var(--tone-blue)] text-[color:var(--surface)]"
+                        : "text-white/65 hover:text-white"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              {mode === "signup" ? (
+                <SignupForm isAr={isAr} onSignedIn={goNext} />
+              ) : (
+                <form onSubmit={handleEmail} className="space-y-4">
+                  <div>
+                    <Label htmlFor="email" className="text-xs text-white/60">
+                      {isAr ? "البريد المؤسسي" : "Work email"}
+                    </Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(event) => setEmail(event.target.value)}
+                      className="mt-1.5 h-12"
+                      autoComplete="email"
+                      inputMode="email"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="password" className="text-xs text-white/60">
+                      {isAr ? "كلمة المرور" : "Password"}
+                    </Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      required
+                      minLength={8}
+                      value={password}
+                      onChange={(event) => setPassword(event.target.value)}
+                      className="mt-1.5 h-12"
+                      autoComplete="current-password"
+                    />
+                  </div>
+                  <Button type="submit" disabled={busy} className="h-12 w-full text-sm font-black">
+                    {busy ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <KeyRound className="h-4 w-4" />
+                    )}
+                    {isAr ? "دخول مساحة القيادة" : "Enter command workspace"}
+                  </Button>
+                  <button
+                    type="button"
+                    onClick={openRecovery}
+                    className="nx-focus-ring min-h-11! w-full text-xs font-semibold text-primary hover:text-[#3AE8FF]"
+                  >
+                    {isAr ? "نسيت كلمة المرور؟" : "Forgot your password?"}
+                  </button>
+                </form>
+              )}
+
+              <div className="mt-5 grid gap-2 border-t border-white/8 pt-4 text-center">
+                {/* كان «اطلب تفعيلًا مؤسسيًا» ← /request-demo. وبأمر المالك ٢٠٢٦/٠٩/٢٩
+                صار التسجيل ذاتيًّا فوريًّا، فالرابط القديم يناقض النموذج فوقه. */}
+                <button
+                  type="button"
+                  onClick={() => setMode(mode === "signup" ? "signin" : "signup")}
+                  className="nx-focus-ring min-h-11 text-xs font-semibold text-primary hover:text-[#3AE8FF]"
+                >
+                  {mode === "signup"
+                    ? isAr
+                      ? "لديك حساب؟ سجّل الدخول"
+                      : "Have an account? Sign in"
+                    : isAr
+                      ? "ليس لديك حساب؟ أنشئ حسابًا — مستخدم جديد"
+                      : "No account? Create one — new user"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    clearExecutiveAcceptance(window.localStorage);
+                    setAccepted(false);
+                  }}
+                  className="text-[12px] text-white/40 transition hover:text-white/75"
+                >
+                  {isAr ? "إعادة مشاهدة العرض" : "Watch the presentation again"}
+                </button>
+              </div>
+            </>
+          )}
         </section>
       </main>
     </div>
@@ -556,6 +696,167 @@ function IdentityAtmosphere() {
       <div className="nexus-identity-aurora absolute -left-[15%] -top-[25%] h-[70vw] w-[70vw] rounded-full" />
       <div className="nexus-identity-aurora nexus-identity-aurora-secondary absolute -bottom-[35%] -right-[20%] h-[65vw] w-[65vw] rounded-full" />
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/80 to-transparent shadow-[0_0_24px_rgba(0,212,255,.7)]" />
+    </div>
+  );
+}
+
+/**
+ * استعادة كلمة المرور داخل بطاقة الدخول نفسها (لقطات المالك ٢٠٢٦/١٠/٣٠: ثلاث محاولات دخول
+ * ردّتها الخدمة بـ`invalid_credentials` ولا مخرج في الواجهة).
+ *  - «request»: بريدٌ ثم رابطٌ يصل إليه. الرسالة واحدة وجد الحساب أم لا.
+ *  - «set»: بعد العودة من الرسالة. بلا جلسة استعادة (رابطٌ منتهٍ أو مستعمَل) يُعرض سببٌ وزرّ رابطٍ جديد،
+ *    ولا يُعرض نموذج كلمة مرور لا يملك صاحبه حقّ استعماله.
+ */
+function RecoveryPanel({
+  isAr,
+  view,
+  busy,
+  signedIn,
+  authLoading,
+  email,
+  onEmail,
+  sent,
+  cooling,
+  password,
+  confirm,
+  onPassword,
+  onConfirm,
+  onRequest,
+  onSetPassword,
+  onBack,
+  onNewLink,
+}: {
+  isAr: boolean;
+  view: "request" | "set";
+  busy: boolean;
+  signedIn: boolean;
+  authLoading: boolean;
+  email: string;
+  onEmail: (value: string) => void;
+  sent: boolean;
+  cooling: boolean;
+  password: string;
+  confirm: string;
+  onPassword: (value: string) => void;
+  onConfirm: (value: string) => void;
+  onRequest: (event: FormEvent) => void;
+  onSetPassword: (event: FormEvent) => void;
+  onBack: () => void;
+  onNewLink: () => void;
+}) {
+  const linkButton =
+    "nx-focus-ring min-h-11! w-full text-xs font-semibold text-primary hover:text-[#3AE8FF]";
+
+  if (view === "set") {
+    if (authLoading) {
+      return (
+        <div role="status" className="grid place-items-center py-8 text-primary">
+          <Loader2 className="h-5 w-5 animate-spin" />
+        </div>
+      );
+    }
+    if (!signedIn) {
+      return (
+        <div className="space-y-3">
+          <div
+            role="alert"
+            className="rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm leading-relaxed text-white/80"
+          >
+            {recoveryMessage("link_expired", isAr)}
+          </div>
+          <Button type="button" onClick={onNewLink} className="h-12 w-full text-sm font-black">
+            <KeyRound className="h-4 w-4" />
+            {isAr ? "طلب رابط جديد" : "Request a new link"}
+          </Button>
+        </div>
+      );
+    }
+    return (
+      <form onSubmit={onSetPassword} noValidate className="space-y-4">
+        <p className="text-sm font-black text-white">
+          {isAr ? "اختر كلمة مرور جديدة" : "Choose a new password"}
+        </p>
+        <div>
+          <Label htmlFor="new-password" className="text-xs text-white/60">
+            {isAr ? "كلمة المرور الجديدة (٨ أحرف على الأقل)" : "New password (8+ characters)"}
+          </Label>
+          <Input
+            id="new-password"
+            type="password"
+            required
+            minLength={8}
+            value={password}
+            onChange={(event) => onPassword(event.target.value)}
+            className="nx-focus-ring mt-1.5 h-12"
+            autoComplete="new-password"
+          />
+        </div>
+        <div>
+          <Label htmlFor="new-password-confirm" className="text-xs text-white/60">
+            {isAr ? "تأكيد كلمة المرور" : "Confirm password"}
+          </Label>
+          <Input
+            id="new-password-confirm"
+            type="password"
+            required
+            minLength={8}
+            value={confirm}
+            onChange={(event) => onConfirm(event.target.value)}
+            className="nx-focus-ring mt-1.5 h-12"
+            autoComplete="new-password"
+          />
+        </div>
+        <Button type="submit" disabled={busy} className="h-12 w-full text-sm font-black">
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}
+          {isAr ? "حفظ كلمة المرور والدخول" : "Save password and sign in"}
+        </Button>
+      </form>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <p className="text-sm font-black text-white">
+        {isAr ? "استعادة كلمة المرور" : "Recover your password"}
+      </p>
+      {sent ? (
+        <div
+          role="status"
+          className="rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm leading-relaxed text-white/80"
+        >
+          {recoveryMessage("sent", isAr)}
+        </div>
+      ) : null}
+      <form onSubmit={onRequest} noValidate className="space-y-4">
+        <div>
+          <Label htmlFor="recovery-email" className="text-xs text-white/60">
+            {isAr ? "البريد المؤسسي" : "Work email"}
+          </Label>
+          <Input
+            id="recovery-email"
+            type="email"
+            required
+            value={email}
+            onChange={(event) => onEmail(event.target.value)}
+            className="nx-focus-ring mt-1.5 h-12"
+            autoComplete="email"
+            inputMode="email"
+          />
+        </div>
+        <Button type="submit" disabled={busy || cooling} className="h-12 w-full text-sm font-black">
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}
+          {sent
+            ? isAr
+              ? "إعادة إرسال الرابط بعد دقيقة"
+              : "Resend the link in a minute"
+            : isAr
+              ? "أرسل رابط الاستعادة"
+              : "Send recovery link"}
+        </Button>
+      </form>
+      <button type="button" onClick={onBack} className={linkButton}>
+        {isAr ? "العودة إلى تسجيل الدخول" : "Back to sign in"}
+      </button>
     </div>
   );
 }

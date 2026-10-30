@@ -17,13 +17,15 @@ const loginFn = (src: string) => {
   const at = src.indexOf("function EmployeeLogin(");
   return at < 0 ? "" : src.slice(at, src.indexOf("\n}\n", at));
 };
-/** كل `toast.error(...)` في معالجَي الدخول يمرّ بالمحوِّل أو بنصّ الحالة الثابت — لا نصّ خادم خام. */
+/** كل `toast.error(...)` في معالجات الدخول والاستعادة يمرّ بمحوِّلٍ أو بنصّ الحالة الثابت — لا نصّ خادم خام. */
 const rawToasts = (src: string) => {
   const from = src.indexOf("async function handleGoogle");
   const to = src.indexOf("if (!accepted)", from);
   return [...src.slice(from, to).matchAll(/toast\.error\(([^;]*)\);/g)]
     .map((m) => m[1])
-    .filter((arg) => !/^(signinErrorMessage|googleNoticeMessage)\(/.test(arg.trim()));
+    .filter(
+      (arg) => !/^(signinErrorMessage|googleNoticeMessage|recoveryMessage)\(/.test(arg.trim()),
+    );
 };
 
 describe("«دخول الموظفين» — مدخلٌ إلى الدخول القائم", () => {
