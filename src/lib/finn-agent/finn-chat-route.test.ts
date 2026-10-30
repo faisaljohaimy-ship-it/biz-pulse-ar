@@ -86,6 +86,7 @@ vi.mock("@/lib/sadeed/backup-provider.server", async (importOriginal) => ({
   primaryCooldownFor: () => 1000,
 }));
 
+import { LOCAL_REPLY_NOTICE_AR } from "./local-reply.server";
 import { FINN_DENY_FLOOR_MS, setFinnDenyClockForTests } from "./owner-gate.server";
 import { createFinnEventParser, type FinnStreamEvent } from "./stream-protocol";
 
@@ -149,6 +150,25 @@ const spend = () => ({
   quota: sim.quotaCalls.length,
   models: sim.streamCalls.length,
 });
+
+/** بيئةٌ بلا أي محرّك: لا OpenAI ولا Gemini مباشر ولا بوّابة (حالة «لا يتعطل»). */
+function stubNoEngine() {
+  vi.stubEnv("OPENAI_API_KEY", "");
+  vi.stubEnv("GEMINI_API_KEY", "");
+  vi.stubEnv("GOOGLE_GENERATIVE_AI_API_KEY", "");
+  vi.stubEnv("LOVABLE_API_KEY", "");
+  vi.stubEnv("SADEED_BACKUP_PROVIDER", "");
+  sim.directAvailable = false;
+  sim.gatewayAvailable = false;
+}
+
+/** نصّ الرد المحلّي كاملًا (كل أحداث delta مجموعة). */
+async function localText(res: Response): Promise<string> {
+  return (await events(res))
+    .filter((e) => e.type === "delta")
+    .map((e) => (e as { text: string }).text)
+    .join("");
+}
 
 // ساعة افتراضية لأرضية زمن الرفض (W5 #1): النوم يقدّم الزمن فقط، فلا انتظار حقيقي.
 const denyClock = { t: 0, slept: [] as number[] };
@@ -368,33 +388,28 @@ describe("③ المالك: مفتاح الإيقاف والحدّ والحصّ�
     });
   });
 
-  it("لا محرّك مهيّأ أصلًا ⇒ 503 no_engine قبل أن يُنفَق حدٌّ أو حصّة", async () => {
-    vi.stubEnv("OPENAI_API_KEY", "");
-    vi.stubEnv("GEMINI_API_KEY", "");
-    vi.stubEnv("GOOGLE_GENERATIVE_AI_API_KEY", "");
-    vi.stubEnv("LOVABLE_API_KEY", "");
+  // O8(ب) ٢٠٢٦/١٠/٣٠: كان «لا محرّك» يردّ 503 no_engine (وصفر إنفاق). صار ردًّا محلّيًّا حتميًّا بلا
+  // نموذج (200 + X-FINN-Engine: local) وبصفر إنفاق أيضًا. تفاصيله في المجموعة «③ب» أدناه.
+  it("لا محرّك مهيّأ أصلًا ⇒ 200 ردّ محلّي بلا نموذج، وصفر حدّ وحصّة ونموذج (كان 503 no_engine)", async () => {
+    stubNoEngine();
     const res = await post(postReq());
-    expect(res.status).toBe(503);
-    expect(((await res.json()) as { error: string }).error).toBe("no_engine");
+    expect(res.status).toBe(200);
+    expect(res.headers.get("x-finn-engine")).toBe("local");
     expect(spend()).toEqual({ rate: 0, quota: 0, models: 0 });
   });
 
   // O8(ج) ٢٠٢٦/١٠/٢٩: كان المفتاح وحده يُرضي فحص المحرّك، فيُنفَق الحدّ والحصّة ثم تُتخطّى
-  // المحاولات الثلاث ⇒ 503. الآن الفحص يتّفق مع بانِي المحاولات (الطلب الصريح شرط البوّابة).
-  it("O8(ج): LOVABLE_API_KEY وحده بلا SADEED_BACKUP_PROVIDER ⇒ 503 no_engine وصفر حدّ وحصّة ونموذج", async () => {
-    vi.stubEnv("OPENAI_API_KEY", "");
-    vi.stubEnv("GEMINI_API_KEY", "");
-    vi.stubEnv("GOOGLE_GENERATIVE_AI_API_KEY", "");
+  // المحاولات الثلاث ⇒ 503. الآن الفحص يتّفق مع بانِي المحاولات (الطلب الصريح شرط البوّابة)،
+  // وحالة «لا محرّك» تُجاب محليًّا بلا إنفاق (O8(ب)).
+  it("O8(ج): LOVABLE_API_KEY وحده بلا SADEED_BACKUP_PROVIDER ⇒ لا محرّك ⇒ ردّ محلّي وصفر حدّ وحصّة ونموذج", async () => {
+    stubNoEngine();
     vi.stubEnv("LOVABLE_API_KEY", "lovable-key-stub-not-a-secret");
-    vi.stubEnv("SADEED_BACKUP_PROVIDER", "");
-    sim.directAvailable = false;
-    // كما تعيده `createSadeedBackupModel` الحقيقية بلا الطلب الصريح: لا بوّابة.
-    sim.gatewayAvailable = false;
     const res = await post(postReq());
-    expect(res.status).toBe(503);
-    expect(((await res.json()) as { error: string }).error).toBe("no_engine");
-    // كان قبل الإصلاح: { rate: 1, quota: 1, models: 0 }.
+    expect(res.status).toBe(200);
+    expect(res.headers.get("x-finn-engine")).toBe("local");
+    // كان قبل O8(ج): { rate: 1, quota: 1, models: 0 } ثم 503؛ وبعده 503 بصفر؛ والآن 200 بصفر.
     expect(spend()).toEqual({ rate: 0, quota: 0, models: 0 });
+    expect(await localText(res)).toContain(LOCAL_REPLY_NOTICE_AR);
   });
 
   it("O8(ج) الإيجابي: SADEED_BACKUP_PROVIDER=lovable مع المفتاح ⇒ البوّابة تجيب بعد حدٍّ وحصّةٍ مرّة", async () => {
@@ -412,6 +427,248 @@ describe("③ المالك: مفتاح الإيقاف والحدّ والحصّ�
     expect(res.headers.get("x-finn-fallback")).toBe("not_configured");
     expect(spend()).toEqual({ rate: 1, quota: 1, models: 1 });
     expect(sim.streamCalls.map((c) => c.tag)).toEqual(["gemini-gateway"]);
+  });
+});
+
+describe("③ب طبقة «لا يتعطل» (O8 ب): لا محرّك ⇒ ردّ محلّي حتميّ بلا نموذج ولا حدّ ولا حصّة", () => {
+  const FAKE_GH = "ghp_" + "Zx9Yw8Vv7Uu6Tt5Ss4Rr3Qq2Pp1Oo0Nn";
+  const FAKE_VERCEL = "vcl_secret_" + "AbCdEf0123456789XyZ";
+
+  it("الرد 200 SSE بترويسة X-FINN-Engine: local وبلا X-FINN-Fallback، وبلا تخزين مؤقّت", async () => {
+    stubNoEngine();
+    const res = await post(postReq());
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toContain("text/event-stream");
+    expect(res.headers.get("cache-control")).toContain("no-store");
+    expect(res.headers.get("x-finn-engine")).toBe("local");
+    expect(res.headers.has("x-finn-fallback")).toBe(false);
+    await res.text();
+  });
+
+  it("صفر نداء نموذج وصفر حدّ وصفر حصّة، ومزوّد OpenAI/Gemini لا يُبنى أصلًا", async () => {
+    stubNoEngine();
+    const res = await post(postReq());
+    await res.text();
+    expect(spend()).toEqual({ rate: 0, quota: 0, models: 0 });
+    expect(sim.streamCalls).toEqual([]);
+    expect(sim.rateCalls).toEqual([]);
+    expect(sim.quotaCalls).toEqual([]);
+  });
+
+  it("الأحداث: نشاط الأداتين (اسمٌ ومرحلة) ثم النصّ ثم done، والسطر الصريح أوّل نصّ", async () => {
+    stubNoEngine();
+    const ev = await events(await post(postReq()));
+    expect(ev.filter((e) => e.type === "tool")).toEqual([
+      { type: "tool", name: "platform_status", phase: "start" },
+      { type: "tool", name: "platform_status", phase: "done" },
+      { type: "tool", name: "knowledge_search", phase: "start" },
+      { type: "tool", name: "knowledge_search", phase: "done" },
+    ]);
+    const firstDelta = ev.find((e) => e.type === "delta") as { text: string };
+    expect(firstDelta.text.startsWith(LOCAL_REPLY_NOTICE_AR)).toBe(true);
+    expect(LOCAL_REPLY_NOTICE_AR).toMatch(/ردّ محلي بلا نموذج/);
+    expect(ev.at(-1)).toEqual({ type: "done", truncated: false });
+    expect(ev.some((e) => e.type === "error")).toBe(false);
+  });
+
+  it("النصّ يحمل لقطة المنصّة (المحرّكان غير مهيّأين) ولا يدّعي أنه أجاب عن السؤال", async () => {
+    stubNoEngine();
+    const text = await localText(await post(postReq()));
+    expect(text).toContain("حالة المنصّة");
+    expect(text).toMatch(/المحرّك الأساسي \(GPT\): غير مهيّأ/);
+    expect(text).toMatch(/المحرّك الاحتياطي: غير مهيّأ/);
+    expect(text).toContain("فلا أجيب عن سؤالك الآن");
+    expect(text).toContain("لتفعيل الإجابة بنموذج");
+    // لا شرطة طويلة في النصّ المكتوب (جمل قصيرة): العناوين المقتبسة من المعرفة قد تحملها، وهذا السؤال لا يطابق شيئًا.
+    expect(text).not.toContain("—");
+  });
+
+  it("سؤالٌ يطابق المعرفة المضمّنة ⇒ عنوانٌ ومقتطفٌ بوسم «مطابقة نصّية» وبلا نسبة تشابه", async () => {
+    stubNoEngine();
+    const res = await post(
+      postReq({ messages: [{ role: "user", content: "ما إطار تصاريح العمل والعزل؟" }] }),
+    );
+    const text = await localText(res);
+    expect(text).toContain("المعرفة المضمّنة");
+    expect(text).toContain("مطابقة نصّية");
+    expect(text).toContain("إطار تصاريح العمل والعزل");
+    expect(text).not.toMatch(/\bsim\b|\d\s*%|تشابه\s*\d/i);
+    expect(spend()).toEqual({ rate: 0, quota: 0, models: 0 });
+  });
+
+  it("سؤالٌ لا يطابق شيئًا ⇒ «لا نتائج» صريحة، لا مرجعٌ مؤلَّف", async () => {
+    stubNoEngine();
+    const res = await post(
+      postReq({
+        messages: [{ role: "user", content: "ما سعر صرف الريال أمام الين الياباني اليوم؟" }],
+      }),
+    );
+    const text = await localText(res);
+    expect(text).toContain("لا نتائج مطابقة لسؤالك في المعرفة المضمّنة");
+    expect(text).not.toMatch(/^\d+\. /m);
+  });
+
+  it("الاستعلام يُؤخذ من آخر رسالة للمستخدم لا من الأولى", async () => {
+    stubNoEngine();
+    const res = await post(
+      postReq({
+        messages: [
+          { role: "user", content: "ما إطار تصاريح العمل والعزل؟" },
+          { role: "assistant", content: "ج" },
+          { role: "user", content: "ما سعر صرف الريال أمام الين الياباني اليوم؟" },
+        ],
+      }),
+    );
+    expect(await localText(res)).toContain("لا نتائج مطابقة");
+  });
+
+  it("لا سرّ ولا نصّ خطأ ولا محادثة في الاستجابة أو السجلّ — حتى لو كانت أسرار الأدوات مضبوطة", async () => {
+    stubNoEngine();
+    vi.stubEnv("FINN_GITHUB_TOKEN", FAKE_GH);
+    vi.stubEnv("FINN_VERCEL_TOKEN", FAKE_VERCEL);
+    vi.stubEnv("FINN_VERCEL_PROJECT_ID", "prj_test");
+    const res = await post(postReq());
+    const wire = JSON.stringify([...res.headers]) + (await res.text());
+    for (const secret of [FAKE_GH, FAKE_VERCEL, SECRET_KEY, "provider text"]) {
+      expect(wire, secret).not.toContain(secret);
+      expect(logged(), secret).not.toContain(secret);
+    }
+    expect(wire).not.toMatch(/sk-[A-Za-z0-9]{8,}|ghp_|eyJ[A-Za-z0-9_-]{10,}|bearer|authorization/i);
+    expect(wire).not.toMatch(/\bat\s+\S+\s*\(|Error:|stack/);
+    // نصّ المحادثة لا يصل السجلّ، وسجلّ الرد المحلّي رمزٌ وعددٌ فقط.
+    expect(logged()).not.toContain(USER_TEXT);
+    expect(logged()).toContain("local reply");
+    expect(logged()).toContain('"reason":"no_engine"');
+  });
+
+  it("التدقيق اسمٌ ونتيجةٌ وزمنٌ فقط للأداتين — لا الاستعلام ولا المخرجات", async () => {
+    stubNoEngine();
+    const info = logSpies[3];
+    await (await post(postReq())).text();
+    const calls = info.mock.calls as unknown[][];
+    const tools = calls.filter((c) => c[0] === "[finn] tool").map((c) => c[1] as { tool: string });
+    expect(tools.map((t) => t.tool)).toEqual(["platform_status", "knowledge_search"]);
+    for (const entry of tools) {
+      expect(Object.keys(entry).sort()).toEqual(["ms", "ok", "tool"]);
+    }
+    expect(JSON.stringify(tools)).not.toContain(USER_TEXT);
+  });
+
+  // ── ما يبقى كما هو ──
+
+  it("غير المالك + لا محرّك ⇒ 404 المتطابق نفسه، قبل أي قراءة، وبلا ردّ محلّي", async () => {
+    const reference = await post(postReq(undefined, { token: null }));
+    const refShape = JSON.stringify([
+      reference.status,
+      [...reference.headers].sort(),
+      await reference.text(),
+    ]);
+    sim.rateCalls = [];
+    for (const make of [
+      () => postReq(undefined, { token: null }),
+      () => postReq(undefined, { token: jwtFor(OTHER) }),
+      () => postReq(undefined, { token: "garbage" }),
+    ]) {
+      stubNoEngine();
+      const res = await post(make());
+      expect(JSON.stringify([res.status, [...res.headers].sort(), await res.text()])).toBe(
+        refShape,
+      );
+    }
+    // قائمة المالكين غير معرَّفة + لا محرّك ⇒ 404 أيضًا.
+    vi.stubEnv("FINN_OWNER_USER_IDS", "");
+    const res = await post(postReq());
+    expect(res.status).toBe(404);
+    await res.text();
+    expect(spend()).toEqual({ rate: 0, quota: 0, models: 0 });
+    expect(logged()).not.toContain("local reply");
+    expect(logged()).not.toContain("platform_status");
+  });
+
+  it("رمزٌ يدّعي المالك ولا تتحقّق منه المصادقة + لا محرّك ⇒ 404 لا ردّ محلّي", async () => {
+    stubNoEngine();
+    sim.verifyUser = null;
+    const res = await post(postReq());
+    expect(res.status).toBe(404);
+    expect(logged()).not.toContain("local reply");
+  });
+
+  it("مفتاح الإيقاف يغلب: مالك + لا محرّك + إيقاف ⇒ 503 ai_disabled لا ردّ محلّي", async () => {
+    stubNoEngine();
+    vi.stubEnv("SADEED_AI_DISABLED", "1");
+    const res = await post(postReq());
+    expect(res.status).toBe(503);
+    expect(((await res.json()) as { error: string }).error).toBe("ai_disabled");
+    expect(res.headers.get("x-finn-engine")).not.toBe("local");
+    expect(spend()).toEqual({ rate: 0, quota: 0, models: 0 });
+    expect(logged()).not.toContain("local reply");
+  });
+
+  it("جسمٌ غير صالح + لا محرّك ⇒ 400/413/415 كما كان، لا ردّ محلّي", async () => {
+    stubNoEngine();
+    const bad = await post(postReq(undefined, { raw: "{not json" }));
+    expect(bad.status).toBe(400);
+    const empty = await post(postReq({ messages: [] }));
+    expect(empty.status).toBe(400);
+    const lastAssistant = await post(postReq({ messages: [{ role: "assistant", content: "x" }] }));
+    expect(lastAssistant.status).toBe(400);
+    const wrongType = await post(
+      new Request("http://local/api/finn/chat", {
+        method: "POST",
+        headers: { "content-type": "text/plain", authorization: `Bearer ${jwtFor(OWNER)}` },
+        body: "x",
+      }),
+    );
+    expect(wrongType.status).toBe(415);
+    const big = await post(postReq(undefined, { headers: { "content-length": "999999" } }));
+    expect(big.status).toBe(413);
+    for (const r of [bad, empty, lastAssistant, wrongType, big]) {
+      expect(r.headers.get("x-finn-engine")).toBe("none");
+    }
+    expect(spend()).toEqual({ rate: 0, quota: 0, models: 0 });
+    expect(logged()).not.toContain("local reply");
+  });
+
+  it("المخزن غير متاح أو الحصّة مستنفدة + لا محرّك ⇒ لا يُستشار أيٌّ منهما (كان 503 no_engine قبلهما أيضًا)", async () => {
+    stubNoEngine();
+    sim.rate = { allowed: false, unavailable: true };
+    sim.quota = new Response("{}", { status: 429 });
+    const res = await post(postReq());
+    expect(res.status).toBe(200);
+    expect(res.headers.get("x-finn-engine")).toBe("local");
+    await res.text();
+    expect(spend()).toEqual({ rate: 0, quota: 0, models: 0 });
+  });
+
+  it("وجود محرّك يُبقي كل الإغلاقات كما هي: المخزن ⇒ 503، الحصّة ⇒ 429، والنموذج يُنادى مرّة", async () => {
+    // المخزن غير متاح مع محرّك مهيّأ.
+    sim.rate = { allowed: false, unavailable: true };
+    const store = await post(postReq());
+    expect(store.status).toBe(503);
+    expect(((await store.json()) as { error: string }).error).toBe("rate_limit_unavailable");
+    expect(store.headers.get("x-finn-engine")).toBe("none");
+    // الحصّة مستنفدة مع محرّك مهيّأ.
+    sim.rate = { allowed: true };
+    sim.quota = new Response(JSON.stringify({ error: "daily_identity_cap" }), { status: 429 });
+    const quota = await post(postReq());
+    expect(quota.status).toBe(429);
+    expect(spend().models).toBe(0);
+    // والسليم ينادي النموذج مرّة ويُنفق حدًّا وحصّة، لا ردّ محلّي.
+    sim.quota = null;
+    sim.rateCalls = [];
+    sim.quotaCalls = [];
+    const ok = await post(postReq());
+    expect(ok.headers.get("x-finn-engine")).toBe("openai");
+    await ok.text();
+    expect(spend()).toEqual({ rate: 1, quota: 1, models: 1 });
+  });
+
+  it("محرّكٌ واحد يكفي: مفتاح Gemini وحده ⇒ لا ردّ محلّي بل الاحتياطي المعلَن", async () => {
+    vi.stubEnv("OPENAI_API_KEY", "");
+    const res = await post(postReq());
+    expect(res.headers.get("x-finn-engine")).toBe("gemini");
+    expect(res.headers.get("x-finn-fallback")).toBe("not_configured");
+    await res.text();
   });
 });
 
@@ -702,6 +959,8 @@ describe("⑨ المصادقة والخصوصية", () => {
       "src/routes/api/finn/chat.ts",
       "src/lib/finn-agent/engine.server.ts",
       "src/lib/finn-agent/failover.ts",
+      "src/lib/finn-agent/knowledge-search.server.ts",
+      "src/lib/finn-agent/local-reply.server.ts",
     ]) {
       const code = readFileSync(f, "utf8")
         .replace(/\/\*[\s\S]*?\*\//g, "")

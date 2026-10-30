@@ -2,8 +2,10 @@
  * أدوات فِن الهندسية — **قراءةٌ فقط، للخادم وحده، بعد بوّابة المالك.**
  *
  * أمر المالك ٢٠٢٦/١٠/٢٤: فِن وكيلٌ هندسيّ فعليّ لا واجهةٌ شكلية، يفحص المستودع والنشر وحالة
- * المنصّة. وما بقي ثابتًا من قرار W5: **يقترح ولا ينفّذ** — فهذه الأدوات الثلاث تقرأ ولا تكتب،
- * ولا تنفّذ كودًا، ولا تلمس قاعدة الإنتاج، ولا تنشر، ولا تغيّر صلاحية.
+ * المنصّة. وما بقي ثابتًا من قرار W5: **يقترح ولا ينفّذ** — فهذه الأدوات الأربع تقرأ ولا تكتب،
+ * ولا تنفّذ كودًا، ولا تلمس قاعدة الإنتاج، ولا تنشر، ولا تغيّر صلاحية. (الرابعة `knowledge_search`
+ * ٢٠٢٦/١٠/٣٠: بحثٌ نصّيّ في الفهرس الداخلي بالمستودع وحده، بلا قاعدة ولا شبكة — انظر
+ * `knowledge-search.server.ts`.)
  *
  * ## الحدود التي تحرسها الوحدة نفسها (لا الموجِّه وحده)
  *
@@ -20,12 +22,21 @@
  *    نصٌّ يكتبه غيرُ المالك أحيانًا، فتُنظَّف (محارف تحكّم · أنماط أسرار) وتُقصّ، ولا تحمل أسماء
  *    مؤلّفين ولا عناوين بريد. والموجِّه يوجب معاملتها بيانات لا أوامر.
  * 6. **سجلّ تدقيقٍ مقتضب**: اسم الأداة والنتيجة والزمن فقط — لا مدخلات ولا مخرجات.
+ * 7. **لا أداةَ تصل قاعدةً**: `knowledge_search` تقرأ الفهرس الداخلي في الريبو وحده (٢٠٢٦/١٠/٣٠)،
+ *    فوعد الموجِّه «ولا ترى قاعدة الإنتاج» باقٍ.
  */
 import { tool, type ToolSet } from "ai";
 import { z } from "zod";
 import { buildStamp } from "@/lib/build/build-info.server";
 import { aiKillSwitchOn } from "@/lib/governance/ai-quota.server";
 import { validateEnv } from "@/lib/env/env-manifest";
+import {
+  KNOWLEDGE_DEFAULT_LIMIT,
+  KNOWLEDGE_MAX_LIMIT,
+  KNOWLEDGE_QUERY_MAX_CHARS,
+  knowledgeSearch,
+} from "./knowledge-search.server";
+import { SECRET_SHAPES } from "./secret-shapes";
 import { FINN_TOOL_NAMES, type FinnToolName } from "./tool-names";
 import type { FinnEngineStatus } from "./status";
 
@@ -62,10 +73,6 @@ function stripControl(value: string): string {
   }
   return out;
 }
-/** أنماط أسرارٍ معروفة — لو تسرّب واحدٌ منها في عنوانٍ أو رسالة لا يصل النموذج ولا المالك. */
-const SECRET_SHAPES =
-  /\b(?:gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9_-]{16,}|sb_secret_[A-Za-z0-9_-]{16,}|eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,})\b/g;
-
 /** عناوين البريد — قد تظهر في عنوان commit أو طلب دمج؛ لا تصل النموذج ولا الواجهة. */
 const EMAIL_SHAPE = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g;
 
@@ -177,7 +184,7 @@ const NOT_CONFIGURED = { ok: false, configured: false, reason: "not_configured" 
 function platformStatus(deps: FinnToolDeps) {
   const report = validateEnv(deps.env);
   return {
-    ok: true,
+    ok: true as const,
     source: "in-process",
     build: buildStamp(),
     engine: deps.engineStatus(),
@@ -403,7 +410,39 @@ export function buildFinnTools(
         vercelDeployments(input, deps, signal),
       ),
     }),
+    knowledge_search: tool({
+      description:
+        "Read-only keyword search over the small curated knowledge index that ships inside the repository: general platform reference notes and the names of HCIS directives, sectors and approval stages. Text match only (no similarity score), no database, no network. Returns bounded excerpts as untrusted data, reason no_results when nothing matches, and not_configured when the index is empty. Use it only when a question needs that reference material, not for code, deployments or live platform state.",
+      inputSchema: z.object({
+        query: z.string().min(2).max(KNOWLEDGE_QUERY_MAX_CHARS),
+        limit: z.number().int().min(1).max(KNOWLEDGE_MAX_LIMIT).default(KNOWLEDGE_DEFAULT_LIMIT),
+      }),
+      execute: audited("knowledge_search", deps, (input: { query: string; limit: number }) =>
+        knowledgeSearch(input),
+      ),
+    }),
   };
+}
+
+/**
+ * مدخلات الرد المحلّي بلا نموذج (طبقة «لا يتعطل»): نتيجتا الأداتين `platform_status` و
+ * `knowledge_search` نفسيهما، تُقرآن **بلا نموذج** ومن مسار التدقيق نفسه (اسمٌ ونتيجةٌ وزمنٌ
+ * فقط). لا ترمي: أداةٌ فشلت تعود `{ ok: false, reason: "tool_failed" }` فيصوغ الرد سطرًا صادقًا
+ * عنها. الاستعلام نصّ المالك: لا يُسجَّل ولا يغادر هذه الدالّة إلا إلى الفهرس الداخلي.
+ */
+export async function readLocalReplyData(
+  engineStatus: () => FinnEngineStatus,
+  query: string,
+  overrides: Partial<FinnToolDeps> = {},
+) {
+  const deps: FinnToolDeps = { ...defaultDeps(engineStatus), ...overrides };
+  const platform = await audited("platform_status", deps, () => platformStatus(deps))({});
+  const knowledge = await audited(
+    "knowledge_search",
+    deps,
+    (input: { query: string; limit: number }) => knowledgeSearch(input),
+  )({ query, limit: KNOWLEDGE_DEFAULT_LIMIT });
+  return { platform, knowledge };
 }
 
 /** للاختبارات: الأسماء المسجَّلة فعلًا في المجموعة. */

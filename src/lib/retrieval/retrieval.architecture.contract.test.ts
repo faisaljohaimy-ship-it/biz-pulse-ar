@@ -21,8 +21,9 @@
  * ٤. مستهلكو النواة خارج `src/lib/retrieval` **قائمة صريحة مغلقة**: كانت
  *    فارغة في الخطوة ١، وأضافت الخطوة ٢ (٢٠٢٦/١٠/٢٩، الضوابط الأربعة) مسار
  *    الإجابة عبر `rag.server.ts` وأذرعه تحت `src/lib/sadeed/rag/` — كلّها
- *    `.server.ts`. أي مستهلك جديد يُضاف هنا باسمه أو يُدان؛ و`/api/chat` لا
- *    يستورد النواة مباشرةً (يصلها عبر `gatherRagContext` وحدها).
+ *    `.server.ts`، ثم أداة المعرفة في فِن (٢٠٢٦/١٠/٣٠، O8(أ)). أي مستهلك جديد يُضاف
+ *    هنا باسمه أو يُدان؛ و`/api/chat` لا يستورد النواة مباشرةً (يصلها عبر
+ *    `gatherRagContext` وحدها).
  */
 import { execSync } from "node:child_process";
 import { readdirSync, readFileSync, statSync } from "node:fs";
@@ -67,10 +68,14 @@ function importsRetrieval(src: string): boolean {
 
 /**
  * مستهلكو النواة خارج مجلدها — فارغة في الخطوة ١؛ الخطوة ٢ وصلت مسار الإجابة
- * بهذه الأربعة وحدها (خادمٌ فقط): المجمِّع يُستدعى من `rag.server.ts`، والأذرع
- * القاعدية والمتّجهية والرصد تحت `src/lib/sadeed/rag/`.
+ * بهذه الأربعة (خادمٌ فقط): المجمِّع يُستدعى من `rag.server.ts`، والأذرع
+ * القاعدية والمتّجهية والرصد تحت `src/lib/sadeed/rag/`. وأضاف O8(أ) (٢٠٢٦/١٠/٣٠) خامسًا:
+ * أداة `knowledge_search` في وكيل فِن، **على الفهرس الداخلي وحده**
+ * (`sources/seed-corpus.server`) — وحصر استيراداتها في قائمة بيضاء يحرسه
+ * `src/lib/finn-agent/finn-governance.contract.test.ts` (⑨).
  */
 const ALLOWED_CONSUMERS: readonly string[] = [
+  "src/lib/finn-agent/knowledge-search.server.ts",
   "src/lib/sadeed/rag.server.ts",
   "src/lib/sadeed/rag/lexical-arms.server.ts",
   "src/lib/sadeed/rag/observe.server.ts",

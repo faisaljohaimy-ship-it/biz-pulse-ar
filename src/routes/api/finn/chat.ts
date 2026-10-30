@@ -18,6 +18,16 @@
  *    مغلقين (لا «bounded»: المالك يعيد المحاولة، ولا يُنفَق بلا تحقّق).
  * 5. المحرّك: GPT أوّلًا، والاحتياط معلَنٌ في `X-FINN-Engine` / `X-FINN-Fallback`.
  *
+ * ## طبقة «لا يتعطل» (٢٠٢٦/١٠/٣٠، O8(ب))
+ *
+ * لا محرّك مهيّأً أصلًا ⇒ **ردٌّ محلّيٌّ حتميّ بلا نموذج** (`200` + `X-FINN-Engine: local` وسطرٌ
+ * عربيّ صريح في الجسم) بدل `503 no_engine`. يقع بعد بوّابة المالك ومفتاح الإيقاف وفحص الجسم،
+ * و**قبل** الحدّ والحصّة، فلا يُنفَق منهما شيء ولا يُنادى نموذج. وكل ما يفشل مغلقًا اليوم
+ * (المخزن غير متاح · الحصّة مستنفدة · جسمٌ غير صالح · مفتاح الإيقاف) يبقى كما هو؛ والذي تغيّر
+ * حالةُ «لا محرّك» وحدها. يبقى `503 no_engine` لمسار ما بعد الفتح (محرّكٌ مهيّأ تُخطّيت
+ * محاولاتُه كلّها)، وهو غير قابلٍ للبلوغ عمليًّا ما دام الفحص يتّفق مع بانِي المحاولات
+ * (`engine-predicate.contract.test.ts`).
+ *
  * ## ما لا يملكه العميل
  *
  * النموذج والموجِّه وسقف المخرجات والمهلة والوجهة — كلّها من الخادم. الجسم يُقرأ
@@ -31,7 +41,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { aiDisabledResponse, enforceAiQuota } from "@/lib/governance/ai-quota.server";
 import { enforceRateLimit } from "@/lib/governance/rate-limit.server";
-import { finnHasAnyEngine, openFinnChatStream } from "@/lib/finn-agent/engine.server";
+import {
+  FINN_LOCAL_ENGINE_HEADER,
+  finnHasAnyEngine,
+  openFinnChatStream,
+  openFinnLocalReply,
+} from "@/lib/finn-agent/engine.server";
 import { FINN_IDENTITY } from "@/lib/finn-agent/identity";
 import { FINN_LIMITS } from "@/lib/finn-agent/limits";
 import { parseFinnRequestBody, type FinnRequestErrorCode } from "@/lib/finn-agent/messages";
@@ -54,6 +69,59 @@ function finnError(status: number, code: string, messageAr: string, retryAfter?:
       "Content-Type": "application/json; charset=utf-8",
       "X-FINN-Engine": "none",
       ...(retryAfter ? { "Retry-After": String(retryAfter) } : {}),
+    },
+  });
+}
+
+/**
+ * استجابة SSE واحدة للمسارين (الرد بنموذج والرد المحلّي): الأحداث تُرمَّز وتُبثّ، وإغلاق العميل
+ * يستدعي `onCancel` (إلغاء نداء المحرّك). الترويسات الخاصّة بكل مسار تُمرَّر ولا تُبنى هنا.
+ */
+function sseResponse(
+  events: AsyncIterable<Parameters<typeof encodeFinnEvent>[0]>,
+  headers: Record<string, string>,
+  onCancel: () => void,
+): Response {
+  const encoder = new TextEncoder();
+  let cancelled = false;
+  const stream = new ReadableStream<Uint8Array>({
+    async start(controller) {
+      const send = (event: Parameters<typeof encodeFinnEvent>[0]) => {
+        try {
+          controller.enqueue(encoder.encode(encodeFinnEvent(event)));
+        } catch {
+          /* أُغلق من جهة العميل. */
+        }
+      };
+      try {
+        for await (const event of events) {
+          if (cancelled) break;
+          send(event);
+        }
+      } catch {
+        send({ type: "error", code: "engine_error" });
+      } finally {
+        try {
+          controller.close();
+        } catch {
+          /* أُغلق من جهة العميل. */
+        }
+      }
+    },
+    cancel() {
+      // العميل أوقف القراءة ⇒ يُلغى نداء المحرّك فلا يُنفَق على ما لن يُقرأ.
+      cancelled = true;
+      onCancel();
+    },
+  });
+
+  return new Response(stream, {
+    status: 200,
+    headers: {
+      ...NO_STORE_HEADERS,
+      "Content-Type": "text/event-stream; charset=utf-8",
+      "X-Accel-Buffering": "no",
+      ...headers,
     },
   });
 }
@@ -99,9 +167,16 @@ async function handlePost(request: Request, userId: string): Promise<Response> {
     return finnError(parsed.status, parsed.code, REQUEST_ERRORS_AR[parsed.code]);
   }
 
-  // لا محرّك مهيّأ أصلًا ⇒ لا حدّ يُنفَق ولا حصّة تُستهلك.
+  // لا محرّك مهيّأ أصلًا ⇒ طبقة «لا يتعطل»: ردٌّ محلّيٌّ حتميّ بلا نموذج، ولا حدّ يُنفَق ولا
+  // حصّة تُستهلك. (كان 503 no_engine.) تقع بعد بوّابة المالك ومفتاح الإيقاف وفحص الجسم، وقبل
+  // الحدّ والحصّة.
   if (!finnHasAnyEngine()) {
-    return finnError(503, "no_engine", "لم يُهيَّأ أي محرّك لفِن على الخادم بعد.", 60);
+    const local = await openFinnLocalReply(parsed.messages);
+    return sseResponse(
+      local.events,
+      { "X-FINN-Engine": FINN_LOCAL_ENGINE_HEADER },
+      () => undefined,
+    );
   }
 
   // حدّ المعدّل — مفتاحٌ مستقلّ عن سَدِيد، يفشل مغلقًا.
@@ -175,50 +250,16 @@ async function handlePost(request: Request, userId: string): Promise<Response> {
   }
 
   const { engine, fallback, events } = opened;
-  const encoder = new TextEncoder();
-  let cancelled = false;
-  const stream = new ReadableStream<Uint8Array>({
-    async start(controller) {
-      const send = (event: Parameters<typeof encodeFinnEvent>[0]) => {
-        try {
-          controller.enqueue(encoder.encode(encodeFinnEvent(event)));
-        } catch {
-          /* أُغلق من جهة العميل. */
-        }
-      };
-      try {
-        for await (const event of events) {
-          if (cancelled) break;
-          send(event);
-        }
-      } catch {
-        send({ type: "error", code: "engine_error" });
-      } finally {
-        try {
-          controller.close();
-        } catch {
-          /* أُغلق من جهة العميل. */
-        }
-      }
-    },
-    cancel() {
-      // العميل أوقف القراءة ⇒ يُلغى نداء المحرّك فلا يُنفَق على ما لن يُقرأ.
-      cancelled = true;
-      cancel.abort();
-    },
-  });
-
-  return new Response(stream, {
-    status: 200,
-    headers: {
-      ...NO_STORE_HEADERS,
-      "Content-Type": "text/event-stream; charset=utf-8",
-      "X-Accel-Buffering": "no",
+  return sseResponse(
+    events,
+    {
       // الإفصاح: المحرّك الذي أجاب فعلًا، وسبب سقوطه عن GPT إن سقط (رمزٌ عامّ).
       "X-FINN-Engine": engine,
       ...(fallback ? { "X-FINN-Fallback": fallback } : {}),
     },
-  });
+    // العميل أوقف القراءة ⇒ يُلغى نداء المحرّك فلا يُنفَق على ما لن يُقرأ.
+    () => cancel.abort(),
+  );
 }
 
 export const Route = createFileRoute("/api/finn/chat")({

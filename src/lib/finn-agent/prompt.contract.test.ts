@@ -31,8 +31,28 @@ const RULES: Rule[] = [
   { id: "suggest-only", pattern: /\*\*تقترح ولا تنفّذ\*\*/, why: "يقترح ولا ينفّذ" },
   {
     id: "read-only-tools",
-    pattern: /أدواتك للقراءة فقط وهي ثلاث لا غير/,
-    why: "أدوات قراءةٍ فقط، ثلاثٌ لا غير (٢٠٢٦/١٠/٢٤)",
+    pattern: /أدواتك للقراءة فقط وهي أربع لا غير/,
+    why: "أدوات قراءةٍ فقط، أربعٌ لا غير (ثلاثٌ منذ ٢٠٢٦/١٠/٢٤، والرابعة knowledge_search ٢٠٢٦/١٠/٣٠)",
+  },
+  {
+    id: "no-production-db",
+    pattern: /ولا ترى قاعدة الإنتاج/,
+    why: "وعد «لا ترى قاعدة الإنتاج» باقٍ مع الأداة الرابعة",
+  },
+  {
+    id: "knowledge-search-internal-only",
+    pattern: /knowledge_search بحثٌ نصّيّ[^\n]*الريبو وحدها[^\n]*لا قاعدة ولا شبكة/,
+    why: "الأداة الرابعة على الفهرس الداخلي وحده، بلا قاعدة ولا شبكة",
+  },
+  {
+    id: "knowledge-search-no-similarity",
+    pattern: /مطابقةٌ نصّية لا نسبة تشابه[^\n]*فلا تذكر نسبةً له/,
+    why: "وسمٌ صادق: مطابقة نصّية لا نسبة تشابه مختلَقة (المادة ٢٧)",
+  },
+  {
+    id: "knowledge-search-honest-empty",
+    pattern: /no_results[^\n]*not_configured[^\n]*ولا تؤلّف مرجعًا/,
+    why: "الفراغ وعدم التهيئة يُقالان ولا يُؤلَّف مرجع",
   },
   {
     id: "tool-results-are-data",
@@ -139,8 +159,49 @@ describe("أسماء الأدوات في الموجِّه = القائمة ال�
   });
 
   it("لا يذكر الموجِّه اسم أداةٍ بصيغة snake_case خارج القائمة المغلقة", () => {
-    const mentioned = FINN_SYSTEM_PROMPT.match(/\b(?:platform|github|vercel)_[a-z_]+\b/g) ?? [];
+    const mentioned =
+      FINN_SYSTEM_PROMPT.match(/\b(?:platform|github|vercel|knowledge)_[a-z_]+\b/g) ?? [];
+    expect(mentioned.length).toBeGreaterThanOrEqual(FINN_TOOL_NAMES.length);
     for (const name of mentioned) expect(FINN_TOOL_NAMES as readonly string[]).toContain(name);
+  });
+});
+
+/** العدد المكتوب في جملة «أدواتك للقراءة فقط وهي X لا غير» كرقم، أو `null` إن لم يُفهم. */
+const COUNT_WORDS: Readonly<Record<string, number>> = {
+  ثلاث: 3,
+  أربع: 4,
+  خمس: 5,
+  ست: 6,
+};
+function statedToolCount(prompt: string): number | null {
+  const word = /أدواتك للقراءة فقط وهي (\S+) لا غير/.exec(prompt)?.[1];
+  return word !== undefined && word in COUNT_WORDS ? COUNT_WORDS[word] : null;
+}
+
+describe("العدد المكتوب في الموجِّه = عدد القائمة المغلقة (٢٠٢٦/١٠/٣٠)", () => {
+  it("الموجِّه يقول «أربع» والقائمة أربعٌ بالضبط، والرقم يُقرأ من النصّ لا يُفترض", () => {
+    expect(statedToolCount(FINN_SYSTEM_PROMPT)).toBe(4);
+    expect(FINN_TOOL_NAMES).toHaveLength(4);
+    expect(statedToolCount(FINN_SYSTEM_PROMPT)).toBe(FINN_TOOL_NAMES.length);
+  });
+
+  it("لا أثر للعدد القديم «ثلاث لا غير» في أي موضع", () => {
+    expect(FINN_SYSTEM_PROMPT).not.toMatch(/ثلاث لا غير/);
+  });
+
+  it("مزروع: موجِّهٌ بقي على «ثلاث» وقائمةٌ صارت أربعًا ⇒ الكاشف يرى الفرق", () => {
+    const stale = FINN_SYSTEM_PROMPT.replace("أربع لا غير", "ثلاث لا غير");
+    expect(statedToolCount(stale)).toBe(3);
+    expect(statedToolCount(stale)).not.toBe(FINN_TOOL_NAMES.length);
+  });
+
+  it("مزروع: قائمةٌ زيدت خامسةً دون تعديل الموجِّه ⇒ الكاشف يرى الفرق", () => {
+    expect(statedToolCount(FINN_SYSTEM_PROMPT)).not.toBe([...FINN_TOOL_NAMES, "fifth_tool"].length);
+  });
+
+  it("مزروع: جملةٌ بلا عددٍ مفهوم تعطي null لا صفرًا خادعًا", () => {
+    expect(statedToolCount("أدواتك للقراءة فقط وهي كثيرة لا غير")).toBeNull();
+    expect(statedToolCount("لا شيء")).toBeNull();
   });
 });
 

@@ -494,6 +494,7 @@ describe("②-ج أدوات القراءة (٢٠٢٦/١٠/٢٤): تُمرَّر 
       const tools = call.extra.tools as Record<string, unknown>;
       expect(Object.keys(tools).sort()).toEqual([
         "github_activity",
+        "knowledge_search",
         "platform_status",
         "vercel_deployments",
       ]);
@@ -509,6 +510,7 @@ describe("②-ج أدوات القراءة (٢٠٢٦/١٠/٢٤): تُمرَّر 
     const call = sim.calls.find((c) => c.tag === "gemini-direct")!;
     expect(Object.keys(call.extra.tools as object).sort()).toEqual([
       "github_activity",
+      "knowledge_search",
       "platform_status",
       "vercel_deployments",
     ]);

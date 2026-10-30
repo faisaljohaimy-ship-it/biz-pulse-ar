@@ -9,6 +9,7 @@
  * المادة ٣٠: كل كاشفٍ سلبيّ يُجرَّب أولًا على انتهاكٍ مزروع (قسم «إثبات الأداة» الأخير).
  */
 import { existsSync, globSync, readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { isRouteHidden } from "@/lib/nav/hidden-routes";
 import { MODULES } from "@/lib/nav/modules";
@@ -444,6 +445,150 @@ describe("⑧ التوثيق: الاسم لا ينقض قرار ٢٠٢٦/٠٨/٠
   });
 });
 
+/**
+ * المجموعة المغلقة كما أقرّها المالك: **أربعٌ بالاسم** (ثلاثٌ منذ ٢٠٢٦/١٠/٢٤، والرابعة
+ * `knowledge_search` ٢٠٢٦/١٠/٣٠). مكتوبةٌ هنا حرفيًّا لا مشتقّةً من `FINN_TOOL_NAMES`: لو اشتُقّت لمرّ
+ * تعديلُ القائمة والتسجيل معًا بصمت. تغييرها قرارٌ يُعدَّل هنا عمدًا ومعه الموجِّه (`prompt.ts`).
+ */
+const PINNED_TOOLS = [
+  "github_activity",
+  "knowledge_search",
+  "platform_status",
+  "vercel_deployments",
+] as const;
+
+/** فروق المجموعة المسجَّلة والقائمة المعلَنة عن المثبَّتة: زائدٌ وناقصٌ وعدد. فارغةٌ = سليمة. */
+function toolSetDrift(
+  registered: readonly string[],
+  declared: readonly string[],
+  pinned: readonly string[] = PINNED_TOOLS,
+): string[] {
+  const reg = [...registered].sort();
+  const dec = [...declared].sort();
+  const pin = [...pinned].sort();
+  const out: string[] = [];
+  for (const name of reg) if (!pin.includes(name)) out.push(`زائد في التسجيل: ${name}`);
+  for (const name of pin) if (!reg.includes(name)) out.push(`ناقص من التسجيل: ${name}`);
+  for (const name of dec) if (!pin.includes(name)) out.push(`زائد في القائمة المعلَنة: ${name}`);
+  for (const name of pin) if (!dec.includes(name)) out.push(`ناقص من القائمة المعلَنة: ${name}`);
+  if (reg.length !== pin.length) out.push(`عدد المسجَّل ${reg.length} ≠ ${pin.length}`);
+  return out;
+}
+
+/** وحدات الأداة: كلّها تُمسح بالكاشف نفسه (لا كتابة ولا تنفيذ ولا قاعدة ولا مضيفٌ خارج القائمة). */
+const TOOL_MODULE_FILES = [
+  "src/lib/finn-agent/tools.server.ts",
+  "src/lib/finn-agent/knowledge-search.server.ts",
+  "src/lib/finn-agent/local-reply.server.ts",
+] as const;
+
+/** مواصفات الاستيراد القيمي في مصدرٍ: بلا `import type`، وبالديناميكي والتصدير المعاد. */
+function valueImportSpecifiers(src: string): string[] {
+  const out: string[] = [];
+  for (const m of src.matchAll(
+    /(?:^|\n)\s*(?:import|export)\s+(type\s+)?([^;]*?)\s+from\s+["']([^"']+)["']/g,
+  )) {
+    if (!m[1]) out.push(m[3]);
+  }
+  for (const m of src.matchAll(/(?:^|\n)\s*import\s+["']([^"']+)["']/g)) out.push(m[1]);
+  for (const m of src.matchAll(/\bimport\(\s*["']([^"']+)["']\s*\)/g)) out.push(m[1]);
+  return out;
+}
+
+/** استيراداتُ أداة المعرفة المسموحة بالضبط — الفهرس الداخلي وحده. أي غيرها (قاعدة · ذراع قاعدية · تضمين) يُدان. */
+const KNOWLEDGE_ALLOWED_IMPORTS: readonly string[] = [
+  "@/lib/retrieval/sources/seed-corpus.server",
+  "@/lib/retrieval/types",
+  "@/lib/sadeed/rag/sanitize.server",
+  "./secret-shapes",
+];
+const knowledgeImportViolations = (src: string): string[] =>
+  [...src.matchAll(/(?:from\s+|import\()\s*["']([^"']+)["']/g)]
+    .map((m) => m[1])
+    .filter((spec) => !KNOWLEDGE_ALLOWED_IMPORTS.includes(spec));
+
+/** يحلّ مواصفة استيراد داخلية (`@/…` أو نسبية) إلى ملفّ مصدر، أو `null` للحزم الخارجية. */
+function resolveInternal(from: string, spec: string): string | null {
+  let base: string;
+  if (spec.startsWith("@/")) base = `src/${spec.slice(2)}`;
+  else if (spec.startsWith(".")) base = join(dirname(from), spec);
+  else return null;
+  for (const candidate of [`${base}.ts`, `${base}.tsx`, `${base}/index.ts`, base]) {
+    if (existsSync(candidate) && /\.tsx?$/.test(candidate)) return candidate;
+  }
+  return null;
+}
+
+/** إغلاق الاستيراد القيمي من ملفّ — الملفات التي قد تُنفَّذ فعلًا حين تُحمَّل الوحدة. */
+function valueImportClosure(entry: string, read_: (p: string) => string = read): string[] {
+  const seen = new Set<string>([entry]);
+  const queue = [entry];
+  while (queue.length > 0) {
+    const file = queue.shift()!;
+    for (const spec of valueImportSpecifiers(strip(read_(file)))) {
+      const next = resolveInternal(file, spec);
+      if (next && !seen.has(next)) {
+        seen.add(next);
+        queue.push(next);
+      }
+    }
+  }
+  return [...seen].sort();
+}
+
+/** ما يُدان داخل أي ملفٍّ في إغلاق أداة المعرفة: قاعدةٌ أو شبكةٌ أو مزوّد (استيرادًا قيميًّا أو نداءً). */
+const CLOSURE_FORBIDDEN_SPEC =
+  /supabase|client\.server|integrations\/|^ai$|@ai-sdk|node:https?|node:net|undici|axios|embeddings|gemini|googleapis|lexical-arms|vector-arm/i;
+const CLOSURE_FORBIDDEN_CALL = /\bfetch\(|\bhttpJson\b|\bcreateClient\(|\bsupabaseAdmin\b/;
+function closureViolations(
+  files: readonly string[],
+  read_: (p: string) => string = read,
+): string[] {
+  const out: string[] = [];
+  for (const file of files) {
+    const code = strip(read_(file));
+    for (const spec of valueImportSpecifiers(code)) {
+      if (CLOSURE_FORBIDDEN_SPEC.test(spec)) out.push(`${file}: استيراد ${spec}`);
+    }
+    const call = CLOSURE_FORBIDDEN_CALL.exec(code);
+    if (call) out.push(`${file}: ${call[0]}`);
+  }
+  return out;
+}
+
+/**
+ * موضع الرد المحلّي في المسار: بعد فحص الجسم، قبل الحدّ والحصّة والمحرّك، وكتلته لا تنفق شيئًا
+ * ولا تردّ 503، وتعلن `X-FINN-Engine` بقيمة الرد المحلّي. فارغةٌ = سليمة.
+ */
+function localReplyPlacementProblems(handlePost: string): string[] {
+  const at = (needle: string) => handlePost.indexOf(needle);
+  const out: string[] = [];
+  const order = [
+    "parseFinnRequestBody(",
+    "openFinnLocalReply(",
+    "enforceRateLimit(",
+    "enforceAiQuota(",
+    "openFinnChatStream(",
+  ];
+  const positions = order.map(at);
+  if (positions.some((i) => i < 0)) out.push("نداءٌ مفقود من الترتيب");
+  else if (positions.some((p, i) => i > 0 && p <= positions[i - 1])) out.push("ترتيب النداءات");
+  const start = at("if (!finnHasAnyEngine()) {");
+  const end = start < 0 ? -1 : handlePost.indexOf("\n  }\n", start);
+  if (start < 0 || end < 0) {
+    out.push("كتلة فحص المحرّك مفقودة");
+    return out;
+  }
+  const block = handlePost.slice(start, end);
+  if (/enforceRateLimit\(|enforceAiQuota\(|openFinnChatStream\(/.test(block)) {
+    out.push("الكتلة تنفق حدًّا أو حصّة أو محرّكًا");
+  }
+  if (/finnError\(\s*503/.test(block)) out.push("الكتلة ما زالت تردّ 503");
+  if (!/"X-FINN-Engine":\s*FINN_LOCAL_ENGINE_HEADER/.test(block))
+    out.push("بلا ترويسة المحرّك المحلّي");
+  return out;
+}
+
 describe("⑨ أدوات فِن: قراءةٌ فقط، مضيفان ثابتان، بلا تنفيذ (٢٠٢٦/١٠/٢٤)", () => {
   const TOOLS = strip(read("src/lib/finn-agent/tools.server.ts"));
 
@@ -462,8 +607,13 @@ describe("⑨ أدوات فِن: قراءةٌ فقط، مضيفان ثابتان
     return out;
   };
 
-  it("وحدة الأدوات نظيفة: لا كتابة ولا تنفيذ ولا قاعدة ولا مضيفٌ خارج القائمة", () => {
-    expect(toolViolations(TOOLS)).toEqual([]);
+  it("وحدات الأداة نظيفة: لا كتابة ولا تنفيذ ولا قاعدة ولا مضيفٌ خارج القائمة (الأداة الرابعة مشمولة)", () => {
+    for (const f of TOOL_MODULE_FILES) {
+      expect(existsSync(f), f).toBe(true);
+      expect(toolViolations(strip(read(f))), f).toEqual([]);
+    }
+    // والقائمة ليست فارغة (المادة ٣٠): ثلاث وحداتٍ بالضبط تُمسح.
+    expect(TOOL_MODULE_FILES).toHaveLength(3);
   });
 
   it("القراءة بـGET وحده وبلا تتبّع تحويلات، وبمهلةٍ وسقف حجم", () => {
@@ -490,7 +640,7 @@ describe("⑨ أدوات فِن: قراءةٌ فقط، مضيفان ثابتان
     expect(TOOLS).toMatch(/audit:\s*\(entry\)\s*=>\s*console\.info\("\[finn\] tool", entry\)/);
   });
 
-  it("المسجَّل في المجموعة = القائمة المغلقة بالضبط (لا أداةٌ زائدة ولا ناقصة)", async () => {
+  it("المسجَّل في المجموعة = القائمة المغلقة = المثبَّت حرفيًّا: أربعٌ بالضبط (لا زائدة ولا ناقصة)", async () => {
     const { registeredFinnToolNames } = await import("./tools.server");
     const names = registeredFinnToolNames(() => ({
       gpt: false,
@@ -499,6 +649,55 @@ describe("⑨ أدوات فِن: قراءةٌ فقط، مضيفان ثابتان
       paused: false,
     }));
     expect(names).toEqual([...FINN_TOOL_NAMES].sort());
+    expect(names).toEqual([...PINNED_TOOLS]);
+    expect(toolSetDrift(names, FINN_TOOL_NAMES)).toEqual([]);
+  });
+
+  it("مزروع: أداةٌ خامسة تظهر في التسجيل أو في القائمة المعلَنة ⇒ الحارس يحمرّ", () => {
+    const names = [...PINNED_TOOLS];
+    expect(toolSetDrift([...names, "run_shell"], FINN_TOOL_NAMES)).toEqual([
+      "زائد في التسجيل: run_shell",
+      "عدد المسجَّل 5 ≠ 4",
+    ]);
+    expect(toolSetDrift(names, [...FINN_TOOL_NAMES, "run_shell"])).toEqual([
+      "زائد في القائمة المعلَنة: run_shell",
+    ]);
+  });
+
+  it("مزروع: الرابعة تختفي من التسجيل أو من القائمة المعلَنة ⇒ الحارس يحمرّ", () => {
+    const withoutFourth = PINNED_TOOLS.filter((n) => n !== "knowledge_search");
+    expect(toolSetDrift(withoutFourth, FINN_TOOL_NAMES)).toEqual([
+      "ناقص من التسجيل: knowledge_search",
+      "عدد المسجَّل 3 ≠ 4",
+    ]);
+    expect(toolSetDrift(PINNED_TOOLS, withoutFourth)).toEqual([
+      "ناقص من القائمة المعلَنة: knowledge_search",
+    ]);
+    // وبدّلنا اسمًا باسم (العدد سليم والمجموعة غير المقرّة) ⇒ زائدٌ وناقصٌ معًا.
+    expect(toolSetDrift([...withoutFourth, "other_tool"], FINN_TOOL_NAMES)).toEqual([
+      "زائد في التسجيل: other_tool",
+      "ناقص من التسجيل: knowledge_search",
+    ]);
+  });
+
+  it("كل أداةٍ تُنفَّذ عبر audited() وحده — لا execute يتجاوز التدقيق", () => {
+    const executes = [...TOOLS.matchAll(/execute:\s*(\w+)\(/g)].map((m) => m[1]);
+    expect(executes).toEqual(PINNED_TOOLS.map(() => "audited"));
+    // مزروع: execute مباشر بلا audited يظهر في الاستخراج نفسه.
+    const planted =
+      'tool({ execute: async () => ({ ok: true }) }), tool({ execute: audited("x") })';
+    expect([...planted.matchAll(/execute:\s*(\w+)\(/g)].map((m) => m[1])).toEqual(["audited"]);
+    expect([...planted.matchAll(/execute:\s*(async|audited)\b/g)].map((m) => m[1])).toEqual([
+      "async",
+      "audited",
+    ]);
+  });
+
+  it("سجلّ التدقيق اسمُ الأداة والنتيجة والزمن فقط — لا الاستعلام ولا المدخلات", () => {
+    expect(TOOLS).toMatch(
+      /deps\.audit\(\{\s*tool:\s*name,\s*ok:\s*result\.ok,\s*ms:\s*Date\.now\(\)\s*-\s*started\s*\}\)/,
+    );
+    expect(TOOLS).not.toMatch(/deps\.audit\(\{[^}]*(input|query|result\.items)/);
   });
 
   it("الأدوات لا يستوردها غير المحرّك، ولا يصلها العميل", () => {
@@ -509,6 +708,134 @@ describe("⑨ أدوات فِن: قراءةٌ فقط، مضيفان ثابتان
         /finn-agent\/tools\.server|from\s+["']\.\/tools\.server["']/.test(read(f)),
     );
     expect(importers).toEqual(["src/lib/finn-agent/engine.server.ts"]);
+  });
+
+  it("أداة المعرفة لا يستوردها غير tools.server.ts، والرد المحلّي لا يستورده غير المحرّك", () => {
+    const importersOf = (re: RegExp, self: string) =>
+      globSync("src/**/*.{ts,tsx}")
+        .filter((f) => !/\.test\.tsx?$/.test(f) && f !== self && re.test(read(f)))
+        .sort();
+    expect(
+      importersOf(/knowledge-search\.server/, "src/lib/finn-agent/knowledge-search.server.ts"),
+    ).toEqual(["src/lib/finn-agent/tools.server.ts"]);
+    expect(importersOf(/local-reply\.server/, "src/lib/finn-agent/local-reply.server.ts")).toEqual([
+      "src/lib/finn-agent/engine.server.ts",
+    ]);
+  });
+
+  it("أداة المعرفة تستورد الفهرس الداخلي وحده: قائمة استيراداتها بيضاء (لا قاعدة ولا ذراع قاعدية ولا تضمين)", () => {
+    const src = strip(read("src/lib/finn-agent/knowledge-search.server.ts"));
+    expect(knowledgeImportViolations(src)).toEqual([]);
+    // وهي تستدعي الفهرس الداخلي فعلًا (المادة ٣٠: الفحص لا يمرّ على ملفٍّ فارغ).
+    expect(src).toContain("searchSeedCorpus(");
+    expect(src).toContain("@/lib/retrieval/sources/seed-corpus.server");
+  });
+
+  it("مزروع: استيرادُ ذراع قاعدية أو عميل قاعدة أو مضيفٍ أو تضمينٍ في أداة المعرفة ⇒ يُدان", () => {
+    for (const planted of [
+      'import { lexicalArms } from "@/lib/sadeed/rag/lexical-arms.server";',
+      'import { supabaseAdmin } from "@/integrations/supabase/client.server";',
+      'import { createClient } from "@supabase/supabase-js";',
+      'import { embedText } from "@/lib/sadeed/embeddings.server";',
+      'const m = await import("@/lib/sadeed/rag/vector-arm.server");',
+    ]) {
+      expect(knowledgeImportViolations(planted), planted).toHaveLength(1);
+    }
+    expect(
+      knowledgeImportViolations('import { x } from "@/lib/retrieval/sources/seed-corpus.server";'),
+    ).toEqual([]);
+  });
+
+  it("إغلاق الاستيراد القيمي لأداة المعرفة (الفهرس + المعقِّم + البيانات) بلا قاعدة ولا شبكة ولا مزوّد", () => {
+    const closure = valueImportClosure("src/lib/finn-agent/knowledge-search.server.ts");
+    // الأرضية: الإغلاق يشمل الفهرس والمتن فعلًا، وإلا لم يُفحص شيء.
+    for (const f of [
+      "src/lib/finn-agent/knowledge-search.server.ts",
+      "src/lib/retrieval/sources/seed-corpus.server.ts",
+      "src/lib/retrieval/bm25.server.ts",
+      "src/lib/rag/evaluation.ts",
+      "src/lib/sadeed/seed-corpus.data.ts",
+      "src/lib/sadeed/rag/sanitize.server.ts",
+    ]) {
+      expect(closure, f).toContain(f);
+    }
+    expect(closure.length).toBeGreaterThanOrEqual(8);
+    expect(closureViolations(closure)).toEqual([]);
+  });
+
+  it("مزروع: ملفٌّ في الإغلاق يستورد عميل قاعدة قيميًّا أو ينادي fetch ⇒ يُدان؛ و`import type` وحده لا يُدان", () => {
+    const files: Record<string, string> = {
+      "a.ts": 'import { x } from "./b";\nimport type { C } from "@supabase/supabase-js";',
+      "b.ts": 'import { createClient } from "@supabase/supabase-js";\nexport const x = 1;',
+      "c.ts": "export const y = await fetch(url);",
+    };
+    const fake = (p: string) => files[p] ?? "";
+    // المحلّل يعمل على الأسماء النسبية الحقيقية؛ نُمرّر الإغلاق مكتوبًا لاختبار الكاشف وحده.
+    expect(closureViolations(["a.ts", "b.ts", "c.ts"], fake)).toEqual([
+      "b.ts: استيراد @supabase/supabase-js",
+      "c.ts: fetch(",
+    ]);
+    // `import type` وحده (كما في sanitize.server.ts) لا يظهر استيرادًا قيميًّا.
+    expect(valueImportSpecifiers('import type { C } from "@supabase/supabase-js";')).toEqual([]);
+    expect(valueImportSpecifiers('import { C } from "@supabase/supabase-js";')).toEqual([
+      "@supabase/supabase-js",
+    ]);
+    expect(valueImportSpecifiers('const m = await import("./lazy");')).toEqual(["./lazy"]);
+  });
+
+  it("الرد المحلّي في المسار: بعد فحص الجسم، قبل الحدّ والحصّة والمحرّك، بلا إنفاق ولا 503، وبترويسته", () => {
+    const route = strip(read("src/routes/api/finn/chat.ts"));
+    const post = route.slice(
+      route.indexOf("async function handlePost"),
+      route.indexOf("export const Route"),
+    );
+    expect(localReplyPlacementProblems(post)).toEqual([]);
+    // وقيمة الترويسة «local» وحدها، وليست اسم محرّك نموذج.
+    expect(strip(read("src/lib/finn-agent/engine.server.ts"))).toMatch(
+      /FINN_LOCAL_ENGINE_HEADER\s*=\s*"local"/,
+    );
+    // مسار ما بعد الفتح باقٍ كما كان (محرّكٌ مهيّأ تُخطّيت محاولاتُه كلّها): 503 no_engine.
+    expect(post).toMatch(/case "no_engine":\s*return finnError\(503, "no_engine"/);
+  });
+
+  it("مزروع: الرد المحلّي بعد الحدّ، أو كتلته تنفق حصّة، أو تردّ 503، أو بلا ترويسة ⇒ يُدان", () => {
+    const good = [
+      "  const parsed = parseFinnRequestBody(body);",
+      "  if (!finnHasAnyEngine()) {",
+      "    const local = await openFinnLocalReply(parsed.messages);",
+      '    return sseResponse(local.events, { "X-FINN-Engine": FINN_LOCAL_ENGINE_HEADER }, f);',
+      "  }",
+      "  rate = await enforceRateLimit(key);",
+      "  const quota = await enforceAiQuota(opts);",
+      "  opened = await openFinnChatStream(messages, signal);",
+      "",
+    ].join("\n");
+    // سليمة.
+    expect(localReplyPlacementProblems(good)).toEqual([]);
+    // الحدّ قبل الرد المحلّي.
+    const moved = good.replace("  rate = await enforceRateLimit(key);\n", "");
+    const rateFirst = moved.replace(
+      "  if (!finnHasAnyEngine()) {",
+      "  rate = await enforceRateLimit(key);\n  if (!finnHasAnyEngine()) {",
+    );
+    expect(localReplyPlacementProblems(rateFirst)).toContain("ترتيب النداءات");
+    // كتلة تنفق حصّة.
+    const spends = good.replace(
+      "    const local",
+      "    await enforceAiQuota(opts);\n    const local",
+    );
+    expect(localReplyPlacementProblems(spends)).toContain("الكتلة تنفق حدًّا أو حصّة أو محرّكًا");
+    // كتلة ما زالت 503 وبلا ترويسة.
+    const old503 = good
+      .replace("    const local = await openFinnLocalReply(parsed.messages);\n", "")
+      .replace(/ {4}return sseResponse[^\n]*\n/, '    return finnError(503, "no_engine", "x");\n');
+    expect(localReplyPlacementProblems(old503)).toEqual(
+      expect.arrayContaining(["الكتلة ما زالت تردّ 503", "بلا ترويسة المحرّك المحلّي"]),
+    );
+    // الرد المحلّي محذوف كلّه.
+    expect(
+      localReplyPlacementProblems(good.replace("openFinnLocalReply(", "somethingElse(")),
+    ).toContain("نداءٌ مفقود من الترتيب");
   });
 
   it("كاشف الانتهاك يحمرّ على مزروعاتٍ حقيقية (المادة ٣٠)", () => {

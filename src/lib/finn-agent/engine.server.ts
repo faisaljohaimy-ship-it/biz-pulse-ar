@@ -43,11 +43,13 @@ import {
 } from "@/lib/sadeed/backup-provider.server";
 import { openFinnReply, type FinnAttempt, type FinnOpenResult, type FinnPart } from "./failover";
 import { FINN_LIMITS } from "./limits";
+import { composeLocalReply, type LocalReplyInput } from "./local-reply.server";
 import type { FinnChatMessage } from "./messages";
 import { FINN_SYSTEM_PROMPT } from "./prompt";
 import type { FinnEngineStatus } from "./status";
+import type { FinnStreamEvent } from "./stream-protocol";
 import { isFinnToolName } from "./tool-names";
-import { buildFinnTools, FINN_MAX_STEPS } from "./tools.server";
+import { buildFinnTools, FINN_MAX_STEPS, readLocalReplyData } from "./tools.server";
 
 export const FINN_OPENAI_DEFAULT_MODEL = "gpt-4.1";
 
@@ -286,4 +288,44 @@ export async function openFinnChatStream(
       console.warn("[finn] engine attempt failed", { engine, code, status });
     },
   });
+}
+
+/**
+ * قيمة ترويسة `X-FINN-Engine` للرد المحلّي بلا نموذج — لا تطابق «openai» ولا «gemini»، والواجهة
+ * لا تعرف اسمًا لها فلا تعرض شارة محرّك (`engineFromHeader` يعيد `null`): الجسم يقول الحقيقة.
+ */
+export const FINN_LOCAL_ENGINE_HEADER = "local" as const;
+
+/** أطول استعلامٍ يُمرَّر للفهرس الداخلي في الرد المحلّي (حرف) — مثل سقف الأداة. */
+const LOCAL_QUERY_MAX_CHARS = 300;
+
+/**
+ * الرد المحلّي بلا نموذج (طبقة «لا يتعطل»، O8(ب)): حين لا يُهيَّأ أي محرّك (`finnHasAnyEngine()`
+ * خطأ) يبثّ المسار هذا بدل `503 no_engine`. **لا نموذج ولا شبكة ولا حدّ ولا حصّة**: لقطة
+ * `platform_status` ونتيجة `knowledge_search` (الفهرس الداخلي) تُقرآن في العملية نفسها وتُصاغان
+ * نصًّا حتميًّا (`local-reply.server.ts`). لا يرمي أبدًا: عطلٌ في قراءة الأداتين يصير سطرًا
+ * صادقًا في الرد لا استثناءً. والسجلّ يحمل رمزًا وعددًا فقط، لا نصّ المحادثة ولا الاستعلام.
+ */
+export async function openFinnLocalReply(
+  messages: readonly FinnChatMessage[],
+  env: EnvLike = process.env,
+): Promise<{ readonly events: AsyncGenerator<FinnStreamEvent, void, void> }> {
+  const lastUser = [...messages].reverse().find((m) => m.role === "user")?.content ?? "";
+  const query = lastUser.slice(0, LOCAL_QUERY_MAX_CHARS);
+  let input: LocalReplyInput;
+  try {
+    input = await readLocalReplyData(() => readFinnEngineStatus(env), query, { env });
+  } catch {
+    input = { platform: { ok: false }, knowledge: { ok: false } };
+  }
+  const planned = composeLocalReply(input);
+  console.info("[finn] local reply", {
+    reason: "no_engine",
+    hits: input.knowledge.ok ? input.knowledge.items.length : null,
+  });
+  return {
+    events: (async function* () {
+      for (const event of planned) yield event;
+    })(),
+  };
 }

@@ -136,6 +136,8 @@ describe("القراءة", () => {
     ["openai", "gpt"],
     ["gemini", "fallback"],
     ["none", null],
+    // الرد المحلّي بلا نموذج (٢٠٢٦/١٠/٣٠): ليس GPT ولا الاحتياطي، فلا شارة محرّك — الجسم يقول الحقيقة.
+    ["local", null],
     ["", null],
     ["claude", null],
   ])("ترويسة X-FINN-Engine=%j ⇒ %j (غير المعروف لا يُخمَّن)", (header, engine) => {
