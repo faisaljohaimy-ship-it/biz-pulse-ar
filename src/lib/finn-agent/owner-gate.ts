@@ -105,3 +105,49 @@ export function peekJwtSubject(token: string): string | null {
     return null;
   }
 }
+
+/**
+ * اسم متغيّر بيئة التشديد: «دخول Google وحده». غير مفعَّل افتراضيًّا (لا يُغيِّر شيئًا قائمًا)؛
+ * يُشغَّل بعد أن يثبت أن دخول Google يعمل فعلًا (`/api/fnn/auth-health` ⇒ `googleEnabled:true`)،
+ * وإلا أُغلقت فِن على المالك نفسه. أمر المالك ٢٠٢٦/١٠/٣٠: «اجعل الدخول لفنن عن طريق قوقل
+ * وصلاحية للمالك فقط».
+ */
+export const FINN_REQUIRE_GOOGLE_ENV = "FINN_REQUIRE_GOOGLE";
+
+/** مفعَّل بالقيمة `1` أو `true` وحدهما؛ غير ذلك (غائب، فارغ، `0`، `false`، `yes`) ⇒ مطفأ. */
+export function finnRequiresGoogle(raw: string | null | undefined): boolean {
+  if (typeof raw !== "string") return false;
+  const v = raw.trim().toLowerCase();
+  return v === "1" || v === "true";
+}
+
+/**
+ * طرائق الدخول المسجَّلة في رمز الجلسة (`amr[].method`، مثل `oauth` أو `password`) **دون أيّ
+ * تحقّق من توقيعه**. كالمرشِّح `peekJwtSubject`: لا قيمة لها وحدها. تُقرأ **بعد** أن تحقّق
+ * خدمة المصادقة من الرمز نفسه (`verifySupabaseUser`)، فيكون ما فيها هو ما وقّعته الخدمة.
+ */
+export function peekJwtAuthMethods(token: string): string[] {
+  const parts = token.split(".");
+  if (parts.length !== 3 || !parts[1]) return [];
+  try {
+    const b64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const padded = b64 + "=".repeat((4 - (b64.length % 4)) % 4);
+    const binary = atob(padded);
+    const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+    const payload: unknown = JSON.parse(new TextDecoder().decode(bytes));
+    const amr = payload && typeof payload === "object" ? (payload as { amr?: unknown }).amr : null;
+    if (!Array.isArray(amr)) return [];
+    return amr
+      .map((entry) =>
+        entry && typeof entry === "object" ? (entry as { method?: unknown }).method : null,
+      )
+      .filter((method): method is string => typeof method === "string" && method.length > 0);
+  } catch {
+    return [];
+  }
+}
+
+/** هل الجلسة جاءت من مزوّد OAuth (Google هو المفعَّل الوحيد)؟ */
+export function sessionIsOAuth(token: string): boolean {
+  return peekJwtAuthMethods(token).includes("oauth");
+}

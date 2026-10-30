@@ -39,9 +39,12 @@ import { verifySupabaseUser } from "@/lib/hook-auth.server";
 import {
   bearerToken,
   FINN_OWNER_ENV,
+  FINN_REQUIRE_GOOGLE_ENV,
+  finnRequiresGoogle,
   isFinnOwner,
   parseFinnOwnerIds,
   peekJwtSubject,
+  sessionIsOAuth,
   type FinnOwnerList,
 } from "./owner-gate";
 
@@ -127,6 +130,9 @@ async function decideFinnOwner(request: Request, env: EnvLike): Promise<FinnOwne
     const verified = await verifySupabaseUser(request);
     if (verified instanceof Response) return DENY;
     if (!isFinnOwner(verified.userId, list)) return DENY;
+    // تشديد «Google وحده» (مطفأ افتراضيًّا): الجلسة المتحقَّق منها يجب أن تكون من OAuth. مالكٌ دخل
+    // بكلمة مرور يُرفض بالرفض نفسه (404 ثابت وأرضية زمن) فلا يُكشف السبب.
+    if (finnRequiresGoogle(env[FINN_REQUIRE_GOOGLE_ENV]) && !sessionIsOAuth(token)) return DENY;
     return { ok: true, userId: verified.userId.toLowerCase() };
   } catch {
     return DENY;

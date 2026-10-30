@@ -112,6 +112,18 @@ export const ENV_CAPABILITIES: readonly CapabilitySpec[] = [
     ],
   },
   {
+    key: "finn-owner-google-strict",
+    labelAr: "تشديد دخول فِن إلى Google وحده (اختياري، مطفأ افتراضيًّا، خادمي فقط)",
+    requirement: "optional",
+    vars: [
+      S(
+        "FINN_REQUIRE_GOOGLE",
+        '"1" or "true" makes FINN accept only an OAuth session (never set before Google sign-in works, or the owner is locked out); server only',
+        false,
+      ),
+    ],
+  },
+  {
     key: "finn-engine",
     labelAr: "محرّك فِن (GPT أساسًا، والاحتياطي Gemini معلَنٌ عند العطل)",
     requirement: "optional",

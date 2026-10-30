@@ -1341,6 +1341,21 @@ Disconnect_ لوقف مزامنته مع المستودع (وإلا بقيت ت�
   إن لم تكن `https://neexios.com/**` ضمن «Redirect URLs» وSite URL في Authentication ← URL Configuration (تحويله حينها
   إلى Site URL المضبوط لا إلى `/auth?mode=reset`) — وهي ذاتها خطوات المالك المسجَّلة أعلاه لـGoogle.
 
+- **فِن: دخول Google وصلاحية المالك وحده (أمر المالك ٢٠٢٦/١٠/٣٠: «اجعل الدخول لفنن عن طريق قوقل وصلاحية للمالك فقط»).**
+  **ما قِيس ٢٠٢٦/١٠/٣٠ (قراءة فقط):** بوّابة المالك في الخادم مضبوطة: `FINN_OWNER_USER_IDS` في بيئة الإنتاج (نوع plain)
+  وقيمته تطابق معرّف حساب المالك في `auth.users` (قُرئ من واجهة Vercel وقاعدة الهوية)؛ ورفض غير المالك بالـ404 الواحد
+  حكمُ الشيفرة واختباراتها، **ولم يُجرَّب على الإنتاج بجلسة غير مالك** (طلب GET على `/api/finn/chat` يردّ 404 من فرع `ANY`
+  قبل البوّابة فلا يشهد لها)؛ وحساب المالك يحمل هوية
+  `google` بريدها مطابق ومؤكَّد؛ وخدمة الهوية على `cnaevysaoimzusnvpazr` مزوّد Google فيها **معطَّل**
+  (`GET /api/fnn/auth-health` ⇒ `googleEnabled:false`). فالناقص **عميل OAuth من Google Cloud وتفعيله في Supabase**، وكلاهما
+  بيد المالك ولا أملك دخولًا إليهما (لا اعتماد Google ولا Supabase في بيئة التنفيذ). **والفحص يقبل أي جلسة OAuth لا Google وحده**: فلا يُفعَّل مزوّد OAuth آخر؛ الخطوات الحرفية في
+  `docs/operations/FNN_GOOGLE_LOGIN_SETUP_AR.md`. **وأُضيف مفتاح تشديد `FINN_REQUIRE_GOOGLE` (مطفأ افتراضيًّا):** بـ`1` أو
+  `true` لا تقبل بوّابة `resolveFinnOwner` ولا `getFinnAccess` إلا جلسةً في رمزها `amr` طريقة `oauth` (يُقرأ بعد أن تحقّقت
+  الخدمة من الرمز نفسه)، ومالكٌ بكلمة مرور يُرفض بالـ404 نفسه وبأرضية الزمن نفسها. لا يوسّع الدخول أبدًا: حكم المالك أولًا
+  والتشديد بعده (الحارس `access-strict-google.contract.test.ts` والمقطع ⑦ في `owner-gate.test.ts`، بحالات حمراء مزروعة).
+  **لا يُفعَّل قبل أن ينجح دخول Google فعليًّا** وإلا أُغلقت فِن على المالك. **ولم يُقَس:** دخول Google فعليًّا (لا عميل OAuth بعد)،
+  وأن هوية `google` الحالية تتطابق مع حساب Google بعد التفعيل (استدلال: معرّف `sub` ثابت لحساب Google عبر العملاء).
+
 ### السلسلة الملزِمة
 
 `Implementation → Tests → Build → Commit → Push to origin/main → **Publish (Vercel، عبر Claude — انظر أعلاه)** → Production verification`

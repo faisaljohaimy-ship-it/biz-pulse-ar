@@ -28,9 +28,12 @@ vi.mock("@/lib/hook-auth.server", () => ({
 
 import {
   bearerToken,
+  finnRequiresGoogle,
   isFinnOwner,
   parseFinnOwnerIds,
+  peekJwtAuthMethods,
   peekJwtSubject,
+  sessionIsOAuth,
   type FinnOwnerList,
 } from "./owner-gate";
 import {
@@ -46,9 +49,11 @@ import {
 const OWNER = "3f2b8c1e-9a4d-4e6f-8b7a-1c2d3e4f5a6b";
 const OTHER = "9d8c7b6a-5e4f-4a3b-9c2d-1e0f9a8b7c6d";
 
-function jwtFor(sub: unknown): string {
+function jwtFor(sub: unknown, amr?: unknown): string {
   const b64 = (o: unknown) => Buffer.from(JSON.stringify(o)).toString("base64url");
-  return `${b64({ alg: "HS256", typ: "JWT" })}.${b64({ sub })}.sig`;
+  const payload: Record<string, unknown> = { sub };
+  if (amr !== undefined) payload.amr = amr;
+  return `${b64({ alg: "HS256", typ: "JWT" })}.${b64(payload)}.sig`;
 }
 
 function req(token?: string): Request {
@@ -408,5 +413,99 @@ describe("⑤ الطفرات: كل صياغة متساهلة تُدان بالا
     const fake: FinnOwnerList = { status: "invalid", ids: strictSetOf(OWNER) };
     expect(ignoreStatus(OWNER, fake)).toBe(true);
     expect(isFinnOwner(OWNER, fake)).toBe(false);
+  });
+});
+
+describe("⑦ تشديد «Google وحده» — FINN_REQUIRE_GOOGLE (أمر المالك ٢٠٢٦/١٠/٣٠)", () => {
+  const GOOGLE_AMR = [{ method: "oauth", timestamp: 1 }];
+  const PASSWORD_AMR = [{ method: "password", timestamp: 1 }];
+
+  beforeEach(() => {
+    sim.verifyCalls = 0;
+    sim.verifyResult = { userId: OWNER };
+    resetFinnOwnerWarningsForTests();
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+  });
+
+  const env = (strict?: string) => ({ FINN_OWNER_USER_IDS: OWNER, FINN_REQUIRE_GOOGLE: strict });
+
+  it("finnRequiresGoogle: 1 أو true وحدهما يشدّدان، وغير ذلك مطفأ", () => {
+    for (const on of ["1", "true", "TRUE", " 1 ", "True"])
+      expect(finnRequiresGoogle(on), on).toBe(true);
+    for (const off of [undefined, null, "", "0", "false", "yes", "on", "2", " "]) {
+      expect(finnRequiresGoogle(off as string | null | undefined), String(off)).toBe(false);
+    }
+  });
+
+  it("peekJwtAuthMethods: يقرأ amr[].method ويتسامح مع المعطوب", () => {
+    expect(peekJwtAuthMethods(jwtFor(OWNER, GOOGLE_AMR))).toEqual(["oauth"]);
+    expect(peekJwtAuthMethods(jwtFor(OWNER, PASSWORD_AMR))).toEqual(["password"]);
+    expect(
+      peekJwtAuthMethods(jwtFor(OWNER, [{ method: "password" }, { method: "oauth" }])),
+    ).toEqual(["password", "oauth"]);
+    expect(peekJwtAuthMethods(jwtFor(OWNER))).toEqual([]);
+    expect(peekJwtAuthMethods(jwtFor(OWNER, "oauth"))).toEqual([]);
+    expect(peekJwtAuthMethods(jwtFor(OWNER, [null, 3, { method: 7 }, { method: "" }]))).toEqual([]);
+    expect(peekJwtAuthMethods("not.a.jwt")).toEqual([]);
+    expect(peekJwtAuthMethods("")).toEqual([]);
+    expect(sessionIsOAuth(jwtFor(OWNER, GOOGLE_AMR))).toBe(true);
+    expect(sessionIsOAuth(jwtFor(OWNER, PASSWORD_AMR))).toBe(false);
+  });
+
+  it("مطفأ (الافتراضي): المالك يدخل بكلمة مرور وبـGoogle — لا تغيير على السلوك القائم", async () => {
+    for (const value of [undefined, "", "0", "false"]) {
+      expect(await resolveFinnOwner(req(jwtFor(OWNER, PASSWORD_AMR)), env(value))).toEqual({
+        ok: true,
+        userId: OWNER,
+      });
+      expect(await resolveFinnOwner(req(jwtFor(OWNER, GOOGLE_AMR)), env(value))).toEqual({
+        ok: true,
+        userId: OWNER,
+      });
+      expect(await resolveFinnOwner(req(jwtFor(OWNER)), env(value))).toEqual({
+        ok: true,
+        userId: OWNER,
+      });
+    }
+  });
+
+  it("مشدَّد: المالك بجلسة Google يدخل، وبكلمة مرور أو بلا amr يُرفض", async () => {
+    expect(await resolveFinnOwner(req(jwtFor(OWNER, GOOGLE_AMR)), env("1"))).toEqual({
+      ok: true,
+      userId: OWNER,
+    });
+    expect(await resolveFinnOwner(req(jwtFor(OWNER, PASSWORD_AMR)), env("1"))).toEqual({
+      ok: false,
+    });
+    expect(await resolveFinnOwner(req(jwtFor(OWNER)), env("true"))).toEqual({ ok: false });
+    expect(await resolveFinnOwner(req(jwtFor(OWNER, "oauth")), env("1"))).toEqual({ ok: false });
+  });
+
+  it("مشدَّد: غير المالك يُرفض ولو بجلسة Google (التشديد لا يوسّع الدخول أبدًا)", async () => {
+    sim.verifyResult = { userId: OTHER };
+    expect(await resolveFinnOwner(req(jwtFor(OWNER, GOOGLE_AMR)), env("1"))).toEqual({ ok: false });
+    expect(await resolveFinnOwner(req(jwtFor(OTHER, GOOGLE_AMR)), env("1"))).toEqual({ ok: false });
+  });
+
+  it("الرفض المشدَّد بالأرضية الزمنية نفسها (لا مِجَسّ يميّز السبب)", async () => {
+    let now = 0;
+    const slept: number[] = [];
+    const clock: FinnDenyClock = {
+      now: () => now,
+      sleep: async (ms) => {
+        slept.push(ms);
+        now += ms;
+      },
+    };
+    expect(await resolveFinnOwner(req(jwtFor(OWNER, PASSWORD_AMR)), env("1"), clock)).toEqual({
+      ok: false,
+    });
+    expect(slept.reduce((a, b) => a + b, 0)).toBe(FINN_DENY_FLOOR_MS);
+  });
+
+  it("الجسم والرمز لا يكشفان سبب الرفض: الـ404 الواحد", async () => {
+    const res = finnNotFoundResponse();
+    expect(res.status).toBe(404);
+    expect(await res.json()).toEqual({ error: "not_found" });
   });
 });

@@ -1,6 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 import { readFinnEngineStatus } from "./engine.server";
+import {
+  bearerToken,
+  FINN_REQUIRE_GOOGLE_ENV,
+  finnRequiresGoogle,
+  sessionIsOAuth,
+} from "./owner-gate";
 import { isFinnOwnerUser } from "./owner-gate.server";
 import type { FinnAccess } from "./status";
 
@@ -28,5 +35,11 @@ export const getFinnAccess = createServerFn({ method: "POST" })
   .middleware([optionalSupabaseAuth])
   .handler(async ({ context }): Promise<FinnAccess> => {
     if (!isFinnOwnerUser(context.userId)) return { allowed: false };
+    // تشديد «Google وحده» (مطفأ افتراضيًّا): الواجهة تتّفق مع بوّابة `/api/finn/chat` فلا تُفتح محادثةٌ تردّ 404.
+    // الرمز هنا صحّحته الوسيطة (`getClaims`)، فما في `amr` هو ما وقّعته الخدمة.
+    if (finnRequiresGoogle(process.env[FINN_REQUIRE_GOOGLE_ENV])) {
+      const token = bearerToken(getRequest()?.headers?.get("authorization"));
+      if (!token || !sessionIsOAuth(token)) return { allowed: false };
+    }
     return { allowed: true, engine: readFinnEngineStatus() };
   });
