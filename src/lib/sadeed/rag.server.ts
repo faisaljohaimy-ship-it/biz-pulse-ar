@@ -222,7 +222,7 @@ function isMember(audience: RetrievalAudience, userId: string | null): boolean {
 
 /**
  * أسماء الأذرع القاعدية التي تُسقَط حين يعرف المستدعي أن المخزن معطّل — تُسجَّل
- * `db_unavailable` لا تُحذف من الحدث. والمتّجهية (هـ) منها: نداءاتها `aria_match_*`
+ * `db_unavailable` لا تُحذف من الحدث. والمتّجهية (هـ) منها: نداءاتها `sadeed_match_*`
  * تذهب إلى المخزن نفسه، وكانت تُبنى رغم تعطّله فتدفع تضمينًا وثلاث RPC إلى قاعدة
  * معروفة التعطّل (مراجعة ٢٠٢٦/١٠/٢٩).
  */
@@ -353,8 +353,9 @@ export function assembleRagContext(outcome: AggregateOutcome): RagContext {
     for (const u of unverified) {
       const chunk =
         u.provenance.chunkIndex !== undefined ? ` (مقطع ${u.provenance.chunkIndex})` : "";
+      // الوسم من الذراع التي أنتجته: مقطعٌ جاء من المتّجهية وحدها «تشابه دلالي» لا «مطابقة نصّية».
       lines.push(
-        `- «${UNVERIFIED_TAG_AR}» ${tagTitle(u.title)}${chunk} · ${LEXICAL_LABEL_AR}\n  ${oneLine(u.excerpt)}`,
+        `- «${UNVERIFIED_TAG_AR}» ${tagTitle(u.title)}${chunk} · ${labelOf(u)}\n  ${oneLine(u.excerpt)}`,
       );
     }
   }

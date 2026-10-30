@@ -297,22 +297,42 @@ describe("② الراية تحكم المتّجهية وحدها (قرار ③)
     expect(sim.reads).not.toContain("finn_memory");
   });
 
-  it("flag=true بمفتاح وRPC تعيد 42P01 (المقيس على الإنتاج) ⇐ السبب 42P01 والمعجمية في وقتها", async () => {
+  it("flag=true بمفتاح وRPC تعيد PGRST202 (الدالّة غير موجودة: الكود مدفوع والترحيل لم يُطبَّق) ⇐ السبب PGRST202 والمعجمية في وقتها", async () => {
     hcisRows();
     embed.vector = [0.1, 0.2];
     sim.rpc.error = {
-      code: "42P01",
-      message: 'relation "public.aria_document_chunks" does not exist',
+      code: "PGRST202",
+      message:
+        "Could not find the function public.sadeed_match_memory(_limit, _org_id, _query, _scope) in the schema cache",
     };
     const ctx = await gatherRagContext(stubClient(), USER, ORG, Q_FENCES, {
       audience: "member",
       env: ENV_ON,
     });
     const vec = ctx.retrieval.arms.find((a) => a.arm === ARM_NAMES.vector)!;
-    expect(vec).toMatchObject({ served: false, reason: "42P01" });
-    expect(JSON.stringify(vec)).not.toContain("does not exist");
+    expect(vec).toMatchObject({ served: false, reason: "PGRST202" });
+    // رمزٌ قصير لا نصّ الخطأ الحرّ.
+    expect(JSON.stringify(vec)).not.toContain("schema cache");
     expect(ctx.retrieval.servedArms).toContain(ARM_NAMES.seed);
     expect(ctx.citations.some((c) => c.label === "مطابقة نصّية")).toBe(true);
+  });
+
+  it("flag=true وRPC تعيد 42501 (امتياز التنفيذ مسحوب) ⇐ السبب 42501 لا threw، والمعجمية في وقتها", async () => {
+    hcisRows();
+    embed.vector = [0.1, 0.2];
+    sim.rpc.error = {
+      code: "42501",
+      message: "permission denied for function sadeed_match_documents",
+    };
+    const ctx = await gatherRagContext(stubClient(), USER, ORG, Q_FENCES, {
+      audience: "member",
+      env: ENV_ON,
+    });
+    expect(ctx.retrieval.arms.find((a) => a.arm === ARM_NAMES.vector)).toMatchObject({
+      served: false,
+      reason: "42501",
+    });
+    expect(ctx.retrieval.servedArms).toContain(ARM_NAMES.seed);
   });
 
   /**
@@ -321,45 +341,120 @@ describe("② الراية تحكم المتّجهية وحدها (قرار ③)
    * (`const rpc = client.rpc`) كان يرمي `Cannot read properties of undefined
    * (reading 'rest')` قبل أي نداء ⇐ `threw` دائمًا متى رُفعت الراية — ولا يراه
    * بديلٌ يعرّف `rpc` سهمًا بلا `this` (مراجعة ٢٠٢٦/١٠/٢٩). هنا ثلاثة نداءات
-   * شبكة تصل فعلًا والسبب رمز Postgres لا `threw`.
+   * شبكة تصل فعلًا والسبب رمز القاعدة لا `threw`. وبعد O4 (٢٠٢٦/١٠/٣٠) يفحص
+   * أيضًا **جسم كل نداء**: `_org_id` صريح، ولا `_user_id` (المستخدم من JWT) — فالدالّة
+   * تُحلّ في PostgREST بأسماء المعاملات، وأي انحراف فيها `PGRST202`.
    */
-  it("مزروع: على عميل supabase-js حقيقي بـfetch مزروع يعيد 42P01 ⇐ ثلاثة نداءات RPC والسبب 42P01 لا threw", async () => {
+  const REAL_CLIENT_ERRORS = [
+    {
+      code: "PGRST202",
+      status: 404,
+      message:
+        "Could not find the function public.sadeed_match_documents(_limit, _org_id, _query) in the schema cache",
+    },
+    { code: "42501", status: 403, message: "permission denied for function sadeed_match_memory" },
+    {
+      code: "42883",
+      status: 404,
+      message: "operator does not exist: extensions.vector <=> extensions.vector",
+    },
+  ] as const;
+
+  it.each(REAL_CLIENT_ERRORS)(
+    "مزروع: على عميل supabase-js حقيقي بـfetch مزروع يعيد $code ⇐ ثلاثة نداءات sadeed_match_* بالمؤسسة صراحةً والسبب $code لا threw",
+    async ({ code, status, message }) => {
+      embed.vector = [0.1, 0.2, 0.3];
+      const urls: string[] = [];
+      const bodies: Record<string, Record<string, unknown>> = {};
+      const fetchStub = async (url: unknown, init?: RequestInit) => {
+        const u = String(url);
+        urls.push(u);
+        const name = u.split("/rest/v1/rpc/")[1]?.split("?")[0];
+        if (name && typeof init?.body === "string") bodies[name] = JSON.parse(init.body);
+        return new Response(JSON.stringify({ code, message }), {
+          status,
+          headers: { "content-type": "application/json" },
+        });
+      };
+      const real = createClient("https://stub.invalid", "sb_publishable_stub", {
+        auth: { persistSession: false, autoRefreshToken: false },
+        global: { fetch: fetchStub as typeof fetch },
+      });
+      const arm = vectorArm(real, USER, { env: ENV_ON });
+      const r = await arm.run(Q_FENCES, { orgId: ORG, audience: "member" }, 2_000);
+      expect(r).toMatchObject({ served: false, reason: code });
+      expect(r.reason).not.toBe("threw");
+      expect(urls.filter((u) => u.includes("/rest/v1/rpc/"))).toHaveLength(3);
+      for (const name of [
+        "sadeed_match_memory",
+        "sadeed_match_knowledge",
+        "sadeed_match_documents",
+      ]) {
+        expect(urls.some((u) => u.includes(`/rest/v1/rpc/${name}`))).toBe(true);
+        // المؤسسة صريحة، والمستخدم لا يُرسَل (الدالّة تقرأ auth.uid())، والمتّجه حاضر.
+        expect(bodies[name], name).toMatchObject({ _org_id: ORG });
+        expect(Object.keys(bodies[name]), name).not.toContain("_user_id");
+        expect(typeof bodies[name]._query).toBe("string");
+      }
+      // لا اسم من الدوالّ القديمة يصل الشبكة.
+      expect(urls.some((u) => u.includes("aria_match_"))).toBe(false);
+      // والزرع نفسه: النداء المنزوع يرمي على العميل الحقيقي قبل أي شبكة.
+      const detached = (real as unknown as { rpc: (n: string, a: object) => unknown }).rpc;
+      expect(() => detached("sadeed_match_memory", {})).toThrow(/reading 'rest'/);
+      // وعبر gatherRagContext كاملةً: السبب رمز القاعدة والمعجمية في وقتها.
+      const ctx = await gatherRagContext(real, USER, ORG, Q_FENCES, {
+        audience: "member",
+        env: ENV_ON,
+      });
+      expect(ctx.retrieval.arms.find((a) => a.arm === ARM_NAMES.vector)).toMatchObject({
+        served: false,
+        reason: code,
+      });
+      expect(ctx.retrieval.servedArms).toContain(ARM_NAMES.seed);
+    },
+  );
+
+  it("مزروع: فشل دالّة واحدة (المعرفة 42501 لغير المشرف) لا يُسقط الذراع — تخدم بما وصل من الاثنتين الأخريين", async () => {
     embed.vector = [0.1, 0.2, 0.3];
-    const urls: string[] = [];
     const fetchStub = async (url: unknown) => {
-      urls.push(String(url));
-      return new Response(
-        JSON.stringify({
-          code: "42P01",
-          message: 'relation "public.aria_document_chunks" does not exist',
-        }),
-        { status: 404, headers: { "content-type": "application/json" } },
-      );
+      const u = String(url);
+      const json = (body: unknown, status = 200) =>
+        new Response(JSON.stringify(body), {
+          status,
+          headers: { "content-type": "application/json" },
+        });
+      if (u.includes("/rpc/sadeed_match_knowledge"))
+        return json({ code: "42501", message: "permission denied for table finn_knowledge" }, 403);
+      if (u.includes("/rpc/sadeed_match_documents"))
+        return json([
+          {
+            chunk_id: "c1",
+            document_id: "d1",
+            title: "مستند",
+            content: "الأسوار الأمنية حول المنشأة",
+            similarity: 0.82,
+          },
+        ]);
+      return json([]); // الذاكرة: لا شيء
     };
     const real = createClient("https://stub.invalid", "sb_publishable_stub", {
       auth: { persistSession: false, autoRefreshToken: false },
       global: { fetch: fetchStub as typeof fetch },
     });
-    const arm = vectorArm(real, USER, { env: ENV_ON });
-    const r = await arm.run(Q_FENCES, { orgId: ORG, audience: "member" }, 2_000);
-    expect(r).toMatchObject({ served: false, reason: "42P01" });
-    expect(r.reason).not.toBe("threw");
-    expect(urls.filter((u) => u.includes("/rest/v1/rpc/"))).toHaveLength(3);
-    for (const name of ["aria_match_memory", "aria_match_knowledge", "aria_match_documents"])
-      expect(urls.some((u) => u.includes(`/rest/v1/rpc/${name}`))).toBe(true);
-    // والزرع نفسه: النداء المنزوع يرمي على العميل الحقيقي قبل أي شبكة.
-    const detached = (real as unknown as { rpc: (n: string, a: object) => unknown }).rpc;
-    expect(() => detached("aria_match_memory", {})).toThrow(/reading 'rest'/);
-    // وعبر gatherRagContext كاملةً: السبب رمز القاعدة والمعجمية في وقتها.
-    const ctx = await gatherRagContext(real, USER, ORG, Q_FENCES, {
-      audience: "member",
-      env: ENV_ON,
+    const r = await vectorArm(real, USER, { env: ENV_ON }).run(
+      Q_FENCES,
+      { orgId: ORG, audience: "member" },
+      2_000,
+    );
+    expect(r.served).toBe(true);
+    expect(r.reason).toBeNull();
+    // معرّف المقطع لا المستند (يلتقي بنتيجة الذراع المعجمية للمقطع نفسه)، وغير موثّق (قرار ⑤).
+    expect(r.hits.map((h) => h.id)).toEqual(["c1"]);
+    expect(r.hits[0]).toMatchObject({
+      source: "upload-unverified",
+      provenance: { table: "finn_document_chunks", docId: "d1", citable: false },
     });
-    expect(ctx.retrieval.arms.find((a) => a.arm === ARM_NAMES.vector)).toMatchObject({
-      served: false,
-      reason: "42P01",
-    });
-    expect(ctx.retrieval.servedArms).toContain(ARM_NAMES.seed);
+    expect(console.warn).toHaveBeenCalledWith("[sadeed/rag] knowledge rpc", { code: "42501" });
   });
 
   it("كتابتا الذاكرة خلف الراية بنصّ الكود: rememberConversationTurn تعود أوّلًا، وlast_used_at داخل الذراع المتّجهية وحدها", () => {
@@ -529,6 +624,108 @@ describe("③ قرار المالك ⑤ — المقاطع المرفوعة سي
     });
     expect(honest.citations).toEqual([]);
     expect(honest.contextBlock).toContain("«غير موثّق»");
+  });
+
+  /**
+   * عميل supabase-js حقيقي بـfetch مزروع: `/rpc/<اسم>` ← صفوف الدالّة، و`/<جدول>` ← صفوفه،
+   * وما عداهما فارغ. حقيقيٌّ لأن `rpc` تقرأ `this.rest` (درس ٢٠٢٦/١٠/٢٩).
+   */
+  function routedClient(routes: { rpc?: Record<string, Row[]>; tables?: Record<string, Row[]> }) {
+    const fetchStub = async (url: unknown) => {
+      const path = String(url).split("/rest/v1/")[1]?.split("?")[0] ?? "";
+      const rows = path.startsWith("rpc/") ? routes.rpc?.[path.slice(4)] : routes.tables?.[path];
+      return new Response(JSON.stringify(rows ?? []), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    };
+    return createClient("https://stub.invalid", "sb_publishable_stub", {
+      auth: { persistSession: false, autoRefreshToken: false },
+      global: { fetch: fetchStub as typeof fetch },
+    });
+  }
+  const UPLOAD_CONTENT = "تنصّ وثيقتنا الداخلية على أن الأسوار الأمنية بارتفاع محدّد حول المنشأة";
+
+  it("الذراع المتّجهية: مقطع مستند مرفوع يصل upload-unverified وcitable=false، فلا [DOC:] ولا استشهاد ولا قسم «RELEVANT DOCUMENTS» (قرار ⑤ والمادة ٢٥)", async () => {
+    embed.vector = [0.1, 0.2, 0.3];
+    const real = routedClient({
+      rpc: {
+        sadeed_match_documents: [
+          {
+            chunk_id: "c1",
+            document_id: "d1",
+            title: "سياسة داخلية",
+            content: UPLOAD_CONTENT,
+            similarity: 0.9,
+          },
+        ],
+      },
+    });
+    const arm = await vectorArm(real, USER, { env: ENV_ON }).run(
+      Q_FENCES,
+      { orgId: ORG, audience: "member" },
+      2_000,
+    );
+    expect(arm.served).toBe(true);
+    expect(arm.hits).toHaveLength(1);
+    expect(arm.hits[0]).toMatchObject({
+      id: "c1",
+      source: "upload-unverified",
+      provenance: {
+        table: "finn_document_chunks",
+        docId: "d1",
+        citable: false,
+        label: "تشابه دلالي",
+      },
+    });
+    // وعبر gatherRagContext كاملةً: سياقٌ موسوم لا استشهاد.
+    const ctx = await gatherRagContext(real, USER, ORG, Q_FENCES, {
+      audience: "member",
+      env: ENV_ON,
+    });
+    expect(ctx.counts).toMatchObject({ documents: 0, unverified: 1 });
+    expect(ctx.contextBlock).not.toContain("[DOC:");
+    expect(ctx.contextBlock).not.toContain("RELEVANT DOCUMENTS");
+    expect(ctx.citations.some((c) => c.kind === "document" || c.id === "c1")).toBe(false);
+    // والسطر يقول ما هو: تشابه دلالي (المقطع جاء من الذراع المتّجهية وحدها) لا «مطابقة نصّية».
+    expect(ctx.contextBlock).toContain("«غير موثّق» سياسة داخلية · تشابه دلالي");
+  });
+
+  it("المقطع نفسه من الذراعين (المعجمية د والمتّجهية هـ) يصل النموذج مرّةً واحدة موسومًا «غير موثّق»، لا مرّتين ولا [DOC:]", async () => {
+    embed.vector = [0.1, 0.2, 0.3];
+    const real = routedClient({
+      tables: {
+        finn_document_chunks: [
+          {
+            id: "c1",
+            document_id: "d1",
+            chunk_index: 2,
+            content: UPLOAD_CONTENT,
+            finn_documents: { title: "وثيقة مرفوعة", status: "ready" },
+          },
+        ],
+      },
+      rpc: {
+        sadeed_match_documents: [
+          {
+            chunk_id: "c1",
+            document_id: "d1",
+            title: "وثيقة مرفوعة",
+            content: UPLOAD_CONTENT,
+            similarity: 0.91,
+          },
+        ],
+      },
+    });
+    const ctx = await gatherRagContext(real, USER, ORG, Q_FENCES, {
+      audience: "member",
+      env: ENV_ON,
+    });
+    expect(ctx.counts.unverified).toBe(1);
+    expect(ctx.contextBlock.match(/«غير موثّق» وثيقة مرفوعة/g)).toHaveLength(1);
+    expect(ctx.contextBlock).toContain("«غير موثّق» وثيقة مرفوعة (مقطع 2)");
+    expect(ctx.contextBlock).not.toContain("[DOC:");
+    expect(ctx.citations.some((c) => c.kind === "document")).toBe(false);
   });
 });
 
@@ -996,7 +1193,7 @@ describe("⑥ العطل لا يفرغ غيره ولا يعلّق", () => {
 
   /**
    * مراجعة ٢٠٢٦/١٠/٢٩: كانت المتّجهية تُبنى رغم تعطّل المخزن، فبراية مرفوعة
-   * ومفتاح تدفع تضمينًا (نداء مدفوع) وثلاث RPC `aria_match_*` إلى قاعدة
+   * ومفتاح تدفع تضمينًا (نداء مدفوع) وثلاث RPC `sadeed_match_*` إلى قاعدة
    * معروفة التعطّل (المقيس: rpcs = 3، vector = served).
    */
   it("مزروع: الراية مرفوعة ومفتاحٌ والمخزن معطّل ⇐ لا تضمين ولا RPC، والمتّجهية db_unavailable في الحدث", async () => {

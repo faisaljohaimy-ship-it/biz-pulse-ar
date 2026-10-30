@@ -44,6 +44,7 @@
     "check:prod": "node scripts/check-production.mjs",
     "check:rag": "bash scripts/rag-preflight.sh",
     "check:rag-measure": "bash scripts/rag-measure.sh",
+    "check:sadeed-match": "bash scripts/sadeed-match-preflight.sh",
     "check:contrast": "node scripts/check-background-contrast.mjs"
   },
   "dependencies": {

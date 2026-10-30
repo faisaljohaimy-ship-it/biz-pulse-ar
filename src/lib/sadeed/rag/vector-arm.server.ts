@@ -3,11 +3,22 @@
  * الراية `SADEED_GEMINI_RAG_READY` ومفتاح التضمين (قرار المالك ③: الراية
  * بوّابة هذه الذراع وكتابتَي الذاكرة **فقط**؛ الأذرع المعجمية خارجها).
  *
- * ما لم يتغيّر: الدوالّ الثلاث `aria_match_*` بأسمائها (المقيس على الإنتاج
- * ٢٠٢٦/١٠/١٢: `42P01` — تصل هنا سببًا `42P01` لا فراغًا صامتًا: مقيس على عميل
- * `@supabase/supabase-js` حقيقي بـ`fetch` مزروع في `multi-arm.contract.test.ts`
- * ②)، العتبات، وكتابة `last_used_at` للذكريات المعروضة **داخل هذه الذراع** فلا
- * تقع إلا خلف الراية ببناء الكود. ما تغيّر: لا `await embedText` على المسار
+ * **الدوالّ (O4، ٢٠٢٦/١٠/٣٠):** الثلاث صارت `sadeed_match_documents` و
+ * `sadeed_match_knowledge` و`sadeed_match_memory` (ترحيل
+ * `20261030120000_sadeed_match_functions.sql`) بدل `aria_match_*` التي كانت
+ * تفشل `42P01` على الإنتاج (مقيس ٢٠٢٦/١٠/١٢). والمؤسسة **صريحة** `_org_id` في
+ * الثلاث، والمستخدم لا يُرسَل: الذاكرة والمستندات تقرآن `auth.uid()` من JWT
+ * العميل نفسه (SECURITY INVOKER) — فيجب أن يكون `supabase` هنا عميل المستدعي لا
+ * `service_role` (الأخير يقرأ منهما صفرًا بالبناء، فشلٌ مغلق لا قراءة واسعة).
+ * **أصناف الفشل** (الرمز كما يصل `reason`، والثلاث معًا تُسقط الذراع):
+ * `PGRST202` — الدالّة غير موجودة في ذاكرة المخطط: الكود مدفوع والترحيل لم
+ * يُطبَّق بعد (الحالة قبل إذن القاعدة)؛ `42501` — امتياز التنفيذ مسحوب؛
+ * `42883` — عامل/دالّة داخلية ناقصة (pgvector)؛ `42P01` — جدول `finn_*` غائب؛
+ * `rpc_error` — خطأ بلا رمز. كلها تصل سببًا قصيرًا لا نصًّا حرًّا. مقيس على عميل
+ * `@supabase/supabase-js` حقيقي بـ`fetch` مزروع في `multi-arm.contract.test.ts` ②.
+ *
+ * ما لم يتغيّر: العتبات، وكتابة `last_used_at` للذكريات المعروضة **داخل هذه
+ * الذراع** فلا تقع إلا خلف الراية ببناء الكود. ما تغيّر: لا `await embedText` على المسار
  * الحرج للأذرع الأخرى — المجمِّع يشغّلها متزامنةً بموعدها؛ وكل مقتطف **وعنوان**
  * يمرّ بـ`safeExcerpt`؛ والنتائج تحمل `label: "تشابه دلالي"` والدرجة الخام هي
  * الكوساين (تُطبع `(sim NN%)` لها وحدها — رقمٌ محسوب لا مختلَق).
@@ -19,9 +30,13 @@
  * الذراع `threw` دائمًا متى رُفعت الراية، ولا يكتشفه بديلٌ يعرّف `rpc` سهمًا بلا
  * `this`. الحارس يستعمل العميل الحقيقي.
  *
- * المستندات هنا `source: "document"` قابلة للاستشهاد كما كانت (`[DOC:]`) — قرار
- * المالك ⑤ يخصّ **القراءة المعجمية** للمقاطع غير الموثّقة (`document-chunks`)،
- * وهذه الذراع خلف راية «شهادة إعادة التضمين» كما وثّقتها `rag.server.ts`.
+ * **المستندات هنا غير موثّقة كما في الذراع المعجمية (د)** (مراجعة ٢٠٢٦/١٠/٣٠):
+ * `source: "upload-unverified"` و`citable: false` معًا، فتصل النموذج سياقًا موسومًا
+ * «غير موثّق» ولا تصير `[DOC:]` أبدًا (قرار المالك ⑤ والمادة ٢٥). `sadeed_match_documents`
+ * تعيد كل مقطع من مستند `ready` لصاحبه — حالة `ready` حالة استيعاب لا توثيق، ولا
+ * بوابة ترقية على المقاطع. والمعرّف **معرّف المقطع** (`chunk_id`) لا المستند: يلتقي
+ * بنتيجة الذراع (د) للمقطع نفسه فيندمجان في نتيجة واحدة (RRF) بدل أن يصلا النموذج
+ * مرتين، مرةً سياقًا ومرةً استشهادًا.
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ARM_NAMES } from "@/lib/retrieval/aggregate.server";
@@ -96,16 +111,21 @@ export function vectorArm(
       if (signal?.aborted) return done(false, [], "aborted");
       if (!embedding) return done(false, [], "embed_unavailable");
       const qvec = toPgVector(embedding);
+      // المؤسسة صريحة في الثلاث (`_org_id`)؛ والمستخدم من JWT العميل لا من وسيط.
+      const orgId = ctx.orgId;
       // مقيَّد بالعميل — لا `const rpc = supabase.rpc` (يفقد `this`، انظر الترويسة).
       const rpc: Rpc = (name, args) => (supabase as unknown as { rpc: Rpc }).rpc(name, args);
       const [memR, knowR, docR] = await Promise.all([
         withSignal(
-          rpc("aria_match_memory", { _user_id: userId, _query: qvec, _scope: null, _limit: 6 }),
+          rpc("sadeed_match_memory", { _org_id: orgId, _query: qvec, _scope: null, _limit: 6 }),
           signal,
         ),
-        withSignal(rpc("aria_match_knowledge", { _query: qvec, _tags: null, _limit: 5 }), signal),
         withSignal(
-          rpc("aria_match_documents", { _user_id: userId, _query: qvec, _limit: 5 }),
+          rpc("sadeed_match_knowledge", { _org_id: orgId, _query: qvec, _tags: null, _limit: 5 }),
+          signal,
+        ),
+        withSignal(
+          rpc("sadeed_match_documents", { _org_id: orgId, _query: qvec, _limit: 5 }),
           signal,
         ),
       ]);
@@ -116,7 +136,7 @@ export function vectorArm(
         ["documents", docR],
       ] as const)
         if (r.error) console.warn(`[sadeed/rag] ${name} rpc`, { code: rpcCode(r.error) });
-      // الثلاث فشلت ⇐ لم تخدم، بسبب أول رمز (42P01 في الإنتاج اليوم). بعضها خدم ⇐ خدمت بما وصل.
+      // الثلاث فشلت ⇐ لم تخدم، بسبب أول رمز (PGRST202 قبل تطبيق الترحيل). بعضها خدم ⇐ خدمت بما وصل.
       if (codes.length === 3) return done(false, [], codes[0]);
 
       const memories = (
@@ -167,16 +187,17 @@ export function vectorArm(
 
       const hits: Hit[] = [
         ...documents.map<Hit>((d, i) => ({
-          id: d.document_id,
-          source: "document",
+          // معرّف المقطع ومصدر «غير موثّق» وcitable=false: كما في documentChunksArm (انظر الترويسة).
+          id: d.chunk_id,
+          source: "upload-unverified",
           title: safeExcerpt(d.title, TITLE_CHARS),
           excerpt: safeExcerpt(d.content, 600),
           score: Number(d.similarity),
           rank: i + 1,
           provenance: {
-            table: "finn_documents",
+            table: "finn_document_chunks",
             docId: d.document_id,
-            citable: true,
+            citable: false,
             label: "تشابه دلالي",
           },
         })),

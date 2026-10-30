@@ -8391,6 +8391,38 @@ export type Database = {
       }
       runtime_cleanup_stale_executions: { Args: never; Returns: Json }
       runtime_retention_sweep: { Args: never; Returns: Json }
+      sadeed_match_documents: {
+        Args: { _limit?: number; _org_id: string; _query: string }
+        Returns: {
+          chunk_id: string
+          content: string
+          document_id: string
+          similarity: number
+          title: string
+        }[]
+      }
+      sadeed_match_knowledge: {
+        Args: { _limit?: number; _org_id: string; _query: string; _tags?: string[] }
+        Returns: {
+          content: string
+          id: string
+          similarity: number
+          source: string
+          tags: string[]
+          title: string
+        }[]
+      }
+      sadeed_match_memory: {
+        Args: { _limit?: number; _org_id: string; _query: string; _scope?: string }
+        Returns: {
+          content: string
+          id: string
+          importance: number
+          key: string
+          scope: string
+          similarity: number
+        }[]
+      }
       sec_kb_hybrid_search: {
         Args: {
           _category?: string

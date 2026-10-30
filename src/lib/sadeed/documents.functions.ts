@@ -3,6 +3,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import { searchSadeedDocumentsAcrossMemberships } from "./documents-search.server";
 import { embedText, toPgVector } from "./embeddings.server";
 
 const BUCKET = "aria-documents";
@@ -199,21 +200,14 @@ export const searchSadeedDocuments = createServerFn({ method: "POST" })
           similarity: number;
         }>,
       };
-    const { data: rows, error } = await context.supabase.rpc("aria_match_documents", {
-      _user_id: context.userId,
-      _query: toPgVector(vec) as unknown as string,
-      _limit: data.limit ?? 8,
-    });
-    if (error) throw new Error(error.message);
-    return {
-      matches: (rows ?? []) as Array<{
-        chunk_id: string;
-        document_id: string;
-        title: string;
-        content: string;
-        similarity: number;
-      }>,
-    };
+    // `sadeed_match_documents` (O4): مؤسسة صريحة والمستخدم من JWT — انظر documents-search.server.ts.
+    const matches = await searchSadeedDocumentsAcrossMemberships(
+      context.supabase,
+      context.userId,
+      toPgVector(vec),
+      data.limit ?? 8,
+    );
+    return { matches };
   });
 
 // ----- signed URL for the source file ----------------------------------------
