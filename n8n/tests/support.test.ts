@@ -903,6 +903,30 @@ describe("سكربت التوقيع scripts/n8n-sign-example.mjs", () => {
       buildSignedRequest({ path: "fnn-runner-v1", secret, now }).headers["Idempotency-Key"],
     ).toMatch(/^[0-9a-f]{32}$/);
   });
+  it("سرّ بسطر ختامي أو فراغ حوله: يوقّع السكربت بالسرّ المقصوص كالطرفين ويجتاز Verify (خطوة القبول اليدوي في README)", () => {
+    const clean = buildSignedRequest({
+      path: "sadeed-research-v1",
+      secret,
+      now,
+      nonce: "b".repeat(32),
+      requestId: UUID,
+    });
+    for (const padded of [`${secret}\n`, `${secret}\r\n`, `  ${secret} `, `\n${secret}\n\n`]) {
+      const req = buildSignedRequest({
+        path: "sadeed-research-v1",
+        secret: padded,
+        now,
+        nonce: "b".repeat(32),
+        requestId: UUID,
+      });
+      expect(req.headers["X-Nx-Sig"], JSON.stringify(padded)).toBe(clean.headers["X-Nx-Sig"]);
+      expect(verify(req, "sadeed-research-v1").ok).toBe(true);
+    }
+    // والطول يُقاس بعد القصّ: 31 حرفًا وسطرٌ ختامي ليست سرًّا صالحًا.
+    expect(() =>
+      buildSignedRequest({ path: "sadeed-research-v1", secret: `${"x".repeat(31)}\n`, now }),
+    ).toThrow(/32/);
+  });
   it("RED: --tamper و --skew يُرفضان في n8n", () => {
     const tampered = buildSignedRequest({ path: "sadeed-research-v1", secret, now, tamper: true });
     expect(verify(tampered, "sadeed-research-v1").reason).toBe("bad_signature");

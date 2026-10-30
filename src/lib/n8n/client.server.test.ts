@@ -433,6 +433,106 @@ describe("② على السلك — الطلب كما في العقد", () => {
     ).toMatchObject({ served: true, code: "already_done" });
   });
 
+  it("المادة ٩: موجز سَدِيد يحمل رمز توجيه يُرفع إلى regulatory مهما طلب المستدعي، ولا يُخفَّض وضعٌ أضيق", async () => {
+    const directive = { terms: ["تصريح"], codes: ["HCIS", "SEC-12"], lang: "ar" as const };
+    const bodyOf = (stub: { calls: StubCall[] }, i = 0) => JSON.parse(stub.calls[i].body);
+
+    const raised = setup();
+    expect(
+      await raised.client.research(sadeedInput(1, { mode: "general", brief: directive } as never)),
+    ).toMatchObject({ served: true });
+    expect(bodyOf(raised.stub).mode).toBe("regulatory");
+    expect(bodyOf(raised.stub).brief.codes).toEqual(["HCIS", "SEC-12"]);
+
+    // بلا رمز: الوضع كما طلب المستدعي (عام يبقى عامًّا، والأضيق يبقى أضيق).
+    const plain = setup();
+    await plain.client.research(sadeedInput(2));
+    await plain.client.research(sadeedInput(3, { mode: "regulatory" } as never));
+    expect(bodyOf(plain.stub, 0).mode).toBe("general");
+    expect(bodyOf(plain.stub, 1).mode).toBe("regulatory");
+
+    // FNN: رمز CVE ليس إطارًا تنظيميًّا ولا وضع regulatory عنده أصلًا.
+    const fnn = setup();
+    await fnn.client.research({
+      surface: "fnn",
+      mode: "security",
+      brief: { terms: ["undici"], codes: ["CVE-2024-1234"], lang: "en" },
+    });
+    expect(bodyOf(fnn.stub).mode).toBe("security");
+
+    // الرفع قبل مفتاح الكاش: السؤال نفسه بوضعين مطلوبين يتشارك مدخلًا واحدًا ونداءً واحدًا.
+    const shared = setup();
+    await shared.client.research(sadeedInput(4, { mode: "general", brief: directive } as never));
+    const again = await shared.client.research(
+      sadeedInput(4, { mode: "regulatory", brief: directive } as never),
+    );
+    expect(again).toMatchObject({ served: true, fromCache: true });
+    expect(shared.stub.calls.length).toBe(1);
+  });
+
+  describe("research_cache_purge: ذاكرة التطبيق هي الفعلية وما يُقال للمالك ما قاسه التطبيق", () => {
+    const purgePlan =
+      (code: "ok" | "already_done") =>
+      (c: StubCall): StubPlan =>
+        c.path === "fnn-runner-v1"
+          ? {
+              kind: "runner",
+              code,
+              ok: true,
+              result: { summary: "حُذف 0 من مدخلات ذاكرة البحث المؤقتة. المتبقي: 0.", items: [] },
+            }
+          : { kind: "research" };
+    const purge = (client: N8nClient, scope: "all" | "expired", key: string) =>
+      client.run({ workflow: "research_cache_purge", params: { scope }, idempotencyKey: key });
+
+    it("scope=all المؤكَّد: يفرغ الذاكرة والملخّص عدد المحذوف فعلًا لا صفر n8n", async () => {
+      const { client, stub } = setup({ plan: purgePlan("ok") });
+      for (const n of [1, 2, 3]) await client.research(sadeedInput(n));
+      expect(stub.calls.length).toBe(3);
+      const out = await purge(client, "all", "confirm-purge-01");
+      expect(out).toMatchObject({ served: true, code: "ok" });
+      if (out.served) {
+        expect(out.summary).toBe("حُذف 3 من مدخلات ذاكرة البحث المؤقتة في التطبيق.");
+        expect(out.summary).not.toContain("حُذف 0");
+      }
+      const next = await client.research(sadeedInput(1));
+      expect(next).toMatchObject({ served: true, fromCache: false });
+    });
+
+    it("already_done (الردّ الأول ضاع بعد أن نفّذ n8n): المسح يتمّ أيضًا", async () => {
+      const { client } = setup({ plan: purgePlan("already_done") });
+      for (const n of [1, 2]) await client.research(sadeedInput(n));
+      const out = await purge(client, "all", "confirm-purge-02");
+      expect(out).toMatchObject({ served: true, code: "already_done" });
+      if (out.served) expect(out.summary).toBe("حُذف 2 من مدخلات ذاكرة البحث المؤقتة في التطبيق.");
+      expect(await client.research(sadeedInput(1))).toMatchObject({ fromCache: false });
+    });
+
+    it("scope=expired: لا يمسح شيئًا ولا يدّعي حذفًا", async () => {
+      const { client } = setup({ plan: purgePlan("ok") });
+      await client.research(sadeedInput(1));
+      const out = await purge(client, "expired", "confirm-purge-03");
+      expect(out).toMatchObject({ served: true, code: "ok" });
+      if (out.served) {
+        expect(out.summary).toContain("لا يُحذف شيء يدويًّا");
+        expect(out.summary).not.toMatch(/حُذف \d/);
+      }
+      expect(await client.research(sadeedInput(1))).toMatchObject({ fromCache: true });
+    });
+
+    it("غير المؤكَّد (رفضٌ أو إخفاق) لا يمسح الذاكرة", async () => {
+      const { client } = setup({
+        plan: (c) =>
+          c.path === "fnn-runner-v1"
+            ? { kind: "runner", code: "budget_exhausted", ok: false, result: null }
+            : { kind: "research" },
+      });
+      await client.research(sadeedInput(1));
+      expect(await purge(client, "all", "confirm-purge-04")).toMatchObject({ served: false });
+      expect(await client.research(sadeedInput(1))).toMatchObject({ fromCache: true });
+    });
+  });
+
   it("المشغّل: رموز التطبيق ⇒ أسباب مغلقة", async () => {
     const run = (code: string): Promise<RunOutcome> =>
       setup({ plan: { kind: "runner", code, ok: false, result: null } }).client.run({

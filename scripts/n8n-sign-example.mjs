@@ -38,6 +38,12 @@ export const PATHS = {
   },
 };
 
+/**
+ * يقصّ الفراغات والأسطر حول السرّ كما يفعل التطبيق (`parseSecret`) وn8n (Verify وSign). بدونه يوقّع هذا السكربت
+ * بسرٍّ فيه سطرٌ ختامي والطرفان يوقّعان بالسرّ المقصوص، فيرفض n8n خطوة القبول اليدوي في README.
+ */
+const trimSecret = (secret) => (typeof secret === "string" ? secret.trim() : secret);
+
 const sha256hex = (text) => createHash("sha256").update(text, "utf8").digest("hex");
 const hmacHex = (secret, text) => createHmac("sha256", secret).update(text, "utf8").digest("hex");
 
@@ -45,7 +51,7 @@ const hmacHex = (secret, text) => createHmac("sha256", secret).update(text, "utf
 export function buildSignedRequest(options) {
   const spec = PATHS[options.path];
   if (!spec) throw new Error("مسار غير معروف: " + options.path);
-  const secret = options.secret;
+  const secret = trimSecret(options.secret);
   if (typeof secret !== "string" || secret.length < 32) {
     throw new Error("السرّ غائب أو أقصر من 32 حرفًا");
   }
@@ -89,7 +95,8 @@ export function buildSignedRequest(options) {
 }
 
 /** يتحقق من ترويسات الردّ والمتن. يعيد {ok, reason}. */
-export function verifyResponse({ secret, nonce, body, headers, now }) {
+export function verifyResponse({ secret: rawSecret, nonce, body, headers, now }) {
+  const secret = trimSecret(rawSecret);
   const respTs = headers["x-nx-resp-ts"];
   const sig = headers["x-nx-resp-sig"];
   if (!respTs || !sig) return { ok: false, reason: "ترويسات التوقيع غائبة" };
@@ -126,7 +133,7 @@ async function main() {
     process.exit(2);
   }
   const secretEnv = typeof args["secret-env"] === "string" ? args["secret-env"] : spec.secretEnv;
-  const secret = process.env[secretEnv] || "";
+  const secret = trimSecret(process.env[secretEnv] || "");
   const request = buildSignedRequest({
     path: args.path,
     base: args.base,

@@ -1769,6 +1769,7 @@ function hiddenFormatCodePoints(): number[] {
     if (cp >= 0xd800 && cp <= 0xdfff) continue;
     if (
       /\p{Cf}/u.test(String.fromCodePoint(cp)) ||
+      /\p{Default_Ignorable_Code_Point}/u.test(String.fromCodePoint(cp)) ||
       (cp >= 0xfe00 && cp <= 0xfe0f) ||
       (cp >= 0xe0100 && cp <= 0xe01ef)
     ) {
@@ -1897,15 +1898,23 @@ expectRedOnPlanted("merge-rank", mergeSuite, [
   {
     name: "قائمة الأحرف الخفية المنتقاة بدل فئة Cf",
     mutation: {
-      from: "const INVISIBLE_RE = /[\\p{Cf}\\u{FE00}-\\u{FE0F}\\u{E0100}-\\u{E01EF}]/gu;",
+      from: "const INVISIBLE_RE =\n  /[\\p{Cf}\\p{Default_Ignorable_Code_Point}\\u{FE00}-\\u{FE0F}\\u{E0100}-\\u{E01EF}]/gu;",
       to: "const INVISIBLE_RE = /[\\u200b-\\u200f\\u202a-\\u202e\\u2060-\\u2064\\u2066-\\u2069\\ufeff]/g;",
+    },
+    red: "every format character and variation selector is stripped from titles and snippets",
+  },
+  {
+    name: "الأحرف المهمَلة افتراضيًّا (Default_Ignorable) خارج التنظيف",
+    mutation: {
+      from: "const INVISIBLE_RE =\n  /[\\p{Cf}\\p{Default_Ignorable_Code_Point}\\u{FE00}-\\u{FE0F}\\u{E0100}-\\u{E01EF}]/gu;",
+      to: "const INVISIBLE_RE = /[\\p{Cf}\\u{FE00}-\\u{FE0F}\\u{E0100}-\\u{E01EF}]/gu;",
     },
     red: "every format character and variation selector is stripped from titles and snippets",
   },
   {
     name: "محدّدات الصيغة خارج التنظيف",
     mutation: {
-      from: "const INVISIBLE_RE = /[\\p{Cf}\\u{FE00}-\\u{FE0F}\\u{E0100}-\\u{E01EF}]/gu;",
+      from: "const INVISIBLE_RE =\n  /[\\p{Cf}\\p{Default_Ignorable_Code_Point}\\u{FE00}-\\u{FE0F}\\u{E0100}-\\u{E01EF}]/gu;",
       to: "const INVISIBLE_RE = /[\\p{Cf}]/gu;",
     },
     red: "every format character and variation selector is stripped from titles and snippets",
@@ -2216,10 +2225,10 @@ const envelopeSuite: Suite = (B) => {
       Buffer.byteLength(hugeFields.body) <= 32768,
   );
   must(
-    "providers capped at 20",
+    "providers capped at 8 (PROVIDER_MAX في عقد التطبيق)",
     B.buildEnvelope({
       providers: Array.from({ length: 50 }, (_, i) => ({ id: "p" + i, status: "ok", ms: 1, n: 1 })),
-    }).envelope.providers.length === 20,
+    }).envelope.providers.length === 8,
   );
   must("requestId sanitised", B.buildEnvelope({ requestId: "<script>" }).envelope.requestId === "");
 
@@ -2512,8 +2521,16 @@ expectRedOnPlanted("build-envelope", envelopeSuite, [
   {
     name: "قائمة الأحرف الخفية المنتقاة بدل فئة Cf",
     mutation: {
-      from: "const INVISIBLE_RE = /[\\p{Cf}\\u{FE00}-\\u{FE0F}\\u{E0100}-\\u{E01EF}]/gu;",
+      from: "const INVISIBLE_RE =\n  /[\\p{Cf}\\p{Default_Ignorable_Code_Point}\\u{FE00}-\\u{FE0F}\\u{E0100}-\\u{E01EF}]/gu;",
       to: "const INVISIBLE_RE = /[\\u200b-\\u200f\\u202a-\\u202e\\u2060-\\u2064\\u2066-\\u2069\\ufeff]/g;",
+    },
+    red: "no format character or variation selector survives title or snippet",
+  },
+  {
+    name: "الأحرف المهمَلة افتراضيًّا (Default_Ignorable) خارج التنظيف",
+    mutation: {
+      from: "const INVISIBLE_RE =\n  /[\\p{Cf}\\p{Default_Ignorable_Code_Point}\\u{FE00}-\\u{FE0F}\\u{E0100}-\\u{E01EF}]/gu;",
+      to: "const INVISIBLE_RE = /[\\p{Cf}\\u{FE00}-\\u{FE0F}\\u{E0100}-\\u{E01EF}]/gu;",
     },
     red: "no format character or variation selector survives title or snippet",
   },
@@ -3645,8 +3662,16 @@ expectRedOnPlanted("runner-dispatch", runnerSuite, [
   {
     name: "قائمة الأحرف الخفية المنتقاة بدل فئة Cf",
     mutation: {
-      from: "const INVISIBLE_RE = /[\\p{Cf}\\u{FE00}-\\u{FE0F}\\u{E0100}-\\u{E01EF}]/gu;",
+      from: "const INVISIBLE_RE =\n  /[\\p{Cf}\\p{Default_Ignorable_Code_Point}\\u{FE00}-\\u{FE0F}\\u{E0100}-\\u{E01EF}]/gu;",
       to: "const INVISIBLE_RE = /[\\u200b-\\u200f]/g;",
+    },
+    red: "no format character or variation selector survives a runner line",
+  },
+  {
+    name: "الأحرف المهمَلة افتراضيًّا (Default_Ignorable) خارج التنظيف",
+    mutation: {
+      from: "const INVISIBLE_RE =\n  /[\\p{Cf}\\p{Default_Ignorable_Code_Point}\\u{FE00}-\\u{FE0F}\\u{E0100}-\\u{E01EF}]/gu;",
+      to: "const INVISIBLE_RE = /[\\p{Cf}\\u{FE00}-\\u{FE0F}\\u{E0100}-\\u{E01EF}]/gu;",
     },
     red: "no format character or variation selector survives a runner line",
   },

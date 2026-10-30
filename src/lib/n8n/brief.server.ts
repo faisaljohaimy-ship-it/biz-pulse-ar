@@ -198,7 +198,27 @@ export function buildBrief(question: string, opts: BriefOptions = {}): Brief | n
   return { terms, codes, lang: languageOf(rest) };
 }
 
-/** وضع بحث سَدِيد: أسئلة الإطار التنظيمي `regulatory` وغيرها `general`. */
+/**
+ * الأطر الحاكمة في المادة ٩ من الدستور بأسمائها (PDPL · ZATCA · NCA) وجهة PDPL المنظِّمة (سدايا) ونظام
+ * العمل. سؤالٌ يذكر أحدها يبحث في وضع `regulatory` (مضيفٌ تحت gov.sa وحده): المصادر غير الرسمية للوائح
+ * محظورة. الخطأ هنا بالزيادة آمن (نتائج أقل)، وبالنقص ثغرة: فالقائمة واسعة عمدًا. النصّ يُوحَّد أولًا
+ * (NFKC · نزع التنسيق) فلا يُخفي المحرف الخفي الاسم. الأسماء اللاتينية بحدّ كلمة؛ والعربية بجذرها.
+ */
+const REGULATORY_FRAME_LATIN =
+  /\b(?:pdpl|zatca|nca|sdaia|ecc-?\d|ccc-?\d|dcc-?\d|saudi\s+labou?r\s+law|labou?r\s+law)\b/i;
+const REGULATORY_FRAME_ARABIC =
+  /حماية\s+البيانات\s+الشخصية|هيئة\s+الزكاة|الزكاة\s+والضريبة\s+والجمارك|زاتكا|الفوترة\s+الإلكترونية|الفاتورة\s+الإلكترونية|الأمن\s+السيبراني|الهيئة\s+الوطنية\s+للأمن|الضوابط\s+الأساسية\s+للأمن|سدايا|الهيئة\s+السعودية\s+للبيانات|نظام\s+العمل|لائحة\s+نظام\s+العمل/;
+
+/**
+ * وضع بحث سَدِيد: أسئلة الإطار التنظيمي `regulatory` وغيرها `general`. الإطار = مرجع HCIS (الهيئة العليا للأمن
+ * الصناعي ورموز SEC/SAF) **أو** أحد الأطر الحاكمة في المادة ٩. يُفحص النصّ الخام والموحَّد معًا.
+ */
 export function sadeedModeFor(question: string): "general" | "regulatory" {
-  return isHcisReferenceQuery(question) ? "regulatory" : "general";
+  if (typeof question !== "string") return "general";
+  const unified = canonical(question);
+  const frame = (t: string): boolean =>
+    isHcisReferenceQuery(t) || REGULATORY_FRAME_LATIN.test(t) || REGULATORY_FRAME_ARABIC.test(t);
+  return frame(question.slice(0, BRIEF_INPUT_MAX_CHARS)) || frame(unified)
+    ? "regulatory"
+    : "general";
 }

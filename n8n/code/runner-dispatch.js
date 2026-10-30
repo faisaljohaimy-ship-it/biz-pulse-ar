@@ -196,9 +196,10 @@ function clip(text, max) {
 }
 
 // الوسم بلا < داخله فالكلفة خطّية. فئة Cf كاملة (اتجاه، عرض صفري، وسوم U+E0000-E007F ...)
-// ومحدّدات الصيغة تُحذف: هذه الأسطر تصل المالك وتُنسخ إلى التطبيق.
+// ومحدّدات الصيغة وكل Default_Ignorable_Code_Point تُحذف: هذه الأسطر تصل المالك وتُنسخ إلى التطبيق.
 const TAG_RE = /<[^<>]*>/g;
-const INVISIBLE_RE = /[\p{Cf}\u{FE00}-\u{FE0F}\u{E0100}-\u{E01EF}]/gu;
+const INVISIBLE_RE =
+  /[\p{Cf}\p{Default_Ignorable_Code_Point}\u{FE00}-\u{FE0F}\u{E0100}-\u{E01EF}]/gu;
 const RAW_LINE_CAP = 4000;
 
 function cleanLine(text, max) {

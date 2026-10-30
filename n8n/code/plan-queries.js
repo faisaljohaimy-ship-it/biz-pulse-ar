@@ -49,6 +49,7 @@ const OFFICIAL_REGULATORY_DOMAINS = [
   "my.gov.sa",
   "sdaia.gov.sa",
   "nca.gov.sa",
+  "zatca.gov.sa",
   "saso.gov.sa",
 ];
 
@@ -111,11 +112,18 @@ function sanitizeTerm(text) {
     .join(" ");
 }
 
+// الطول بنقاط الرمز لا بوحدات UTF-16: مخطط التطبيق (zod 4) يعدّ نقاط الرمز، فكلمة من 40 نقطة فوق BMP
+// (80 وحدة) يقبلها التطبيق ويجب أن يقبلها هذا الفحص (`bad_terms` كان يرفضها).
 function isStringArray(value, maxItems, maxLength) {
   return (
     Array.isArray(value) &&
     value.length <= maxItems &&
-    value.every((item) => typeof item === "string" && item.length <= maxLength)
+    value.every(
+      (item) =>
+        typeof item === "string" &&
+        item.length <= maxLength * 2 &&
+        Array.from(item).length <= maxLength,
+    )
   );
 }
 

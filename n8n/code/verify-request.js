@@ -140,7 +140,10 @@ function evaluate(input) {
     input && typeof input.now === "number" && isFinite(input.now) ? input.now : Date.now();
   let nonces = pruneNonces(input && input.nonces, now);
   try {
-    const secret = input && input.secret;
+    // السرّ يُقصّ من الفراغات والأسطر حول طرفيه كما يفعل التطبيق (`parseSecret` في config.server.ts):
+    // سطرٌ ختاميّ ملصوق مع السرّ في أحد الطرفين كان يُسقط كل طلب بصمت (توقيعان لسرّين مختلفين).
+    const rawSecret = input && input.secret;
+    const secret = typeof rawSecret === "string" ? rawSecret.trim() : rawSecret;
     if (typeof secret !== "string" || secret.length < MIN_SECRET_LENGTH) {
       return fail("no_secret", nonces);
     }
@@ -153,7 +156,9 @@ function evaluate(input) {
     const tsText = headerValue(headers, "x-nx-ts");
     if (!TS_RE.test(tsText)) return fail("bad_ts", nonces);
     const ts = Number(tsText);
-    if (Math.abs(now - ts * 1000) > SKEW_MS) return fail("skew", nonces);
+    // بالثواني الكاملة كما يفعل التطبيق (`verifyRequestSignature`): الختم ثوانٍ صحيحة، ومقارنته بالمللي ثانية
+    // كانت ترفض ما يقبله التطبيق في الثانية التي تلي الثلاثين (ساعة n8n متقدّمة 30.0 إلى 30.999 ث).
+    if (Math.abs(Math.floor(now / 1000) - ts) > SKEW_MS / 1000) return fail("skew", nonces);
 
     const nonce = headerValue(headers, "x-nx-nonce").toLowerCase();
     if (!NONCE_RE.test(nonce)) return fail("bad_nonce", nonces);

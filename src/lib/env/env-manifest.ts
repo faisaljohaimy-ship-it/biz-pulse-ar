@@ -196,7 +196,7 @@ export const ENV_CAPABILITIES: readonly CapabilitySpec[] = [
     ],
   },
   {
-    // بحث الويب لسَدِيد عبر n8n (أمر المالك ٢٠٢٦/١٠/٣٠): قدرةٌ اختيارية — غيابها `not_configured` لا خطأ.
+    // بحث الويب لسَدِيد عبر n8n (أمر المالك ٢٠٢٦/١٠/٣٠): قدرةٌ اختيارية، غيابها `not_configured` لا خطأ.
     // العميل في `src/lib/n8n/client.server.ts` وحده يقرأها (حارس `n8n-client.contract.test.ts`).
     key: "sadeed-web-research",
     labelAr: "بحث الويب لسَدِيد عبر خدمة الأتمتة (اختياري، غيابه يعني لا بحث ولا خطأ)",
@@ -213,7 +213,7 @@ export const ENV_CAPABILITIES: readonly CapabilitySpec[] = [
       ),
       S(
         "SADEED_WEB_RESEARCH",
-        "off (default) | members | all — who SADEED may research the web for; any other value means off",
+        "off (default) | members | all: who SADEED may research the web for; any other value means off. Does not govern the FNN research or runner paths",
         false,
       ),
       S(

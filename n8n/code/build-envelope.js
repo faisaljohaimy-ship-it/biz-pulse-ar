@@ -41,7 +41,12 @@ const RUNNER_CODES = [
   "internal",
 ];
 const STATUSES = ["ok", "error", "timeout", "skipped"];
+// مفاتيح العنصر الداخلية كما يفرضها مخطط التطبيق الصارم (strictObject): مفتاح زائد يُرفض الغلاف كلّه عنده.
+const PROVIDER_KEYS = ["id", "status", "ms", "n"];
+const RESULT_KEYS = ["title", "url", "snippet", "publishedAt", "provider"];
 const MAX_BODY_BYTES = 32768;
+// سقف مصفوفة المزوّدين في عقد التطبيق (PROVIDER_MAX في schema.ts): ما فوقه يُرفض الغلاف كلّه عند التطبيق.
+const MAX_PROVIDERS = 8;
 const EPOCH_ISO = "1970-01-01T00:00:00.000Z";
 const ID_RE = /^[A-Za-z0-9_-]{1,64}$/;
 const UUID_LIKE_RE =
@@ -51,8 +56,10 @@ const HTTPS_RE = /^https:\/\/[^\s"'<>\\]+$/;
 
 // الوسم بلا < داخله فالكلفة خطّية (النمط /<[^>]*>/ تربيعي على نصّ مليء بـ< بلا >).
 const TAG_RE = /<[^<>]*>/g;
-// فئة Cf كاملة (اتجاه، عرض صفري، وسوم U+E0000-E007F، U+061C، U+00AD ...) + محدّدات الصيغة.
-const INVISIBLE_RE = /[\p{Cf}\u{FE00}-\u{FE0F}\u{E0100}-\u{E01EF}]/gu;
+// فئة Cf كاملة (اتجاه، عرض صفري، وسوم U+E0000-E007F، U+061C، U+00AD ...) + محدّدات الصيغة + كل
+// Default_Ignorable_Code_Point (كما في merge-rank.js ومعقِّم التطبيق).
+const INVISIBLE_RE =
+  /[\p{Cf}\p{Default_Ignorable_Code_Point}\u{FE00}-\u{FE0F}\u{E0100}-\u{E01EF}]/gu;
 const RAW_FIELD_CAP = 4000;
 
 function cleanText(value, max) {
@@ -100,7 +107,7 @@ function safeRequestId(value) {
 function normaliseProviders(value) {
   if (!Array.isArray(value)) return [];
   const out = [];
-  for (const item of value.slice(0, 20)) {
+  for (const item of value.slice(0, MAX_PROVIDERS)) {
     if (!item || typeof item !== "object") continue;
     const id = cleanText(item.id, 32);
     if (!id) continue;
@@ -166,6 +173,9 @@ function validateEnvelope(envelope) {
   else {
     e.providers.forEach((p, i) => {
       if (!p || typeof p !== "object") return problems.push("provider:" + i);
+      for (const key of Object.keys(p)) {
+        if (PROVIDER_KEYS.indexOf(key) === -1) problems.push("provider.extra:" + key + ":" + i);
+      }
       if (typeof p.id !== "string" || p.id.length === 0) problems.push("provider.id:" + i);
       if (STATUSES.indexOf(p.status) === -1) problems.push("provider.status:" + i);
       if (!Number.isInteger(p.ms) || p.ms < 0) problems.push("provider.ms:" + i);
@@ -176,6 +186,9 @@ function validateEnvelope(envelope) {
   else {
     e.results.forEach((r, i) => {
       if (!r || typeof r !== "object") return problems.push("result:" + i);
+      for (const key of Object.keys(r)) {
+        if (RESULT_KEYS.indexOf(key) === -1) problems.push("result.extra:" + key + ":" + i);
+      }
       if (typeof r.title !== "string" || Array.from(r.title).length > 120) {
         problems.push("result.title:" + i);
       }
@@ -333,5 +346,6 @@ if (typeof module !== "undefined" && module.exports) {
     RESEARCH_CODES,
     RUNNER_CODES,
     MAX_BODY_BYTES,
+    MAX_PROVIDERS,
   };
 }

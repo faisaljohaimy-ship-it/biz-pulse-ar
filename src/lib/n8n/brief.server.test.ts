@@ -70,6 +70,54 @@ describe("رموز التوجيهات", () => {
   });
 });
 
+describe("وضع سَدِيد: الأطر الحاكمة في المادة ٩ كلها تبحث في regulatory (مراجعة التكامل ٢٠٢٦/١٠/٣٠)", () => {
+  // المادة ٩: PDPL وZATCA وNCA إطارٌ حاكم والمصادر غير الرسمية للوائح محظورة. كان المختار يعرف HCIS وحدها، فسؤالٌ
+  // عن PDPL يبحث في general (Brave وويكيبيديا ومضيفات غير gov.sa) والتطبيق يحكم على المضيف في regulatory وحدها.
+  const FRAMES = [
+    "ما هي متطلبات نظام حماية البيانات الشخصية PDPL؟",
+    "ما هي عقوبة تسريب بيانات شخصية بحسب نظام حماية البيانات الشخصية",
+    "What does the NCA ECC-1:2018 require for access control?",
+    "ما هي ضوابط الأمن السيبراني للأنظمة التشغيلية",
+    "ما هي الضوابط الأساسية للأمن السيبراني ECC",
+    "ما هي غرامة مخالفة ZATCA للفاتورة الإلكترونية؟",
+    "متى يلزم التسجيل في هيئة الزكاة والضريبة والجمارك",
+    "ما هي مرحلة الفوترة الإلكترونية الحالية",
+    "ما هي لائحة نظام العمل السعودي للإجازات؟",
+    "Saudi labor law notice period for resignation",
+    "ما دور سدايا في تنظيم الذكاء الاصطناعي",
+    "What is the SDAIA position on data transfer",
+    // الاسم مفصولٌ بحرف خفي أو مكتوب بعرض كامل: يُوحَّد النصّ قبل المطابقة.
+    "ما هو P\u200bDPL",
+    "ما هو ＰＤＰＬ",
+    "للـNCA ضوابط",
+  ];
+  const GENERAL = [
+    "ما أفضل وقت لزيارة الرياض",
+    "how do I install react 19",
+    "ما هي عاصمة اليابان",
+    "NCAA basketball scores",
+    "الفرق بين الحاسوب والهاتف",
+  ];
+
+  it.each(FRAMES)("إطار تنظيمي ⇒ regulatory: %s", (q) => {
+    expect(sadeedModeFor(q)).toBe("regulatory");
+  });
+
+  it("المختار القديم (HCIS وحدها) لا يرى هذه الأطر (الحارس ليس فارغًا)", () => {
+    const missed = FRAMES.filter((q) => !isHcisReferenceQuery(q));
+    expect(missed.length).toBe(FRAMES.length);
+  });
+
+  it.each(GENERAL)("سؤال عام ⇒ general: %s", (q) => {
+    expect(sadeedModeFor(q)).toBe("general");
+  });
+
+  it("ما ليس نصًّا ⇒ general ولا يرمي", () => {
+    expect(sadeedModeFor(undefined as unknown as string)).toBe("general");
+    expect(sadeedModeFor("")).toBe("general");
+  });
+});
+
 describe("الحجب: لا يغادر شيءٌ شخصي", () => {
   const q =
     "راسلني على ahmed.salem@example.com أو اتصل 055 123 4567 ورقم هويتي 1234567890 ورقمي الوظيفي 12345 عن أسوار المحطة";

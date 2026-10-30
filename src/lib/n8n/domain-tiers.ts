@@ -101,6 +101,17 @@ export function tierOfHost(host: string): SourceTier {
   return "unknown";
 }
 
+/**
+ * وضع التنظيم (`regulatory`، المادة ٩: المصادر غير الرسمية للوائح محظورة): لا يُقبل إلا مضيفٌ تحت
+ * `gov.sa` (جهات حكومية سعودية). وهذا أضيق من مرتبة «رسمي» العامة عمدًا: وثائق صانعي المنتجات
+ * (`supabase.com`) و`nist.gov` و`who.int` مراتبها «رسمي» وليست مصدر لائحة سعودية. يطابق الحكمُ
+ * ما يطبّقه مسار n8n على نقله (`regulatoryHostAllowed` في n8n/code/merge-rank.js)، والتطبيق يعيده من
+ * جدوله ولا يكتفي بإسقاط n8n وحده (يحرسه `n8n/tests/p1-p2-loopback.test.ts`).
+ */
+export function isRegulatoryOfficialHost(host: string): boolean {
+  return host.toLowerCase().endsWith(".gov.sa");
+}
+
 const IPV4 = /^\d{1,3}(?:\.\d{1,3}){3}$/;
 const LABEL = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)$/;
 /** نطاقاتٌ عليا لا تدلّ على موقعٍ عامّ. */

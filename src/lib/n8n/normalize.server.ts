@@ -18,6 +18,11 @@
  *   وحدها (`[رابط]` و`[[…]]` من المعقِّم)، ويُفصل عنها قوسٌ يليها مباشرةً `(` بفراغ كي لا
  *   يصير `[[…]](//مضيف)` رابطًا. ونصٌّ مجرّد بلا صياغة (`//مضيف/مسار`، `مضيف.com/مسار`) ليس
  *   رابطًا في CommonMark/GFM فلا يُمسّ.
+ * - **ما يعيده العارض بعد التحليل** (مراجعة التكامل، ٢٠٢٦/١٠/٣٠): العارض لا يقرأ النصّ كما كُتب. (أ) الهروب بالشرطة
+ *   العكسية يُفكّ (`https:\/\/` رابطٌ)؛ (ب) المراجع الرقمية والمسمّاة تُفكّ (`&#x202E;` يصير محرف RLO فعليًّا
+ *   بعد أن مرّ المعقِّم)؛ (ج) نمطُ الرابط لا يشترط حدّ كلمة: `_https://` و`1https://` و`_www.` روابطٌ عنده.
+ *   فتُنزع الشرطة العكسية قبل علامة الهروب، ويُنزع `&` الذي يبدأ مرجعًا، ولا يُشترط حدٌّ قبل `https://` و`www.`.
+ *   ولأن الفكّ يحدث عند العارض فالمعقِّم يُحيِّد **ما قد يُفكّ**: لا يُعتمد على أن النصّ «يبدو سليمًا» قبله.
  * - `provider`: معرّفٌ قصير بحروفٍ آمنة؛ لا نصّ حرّ.
  * - `publishedAt`: يُقبل شكل `YYYY-MM-DD…` وتاريخٌ ليس في المستقبل، وإلا `null`.
  *
@@ -25,7 +30,7 @@
  * المنتج (المادة ٢٧). وسمُ ذلك على المستهلك (`untrusted` في نتيجة العميل).
  */
 import { safeExcerpt } from "@/lib/sadeed/rag/sanitize.server";
-import { filterUrl, type SourceTier } from "./domain-tiers";
+import { filterUrl, type SafeUrl, type SourceTier } from "./domain-tiers";
 import { RESULT_SNIPPET_CHARS, RESULT_TITLE_CHARS, type RawResearchResult } from "./schema";
 
 export interface WebResult {
@@ -40,8 +45,19 @@ export interface WebResult {
 
 // eslint-disable-next-line no-control-regex -- الغرض نزع محارف التحكّم صراحةً
 const CONTROL = /[\u0000-\u001f\u007f-\u009f]/g;
-const FORMAT = /\p{Cf}/gu;
-const INLINE_URL = /\b(?:https?:\/\/|www\.)\S+/gi;
+/**
+ * أحرف التنسيق `Cf` ومحدّدات الصيغة (U+FE00 إلى FE0F وU+E0100 إلى E01EF، وهي `Mn` لا `Cf`) وكل
+ * `Default_Ignorable_Code_Point` (منها U+034F وU+115F وU+1160 وU+17B4 وU+17B5 وU+180B إلى 180D وU+3164
+ * وU+FFA0 وكتلة U+E0000 غير المسنَدة). مسار n8n يحذف المجموعات نفسها (`INVISIBLE_RE` في merge-rank.js)،
+ * والتطبيق حدّ الثقة فلا يكون أضعف منه: محرفٌ خفي داخل «ignore» كان يُفلت من معقِّم عبارات الحقن.
+ */
+const FORMAT = /[\p{Cf}\p{Default_Ignorable_Code_Point}\u{FE00}-\u{FE0F}\u{E0100}-\u{E01EF}]/gu;
+/** بلا حدّ كلمة: العارض يربط `_https://` و`1https://` و`_www.` (انظر ترويسة الملف). */
+const INLINE_URL = /(?:https?:\/\/|www\.)\S+/gi;
+/** شرطة عكسية قبل علامة ترقيم ASCII: هروبٌ يفكّه العارض (`https:\/\/` ⇒ `https://`). */
+const ESCAPING_BACKSLASH = /\\(?=[!-/:-@[-`{-~])/g;
+/** `&` يبدأ مرجعًا رقميًّا أو مسمّى (`&#x202E;` · `&lrm;`): يفكّه العارض إلى محرفٍ بعد التعقيم. */
+const REFERENCE_AMPERSAND = /&(?=#?[A-Za-z0-9]+;)/g;
 /** قوسٌ مربّع (علامتنا) يليه مباشرةً قوس دائري: يصير هدف رابط في ماركداون. */
 const BRACKET_THEN_PAREN = /\](?=\()/g;
 
@@ -57,8 +73,13 @@ export function sanitizeWebText(input: string, maxChars: number): string {
     // قبل علاماتنا `[رابط]` ومعقِّم الحقن: كل قوسٍ مربّع هنا وارد من الخارج.
     .replace(/\[/g, "［")
     .replace(/\]/g, "］")
+    // قبل مطابقة الرابط: الهروب يخفي `://`، وبعد نزعه يظهر فيُستبدل.
+    .replace(ESCAPING_BACKSLASH, "")
     .replace(INLINE_URL, "[رابط]");
-  const clean = safeExcerpt(flat, maxChars).replace(BRACKET_THEN_PAREN, "] ");
+  const clean = safeExcerpt(flat, maxChars)
+    .replace(BRACKET_THEN_PAREN, "] ")
+    // أخيرًا بعد كل ما قد يحذف أو يضمّ محارف: لا يبقى `&` يبدأ مرجعًا (الطول لا يتغيّر: محرف BMP واحد).
+    .replace(REFERENCE_AMPERSAND, "＆");
   return clean.length > maxChars ? clean.slice(0, maxChars) : clean;
 }
 
@@ -78,17 +99,22 @@ export function normalizePublishedAt(raw: string | null, nowMs: number): string 
   return new Date(ms).toISOString();
 }
 
-/** يطبّع حتى `max` نتيجة صالحة، بترتيب n8n، بلا تكرار عنوان. */
+/**
+ * يطبّع حتى `max` نتيجة صالحة، بترتيب n8n، بلا تكرار عنوان. `accept` (اختياري) حكمُ التطبيق على
+ * المضيف بعد حسابه من العنوان: يُسقط ما يرفضه **قبل** القصّ عند `max` كي لا يأكل المرفوضُ مكانَ مقبول.
+ */
 export function normalizeResearchResults(
   raw: readonly RawResearchResult[],
   max: number,
   nowMs: number,
+  accept?: (u: SafeUrl) => boolean,
 ): WebResult[] {
   const seen = new Set<string>();
   const out: WebResult[] = [];
   for (const r of raw) {
     const u = filterUrl(r.url);
     if (!u || seen.has(u.href)) continue;
+    if (accept && !accept(u)) continue;
     seen.add(u.href);
     out.push({
       title: sanitizeWebText(r.title, RESULT_TITLE_CHARS) || u.domain,

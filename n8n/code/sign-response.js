@@ -39,7 +39,9 @@ function signResponse(input) {
     input && typeof input.now === "number" && isFinite(input.now) ? input.now : Date.now();
   const respTs = String(Math.floor(now / 1000));
   try {
-    const secret = input && input.secret;
+    // مقصوص كما في التطبيق (`parseSecret`) وكما في verify-request: الطرفان يوقّعان بالبايتات نفسها.
+    const rawSecret = input && input.secret;
+    const secret = typeof rawSecret === "string" ? rawSecret.trim() : rawSecret;
     if (typeof secret !== "string" || secret.length < MIN_SECRET_LENGTH) {
       return { signed: false, respTs, respSig: "", headers: {} };
     }

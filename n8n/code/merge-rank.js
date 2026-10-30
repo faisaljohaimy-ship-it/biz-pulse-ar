@@ -57,6 +57,7 @@ const OFFICIAL_BY_MODE = {
     "my.gov.sa",
     "sdaia.gov.sa",
     "nca.gov.sa",
+    "zatca.gov.sa",
     "saso.gov.sa",
   ],
   docs: [
@@ -127,8 +128,11 @@ function safeFromCodePoint(code) {
 // /<[^>]*>/ تربيعي على نصّ مليء بـ< بلا > (كل < يمسح إلى آخر النصّ).
 const TAG_RE = /<[^<>]*>/g;
 // أحرف غير مرئية: فئة Cf كاملة (اتجاه، عرض صفري، وسوم U+E0000-E007F، U+061C، U+00AD، U+180E،
-// U+206A-206F، U+FFF9-FFFB) + محدّدات الصيغة (U+FE00-FE0F وU+E0100-E01EF) وهي Mn لا Cf.
-const INVISIBLE_RE = /[\p{Cf}\u{FE00}-\u{FE0F}\u{E0100}-\u{E01EF}]/gu;
+// U+206A-206F، U+FFF9-FFFB) + محدّدات الصيغة (U+FE00-FE0F وU+E0100-E01EF) وهي Mn لا Cf + كل
+// Default_Ignorable_Code_Point (U+034F، U+115F، U+1160، U+17B4-17B5، U+180B-180D، U+3164، U+FFA0 ...)
+// كي لا يُخفي محرفٌ خفي حرفًا داخل عبارة حقن فيفلت من معقِّم التطبيق (حدّ الثقة لا يكون أضعف منه).
+const INVISIBLE_RE =
+  /[\p{Cf}\p{Default_Ignorable_Code_Point}\u{FE00}-\u{FE0F}\u{E0100}-\u{E01EF}]/gu;
 // سقف مدخل الحقل الخام قبل التنظيف: العنوان 120 والمقتطف 300 حرفًا بعد التنظيف.
 const RAW_FIELD_CAP = 4000;
 

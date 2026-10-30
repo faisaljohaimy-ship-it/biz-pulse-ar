@@ -56,6 +56,7 @@ import {
   type RunnerWorkflow,
   type SadeedResearchMode,
 } from "./protocol";
+import { isRegulatoryOfficialHost } from "./domain-tiers";
 import { normalizeResearchResults, sanitizeWebText, type WebResult } from "./normalize.server";
 import {
   researchEnvelopeSchema,
@@ -342,15 +343,20 @@ export function createN8nClient(deps: N8nClientDeps = {}): N8nClient {
       if (blocked) return unserved(blocked);
 
       const freshness: Freshness = input.freshness ?? "any";
+      // المادة ٩ لا تعتمد على اختيار المستدعي للوضع: موجزُ سَدِيد الذي يحمل رمزَ توجيهٍ (HCIS · SEC-nn · SAF-nn
+      // وهي الرموز الوحيدة التي يلتقطها `buildBrief` لسطح سَدِيد) سؤالٌ تنظيمي، فيُرفع إلى `regulatory` هنا مهما
+      // طلب المستدعي. يرفع ولا يخفّض: الوضع الأضيق يفوز دائمًا. (رمز CVE عند FNN ليس إطارًا تنظيميًّا.)
+      const mode =
+        input.surface === "sadeed" && input.brief.codes.length > 0 ? "regulatory" : input.mode;
       const request = researchRequestSchema.safeParse({
         v: 1,
         requestId: uuid(),
-        mode: input.mode,
+        mode,
         brief: input.brief,
         maxResults: input.maxResults ?? 5,
         freshness,
       });
-      const modeFits = (RESEARCH_MODES[surface] as readonly string[]).includes(input.mode);
+      const modeFits = (RESEARCH_MODES[surface] as readonly string[]).includes(mode);
       if (!request.success || !modeFits) return unserved("n8n_error");
       const req = request.data;
 
@@ -416,6 +422,14 @@ export function createN8nClient(deps: N8nClientDeps = {}): N8nClient {
           case "bad_request":
             return reject("n8n_error", false);
           case "all_providers_failed":
+            // لا مزوّد جُرِّب (كلهم skipped: اعتمادٌ غائب أو وضعٌ لا يخدمه أحد، كوضع regulatory بلا اعتماد
+            // جوجل وTavily) ⇒ القناة سليمة والإعداد ناقص: لا يُحتسب إخفاقًا، وإلا فتحت خمسةُ أسئلة تنظيمية
+            // قاطعَ سَدِيد كلَّه وحجبت الأسئلة العامة التي تخدمها المزوّدات بلا مفتاح.
+            return reject(
+              "n8n_error",
+              envelope.providers.length === 0 ||
+                envelope.providers.some((p) => p.status !== "skipped"),
+            );
           case "internal":
             return reject("n8n_error", true);
           case "ok":
@@ -425,7 +439,13 @@ export function createN8nClient(deps: N8nClientDeps = {}): N8nClient {
 
         alive();
         const nowMs = now();
-        const results = normalizeResearchResults(envelope.results, req.maxResults, nowMs);
+        // وضع التنظيم (المادة ٩): التطبيق يعيد الحكم من جدوله ولا يثق بإسقاط n8n وحده.
+        const results = normalizeResearchResults(
+          envelope.results,
+          req.maxResults,
+          nowMs,
+          req.mode === "regulatory" ? (u) => isRegulatoryOfficialHost(u.domain) : undefined,
+        );
         const code = results.length > 0 ? "ok" : "no_results";
         // فراغٌ أو غلافٌ زمنه في المستقبل: لا نصدّق «حداثة» تتقدّم على ساعتنا.
         const claimed = Date.parse(envelope.fetchedAt);
@@ -530,15 +550,33 @@ export function createN8nClient(deps: N8nClientDeps = {}): N8nClient {
             break;
         }
         alive();
+        // الذاكرة الفعلية للبحث في التطبيق لا في n8n (مسار n8n ينظّف مفتاحًا فارغًا): فالتنظيف الكامل
+        // المؤكَّد يفرغ ذاكرة هذا المعزول أيضًا، **و`already_done` مثل `ok`**: الردّ الضائع بعد أن نفّذ n8n
+        // يعيد المحاولة بالمفتاح نفسه فيأتي `already_done`، والمسح محلي ومتساوي الأثر عند التكرار. و`expired`
+        // لا يحتاج شيئًا: الصلاحية تُقرأ عند كل جلب. وملخّص n8n لا يُمرَّر لهذا العمل: يقول «حُذف 0» عن ذاكرةٍ
+        // لا يملكها، فيُقال للمالك ما قاسه التطبيق نفسه (المادة ٢٧).
+        let appSummary: string | null = null;
+        if (input.workflow === "research_cache_purge") {
+          if (input.params.scope === "all") {
+            const removed = cache.size;
+            cache.clear();
+            appSummary = `حُذف ${removed} من مدخلات ذاكرة البحث المؤقتة في التطبيق.`;
+          } else {
+            appSummary =
+              "لا يُحذف شيء يدويًّا في التطبيق: المدخل المنتهي الصلاحية يُهمل ويُحذف عند القراءة.";
+          }
+        }
         state.latencies.record(elapsed());
         state.lastOkAtMs = now();
         return {
           served: true,
           untrusted: true,
           code: envelope.code,
-          summary: envelope.result
-            ? sanitizeWebText(envelope.result.summary, RUNNER_SUMMARY_CHARS)
-            : null,
+          summary:
+            appSummary ??
+            (envelope.result
+              ? sanitizeWebText(envelope.result.summary, RUNNER_SUMMARY_CHARS)
+              : null),
           items: (envelope.result?.items ?? []).map((i) => sanitizeWebText(i, RUNNER_ITEM_CHARS)),
           requestId: req.requestId,
           latencyMs: elapsed(),
