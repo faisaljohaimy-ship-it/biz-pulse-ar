@@ -7,8 +7,12 @@ import { streamFinnReply } from "./client";
 import { encodeFinnEvent } from "./stream-protocol";
 import { FINN_LIMITS } from "./limits";
 
-beforeEach(() => { net.fetch.mockReset(); });
-afterEach(() => { vi.useRealTimers(); });
+beforeEach(() => {
+  net.fetch.mockReset();
+});
+afterEach(() => {
+  vi.useRealTimers();
+});
 const options = (signal: AbortSignal) => ({
   messages: [{ role: "user" as const, content: "اختبار" }],
   signal,
@@ -20,8 +24,10 @@ describe("FNN cancellation and session timeouts", () => {
   it("does not send a pre-cancelled conversation", async () => {
     const controller = new AbortController();
     controller.abort();
-    await expect(streamFinnReply(options(controller.signal)))
-      .resolves.toEqual({ ok: false, aborted: true });
+    await expect(streamFinnReply(options(controller.signal))).resolves.toEqual({
+      ok: false,
+      aborted: true,
+    });
     expect(net.fetch).not.toHaveBeenCalled();
   });
 

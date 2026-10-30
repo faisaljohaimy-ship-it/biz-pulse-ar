@@ -22,15 +22,20 @@ describe("authenticated request session lifecycle", () => {
   it("does not start a pre-cancelled lookup or request", async () => {
     const controller = new AbortController();
     controller.abort();
-    await expect(authenticatedFetch("/api/chat", { signal: controller.signal }))
-      .rejects.toMatchObject({ name: "AbortError" });
+    await expect(
+      authenticatedFetch("/api/chat", { signal: controller.signal }),
+    ).rejects.toMatchObject({ name: "AbortError" });
     expect(auth.getSession).not.toHaveBeenCalled();
     expect(http).not.toHaveBeenCalled();
   });
 
   it("bounds a stalled lookup and does not send a late request", async () => {
     let resolve!: (value: typeof guest) => void;
-    auth.getSession.mockReturnValue(new Promise((done) => { resolve = done; }));
+    auth.getSession.mockReturnValue(
+      new Promise((done) => {
+        resolve = done;
+      }),
+    );
     const pending = authenticatedFetch("/api/chat");
     const checked = expect(pending).rejects.toMatchObject({ name: "TimeoutError" });
     await vi.advanceTimersByTimeAsync(AUTH_SESSION_DEADLINE_MS);
@@ -55,8 +60,9 @@ describe("authenticated request session lifecycle", () => {
 
   it("does not downgrade a failed lookup into an anonymous request", async () => {
     auth.getSession.mockResolvedValue({ ...guest, error: { message: "private-detail" } });
-    await expect(authenticatedFetch("/api/chat"))
-      .rejects.toThrow("Authentication session unavailable.");
+    await expect(authenticatedFetch("/api/chat")).rejects.toThrow(
+      "Authentication session unavailable.",
+    );
     expect(http).not.toHaveBeenCalled();
   });
 

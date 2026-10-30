@@ -85,7 +85,9 @@ export async function streamFinnReply(options: {
     } catch (error) {
       if (options.signal.aborted) return { ok: false, aborted: true };
       const sessionTimedOut =
-        typeof error === "object" && error !== null && "name" in error &&
+        typeof error === "object" &&
+        error !== null &&
+        "name" in error &&
         error.name === "TimeoutError";
       return failed(timedOut || sessionTimedOut ? "timeout" : "network");
     }
@@ -132,9 +134,7 @@ export async function streamFinnReply(options: {
       for (const event of events) {
         if (state.outcome) return;
         if (options.signal.aborted || timedOut) {
-          state.outcome = options.signal.aborted
-            ? { ok: false, aborted: true }
-            : failed("timeout");
+          state.outcome = options.signal.aborted ? { ok: false, aborted: true } : failed("timeout");
           return;
         }
         if (event.type === "delta") options.onDelta(event.text);
