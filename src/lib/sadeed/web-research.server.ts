@@ -436,9 +436,13 @@ function replaceMarkdownParenLinksLinear(input: string, image: boolean): string 
   for (let i = n; i >= 0; i--) {
     if (i < n) {
       const code = input.charCodeAt(i);
-      if (code === 93) bracket = i; // ]
-      else if (code === 41) paren = i; // )
-      else if (code === 10) newline = i; // LF
+      if (code === 93) {
+        bracket = i; // ]
+      } else if (code === 41) {
+        paren = i; // )
+      } else if (code === 10) {
+        newline = i; // LF
+      }
     }
     nextBracket[i] = bracket;
     nextParen[i] = paren;
