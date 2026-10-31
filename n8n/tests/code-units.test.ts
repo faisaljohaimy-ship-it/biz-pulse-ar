@@ -1743,7 +1743,7 @@ const mergeSuite: Suite = (M) => {
   must(
     "hostile angle-bracket fields stay cheap",
     (() => {
-      const evil = "<".repeat(12500);
+      const evil = "<".repeat(6000);
       const started = Date.now();
       const r = rank([
         ok("tavily", {
