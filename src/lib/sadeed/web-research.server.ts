@@ -398,8 +398,6 @@ export function renderWebBlock(args: {
 /** تعريف مرجعيّ لرابط (`[مرجع]: https://…`): بلا وجهةٍ بسطر التعريف لا يصير أي `![x][مرجع]` صورةً. */
 const MD_REFERENCE_DEFINITION =
   /^[ \t]{0,3}\[[^\]\n]{1,200}\]:[ \t]*<?(?:[a-z][a-z0-9+.-]{1,20}:|\/\/|www\.)[^\n]{0,2000}$/gim;
-const MD_IMAGE = /!\[([^\]\n]{0,200})\]\([^)\n]{0,2000}\)/g;
-const MD_LINK = /\[([^\]\n]{0,300})\]\([^)\n]{0,2000}\)/g;
 const MD_AUTOLINK = /<(?:https?|ftp|mailto|tel|data|javascript):[^>\s]{0,2000}>/gi;
 const BARE_URL = /\b(?:https?|ftp):\/\/[^\s<>"'`]{1,2000}|\bwww\.[^\s<>"'`]{1,2000}/gi;
 const TRAILING_PUNCTUATION = /[)\].,;:!?،؛»]+$/;
@@ -411,6 +409,80 @@ function hostOnly(url: string): string {
   const body = trailing ? url.slice(0, url.length - trailing.length) : url;
   const host = URL_HOST.exec(body)?.[1] ?? "";
   return `${host.replace(/^www\./i, "")}${trailing}`;
+}
+
+/**
+ * Replace only complete inline Markdown links/images in linear time.
+ *
+ * A bounded `/\\[[^\\]]+\\]\\([^)]{0,2000}\\)/g` still rescans up to 2,000
+ * characters at *every* unmatched "[a](" in hostile output. A single distant
+ * ')' makes a simple "no closing paren" precheck insufficient.
+ *
+ * Reverse-index the next closing delimiters once, then inspect each potential
+ * opening exactly once. This preserves the old 200/300-character label and
+ * 2,000-character destination limits without relaxing the security scrub.
+ */
+function replaceMarkdownParenLinksLinear(input: string, image: boolean): string {
+  const marker = image ? "![" : "[";
+  if (!input.includes(marker) || !input.includes(")")) return input;
+
+  const n = input.length;
+  const nextBracket = new Int32Array(n + 1);
+  const nextParen = new Int32Array(n + 1);
+  const nextNewline = new Int32Array(n + 1);
+  let bracket = -1;
+  let paren = -1;
+  let newline = -1;
+  for (let i = n; i >= 0; i--) {
+    if (i < n) {
+      const code = input.charCodeAt(i);
+      if (code === 93) {
+        bracket = i; // ]
+      } else if (code === 41) {
+        paren = i; // )
+      } else if (code === 10) {
+        newline = i; // LF
+      }
+    }
+    nextBracket[i] = bracket;
+    nextParen[i] = paren;
+    nextNewline[i] = newline;
+  }
+
+  const labelLimit = image ? 200 : 300;
+  let scan = 0;
+  let from = 0;
+  let parts: string[] | undefined;
+  while ((scan = input.indexOf(marker, scan)) !== -1) {
+    const labelStart = scan + marker.length;
+    const labelEnd = nextBracket[labelStart];
+    if (
+      labelEnd === -1 ||
+      labelEnd - labelStart > labelLimit ||
+      (nextNewline[labelStart] !== -1 && nextNewline[labelStart] < labelEnd) ||
+      input.charCodeAt(labelEnd + 1) !== 40 // (
+    ) {
+      scan += marker.length;
+      continue;
+    }
+    const targetStart = labelEnd + 2;
+    const targetEnd = nextParen[targetStart];
+    if (
+      targetEnd === -1 ||
+      targetEnd - targetStart > 2000 ||
+      (nextNewline[targetStart] !== -1 && nextNewline[targetStart] < targetEnd)
+    ) {
+      scan += marker.length;
+      continue;
+    }
+    (parts ??= []).push(input.slice(from, scan), input.slice(labelStart, labelEnd));
+    from = targetEnd + 1;
+    scan = from;
+  }
+
+  if (!parts) return input;
+  parts.push(input.slice(from));
+  return parts.join("");
 }
 
 /**
@@ -431,12 +503,10 @@ function hostOnly(url: string): string {
  */
 export function neutralizeWebTurnOutput(text: string): string {
   if (typeof text !== "string") return "";
-  return text
-    .replace(MD_REFERENCE_DEFINITION, "")
-    .replace(MD_IMAGE, (_m, alt: string) => alt)
-    .replace(MD_LINK, (_m, label: string) => label)
-    .replace(MD_AUTOLINK, "")
-    .replace(BARE_URL, hostOnly);
+  const withoutDefinitions = text.replace(MD_REFERENCE_DEFINITION, "");
+  const withoutImages = replaceMarkdownParenLinksLinear(withoutDefinitions, true);
+  const withoutLinks = replaceMarkdownParenLinksLinear(withoutImages, false);
+  return withoutLinks.replace(MD_AUTOLINK, "").replace(BARE_URL, hostOnly);
 }
 
 // ── الرصد ───────────────────────────────────────────────────────────────────
