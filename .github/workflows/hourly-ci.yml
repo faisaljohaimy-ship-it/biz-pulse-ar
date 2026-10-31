@@ -1,0 +1,104 @@
+name: SADEED Hourly CI
+
+# Owner request: 2026-10-31. Verification only; no deploy or production credentials.
+# Existing CI and deeper integration/security workflows are retained unchanged.
+on:
+  schedule:
+    - cron: "7 * * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/hourly-ci.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sadeed-hourly-ci-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  static:
+    name: Hourly static checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 13
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run check:secrets
+
+  test:
+    name: Hourly unit tests and dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 13
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        id: install
+        run: npm ci --no-audit --no-fund
+      - name: Unit tests
+        run: npm test
+      - name: Production dependency audit
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run check:audit
+
+  build:
+    name: Hourly build and performance budget
+    runs-on: ubuntu-latest
+    timeout-minutes: 13
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run build
+      - run: npm run check:performance
+      - name: Check build output exists
+        run: test -d dist || test -d .output
+
+  summary:
+    name: Record verification scope
+    if: always()
+    needs: [static, test, build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Record results without implying a deployment or live login
+        env:
+          CHECKED_SHA: ${{ github.sha }}
+          STATIC_RESULT: ${{ needs.static.result }}
+          TEST_RESULT: ${{ needs.test.result }}
+          BUILD_RESULT: ${{ needs.build.result }}
+        run: |
+          {
+            echo "## SADEED hourly CI"
+            printf 'Checked SHA: `%s`\n\n' "$CHECKED_SHA"
+            printf '| Check | Result |\n|---|---|\n'
+            printf '| Static | %s |\n' "$STATIC_RESULT"
+            printf '| Unit tests and audit | %s |\n' "$TEST_RESULT"
+            printf '| Build and performance budget | %s |\n' "$BUILD_RESULT"
+            echo
+            echo 'Read individual test logs for passed/failed/skipped counts.'
+            echo 'NOT RUN here: owner Google/email login, live FNN/SADEED AI replies, live RAG, voice and n8n executions.'
+            echo 'No release, domain, provider, permission, secret or database mutation is performed by this workflow.'
+            echo 'Production SHA and both domain aliases must be verified independently.'
+          } >> "$GITHUB_STEP_SUMMARY"
