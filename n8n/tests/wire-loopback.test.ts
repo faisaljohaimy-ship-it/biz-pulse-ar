@@ -526,8 +526,13 @@ describe("١. /api/chat الحقيقي ← العميل الحقيقي ← مس�
     expect(webHeader(res)).toBe("ok");
     expect(lb.calls).toHaveLength(1);
     const everything = wireOf(lb.calls[0]) + safeJson(lb.egress);
+    // Full identifiers must never appear anywhere on the wire, including headers.
+    expect(leaks(everything, [uuid, sha])).toEqual([]);
+    // Four-character UUID fragments can occur by chance in a cryptographic nonce or
+    // generated requestId. Test the user-derived brief and provider egress instead.
+    const userEgress = safeJson(JSON.parse(lb.calls[0].requestBody).brief) + safeJson(lb.egress);
     const fragments = [...uuid.split("-"), sha.slice(0, 8), sha.slice(-6)];
-    expect(leaks(everything, fragments)).toEqual([]);
+    expect(leaks(userEgress, fragments)).toEqual([]);
     // والكلمات الحقيقية خرجت (فالفحص ليس على نداءٍ فارغ).
     expect(everything).toContain("nfpa");
   });
@@ -893,9 +898,11 @@ describe("٥. أداة web_research لفِن على الحلقة: سرّ FNN و�
     expect(lb.calls).toHaveLength(1);
     const everything = wireOf(lb.calls[0]) + safeJson(lb.egress);
     expect(leaks(everything, [uuid, sha, EMAIL, "faisal"])).toEqual([]);
-    // شظايا UUID السداسية (قِيس أن موجز P1 يمرّرها) لا تغادر أيضًا.
-    for (const frag of uuid.split("-")) expect(everything).not.toContain(frag);
-    expect(everything).not.toContain(sha.slice(0, 8));
+    // Random signing nonces and requestIds may coincidentally include a 4-character
+    // UUID fragment. Validate every fragment in user-derived brief and provider egress.
+    const userEgress = safeJson(JSON.parse(lb.calls[0].requestBody).brief) + safeJson(lb.egress);
+    for (const frag of uuid.split("-")) expect(userEgress).not.toContain(frag);
+    expect(userEgress).not.toContain(sha.slice(0, 8));
 
     const empty = await run("web_research", { query: `${uuid} ${sha}` });
     expect(empty).toMatchObject({ ok: false, reason: "empty_query" });
