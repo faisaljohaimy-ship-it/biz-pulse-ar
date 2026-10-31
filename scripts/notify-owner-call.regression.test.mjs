@@ -393,6 +393,8 @@ test("لا رقمَ هاتفيٍّ مكتوبًا في المصدر ولا ال�
     "scripts/notify-owner-call.mjs",
     "scripts/notify-owner-call.regression.test.mjs",
     "docs/operations/OWNER_CALL_SETUP_AR.md",
+    "docs/operations/AGENT_COORDINATION_AR.md",
+    "AGENTS.md",
     ".env.example",
   ];
   const phone = /\+\d{8,}|966\d{6,}|\b05\d{8}\b/;
