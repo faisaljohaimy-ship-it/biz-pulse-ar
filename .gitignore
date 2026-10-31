@@ -87,3 +87,7 @@ tests/integration/bin/
 
 # ملف stub لمسارات n8n (يُولَّد محليًّا للتجربة ضد n8n حقيقي بلا إنترنت): لا يُتعقَّب.
 n8n/workflows.stub/
+
+# نسخ التضعيف المؤقتة لاختبارات براهين التحمير (src/lib/finn-import/mutant-scratch.test-support.ts) —
+# خارج src/ عمدًا كي لا تلتقطها globSync الحرّاس، وتُحذف فور استيرادها.
+.mutant-scratch/

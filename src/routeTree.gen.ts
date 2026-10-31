@@ -177,6 +177,7 @@ import { Route as AuthenticatedSettingsMicrosoftRouteImport } from './routes/_au
 import { Route as ApiAgentsFleetRouteImport } from './routes/api/agents/fleet'
 import { Route as ApiChatHealthRouteImport } from './routes/api/chat.health'
 import { Route as ApiFinnChatRouteImport } from './routes/api/finn/chat'
+import { Route as ApiFinnImportRouteImport } from './routes/api/finn/import'
 import { Route as ApiFnnAuthHealthRouteImport } from './routes/api/fnn/auth-health'
 import { Route as ApiHeygenStatusRouteImport } from './routes/api/heygen/status'
 import { Route as ApiHeygenStopRouteImport } from './routes/api/heygen/stop'
@@ -1099,6 +1100,11 @@ const ApiFinnChatRoute = ApiFinnChatRouteImport.update({
   path: '/api/finn/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiFinnImportRoute = ApiFinnImportRouteImport.update({
+  id: '/api/finn/import',
+  path: '/api/finn/import',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiFnnAuthHealthRoute = ApiFnnAuthHealthRouteImport.update({
   id: '/api/fnn/auth-health',
   path: '/api/fnn/auth-health',
@@ -1479,6 +1485,7 @@ export interface FileRoutesByFullPath {
   '/api/agents/fleet': typeof ApiAgentsFleetRoute
   '/api/chat/health': typeof ApiChatHealthRoute
   '/api/finn/chat': typeof ApiFinnChatRoute
+  '/api/finn/import': typeof ApiFinnImportRoute
   '/api/fnn/auth-health': typeof ApiFnnAuthHealthRoute
   '/api/heygen/status': typeof ApiHeygenStatusRoute
   '/api/heygen/stop': typeof ApiHeygenStopRoute
@@ -1686,6 +1693,7 @@ export interface FileRoutesByTo {
   '/api/agents/fleet': typeof ApiAgentsFleetRoute
   '/api/chat/health': typeof ApiChatHealthRoute
   '/api/finn/chat': typeof ApiFinnChatRoute
+  '/api/finn/import': typeof ApiFinnImportRoute
   '/api/fnn/auth-health': typeof ApiFnnAuthHealthRoute
   '/api/heygen/status': typeof ApiHeygenStatusRoute
   '/api/heygen/stop': typeof ApiHeygenStopRoute
@@ -1897,6 +1905,7 @@ export interface FileRoutesById {
   '/api/agents/fleet': typeof ApiAgentsFleetRoute
   '/api/chat/health': typeof ApiChatHealthRoute
   '/api/finn/chat': typeof ApiFinnChatRoute
+  '/api/finn/import': typeof ApiFinnImportRoute
   '/api/fnn/auth-health': typeof ApiFnnAuthHealthRoute
   '/api/heygen/status': typeof ApiHeygenStatusRoute
   '/api/heygen/stop': typeof ApiHeygenStopRoute
@@ -2108,6 +2117,7 @@ export interface FileRouteTypes {
     | '/api/agents/fleet'
     | '/api/chat/health'
     | '/api/finn/chat'
+    | '/api/finn/import'
     | '/api/fnn/auth-health'
     | '/api/heygen/status'
     | '/api/heygen/stop'
@@ -2315,6 +2325,7 @@ export interface FileRouteTypes {
     | '/api/agents/fleet'
     | '/api/chat/health'
     | '/api/finn/chat'
+    | '/api/finn/import'
     | '/api/fnn/auth-health'
     | '/api/heygen/status'
     | '/api/heygen/stop'
@@ -2525,6 +2536,7 @@ export interface FileRouteTypes {
     | '/api/agents/fleet'
     | '/api/chat/health'
     | '/api/finn/chat'
+    | '/api/finn/import'
     | '/api/fnn/auth-health'
     | '/api/heygen/status'
     | '/api/heygen/stop'
@@ -2632,6 +2644,7 @@ export interface RootRouteChildren {
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiAgentsFleetRoute: typeof ApiAgentsFleetRoute
   ApiFinnChatRoute: typeof ApiFinnChatRoute
+  ApiFinnImportRoute: typeof ApiFinnImportRoute
   ApiFnnAuthHealthRoute: typeof ApiFnnAuthHealthRoute
   ApiHeygenStatusRoute: typeof ApiHeygenStatusRoute
   ApiHeygenStopRoute: typeof ApiHeygenStopRoute
@@ -3852,6 +3865,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiFinnChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/finn/import': {
+      id: '/api/finn/import'
+      path: '/api/finn/import'
+      fullPath: '/api/finn/import'
+      preLoaderRoute: typeof ApiFinnImportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/fnn/auth-health': {
       id: '/api/fnn/auth-health'
       path: '/api/fnn/auth-health'
@@ -4469,6 +4489,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiAgentsFleetRoute: ApiAgentsFleetRoute,
   ApiFinnChatRoute: ApiFinnChatRoute,
+  ApiFinnImportRoute: ApiFinnImportRoute,
   ApiFnnAuthHealthRoute: ApiFnnAuthHealthRoute,
   ApiHeygenStatusRoute: ApiHeygenStatusRoute,
   ApiHeygenStopRoute: ApiHeygenStopRoute,

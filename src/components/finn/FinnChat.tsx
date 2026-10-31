@@ -29,10 +29,13 @@ import {
   type FinnReadiness,
 } from "@/lib/finn-agent/copy";
 import type { FinnEngineStatus } from "@/lib/finn-agent/status";
+import { FINN_IMPORT_COPY } from "@/lib/finn-import/client";
 import { FinnBanner } from "./FinnBanner";
 import { FinnComposer } from "./FinnComposer";
+import { FinnImportCard } from "./FinnImportCard";
 import { FinnMessage } from "./FinnMessage";
 import { useFinnChat } from "./use-finn-chat";
+import { useFinnImport } from "./use-finn-import";
 
 const TONE_ICON = { ok: CircleCheck, warn: TriangleAlert, off: OctagonAlert } as const;
 const TONE_COLOR: Record<FinnReadiness["tone"], string> = {
@@ -66,13 +69,22 @@ export interface FinnChatProps {
    * يعتمد على الشاشة كلّها.
    */
   readonly variant?: "page" | "inline";
+  /**
+   * إرفاق ملف وتحميله إلى مكتبة المعرفة (أمر المالك ٢٠٢٦/١٠/٣١): مشبك + بطاقة معاينة وتأكيد. **مساحتا العمل
+   * الكاملتان وحدهما** (`/fnn` و`/finn`) تمرّرانه؛ بطاقة الرئيسية نصّيةٌ بلا إرفاق (الافتراضي `false`).
+   * النموذج لا يرى الملف: الحالة معزولة عن `useFinnChat` وجسم `/api/finn/chat` يبقى `{messages}`.
+   */
+  readonly allowImport?: boolean;
 }
 
-export default function FinnChat({ engine, variant = "page" }: FinnChatProps) {
+export default function FinnChat({ engine, variant = "page", allowImport = false }: FinnChatProps) {
   const inline = variant === "inline";
   // المضمَّنة داخل منطقةٍ مسمّاة أصلًا (بطاقة الرئيسية): `section` ثانية بالاسم نفسه معلَمان لقارئ الشاشة.
   const Root = inline ? "div" : "section";
   const { messages, status, error, send, retry, stop, reset } = useFinnChat();
+  const importer = useFinnImport();
+  const importPhase = importer.state.phase;
+  const attachRef = useRef<HTMLButtonElement>(null);
   const [draft, setDraft] = useState("");
   const [focusSignal, setFocusSignal] = useState(0);
   const scroller = useRef<HTMLDivElement>(null);
@@ -90,6 +102,16 @@ export default function FinnChat({ engine, variant = "page" }: FinnChatProps) {
     const el = scroller.current;
     if (el && stick.current) el.scrollTop = el.scrollHeight;
   }, [messages, status, error]);
+
+  // أُغلقت بطاقة الاستيراد وسقط التركيز على <body> مع زرّها ⇒ يعود إلى المشبك الذي فتحها.
+  const wasImporting = useRef(false);
+  useEffect(() => {
+    if (wasImporting.current && importPhase === "idle") {
+      const active = document.activeElement;
+      if (!active || active === document.body) attachRef.current?.focus();
+    }
+    wasImporting.current = importPhase !== "idle";
+  }, [importPhase]);
 
   const submit = () => {
     const text = draft;
@@ -148,10 +170,14 @@ export default function FinnChat({ engine, variant = "page" }: FinnChatProps) {
               type="button"
               onClick={() => {
                 reset();
+                importer.reset();
                 setDraft("");
                 setFocusSignal((n) => n + 1);
               }}
-              disabled={messages.length === 0 && !busy}
+              disabled={
+                importPhase === "executing" ||
+                (messages.length === 0 && !busy && importPhase === "idle")
+              }
               className="nx-focus-ring inline-flex min-h-11! items-center gap-2 rounded-xl border border-[color:var(--hairline)] bg-[color:var(--chip)] px-3 text-[14px] font-semibold text-[color:var(--ink)] hover:bg-[color:var(--chip-hover)] disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Plus aria-hidden className="size-4" />
@@ -164,13 +190,15 @@ export default function FinnChat({ engine, variant = "page" }: FinnChatProps) {
             نفسه فوق المحادثة مباشرةً. */}
         {inline ? null : <FinnBanner />}
 
+        {/* أرضية السجلّ (`min-h-20`): بطاقة الاستيراد المفتوحة على شاشةٍ قصيرة تنكمش هي (لها `min-h-0`) ولا
+            يُعصر السجلّ إلى سطرٍ واحد (قِيس ٣٢–٤٩px على 560/600). */}
         <div
           ref={scroller}
           onScroll={onScroll}
           role="log"
           aria-label={FINN_COPY.conversationLabel}
           aria-busy={busy}
-          className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-4 py-4"
+          className="min-h-20 flex-1 space-y-5 overflow-y-auto overscroll-contain px-4 py-4"
         >
           {messages.length === 0 ? (
             <div
@@ -184,6 +212,11 @@ export default function FinnChat({ engine, variant = "page" }: FinnChatProps) {
               <p className="text-[14px] leading-7 text-[color:var(--ink-2)]">
                 {FINN_COPY.emptyHint}
               </p>
+              {allowImport ? (
+                <p className="text-[13px] leading-6 text-[color:var(--ink-2)]">
+                  {FINN_IMPORT_COPY.emptyHint}
+                </p>
+              ) : null}
               <div className="mt-2 grid w-full grid-cols-1 gap-2 sm:grid-cols-2">
                 {FINN_STARTERS.map((starter) => (
                   <button
@@ -239,6 +272,16 @@ export default function FinnChat({ engine, variant = "page" }: FinnChatProps) {
           ) : null}
         </div>
 
+        {allowImport ? (
+          <FinnImportCard
+            state={importer.state}
+            onConfirm={importer.confirm}
+            onCancel={importer.cancel}
+            onRetry={importer.retry}
+            onRefresh={importer.refresh}
+          />
+        ) : null}
+
         <FinnComposer
           value={draft}
           onChange={setDraft}
@@ -246,6 +289,15 @@ export default function FinnChat({ engine, variant = "page" }: FinnChatProps) {
           onStop={stop}
           busy={busy}
           focusSignal={focusSignal}
+          attach={
+            allowImport
+              ? {
+                  onPick: importer.pick,
+                  disabled: importPhase === "previewing" || importPhase === "executing",
+                  buttonRef: attachRef,
+                }
+              : undefined
+          }
         />
       </div>
     </Root>

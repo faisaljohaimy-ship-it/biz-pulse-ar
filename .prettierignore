@@ -8,6 +8,7 @@ bun.lock
 routeTree.gen.ts
 src/integrations/supabase/types.ts
 packs/
+.mutant-scratch
 
 # مولّدات — يملك المولّد شكلها لا prettier.
 #

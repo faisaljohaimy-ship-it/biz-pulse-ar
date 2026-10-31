@@ -48,7 +48,7 @@ function FinnPage() {
         </p>
       }
     >
-      <FinnChat engine={engine} />
+      <FinnChat engine={engine} allowImport />
     </Suspense>
   );
 }

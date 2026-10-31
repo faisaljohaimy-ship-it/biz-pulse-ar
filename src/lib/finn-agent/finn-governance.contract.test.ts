@@ -47,6 +47,11 @@ const CLIENT_LIB_FILES = [
   "src/lib/finn-agent/messages.ts",
   "src/lib/finn-agent/stream-protocol.ts",
   "src/lib/finn-agent/tool-names.ts",
+  // إرفاق الملف (أمر المالك ٢٠٢٦/١٠/٣١): عقدٌ وعميلٌ آمنان للعميل، يخضعان لكل فحوص الحزمة أعلاه
+  // (لا ملف خادم · لا متغيّرات بيئة · لا تخزين متصفح · لا n8n). واجهتاه (`FinnImportCard.tsx` ·
+  // `use-finn-import.ts`) تدخلان UI_FILES تلقائيًّا بالـglob.
+  "src/lib/finn-import/client.ts",
+  "src/lib/finn-import/contract.ts",
 ];
 /** كل ما قد يُجمَّع في حزمة العميل. */
 const CLIENT_FILES = [...UI_FILES, ...CLIENT_LIB_FILES];
@@ -1132,6 +1137,123 @@ describe("⑩ web_research: عميل n8n يُستورد من وحدةٍ واحد
     for (const f of CLIENT_FILES) expect(strip(read(f)), f).not.toMatch(/n8n/i);
     expect(FINN_TOOL_NAMES).toContain("web_research");
     expect(FINN_TOOL_LABEL_AR.web_research).toBe("بحث الويب");
+  });
+});
+
+/* ── ⑪ إرفاق الملف: السطوح الجديدة تحت الحرّاس نفسها، وكل حارسٍ يحمرّ عليها بانتهاكٍ مزروع ─────────── */
+
+const IMPORT_UI_FILES = [
+  "src/components/finn/FinnImportCard.tsx",
+  "src/components/finn/use-finn-import.ts",
+] as const;
+const IMPORT_LIB_FILES = [
+  "src/lib/finn-import/client.ts",
+  "src/lib/finn-import/contract.ts",
+] as const;
+const STORAGE_API = /localStorage|sessionStorage|indexedDB|document\.cookie|caches\./;
+
+/** كل `<button` يحمل `min-h-11!` على عنصره نفسه (قاعدة ④ ذاتها). فارغةٌ = سليمة. */
+function buttonTouchGaps(source: string): string[] {
+  const code = strip(source);
+  const out: string[] = [];
+  let from = 0;
+  for (let n = 1; ; n += 1) {
+    const at = code.indexOf("<button", from);
+    if (at < 0) break;
+    const end = code.indexOf("</button>", at);
+    const slice = code.slice(at, end < 0 ? at + 1500 : end);
+    if (!/min-h-11!/.test(slice)) out.push(`الزرّ ${n} بلا min-h-11!`);
+    from = at + "<button".length;
+  }
+  return out;
+}
+
+describe("⑪ إرفاق الملف: السطوح الجديدة تحت حرّاس الحزمة نفسها (٢٠٢٦/١٠/٣١)", () => {
+  it("الملفات الأربعة داخل قوائم الفحص فعلًا (المادة ٣٠: القائمة ليست فارغة ولا ناقصة)", () => {
+    for (const f of IMPORT_UI_FILES) {
+      expect(existsSync(f), f).toBe(true);
+      expect(UI_FILES, f).toContain(f);
+      expect(CLIENT_FILES, f).toContain(f);
+    }
+    for (const f of IMPORT_LIB_FILES) {
+      expect(existsSync(f), f).toBe(true);
+      expect(CLIENT_LIB_FILES, f).toContain(f);
+    }
+  });
+
+  it("أهداف اللمس: كل زرٍّ في البطاقة والمشبك ≥ 44px، والمشبك (أيقونةٌ وحدها) يحمل min-w-11! أيضًا", () => {
+    const card = read("src/components/finn/FinnImportCard.tsx");
+    const composer = read("src/components/finn/FinnComposer.tsx");
+    expect(buttonTouchGaps(card)).toEqual([]);
+    expect(strip(card)).toContain("<button"); // أرضية: الكاشف يرى زرًّا فعلًا
+    expect(buttonTouchGaps(composer)).toEqual([]);
+    const clip = /<button[^>]*?ref=\{attach\.buttonRef\}[\s\S]*?<\/button>/.exec(
+      strip(composer),
+    )?.[0];
+    expect(clip, "زرّ المشبك غائب").toBeDefined();
+    expect(clip).toMatch(/min-h-11!/);
+    expect(clip).toMatch(/min-w-11!/);
+    // مزروع: إسقاط min-h-11! من البطاقة أو المشبك ⇒ يحمرّ.
+    expect(
+      buttonTouchGaps(
+        card.replace("inline-flex min-h-11! items-center", "inline-flex min-h-8 items-center"),
+      ),
+    ).toHaveLength(1);
+    expect(
+      buttonTouchGaps(composer.replace(/min-h-11! min-w-11! shrink-0/, "shrink-0")),
+    ).toHaveLength(1);
+  });
+
+  it("لا لونَ خارج الرموز في الواجهتين الجديدتين، ومزروع: لونٌ صريح أو fill=white يحمرّ", () => {
+    for (const f of IMPORT_UI_FILES) expect(colourViolations(read(f)), f).toEqual([]);
+    const card = read("src/components/finn/FinnImportCard.tsx");
+    expect(
+      colourViolations(card.replace("text-[color:var(--ink)]", "text-white")).length,
+    ).toBeGreaterThan(0);
+    expect(
+      colourViolations(card.replace("border-[color:var(--tone-rose)]", "border-[color:#ff0000]"))
+        .length,
+    ).toBeGreaterThan(0);
+    expect(
+      colourViolations(card.replace("<Paperclip", '<svg fill="white" /><Paperclip')).length,
+    ).toBeGreaterThan(0);
+  });
+
+  it("لا تخزين متصفح ولا sticky/fixed ولا HTML خام في ملفات الإرفاق، ومزروع: كلٌّ يحمرّ", () => {
+    for (const f of [...IMPORT_UI_FILES, ...IMPORT_LIB_FILES]) {
+      const code = strip(read(f));
+      expect(code, f).not.toMatch(STORAGE_API);
+      expect(code, f).not.toMatch(/dangerouslySetInnerHTML|innerHTML|insertAdjacentHTML/);
+    }
+    for (const f of IMPORT_UI_FILES) {
+      expect(strip(read(f)), f).not.toMatch(/\bsticky\b|\bfixed\b/);
+    }
+    for (const f of [...IMPORT_UI_FILES, ...IMPORT_LIB_FILES]) {
+      const src = read(f);
+      expect(STORAGE_API.test(strip(`${src}\nlocalStorage.setItem("a","b");`)), f).toBe(true);
+      expect(STORAGE_API.test(strip(`${src}\nawait caches.open("x");`)), f).toBe(true);
+    }
+    const card = read("src/components/finn/FinnImportCard.tsx");
+    expect(
+      /\bsticky\b|\bfixed\b/.test(strip(card.replace("flex max-h-56", "sticky flex max-h-56"))),
+    ).toBe(true);
+    expect(
+      /dangerouslySetInnerHTML/.test(
+        strip(`${card}\n<i dangerouslySetInnerHTML={{ __html: "x" }} />`),
+      ),
+    ).toBe(true);
+  });
+
+  it("لا ملف خادم ولا متغيّرات بيئة ولا n8n في ملفات الإرفاق، ومزروع: استيرادٌ خادميّ يُدان", () => {
+    const re =
+      /from\s+["'](?:@\/lib\/finn-agent|\.{1,2}\/[^"']*|@\/[^"']*)(?:\.server|\/prompt|\/engine\.server|\/owner-gate\.server)["']/;
+    for (const f of [...IMPORT_UI_FILES, ...IMPORT_LIB_FILES]) {
+      const code = strip(read(f));
+      expect(re.test(code), f).toBe(false);
+      expect(code, f).not.toMatch(/FINN_OWNER_USER_IDS|OPENAI_API_KEY|process\.env|n8n/i);
+    }
+    expect(re.test('import { x } from "@/lib/finn-import/import.server";')).toBe(true);
+    expect(re.test('import { x } from "@/lib/finn-import/client";')).toBe(false);
   });
 });
 

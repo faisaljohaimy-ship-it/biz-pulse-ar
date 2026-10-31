@@ -5,10 +5,28 @@
  * اللمس ≥ 44px. الحدّ الأقصى للرسالة من `FINN_LIMITS` (المصدر نفسه الذي يفرضه
  * الخادم)، وعدّاد الأحرف يظهر قرب الحدّ فقط. لا ألوان صريحة: رموز الوضعين.
  */
-import { SendHorizontal, Square } from "lucide-react";
-import { useCallback, useEffect, useLayoutEffect, useRef, type KeyboardEvent } from "react";
+import { Paperclip, SendHorizontal, Square } from "lucide-react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  type KeyboardEvent,
+  type Ref,
+} from "react";
 import { FINN_COPY, finnOverLimitAr } from "@/lib/finn-agent/copy";
 import { FINN_LIMITS } from "@/lib/finn-agent/limits";
+import { FINN_IMPORT_COPY } from "@/lib/finn-import/client";
+import { FINN_IMPORT_ACCEPT } from "@/lib/finn-import/contract";
+
+/** مقبض الإرفاق — يمرّره `FinnChat` على واجهات المساحة الكاملة وحدها (البطاقة المضمَّنة بلا إرفاق). */
+export interface FinnComposerAttach {
+  /** يتسلّم كائن `File` كما اختاره المالك؛ لا قراءة لمحتواه هنا. */
+  readonly onPick: (file: File) => void;
+  /** معطّل أثناء معاينة أو تحميل جارٍ (ملفّ واحد في كل مرّة). */
+  readonly disabled: boolean;
+  readonly buttonRef: Ref<HTMLButtonElement>;
+}
 
 export function FinnComposer({
   value,
@@ -17,6 +35,7 @@ export function FinnComposer({
   onStop,
   busy,
   focusSignal,
+  attach,
 }: {
   value: string;
   onChange: (next: string) => void;
@@ -25,8 +44,10 @@ export function FinnComposer({
   busy: boolean;
   /** يتغيّر لتركيز الحقل (بعد اختيار بداية سريعة). */
   focusSignal: number;
+  attach?: FinnComposerAttach;
 }) {
   const ref = useRef<HTMLTextAreaElement>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
 
   // نموّ الارتفاع بحسب المحتوى حتى سقفٍ ثم يتمرّر داخليًّا.
   const fit = useCallback(() => {
@@ -62,6 +83,33 @@ export function FinnComposer({
       className="border-t border-[color:var(--hairline)] bg-[color:var(--surface)] p-3"
     >
       <div className="flex items-end gap-2">
+        {attach ? (
+          <>
+            <input
+              ref={fileInput}
+              type="file"
+              hidden
+              accept={FINN_IMPORT_ACCEPT}
+              aria-label={FINN_IMPORT_COPY.inputLabel}
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                // يُفرَّغ الحقل ليُقبل اختيار الملف نفسه مرّةً ثانية بعد الإلغاء.
+                event.target.value = "";
+                if (file) attach.onPick(file);
+              }}
+            />
+            <button
+              ref={attach.buttonRef}
+              type="button"
+              disabled={attach.disabled}
+              onClick={() => fileInput.current?.click()}
+              className="nx-focus-ring inline-flex min-h-11! min-w-11! shrink-0 items-center justify-center rounded-xl border border-[color:var(--hairline)] bg-[color:var(--chip)] text-[color:var(--ink)] hover:bg-[color:var(--chip-hover)] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <Paperclip aria-hidden className="size-4" />
+              <span className="sr-only">{FINN_IMPORT_COPY.attach}</span>
+            </button>
+          </>
+        ) : null}
         <label htmlFor="finn-composer" className="sr-only">
           {FINN_COPY.composerLabel}
         </label>

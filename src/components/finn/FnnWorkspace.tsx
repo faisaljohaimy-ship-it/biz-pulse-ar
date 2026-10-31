@@ -349,7 +349,7 @@ function OwnerWorkspace({
           </p>
         }
       >
-        <FinnChat key={userId} engine={data.engine} />
+        <FinnChat key={userId} engine={data.engine} allowImport />
       </Suspense>
     </PrivateChatBoundary>
   );
@@ -502,9 +502,11 @@ export function FnnWorkspace() {
         <OwnerWorkspace key={user.id} userId={user.id} ar={ar} onSignInBusy={setSigningIn} />
       )}
       <footer className="fnn-footer">
+        {/* المحادثة نصّية والنموذج لا يكتب؛ والاستثناء الوحيد إجراءٌ بيد المالك: تحميل ملفٍ يرفقه إلى مكتبة المعرفة
+            بعد معاينته وتأكيده (أمر ٢٠٢٦/١٠/٣١). بطاقة الرئيسية بلا إرفاق فتبقى عبارتها «نصية فقط» صادقة. */}
         {ar
-          ? "مساعدة نصية فقط: لا تنفيذ ذاتي أو نشر أو تعديل للمستودع أو قاعدة البيانات من هذه المحادثة."
-          : "Text assistance only: this chat does not execute, deploy or modify repositories or databases."}
+          ? "المحادثة نصّية: لا تنفيذ ذاتي أو نشر أو تعديل للمستودع أو قاعدة البيانات منها. الاستثناء الوحيد تحميل ملفٍ ترفقه إلى مكتبة المعرفة، ولا يتمّ إلا بتأكيدك أنت."
+          : "The chat is text-only: it does not execute, deploy or modify repositories or databases. The one exception is loading a file you attach into the knowledge library, and only after your explicit confirmation."}
       </footer>
     </main>
   );

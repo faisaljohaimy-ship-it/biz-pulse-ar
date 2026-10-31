@@ -27,6 +27,7 @@ vi.mock("@tanstack/react-router", () => ({
 
 import { HOME_IMAGES, HOME_IMAGES_MAX_BYTES } from "@/components/home/home-images";
 import { FINN_BANNER_AR } from "@/lib/finn-agent/copy";
+import { FINN_IMPORT_COPY } from "@/lib/finn-import/client";
 import { HomeFinnCard } from "./HomeFinnCard";
 
 const OWNER = {
@@ -180,6 +181,22 @@ describe("owner chat inline on the homepage", () => {
     expect(container.querySelector('[data-finn-chat="inline"]')).not.toBeNull();
     fireEvent.click(toggle);
     expect(screen.getByRole("textbox")).toHaveValue("اكتب سكربت أتمتة");
+  });
+
+  it("stays text-only: no attach control, file input or import hint (file loading is for the full workspaces)", async () => {
+    sim.access.mockResolvedValue(OWNER);
+    const { container } = renderCard();
+    await screen.findByRole("textbox");
+    expect(screen.queryByRole("button", { name: /إرفاق/ })).toBeNull();
+    expect(container.querySelector('input[type="file"]')).toBeNull();
+    // النصّ الحيّ نفسه من العميل (لا نمطٌ مكتوب قد يتقادم فيصير النفيُ فارغًا): تلميح الإرفاق غائب هنا.
+    expect(FINN_IMPORT_COPY.emptyHint).toMatch(/لا يُرسَل محتواه إلى محادثة فِن/);
+    expect(screen.queryByText(FINN_IMPORT_COPY.emptyHint)).toBeNull();
+    expect(screen.queryByText(/لا يُرسَل محتواه إلى محادثة فِن/)).toBeNull();
+    // The capability statement therefore stays literally true on this surface.
+    expect(container.querySelector('[data-finn-execution="advisory"]')).toHaveTextContent(
+      "القدرات نصية: لا تنفيذ أو نشر أو تعديل مستودع أو قاعدة بيانات من هذه المحادثة.",
+    );
   });
 
   it("never mounts a conversation for a denied account", async () => {
