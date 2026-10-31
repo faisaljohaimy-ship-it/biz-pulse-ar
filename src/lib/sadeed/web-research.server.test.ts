@@ -969,6 +969,8 @@ describe("⑫ تجريد الصور والروابط من خرج الدور ال
     const hostile = [
       "![".repeat(50_000),
       "[a](".repeat(50_000),
+      // A distant closing delimiter must not trigger repeated 2,000-char scans.
+      "[a](".repeat(50_000) + ")",
       "[r]: ".repeat(40_000),
       "https://".repeat(30_000),
     ];
