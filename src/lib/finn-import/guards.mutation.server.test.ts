@@ -576,10 +576,7 @@ describe("براهين التحمير — رمز التأكيد", () => {
     [
       "الفشل المغلق: عطل المخزن يُمرّر الكتابة حين يُعامَل غير-false نجاحًا",
       [
-        [
-          'if (error || typeof data !== "boolean") return { ok: false, error: "confirmation_unavailable" };',
-          "",
-        ],
+        ['if (error || typeof data !== "boolean") return { ok: false, error: "unavailable" };', ""],
         [
           'return data ? { ok: true } : { ok: false, error: "already_used" };',
           'return data === false ? { ok: false, error: "already_used" } : { ok: true };',

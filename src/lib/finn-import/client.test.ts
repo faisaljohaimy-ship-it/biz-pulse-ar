@@ -700,13 +700,16 @@ describe("العرض النقيّ", () => {
   it("نصوص الواجهة تقول الحقيقة: لا يُرسَل الملف للمحادثة ولا النموذج عند التحميل، وقد تُستخدم مقاطعه بعد الفهرسة", () => {
     expect(FINN_IMPORT_COPY.scope).toMatch(/مكتبة المعرفة فقط/);
     expect(FINN_IMPORT_COPY.scope).toMatch(
-      /لا يُرسَل محتوى الملف إلى المحادثة ولا إلى النموذج عند التحميل/,
+      /لا يُرسَل محتوى الملف إلى المحادثة ولا إلى نموذج الإجابة عند التحميل/,
     );
     // ادّعاءٌ مطلق لا يسنده قياس (المادة ٢٧): ذراع الاسترجاع تقرأ مقاطع المستند بعد الفهرسة فتدخل سياق النموذج.
-    expect(FINN_IMPORT_COPY.scope).toMatch(/بعد اكتمال الفهرسة قد تُستخدم مقاطع منه سياقًا/);
+    expect(FINN_IMPORT_COPY.scope).toMatch(/بعد اكتمالها قد تُستخدم مقاطع منه سياقًا/);
+    // وصدق الإرسال للخارج (حارس ٢٠٢٦/١٠/٣١): النصّ المحجوب يبلغ مزوّد التضمين أثناء الفهرسة نفسها، ولا يُنفى ذلك.
+    expect(FINN_IMPORT_COPY.scope).toMatch(/يُرسَل أثناء الفهرسة إلى مزوّد التضمين/);
+    expect(FINN_IMPORT_COPY.emptyHint).toMatch(/يُرسَل نصّه أثناء الفهرسة إلى مزوّد التضمين/);
     expect(FINN_IMPORT_COPY.scope).not.toMatch(/ولا إلى النموذج\.$/);
     expect(FINN_IMPORT_COPY.emptyHint).toMatch(/لا يُرسَل محتواه إلى محادثة فِن/);
-    expect(FINN_IMPORT_COPY.emptyHint).toMatch(/بعد الفهرسة قد يستعين به/);
+    expect(FINN_IMPORT_COPY.emptyHint).toMatch(/وبعدها قد يستعين به/);
     expect(FINN_IMPORT_COPY.emptyHint).not.toMatch(/فِن لا يرى محتواه/);
     // وإيقاف الانتظار لا يوهم بأنه يُلغي الكتابة.
     expect(FINN_IMPORT_COPY.cancelLoad).toBe("إيقاف الانتظار");

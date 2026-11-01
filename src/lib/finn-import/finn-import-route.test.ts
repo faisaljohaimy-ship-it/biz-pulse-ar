@@ -1077,7 +1077,7 @@ describe("⑦ التنفيذ: الرمز ثم المطابقة ثم الاسته
     expect(spend()).toMatchObject({ claim: 1, ingest: 1 });
   });
 
-  it("مخزن المطالبة معطّل ⇒ 503 confirmation_unavailable، فشلٌ مغلق بلا إدخال", async () => {
+  it("مخزن المطالبة معطّل ⇒ 503 unavailable عابر (لا «غير مهيَّأ»)، فشلٌ مغلق بلا إدخال", async () => {
     const handlers = await loadHandlers();
     const bytes = xlsxBytes();
     const token = await previewToken(handlers, { name: "data.xlsx", bytes });
@@ -1087,7 +1087,10 @@ describe("⑦ التنفيذ: الرمز ثم المطابقة ثم الاسته
       buildRequest({ action: "execute", token, file: { name: "data.xlsx", bytes } }),
     );
     expect(res.status).toBe(503);
-    expect((await jsonOf(res)).error).toBe("confirmation_unavailable");
+    const body = await jsonOf(res);
+    expect(body.error).toBe("unavailable");
+    // عطلٌ عابر لا ضبطٌ ناقص: الرسالة لا تقول إن التأكيد غير مهيَّأ (حارس ٢٠٢٦/١٠/٣١).
+    expect(String(body.message_ar)).not.toMatch(/غير مهيَّأ/);
     expect(spend().ingest).toBe(0);
   });
 });
@@ -1250,7 +1253,8 @@ describe("⑧-ب السقف اليومي للتنفيذ وحده: نداء صر�
     expect(res.headers.get("retry-after")).toBeNull();
     const body = await jsonOf(res);
     expect(body).toMatchObject({ ok: false, error: "rate_limited" });
-    expect(String(body.message_ar)).toMatch(/حصّتك اليومية/);
+    expect(String(body.message_ar)).toMatch(/الحدّ اليومي/);
+    expect(String(body.message_ar)).not.toMatch(/حصّتك/);
     expect(String(body.message_ar)).toMatch(/بعد منتصف الليل/);
     expect(body).not.toHaveProperty("retry_after_s");
     expect(spend()).toMatchObject({ claim: 0, ingest: 0, fetch: 0 });

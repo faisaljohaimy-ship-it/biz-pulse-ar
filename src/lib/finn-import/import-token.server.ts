@@ -59,10 +59,7 @@ export type ClaimImportTokenResult =
   | { ok: true }
   | {
       ok: false;
-      error: Extract<
-        FinnImportErrorCode,
-        "already_used" | "confirmation_unavailable" | "token_invalid"
-      >;
+      error: Extract<FinnImportErrorCode, "already_used" | "unavailable" | "token_invalid">;
     };
 
 /**
@@ -198,8 +195,8 @@ export async function verifyImportToken(
 
 /**
  * يطالب بالرمز مرّةً واحدة. يُنادى بعد `verifyImportToken` وقبل أي كتابة. `{ ok: true }` لنداءٍ
- * واحد بالضبط لكل رمز؛ والباقي `already_used`. أي عطلٍ في المخزن ⇒ `confirmation_unavailable`
- * (فشل مغلق: لا كتابة).
+ * واحد بالضبط لكل رمز؛ والباقي `already_used`. أي عطلٍ في المخزن ⇒ `unavailable`
+ * (فشل مغلق: لا كتابة؛ وليس «غير مهيَّأ»: العطل عابر لا ضبط ناقص).
  */
 export async function claimImportToken(input: {
   nonce: string;
@@ -213,9 +210,9 @@ export async function claimImportToken(input: {
       _max_requests: 1,
       _window_seconds: FINN_IMPORT_CLAIM_WINDOW_SECONDS,
     });
-    if (error || typeof data !== "boolean") return { ok: false, error: "confirmation_unavailable" };
+    if (error || typeof data !== "boolean") return { ok: false, error: "unavailable" };
     return data ? { ok: true } : { ok: false, error: "already_used" };
   } catch {
-    return { ok: false, error: "confirmation_unavailable" };
+    return { ok: false, error: "unavailable" };
   }
 }

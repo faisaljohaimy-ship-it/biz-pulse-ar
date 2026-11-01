@@ -458,7 +458,7 @@ describe("claimImportToken — مرّةً واحدة وفشلٌ مغلق", () =>
     expect(FINN_IMPORT_CLAIM_WINDOW_SECONDS).toBeGreaterThan(FINN_IMPORT_LIMITS.tokenTtlMs / 1000);
   });
 
-  it("خطأ المخزن أو رميه أو جوابٌ غير منطقي ⇒ confirmation_unavailable (لا كتابة)", async () => {
+  it("خطأ المخزن أو رميه أو جوابٌ غير منطقي ⇒ unavailable عابر (لا كتابة، ولا «غير مهيَّأ»)", async () => {
     for (const override of [
       { kind: "error" as const },
       { kind: "throw" as const },
@@ -469,7 +469,7 @@ describe("claimImportToken — مرّةً واحدة وفشلٌ مغلق", () =>
       rpcState.override = override;
       expect(await claimImportToken({ nonce: "x", userId: USER_A })).toEqual({
         ok: false,
-        error: "confirmation_unavailable",
+        error: "unavailable",
       });
     }
   });
