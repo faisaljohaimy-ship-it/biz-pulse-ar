@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 const ROOT = readFileSync("src/routes/__root.tsx", "utf8");
 const start = ROOT.indexOf("PWA service-worker registration");
 if (start < 0) throw new Error("PWA registration section is missing");
-const script = ROOT.slice(start).match(/children:\s*`([^`]+)`/)?.[1];
+const script = ROOT.slice(start).match(/children:\s*`([^`]+)`/)?.[1] ?? "";
 if (!script) throw new Error("PWA registration script was not found");
 
 function simulate(protocol: string, supported = true) {
