@@ -42,7 +42,8 @@ jobs:
       - name: Check landing console errors on desktop and Safari/WebKit
         env:
           PLAYWRIGHT_BASE_URL: http://localhost:8080
-        run: npx playwright test tests/e2e/01-landing.spec.ts --project=desktop --project=mobile
+        # Keep both browsers, but serialize against one dev server to avoid CI CPU contention.
+        run: npx playwright test tests/e2e/01-landing.spec.ts --project=desktop --project=mobile --workers=1
       - name: Upload report on failure
         if: failure()
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
