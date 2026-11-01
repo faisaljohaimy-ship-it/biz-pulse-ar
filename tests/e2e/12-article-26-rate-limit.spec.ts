@@ -24,9 +24,12 @@ const SUPABASE_PUBLISHABLE_KEY =
 
 test.describe("Article 26 — audit trail + rate limiting", () => {
   test("public incident sink throttles after > 60 requests in 60s", async () => {
+    // Desktop and mobile execute concurrently: each verifies its own 60/60
+    // bucket instead of stealing quota from the other project's test.
+    const testIp = test.info().project.name === "mobile" ? "203.0.113.43" : "203.0.113.42";
     const ctx = await pwRequest.newContext({
       baseURL: APP_BASE,
-      extraHTTPHeaders: { "x-forwarded-for": "203.0.113.42" },
+      extraHTTPHeaders: { "x-forwarded-for": testIp },
     });
 
     // Fire 65 well-formed beacons back-to-back. First 60 accepted (202),

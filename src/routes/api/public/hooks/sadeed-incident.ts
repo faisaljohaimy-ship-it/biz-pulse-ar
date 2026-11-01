@@ -52,9 +52,25 @@ export const Route = createFileRoute("/api/public/hooks/sadeed-incident")({
         if (cl > 4096) return new Response("payload too large", { status: 413 });
 
         // Article 26 (c): rate-limit BEFORE parsing the body.
-        const { checkRateLimit, logSadeedAction } = await import("@/lib/sadeed/audit-log.server");
+        const { logSadeedAction } = await import("@/lib/sadeed/audit-log.server");
+        const { allowIncidentDuringStorageOutage } =
+          await import("@/lib/sadeed/public-incident-limit.server");
         const bucket = clientBucketKey(request);
-        const allowed = await checkRateLimit(bucket, 60, 60);
+
+        // The legacy audit helper fails open when the RPC is unreachable.
+        // Public anonymous traffic must stay bounded in that case, without
+        // changing the normal database-backed 60/60 quota or hiding outages.
+        let allowed: boolean;
+        try {
+          const { enforceRateLimit } = await import("@/lib/governance/rate-limit.server");
+          const decision = await enforceRateLimit(bucket, 60, 60);
+          allowed = decision.unavailable
+            ? allowIncidentDuringStorageOutage(bucket)
+            : decision.allowed;
+        } catch {
+          console.error("[aria-incident] quota store unavailable; using bounded fallback");
+          allowed = allowIncidentDuringStorageOutage(bucket);
+        }
         if (!allowed) {
           void logSadeedAction({
             action: "public.aria-incident.throttled",
