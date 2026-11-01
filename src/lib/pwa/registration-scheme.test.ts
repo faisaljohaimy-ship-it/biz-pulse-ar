@@ -13,7 +13,14 @@ function simulate(protocol: string, supported = true) {
   const calls: string[] = [];
   const listeners: Record<string, () => void> = {};
   const navigator = supported
-    ? { serviceWorker: { register: (path: string) => { calls.push(path); return Promise.resolve(); } } }
+    ? {
+        serviceWorker: {
+          register: (path: string) => {
+            calls.push(path);
+            return Promise.resolve();
+          },
+        },
+      }
     : {};
   runInNewContext(script, {
     location: { protocol },
