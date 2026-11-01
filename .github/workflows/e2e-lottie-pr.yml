@@ -46,9 +46,8 @@ jobs:
       - name: Verify actual Lottie behavior at desktop and mobile viewport
         env:
           PLAYWRIGHT_BASE_URL: http://localhost:8080
-        run: # Run both existing browser projects and all assertions sequentially to avoid Vite cold-start
-        # contention between parallel Chromium contexts; no test skipped or timeout raised.
-        npx playwright test tests/e2e/14-lottie-theme.spec.ts --project=desktop --project=mobile --workers=1
+        # Serializes all existing desktop/mobile cases without skipping tests or raising timeouts.
+        run: npx playwright test tests/e2e/14-lottie-theme.spec.ts --project=desktop --project=mobile --workers=1
       - name: Upload browser report on failure
         if: failure()
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v4
