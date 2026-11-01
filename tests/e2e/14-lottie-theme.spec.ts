@@ -166,10 +166,34 @@ async function flipTheme(page: Page, to: "dark" | "light") {
 /** ينتظر أن يُعلن الغلاف عن نفسه مشتغلًا — لا مجرّد موجود. */
 async function waitForPlaying(wrapper: Locator, name: string) {
   await expect(wrapper, `${name}: الغلاف لم يظهر`).toBeAttached({ timeout: 15_000 });
-  await expect(
-    wrapper,
-    `${name}: لم ينتقل إلى "playing" — راجع مسار الملف والتحميل الكسول`,
-  ).toHaveAttribute(STATE_ATTR, "playing", { timeout: 15_000 });
+  try {
+    await expect(
+      wrapper,
+      `${name}: لم ينتقل إلى "playing" — راجع مسار الملف والتحميل الكسول`,
+    ).toHaveAttribute(STATE_ATTR, "playing", { timeout: 15_000 });
+  } catch (error) {
+    // Diagnostic only: preserve the original assertion, timeout and failure.
+    // Do not read user state, keys, tokens, or network request payloads.
+    const diagnostic = await wrapper
+      .evaluate((host) => {
+        const root = host.ownerDocument.documentElement;
+        const win = host.ownerDocument.defaultView;
+        return {
+          state: host.getAttribute("data-nx-lottie"),
+          artPresent: Boolean(host.querySelector(".nx-lottie-art")),
+          svgCount: host.querySelectorAll(".nx-lottie-art svg").length,
+          motionOff: root.getAttribute("data-nx-motion") === "off",
+          safeMode: root.classList.contains("safe-mode"),
+          reducedMotion: win?.matchMedia("(prefers-reduced-motion: reduce)").matches ?? null,
+          forcedColors: win?.matchMedia("(forced-colors: active)").matches ?? null,
+          coarsePointer: win?.matchMedia("(pointer: coarse)").matches ?? null,
+          viewportWidth: win?.innerWidth ?? null,
+        };
+      })
+      .catch(() => ({ unavailable: true }));
+    console.error("[Lottie E2E] Static-state diagnostics:", JSON.stringify(diagnostic));
+    throw error;
+  }
 }
 
 type Paint = { fill: string | null; stroke: string | null; color: string; count: number };
