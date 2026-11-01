@@ -53,9 +53,8 @@ export const Route = createFileRoute("/api/public/hooks/sadeed-incident")({
 
         // Article 26 (c): rate-limit BEFORE parsing the body.
         const { logSadeedAction } = await import("@/lib/sadeed/audit-log.server");
-        const { allowIncidentDuringStorageOutage } = await import(
-          "@/lib/sadeed/public-incident-limit.server"
-        );
+        const { allowIncidentDuringStorageOutage } =
+          await import("@/lib/sadeed/public-incident-limit.server");
         const bucket = clientBucketKey(request);
 
         // The legacy audit helper fails open when the RPC is unreachable.
