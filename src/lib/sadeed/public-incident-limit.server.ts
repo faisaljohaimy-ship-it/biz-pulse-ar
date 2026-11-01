@@ -16,10 +16,7 @@ type IncidentBucket = { startedAt: number; count: number };
 
 const buckets = new Map<string, IncidentBucket>();
 
-export function allowIncidentDuringStorageOutage(
-  bucketKey: string,
-  now = Date.now(),
-): boolean {
+export function allowIncidentDuringStorageOutage(bucketKey: string, now = Date.now()): boolean {
   const previous = buckets.get(bucketKey);
   const current =
     !previous || now - previous.startedAt >= INCIDENT_FALLBACK_WINDOW_MS
