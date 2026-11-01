@@ -4,7 +4,7 @@ name: SADEED Hourly CI
 # Existing CI and deeper integration/security workflows are retained unchanged.
 on:
   schedule:
-    - cron: "7 * * * *"
+    - cron: "37 * * * *"
   workflow_dispatch:
   push:
     branches: [main]
