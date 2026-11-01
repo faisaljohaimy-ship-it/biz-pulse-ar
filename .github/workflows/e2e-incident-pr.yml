@@ -1,0 +1,63 @@
+name: Public incident quota E2E on PR
+
+# Local-only regression: exercises the real HTTP endpoint, never production.
+# Adds coverage without replacing the weekly full suite or weakening the 60/60 limit.
+on:
+  pull_request:
+    paths:
+      - "src/lib/sadeed/public-incident-limit.server.ts"
+      - "src/routes/api/public/hooks/sadeed-incident.ts"
+      - "tests/e2e/12-article-26-rate-limit.spec.ts"
+      - ".github/workflows/e2e-incident-pr.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  incident:
+    name: Article 26 · rate-limit HTTP E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci --no-audit --no-fund
+      - name: Start local dev server without production credentials
+        run: |
+          npm run dev -- --host 127.0.0.1 --port 8080 --strictPort > /tmp/sadeed-incident-dev.log 2>&1 &
+          echo $! > /tmp/sadeed-incident-dev.pid
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:8080 > /dev/null; then
+              echo "Local server ready"; exit 0
+            fi
+            sleep 2
+          done
+          echo "Local server failed"; tail -n 100 /tmp/sadeed-incident-dev.log
+          exit 1
+      - name: Verify 60/60 limit by actual HTTP requests, desktop and mobile projects
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:8080
+        run: npx playwright test tests/e2e/12-article-26-rate-limit.spec.ts --project=desktop --project=mobile
+      - name: Upload report on failure
+        if: failure()
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v4
+        with:
+          name: incident-quota-e2e-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+          if-no-files-found: ignore
+      - name: Stop local server
+        if: always()
+        run: |
+          if [ -f /tmp/sadeed-incident-dev.pid ]; then
+            kill "$(cat /tmp/sadeed-incident-dev.pid)" 2>/dev/null || true
+          fi
