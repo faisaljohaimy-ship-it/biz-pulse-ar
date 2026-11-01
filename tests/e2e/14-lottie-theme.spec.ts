@@ -55,13 +55,17 @@
 import { test, expect, type Locator, type Page } from "@playwright/test";
 
 /**
- * المتصفّح مثبَّت بمساره: `devices["iPhone 13"]` نوعه الافتراضي webkit،
- * وطبقة Lottie تُقاس على كروميوم في الحالين — العرض ٣٩٠ متغيّر تخطيط لا
- * متغيّر محرّك.
+ * تُقاس طبقة Lottie على Chromium في كلا المشروعين كما في السابق؛ يظلّ
+ * WebKit مستخدمًا في بقية اختبارات الجوال. مسار Chromium الافتراضي يجب
+ * أن يأتي من نسخة Playwright المثبّتة في CI، لا من مسار حاوية محلية قديمة.
+ * يمكن لبيئات العمل الخاصة تحديد NX_CHROME صراحةً عند الحاجة.
  */
-const CHROME = process.env.NX_CHROME ?? "/opt/pw-browsers/chromium-1194/chrome-linux/chrome";
+const CHROME = process.env.NX_CHROME?.trim();
 
-test.use({ browserName: "chromium", launchOptions: { executablePath: CHROME } });
+test.use({
+  browserName: "chromium",
+  launchOptions: CHROME ? { executablePath: CHROME } : {},
+});
 
 /** ثوابت العقد، مطابقة لما يُصدّره `LottieIcon.tsx`. */
 const STATE_ATTR = "data-nx-lottie";
