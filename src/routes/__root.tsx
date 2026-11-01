@@ -225,7 +225,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         // PWA service-worker registration (offline shell + faster loads). Runs
         // after load so it never blocks first paint; failures are swallowed.
-        children: `(function(){if('serviceWorker'in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}})();`,
+        children: `(function(){if(location.protocol!=='https:')return;if('serviceWorker'in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}})();`,
       },
       {
         // Article XIII — Crash-Loop Breaker (iOS Safari OOM recovery).

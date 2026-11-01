@@ -9,7 +9,9 @@ test.describe("Landing page — clean load", () => {
     });
 
     await page.goto("/", { waitUntil: "domcontentloaded" });
-    await page.waitForLoadState("networkidle").catch(() => {});
+    // The dashboard keeps polling: networkidle can wait 30 seconds without indicating readiness.
+    // Wait for the actual visible brand, then retain every existing full-body and console assertion.
+    await expect(page.getByRole("heading", { level: 1, name: /سَدِيد/ })).toBeVisible();
 
     // النسخة العربية المعروضة على الرئيسية. كانت العبارة المرصودة «الذكاء،»
     // من نصّ بطل سابق؛ أُعيد بناء الرئيسية (تخطيط ثلاثي) فزال النصّ من `/`

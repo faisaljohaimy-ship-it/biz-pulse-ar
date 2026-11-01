@@ -1,0 +1,62 @@
+name: Local PWA landing E2E on PR
+
+# Real Safari/WebKit and Chromium regression, local only. Weekly full suite remains unchanged.
+on:
+  pull_request:
+    paths:
+      - "src/routes/__root.tsx"
+      - "src/lib/pwa/registration-scheme.test.ts"
+      - ".github/workflows/e2e-pwa-landing-pr.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pwa:
+    name: Public landing · Chromium and WebKit
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium webkit
+      - name: Launch local server
+        run: |
+          npm run dev -- --host 127.0.0.1 --port 8080 --strictPort > /tmp/sadeed-pwa-dev.log 2>&1 &
+          echo $! > /tmp/sadeed-pwa-dev.pid
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:8080 > /dev/null; then
+              echo "Local server ready"; exit 0
+            fi
+            sleep 2
+          done
+          echo "Local server failed"; tail -n 100 /tmp/sadeed-pwa-dev.log
+          exit 1
+      - name: Check landing console errors on desktop and Safari/WebKit
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:8080
+        # Keep both browsers, but serialize against one dev server to avoid CI CPU contention.
+        run: npx playwright test tests/e2e/01-landing.spec.ts --project=desktop --project=mobile --workers=1
+      - name: Upload report on failure
+        if: failure()
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
+        with:
+          name: pwa-landing-e2e-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+          if-no-files-found: ignore
+      - name: Stop local server
+        if: always()
+        run: |
+          if [ -f /tmp/sadeed-pwa-dev.pid ]; then
+            kill "$(cat /tmp/sadeed-pwa-dev.pid)" 2>/dev/null || true
+          fi
