@@ -37,7 +37,10 @@ jobs:
           echo $! > /tmp/sadeed-lottie-dev.pid
           for i in $(seq 1 60); do
             if curl -sf http://localhost:8080 > /dev/null; then
-              echo "Local server ready"; exit 0
+              # Warm the actual E2E route so Vite cold SSR compilation is not counted
+              # against the unchanged Lottie playback assertion timeout.
+              curl --fail --silent --show-error --max-time 60 http://localhost:8080/blueprint >/dev/null
+              echo "Local server and blueprint route ready"; exit 0
             fi
             sleep 2
           done
