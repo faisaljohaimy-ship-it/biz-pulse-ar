@@ -23,10 +23,10 @@ const SUPABASE_PUBLISHABLE_KEY =
   process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? "";
 
 test.describe("Article 26 — audit trail + rate limiting", () => {
-  test("public incident sink throttles after > 60 requests in 60s", async ({}, testInfo) => {
+  test("public incident sink throttles after > 60 requests in 60s", async () => {
     // Desktop and mobile execute concurrently: each verifies its own 60/60
     // bucket instead of stealing quota from the other project's test.
-    const testIp = testInfo.project.name === "mobile" ? "203.0.113.43" : "203.0.113.42";
+    const testIp = test.info().project.name === "mobile" ? "203.0.113.43" : "203.0.113.42";
     const ctx = await pwRequest.newContext({
       baseURL: APP_BASE,
       extraHTTPHeaders: { "x-forwarded-for": testIp },
