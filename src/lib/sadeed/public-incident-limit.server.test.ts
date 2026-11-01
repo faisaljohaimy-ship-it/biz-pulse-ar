@@ -22,9 +22,13 @@ describe("public incident fallback when the shared quota store is unavailable", 
     for (let i = 0; i < INCIDENT_FALLBACK_MAX_REQUESTS; i += 1) {
       allowIncidentDuringStorageOutage("incident:ip-a", 10_000);
     }
-    expect(allowIncidentDuringStorageOutage("incident:ip-a", 10_000 + INCIDENT_FALLBACK_WINDOW_MS - 1)).toBe(false);
+    expect(
+      allowIncidentDuringStorageOutage("incident:ip-a", 10_000 + INCIDENT_FALLBACK_WINDOW_MS - 1),
+    ).toBe(false);
     expect(allowIncidentDuringStorageOutage("incident:ip-b", 10_000)).toBe(true);
-    expect(allowIncidentDuringStorageOutage("incident:ip-a", 10_000 + INCIDENT_FALLBACK_WINDOW_MS)).toBe(true);
+    expect(
+      allowIncidentDuringStorageOutage("incident:ip-a", 10_000 + INCIDENT_FALLBACK_WINDOW_MS),
+    ).toBe(true);
   });
 
   it("caps memory under a spray of distinct IP bucket keys", () => {
