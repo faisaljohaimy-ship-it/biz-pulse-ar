@@ -33,7 +33,14 @@ jobs:
         run: npm run build
       - name: Start built app without production credentials
         run: |
-          npx wrangler dev --config .output/server/wrangler.json --compatibility-date 2026-08-06 --port 4173 --local > /tmp/sadeed-health-e2e.log 2>&1 &
+          # Both values are local non-credentials. The target is intentionally
+          # unreachable: the health route must fail closed without a real database.
+          SUPABASE_URL=http://127.0.0.1:4174 \
+          SUPABASE_SERVICE_ROLE_KEY=local-e2e-placeholder-not-a-secret \
+          npx wrangler dev --config .output/server/wrangler.json --compatibility-date 2026-08-06 --port 4173 --local \
+            --var SUPABASE_URL:http://127.0.0.1:4174 \
+            --var SUPABASE_SERVICE_ROLE_KEY:local-e2e-placeholder-not-a-secret \
+            > /tmp/sadeed-health-e2e.log 2>&1 &
           echo $! > /tmp/sadeed-health-e2e.pid
           for i in $(seq 1 60); do
             if curl --fail --silent --show-error --max-time 5 http://127.0.0.1:4173/ > /dev/null 2>&1; then
@@ -47,6 +54,11 @@ jobs:
         env:
           PLAYWRIGHT_BASE_URL: http://127.0.0.1:4173
         run: npx playwright test tests/e2e/15-chat-health-readiness.spec.ts --project=desktop --project=mobile --workers=1
+      - name: Print local runtime diagnostic on HTTP failure
+        if: failure()
+        run: |
+          # Local-only fake credentials; no production env or network endpoints.
+          tail -n 100 /tmp/sadeed-health-e2e.log || true
       - name: Upload report on failure
         if: failure()
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v4
