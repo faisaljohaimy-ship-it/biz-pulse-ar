@@ -99,13 +99,31 @@ jobs:
           echo $! > /tmp/sadeed-weekly-ssr.pid
           for i in $(seq 1 60); do
             if curl -fsS --max-time 5 http://127.0.0.1:4173/ > /dev/null; then
-              for path in /api/public/health /api/chat/health /blueprint; do
+              for path in /api/chat/health /blueprint; do
                 curl -fsS --max-time 10 "http://127.0.0.1:4173${path}" > /dev/null || {
                   echo "Built route is unhealthy: ${path}"
                   tail -n 120 /tmp/sadeed-weekly-ssr.log
                   exit 1
                 }
               done
+              # No service-role key is passed to this test worker. Its rate
+              # limiter must fail CLOSED (503) and must never report fake
+              # success. Assert the detailed status, not merely any 2xx.
+              health_status=$(curl -sS --max-time 10 -o /tmp/sadeed-weekly-health.json -w '%{http_code}' http://127.0.0.1:4173/api/public/health)
+              HEALTH_STATUS="$health_status" node --input-type=module -e '
+                import fs from "node:fs";
+                const body = JSON.parse(fs.readFileSync("/tmp/sadeed-weekly-health.json", "utf8"));
+                const http = process.env.HEALTH_STATUS;
+                const healthy = http === "200" && ["ok", "degraded"].includes(body.status);
+                const closed = http === "503" && body.status === "down" &&
+                  body.subsystems?.rate_limit_storage?.status === "down" &&
+                  body.subsystems?.db?.status !== "down";
+                if (!healthy && !closed) {
+                  console.error("Unexpected public health contract", http, body.status);
+                  process.exit(1);
+                }
+                console.log(closed ? "Local rate-limit guard FAILED CLOSED" : "Local health responded");
+              '
               echo "Built SSR app and E2E routes ready"
               exit 0
             fi

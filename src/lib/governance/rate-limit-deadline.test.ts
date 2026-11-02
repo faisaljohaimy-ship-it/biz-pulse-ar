@@ -78,6 +78,16 @@ describe("enforceRateLimit — المهلة", () => {
     });
   });
 
+  it("عميل الإدارة المفقود يرمي تزامنيًا: لا استثناء ولا 500، بل رفض مغلق", async () => {
+    rpc.impl = () => {
+      throw new Error("Missing Supabase environment variable: SERVICE_ROLE_KEY");
+    };
+    await expect(enforceRateLimit("health:chat", 600, 60, { deadlineMs: 1_500 })).resolves.toEqual({
+      allowed: false,
+      unavailable: true,
+    });
+  });
+
   it("نداءٌ يرمي (شبكة) يُعامل كخطأ قاعدة — مغلقًا لا استثناءً", async () => {
     rpc.impl = async () => {
       throw new Error("fetch failed");
