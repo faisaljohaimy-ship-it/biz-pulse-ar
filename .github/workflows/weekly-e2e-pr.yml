@@ -105,6 +105,16 @@ jobs:
             tail -n 160 /tmp/sadeed-pr-ssr.log
           fi
           free -m || true
+          # Wrangler writes crash diagnostics to its own per-run log, not
+          # always to the redirected stdout stream. Surface the newest log
+          # without changing test execution, workers, assertions, or gates.
+          # This pull-request workflow receives no production credentials.
+          echo "Latest Wrangler crash diagnostics:"
+          if [ -d "$HOME/.config/.wrangler/logs" ]; then
+            find "$HOME/.config/.wrangler/logs" -maxdepth 1 -type f -name 'wrangler-*.log' -mmin -30 -print -exec tail -n 120 {} \;
+          else
+            echo "No Wrangler diagnostic directory"
+          fi
       - name: Upload Playwright report on failure
         if: failure()
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v4
