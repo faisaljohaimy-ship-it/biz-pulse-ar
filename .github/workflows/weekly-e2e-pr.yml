@@ -23,6 +23,7 @@ jobs:
     timeout-minutes: 45
     env:
       PLAYWRIGHT_BASE_URL: http://127.0.0.1:4173
+      SADEED_EXPECT_UNCONFIGURED_HEALTH: "1"
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
@@ -87,6 +88,23 @@ jobs:
           exit 1
       - name: Run every E2E spec on both projects
         run: npx playwright test
+      - name: Diagnose built SSR process on E2E failure (no gate bypass)
+        if: failure()
+        run: |
+          if [ -f /tmp/sadeed-pr-ssr.pid ]; then
+            pid="$(cat /tmp/sadeed-pr-ssr.pid)"
+            if kill -0 "$pid" 2>/dev/null; then
+              echo "SSR launcher alive:"
+              ps -p "$pid" -o pid,ppid,stat,rss,etime,args || true
+            else
+              echo "SSR launcher exited before E2E completed: $pid"
+            fi
+          fi
+          if [ -f /tmp/sadeed-pr-ssr.log ]; then
+            echo "SSR diagnostic log tail:"
+            tail -n 160 /tmp/sadeed-pr-ssr.log
+          fi
+          free -m || true
       - name: Upload Playwright report on failure
         if: failure()
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v4
@@ -95,6 +113,7 @@ jobs:
           path: |
             playwright-report/
             test-results/
+            /tmp/sadeed-pr-ssr.log
           retention-days: 7
           if-no-files-found: ignore
       - name: Stop built app
