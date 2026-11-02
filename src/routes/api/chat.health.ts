@@ -13,13 +13,11 @@ import { describeRetrievalReadiness } from "@/lib/sadeed/rag/readiness.server";
  * لا تتبدّل في أقلّ من ذلك فعلًا (القاطع يفتح 30 ث).
  */
 const PROBE_TTL_MS = 15_000;
-const storeUnavailable = createHealthProbeCache(
-  async () => {
-    const probe = await enforceRateLimit("health:chat", 600, 60, { deadlineMs: 1_500 });
-    return Boolean(probe.unavailable);
-  },
-  PROBE_TTL_MS,
-);
+async function probeStorageUnavailable(): Promise<boolean> {
+  const probe = await enforceRateLimit("health:chat", 600, 60, { deadlineMs: 1_500 });
+  return Boolean(probe.unavailable);
+}
+const storeUnavailable = createHealthProbeCache(probeStorageUnavailable, PROBE_TTL_MS);
 
 export const Route = createFileRoute("/api/chat/health")({
   server: {
