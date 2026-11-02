@@ -7,7 +7,9 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Chat health HTTP contract", () => {
-  test("concurrent health reads preserve response, gate and no-store semantics", async ({ request }) => {
+  test("concurrent health reads preserve response, gate and no-store semantics", async ({
+    request,
+  }) => {
     const responses = await Promise.all(
       Array.from({ length: 3 }, () => request.get("/api/chat/health")),
     );
