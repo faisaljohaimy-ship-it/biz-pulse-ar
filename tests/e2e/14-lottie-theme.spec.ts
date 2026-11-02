@@ -55,13 +55,17 @@
 import { test, expect, type Locator, type Page } from "@playwright/test";
 
 /**
- * المتصفّح مثبَّت بمساره: `devices["iPhone 13"]` نوعه الافتراضي webkit،
- * وطبقة Lottie تُقاس على كروميوم في الحالين — العرض ٣٩٠ متغيّر تخطيط لا
- * متغيّر محرّك.
+ * تُقاس طبقة Lottie على Chromium في كلا المشروعين كما في السابق؛ يظلّ
+ * WebKit مستخدمًا في بقية اختبارات الجوال. مسار Chromium الافتراضي يجب
+ * أن يأتي من نسخة Playwright المثبّتة في CI، لا من مسار حاوية محلية قديمة.
+ * يمكن لبيئات العمل الخاصة تحديد NX_CHROME صراحةً عند الحاجة.
  */
-const CHROME = process.env.NX_CHROME ?? "/opt/pw-browsers/chromium-1194/chrome-linux/chrome";
+const CHROME = process.env.NX_CHROME?.trim();
 
-test.use({ browserName: "chromium", launchOptions: { executablePath: CHROME } });
+test.use({
+  browserName: "chromium",
+  launchOptions: CHROME ? { executablePath: CHROME } : {},
+});
 
 /** ثوابت العقد، مطابقة لما يُصدّره `LottieIcon.tsx`. */
 const STATE_ATTR = "data-nx-lottie";
@@ -162,10 +166,34 @@ async function flipTheme(page: Page, to: "dark" | "light") {
 /** ينتظر أن يُعلن الغلاف عن نفسه مشتغلًا — لا مجرّد موجود. */
 async function waitForPlaying(wrapper: Locator, name: string) {
   await expect(wrapper, `${name}: الغلاف لم يظهر`).toBeAttached({ timeout: 15_000 });
-  await expect(
-    wrapper,
-    `${name}: لم ينتقل إلى "playing" — راجع مسار الملف والتحميل الكسول`,
-  ).toHaveAttribute(STATE_ATTR, "playing", { timeout: 15_000 });
+  try {
+    await expect(
+      wrapper,
+      `${name}: لم ينتقل إلى "playing" — راجع مسار الملف والتحميل الكسول`,
+    ).toHaveAttribute(STATE_ATTR, "playing", { timeout: 15_000 });
+  } catch (error) {
+    // Diagnostic only: preserve the original assertion, timeout and failure.
+    // Do not read user state, keys, tokens, or network request payloads.
+    const diagnostic = await wrapper
+      .evaluate((host) => {
+        const root = host.ownerDocument.documentElement;
+        const win = host.ownerDocument.defaultView;
+        return {
+          state: host.getAttribute("data-nx-lottie"),
+          artPresent: Boolean(host.querySelector(".nx-lottie-art")),
+          svgCount: host.querySelectorAll(".nx-lottie-art svg").length,
+          motionOff: root.getAttribute("data-nx-motion") === "off",
+          safeMode: root.classList.contains("safe-mode"),
+          reducedMotion: win?.matchMedia("(prefers-reduced-motion: reduce)").matches ?? null,
+          forcedColors: win?.matchMedia("(forced-colors: active)").matches ?? null,
+          coarsePointer: win?.matchMedia("(pointer: coarse)").matches ?? null,
+          viewportWidth: win?.innerWidth ?? null,
+        };
+      })
+      .catch(() => ({ unavailable: true }));
+    console.error("[Lottie E2E] Static-state diagnostics:", JSON.stringify(diagnostic));
+    throw error;
+  }
 }
 
 type Paint = { fill: string | null; stroke: string | null; color: string; count: number };

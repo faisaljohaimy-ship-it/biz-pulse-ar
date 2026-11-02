@@ -1,0 +1,71 @@
+name: Lottie E2E regression on PR
+
+# Addition to the existing weekly full E2E suite; never replaces or skips it.
+# Only Lottie changes or this workflow trigger the focused real-browser check.
+on:
+  pull_request:
+    paths:
+      - "tests/e2e/14-lottie-theme.spec.ts"
+      - ".github/workflows/e2e-lottie-pr.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lottie:
+    name: Lottie · desktop + mobile viewport (Chromium)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci --no-audit --no-fund
+      - name: Install test browser
+        run: npx playwright install --with-deps chromium
+      # The previous Vite dev-server cold start requested 578 resources with repeated
+      # dependency-optimization reloads before hydration (trace from run 41357748205).
+      # Exercise the built SSR/client app instead; keep every Lottie assertion,
+      # both browser projects, and the existing 15-second assertion timeout.
+      - name: Build production-equivalent local preview
+        run: npm run build
+      - name: Start built app locally
+        run: |
+          npx wrangler dev --config .output/server/wrangler.json --compatibility-date 2026-08-06 --port 4173 --local > /tmp/sadeed-lottie-dev.log 2>&1 &
+          echo $! > /tmp/sadeed-lottie-dev.pid
+          for i in $(seq 1 60); do
+            if curl -sf http://127.0.0.1:4173 > /dev/null; then
+              curl --fail --silent --show-error --max-time 60 http://127.0.0.1:4173/blueprint >/dev/null
+              echo "Built app and blueprint route ready"; exit 0
+            fi
+            sleep 2
+          done
+          echo "Built app failed"; tail -n 100 /tmp/sadeed-lottie-dev.log
+          exit 1
+      - name: Verify actual Lottie behavior at desktop and mobile viewport
+        env:
+          PLAYWRIGHT_BASE_URL: http://127.0.0.1:4173
+        # Serializes all existing desktop/mobile cases without skipping tests or raising timeouts.
+        run: npx playwright test tests/e2e/14-lottie-theme.spec.ts --project=desktop --project=mobile --workers=1
+      - name: Upload browser report on failure
+        if: failure()
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v4
+        with:
+          name: lottie-e2e-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+          if-no-files-found: ignore
+      - name: Stop local server
+        if: always()
+        run: |
+          if [ -f /tmp/sadeed-lottie-dev.pid ]; then
+            kill "$(cat /tmp/sadeed-lottie-dev.pid)" 2>/dev/null || true
+          fi
