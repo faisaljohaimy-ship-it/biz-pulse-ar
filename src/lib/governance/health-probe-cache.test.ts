@@ -35,7 +35,9 @@ describe("health probe single-flight cache", () => {
   });
 
   it("never caches rejected probes and allows a subsequent retry", async () => {
-    const check = vi.fn().mockRejectedValueOnce(new Error("storage failure")).mockResolvedValueOnce(false);
+    const check = vi.fn()
+      .mockRejectedValueOnce(new Error("storage failure"))
+      .mockResolvedValueOnce(false);
     const read = createHealthProbeCache(check, 15_000, () => 100);
     await expect(read()).rejects.toThrow("storage failure");
     expect(await read()).toBe(false);
