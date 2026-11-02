@@ -149,16 +149,21 @@ export async function enforceRateLimit(
     return { allowed: false, unavailable: true };
   }
   let timer: ReturnType<typeof setTimeout> | undefined;
-  const call = Promise.resolve(
-    supabaseAdmin.rpc("check_rate_limit", {
-      _bucket_key: bucketKey,
-      _max_requests: maxRequests,
-      _window_seconds: windowSeconds,
-    }),
-  ).catch((thrown: unknown) => ({
-    data: null,
-    error: { message: thrown instanceof Error ? thrown.message : String(thrown) },
-  }));
+  // The lazy admin-client getter can throw synchronously if no server
+  // credentials exist. Convert that to a rejected probe (fail closed), never
+  // an uncaught 500 from a read-only health endpoint.
+  const call = Promise.resolve()
+    .then(() =>
+      supabaseAdmin.rpc("check_rate_limit", {
+        _bucket_key: bucketKey,
+        _max_requests: maxRequests,
+        _window_seconds: windowSeconds,
+      }),
+    )
+    .catch((thrown: unknown) => ({
+      data: null,
+      error: { message: thrown instanceof Error ? thrown.message : String(thrown) },
+    }));
   const outcome = await Promise.race([
     call,
     new Promise<typeof DEADLINE>((resolve) => {
