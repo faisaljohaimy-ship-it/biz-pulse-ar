@@ -86,8 +86,11 @@ jobs:
           echo "Built SSR app failed"
           tail -n 120 /tmp/sadeed-pr-ssr.log
           exit 1
+      # Serial execution preserves every Chromium + WebKit assertion while
+      # isolating the observed Wrangler SSR exit under simultaneous workers.
+      # This does NOT suppress failures, change timeouts, or skip any spec.
       - name: Run every E2E spec on both projects
-        run: npx playwright test
+        run: npx playwright test --workers=1
       - name: Diagnose built SSR process on E2E failure (no gate bypass)
         if: failure()
         run: |
