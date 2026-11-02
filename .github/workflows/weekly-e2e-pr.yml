@@ -1,0 +1,78 @@
+name: Weekly SSR E2E — PR validation (no secrets)
+
+# An unprivileged check of changes to the scheduled weekly regression workflow.
+# Never replaces the real scheduled weekly run, production security E2E, or CI.
+# No production environment/secrets, deployments, or write permissions.
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/weekly-regression.yml"
+      - ".github/workflows/weekly-e2e-pr.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: weekly-e2e-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  e2e:
+    name: All E2E specs — desktop Chromium + mobile WebKit (no secrets)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      PLAYWRIGHT_BASE_URL: http://127.0.0.1:4173
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci --no-audit --no-fund
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium webkit
+      - name: Build local SSR app
+        run: npm run build
+      - name: Start and verify built SSR routes
+        run: |
+          npx wrangler dev --config .output/server/wrangler.json --compatibility-date 2026-08-06 --port 4173 --local > /tmp/sadeed-pr-ssr.log 2>&1 &
+          echo $! > /tmp/sadeed-pr-ssr.pid
+          for i in $(seq 1 60); do
+            if curl -fsS --max-time 5 http://127.0.0.1:4173/ > /dev/null; then
+              for path in /api/public/health /api/chat/health /blueprint; do
+                curl -fsS --max-time 10 "http://127.0.0.1:4173${path}" > /dev/null || {
+                  echo "Built SSR route failed: ${path}"
+                  tail -n 120 /tmp/sadeed-pr-ssr.log
+                  exit 1
+                }
+              done
+              echo "Built SSR app ready"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Built SSR app failed"
+          tail -n 120 /tmp/sadeed-pr-ssr.log
+          exit 1
+      - name: Run every E2E spec on both projects
+        run: npx playwright test
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v4
+        with:
+          name: weekly-pr-e2e-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+          if-no-files-found: ignore
+      - name: Stop built app
+        if: always()
+        run: |
+          if [ -f /tmp/sadeed-pr-ssr.pid ]; then
+            kill "$(cat /tmp/sadeed-pr-ssr.pid)" 2>/dev/null || true
+          fi
