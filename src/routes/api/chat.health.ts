@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { enforceRateLimit, gateDegradedMode } from "@/lib/governance/rate-limit.server";
+import { createHealthProbeCache } from "@/lib/governance/health-probe-cache";
 import type { ChatWebResearchHealth } from "@/lib/n8n/health.server";
 import { GEMINI_EMBEDDING_MODEL } from "@/lib/sadeed/gemini-embeddings.server";
 import { describeProviderPlan } from "@/lib/sadeed/llm/provider-plan.server";
@@ -12,14 +13,11 @@ import { describeRetrievalReadiness } from "@/lib/sadeed/rag/readiness.server";
  * لا تتبدّل في أقلّ من ذلك فعلًا (القاطع يفتح 30 ث).
  */
 const PROBE_TTL_MS = 15_000;
-let probeMemo: { at: number; unavailable: boolean } | null = null;
-
-async function storeUnavailable(now: number): Promise<boolean> {
-  if (probeMemo && now - probeMemo.at < PROBE_TTL_MS) return probeMemo.unavailable;
+async function probeStorageUnavailable(): Promise<boolean> {
   const probe = await enforceRateLimit("health:chat", 600, 60, { deadlineMs: 1_500 });
-  probeMemo = { at: now, unavailable: Boolean(probe.unavailable) };
-  return probeMemo.unavailable;
+  return Boolean(probe.unavailable);
 }
+const storeUnavailable = createHealthProbeCache(probeStorageUnavailable, PROBE_TTL_MS);
 
 export const Route = createFileRoute("/api/chat/health")({
   server: {
@@ -37,7 +35,7 @@ export const Route = createFileRoute("/api/chat/health")({
         // حال البوّابة (DEF-11، ٢٠٢٦/١٠/١٨): المفتاح وحده لا يعني «متصل» — والقاعدة موقوفة
         // يأخذ كل سؤالٍ يحتاج النموذج السطرَ المغلق. فحصٌ حقيقي للمخزن نفسه الذي تقرؤه
         // البوّابة، بمهلتها، كفحص `/api/public/health` (والقاطع يجعله فوريًّا على عطلٍ معروف).
-        const gate = !(await storeUnavailable(Date.now()))
+        const gate = !(await storeUnavailable())
           ? "verified"
           : gateDegradedMode() === "closed"
             ? "closed"
