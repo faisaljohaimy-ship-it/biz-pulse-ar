@@ -44,7 +44,7 @@ import {
   THINKING_SUSPEND_MS,
   type ThinkingLevel,
 } from "@/lib/sadeed/llm/thinking-level.server";
-import { maxStepsFor } from "@/lib/sadeed/llm/turn-limits.server";
+import { lastStepAnswers, maxStepsFor } from "@/lib/sadeed/llm/turn-limits.server";
 import { parseIntent, resolveModel } from "@/lib/sadeed-core/server/ai-router.server";
 import { resolveProviderPlan, type PlannedModel } from "@/lib/sadeed/llm/provider-plan.server";
 import {
@@ -1274,6 +1274,8 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
               tools,
               toolChoice: "auto",
               stopWhen: stepCountIs(maxSteps),
+              // آخر خطوةٍ مسموحة تكتب الجواب: بلا ذلك يقف الدور عند السقف على نداء أدواتٍ ونصّه فارغ.
+              ...(tools && !useOpenAi ? { prepareStep: lastStepAnswers(maxSteps) } : {}),
               maxRetries: retries,
               abortSignal: turnSignal,
               onStepFinish: (step) => {

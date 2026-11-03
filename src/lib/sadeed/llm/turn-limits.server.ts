@@ -33,3 +33,21 @@ export function maxStepsFor(replyMode: string, env: EnvLike = process.env): numb
   }
   return MAX_STEPS_TEXT_DEFAULT;
 }
+
+/**
+ * `prepareStep` لـ`generateText`: عند **آخر خطوةٍ** يسمح بها السقف تُمنع الأدوات
+ * (`toolChoice: "none"`) فيكتب النموذج جوابه من نتائج الخطوات السابقة.
+ *
+ * ## لماذا (نتيجة مباشرة لخفض السقف من 8 إلى 4)
+ *
+ * `stepCountIs(n)` يوقف التوليد بعد الخطوة n **أيًّا كان ما أنتجته**. فإن كانت الخطوة الأخيرة
+ * نداءَ أدوات فنصّ الدور فارغ: أُنفقت الأدوات واستعلاماتها ولم يصل المستخدم جوابٌ — وكلما خفّ
+ * السقف زاد احتمال ذلك. هذا يضمن أن آخر خطوة مسموحة تُنتج نصًّا، ولا يغيّر شيئًا في دورٍ
+ * انتهى قبل السقف.
+ *
+ * `stepNumber` يبدأ من الصفر، فآخر خطوة مسموحة رقمها `maxSteps - 1`.
+ */
+export function lastStepAnswers(maxSteps: number) {
+  return ({ stepNumber }: { stepNumber: number }) =>
+    stepNumber >= maxSteps - 1 ? { toolChoice: "none" as const } : undefined;
+}

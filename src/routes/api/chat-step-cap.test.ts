@@ -13,7 +13,11 @@ vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "sb_secret_stub");
 
 type StopWhen = (event: { steps: unknown[] }) => boolean | PromiseLike<boolean>;
 
-const sim = vi.hoisted(() => ({ stops: [] as unknown[] }));
+const sim = vi.hoisted(() => ({
+  stops: [] as unknown[],
+  prepares: [] as unknown[],
+  member: false,
+}));
 
 function stubSupabase() {
   const result = { data: null, error: null, count: 0 };
@@ -27,7 +31,12 @@ function stubSupabase() {
   return {
     from: () => chain,
     rpc: () => chain,
-    auth: { getUser: async () => ({ data: { user: null }, error: null }) },
+    auth: {
+      getUser: async () => ({
+        data: { user: sim.member ? { id: "user-1", app_metadata: {} } : null },
+        error: null,
+      }),
+    },
   };
 }
 
@@ -44,6 +53,19 @@ vi.mock("@/lib/governance/ai-quota.server", async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
   enforceAiQuota: async () => null,
 }));
+// أدوات المسجَّل مزيَّفة (وجودها شرط `prepareStep`)؛ والاسترجاع فارغ بلا شبكة.
+vi.mock("@/lib/sadeed-tools.server", () => ({
+  buildSadeedTools: () => ({ marker: { description: "x" } }),
+}));
+vi.mock("@/lib/sadeed/rag.server", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
+  gatherRagContext: async () => ({
+    contextBlock: "",
+    citations: [],
+    counts: { memories: 0, knowledge: 0, documents: 0 },
+    embedding: null,
+  }),
+}));
 vi.mock("@/lib/sadeed/orchestrator", () => ({
   runAgentMission: async () => ({
     mission_id: "mission-stub",
@@ -53,8 +75,9 @@ vi.mock("@/lib/sadeed/orchestrator", () => ({
 }));
 vi.mock("ai", async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
-  generateText: async (opts: { stopWhen: unknown }) => {
+  generateText: async (opts: { stopWhen: unknown; prepareStep?: unknown }) => {
     sim.stops.push(opts.stopWhen);
+    sim.prepares.push(opts.prepareStep);
     return { text: "ردّ صوري." };
   },
 }));
@@ -70,7 +93,13 @@ async function post(replyMode?: string, headers: Record<string, string> = {}) {
   return mod.Route.options.server.handlers.POST({
     request: new Request("http://local/api/chat", {
       method: "POST",
-      headers: { "content-type": "application/json", ...headers },
+      headers: {
+        "content-type": "application/json",
+        ...(sim.member
+          ? { authorization: "Bearer valid.jwt.that.is.long.enough.for.the.guard" }
+          : {}),
+        ...headers,
+      },
       body: JSON.stringify({
         messages: [
           {
@@ -98,6 +127,8 @@ async function capOf(i: number): Promise<number | null> {
 
 beforeEach(async () => {
   sim.stops = [];
+  sim.prepares = [];
+  sim.member = false;
   const guards = await import("@/lib/governance/request-guards.server");
   guards.resetRequestGuardsForTests();
   vi.spyOn(console, "log").mockImplementation(() => undefined);
@@ -154,5 +185,41 @@ describe("سقف الخطوات لكل وضع", () => {
     vi.stubEnv("SADEED_MAX_STEPS_TEXT", "7");
     await post(undefined, { "X-SADEED-Provider": "openai" });
     expect(await capOf(0)).toBe(2);
+  });
+});
+
+describe("آخر خطوةٍ مسموحة تكتب الجواب (prepareStep)", () => {
+  type Prepare = (event: { stepNumber: number }) => unknown;
+
+  it("للمسجَّل بأدوات Gemini: يمنع الأدوات عند آخر خطوة السقف المحكوم به لكل وضع", async () => {
+    sim.member = true;
+    await post("text");
+    await post("deep");
+    vi.stubEnv("SADEED_MAX_STEPS_TEXT", "6");
+    await post("voice");
+    const cases: Array<[number, number]> = [
+      [0, 4],
+      [1, 8],
+      [2, 6],
+    ];
+    for (const [i, cap] of cases) {
+      const prepare = sim.prepares[i] as Prepare | undefined;
+      expect(typeof prepare, `نداء ${i}`).toBe("function");
+      expect(prepare!({ stepNumber: cap - 2 })).toBeUndefined();
+      expect(prepare!({ stepNumber: cap - 1 })).toEqual({ toolChoice: "none" });
+    }
+  });
+
+  it("الزائر بلا أدوات: لا prepareStep (لا شيء يُمنع)", async () => {
+    await post("text");
+    expect(sim.prepares[0]).toBeUndefined();
+  });
+
+  it("المحوّل الاختياري لا يتغيّر سلوكه: لا prepareStep", async () => {
+    sim.member = true;
+    vi.stubEnv("OPENAI_API_KEY", "test-only-not-a-secret-00");
+    vi.stubEnv("SADEED_OPENAI_ENABLED", "true");
+    await post(undefined, { "X-SADEED-Provider": "openai" });
+    expect(sim.prepares[0]).toBeUndefined();
   });
 });
