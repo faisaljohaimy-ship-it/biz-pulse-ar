@@ -63,4 +63,16 @@ describe("lastGateRetryAfter — يُقرأ من ردود البوّابة وح�
     await sadeedAuthedFetch("/api/chat");
     expect(lastGateRetryAfter()).toBeNull();
   });
+
+  it("نداءٌ ينتهي بلا ردّ (شبكة) لا يرث تلميح ردٍّ سابق", async () => {
+    // تلميح طويل من ردٍّ سابق كان يبقى فيحكم الإعادة التلقائية لخطأ لا ردّ فيه.
+    await sadeedAuthedFetch("/api/chat?limited");
+    expect(lastGateRetryAfter()).toBe(7_000);
+
+    global.fetch = vi.fn(async () => {
+      throw new TypeError("Failed to fetch");
+    }) as unknown as typeof fetch;
+    await expect(sadeedAuthedFetch("/api/chat")).rejects.toThrow("Failed to fetch");
+    expect(lastGateRetryAfter()).toBeNull();
+  });
 });

@@ -14,9 +14,13 @@
  *    يصير جملةً عربية صادقة، ولا يُرى فيها رمزٌ تقنيّ ولا عبارة مصادقة.
  *  ② لا إعادة تلقائية على مستوى الناقل: نداء `fetch` واحد.
  *  ③ Stop يبقى إيقافًا هادئًا: `ready` بلا خطأ.
+ *  ④ **WebKit** (Safari وكل متصفحات iOS): `fetch` المُجهَض بعد الإرسال يرفض بـ`AbortError`
+ *    عامة لا بـ`signal.reason` (قراءة مصدر WebKit — المراجعة ٢٠٢٦/١١/٠٣؛ لم يُجرَّب على
+ *    جهاز). بلا تطبيعٍ داخل `sadeedAuthedFetch` تعود الحالة `ready` بلا خطأ — العطل
+ *    الأصلي نفسه على المنصة مصدر الشكوى. فاختبارات ①–② تُشغَّل بالسلوكين.
  *
  * المادة ٣٠: كلٌّ منها يحمرّ فعلًا حين يُنزع الإصلاح (يُرمى `AbortError` من
- * المؤقّت) — جُرِّب ذلك ونُقل نتيجته في تقرير الالتزام.
+ * المؤقّت، أو يُنزع التطبيع في `catch`) — جُرِّب ذلك ونُقل نتيجته في تقرير الالتزام.
  */
 import { Chat } from "@ai-sdk/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -33,12 +37,28 @@ import {
 } from "./chat-error-text";
 import { CHAT_DEADLINE_MS, createSadeedTransport } from "./sadeed-service";
 
-/** fetch لا يردّ أبدًا إلا برفضٍ بسبب الإشارة — كما يفعل المتصفح مع `abort()`. */
+/** fetch لا يردّ أبدًا إلا برفضٍ بسبب الإشارة — كما يفعل Chrome/Firefox مع `abort()`. */
 function stubHangingFetch() {
   const fetchMock = vi.fn(
     (_input: unknown, init: RequestInit) =>
       new Promise<Response>((_resolve, reject) => {
         init.signal?.addEventListener("abort", () => reject(init.signal?.reason), { once: true });
+      }),
+  );
+  vi.stubGlobal("fetch", fetchMock);
+  return fetchMock;
+}
+
+/** كما يفعل WebKit: يرفض بـ`AbortError` عامة أيًّا كان سبب الإجهاض. */
+function stubWebKitHangingFetch() {
+  const fetchMock = vi.fn(
+    (_input: unknown, init: RequestInit) =>
+      new Promise<Response>((_resolve, reject) => {
+        init.signal?.addEventListener(
+          "abort",
+          () => reject(new DOMException("Fetch is aborted", "AbortError")),
+          { once: true },
+        );
       }),
   );
   vi.stubGlobal("fetch", fetchMock);
@@ -98,6 +118,41 @@ describe("مهلة الدور على Chat الحقيقية", () => {
     expect(chat.status).toBe("ready");
     expect(chat.error).toBeUndefined();
     // ولا مهلة متأخرة تقلب الإيقاف خطأً بعد ذلك.
+    await vi.advanceTimersByTimeAsync(CHAT_DEADLINE_MS);
+    expect(chat.status).toBe("ready");
+    expect(chat.error).toBeUndefined();
+  });
+
+  it("WebKit: المهلة ⇒ status=error لا ready (fetch يرفض بـAbortError عامة)", async () => {
+    const fetchMock = stubWebKitHangingFetch();
+    const chat = new Chat({ transport: createSadeedTransport() });
+    void chat.sendMessage({ text: "حلّل لي مؤشرات الأسبوع" });
+
+    await vi.advanceTimersByTimeAsync(CHAT_DEADLINE_MS - 1);
+    expect(chat.status).toBe("submitted");
+    await vi.advanceTimersByTimeAsync(1);
+
+    // بلا تطبيع: status === "ready" وerror === undefined (الفقاعة تختفي بلا أثر).
+    expect(chat.status).toBe("error");
+    expect(isChatTimeout(chat.error)).toBe(true);
+    expect(chatErrorText(chat.error?.message)).toBe(CHAT_TIMEOUT_AR);
+
+    await vi.advanceTimersByTimeAsync(120_000);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(chat.status).toBe("error");
+  });
+
+  it("WebKit: Stop يبقى إيقافًا هادئًا — ready بلا خطأ، لا مهلة", async () => {
+    stubWebKitHangingFetch();
+    const chat = new Chat({ transport: createSadeedTransport() });
+    void chat.sendMessage({ text: "سؤال" });
+    await vi.advanceTimersByTimeAsync(10_000);
+
+    await chat.stop();
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(chat.status).toBe("ready");
+    expect(chat.error).toBeUndefined();
     await vi.advanceTimersByTimeAsync(CHAT_DEADLINE_MS);
     expect(chat.status).toBe("ready");
     expect(chat.error).toBeUndefined();
