@@ -1,7 +1,9 @@
 /**
  * مستوى التفكير في `/api/chat` — سلوكيًّا عبر المعالج الحقيقي (٢٠٢٦/١١/٠٣).
  *
- * يُثبت: الخيار يصل Gemini وحده، والافتراض لكل وضع، وتجاوز البيئة يُقرأ عند كل طلب،
+ * النشر على مرحلتين: الميزة **اختيارية بمتغيّر البيئة**. يُثبت: **الافتراض (بلا `SADEED_THINKING_LEVEL`)
+ * لا يمرّر `providerOptions` إطلاقًا** (السلوك القديم)، والخيار حين يُفعَّل يصل Gemini وحده ولكل
+ * الأوضاع بلا استثناء للعميق، وتجاوز البيئة يُقرأ عند كل طلب،
  * والسقوط مرّةً واحدة عند رفض الخيار نفسه مع تعطيل عشر دقائق، وأنه لا يسقط على غير ذلك
  * (429/5xx/401/404/400 لا يتعلّق بالتفكير)، ولا بعد خطوةٍ أنهت أدواتها (لا إعادة للدور، لكن
  * الميزة تُعطَّل فيشفى الدور التالي)، ولا مع إلغاء الدور، وأن الاحتياطي لا يتلقّى خيار Gemini.
@@ -127,9 +129,17 @@ const timingLine = () => {
 const googleOptions = (i: number) =>
   (sim.calls[i]?.providerOptions as { google?: { thinkingConfig?: unknown } } | undefined)?.google;
 
+/** تفعيل الميزة اختياريًّا (المرحلة ٢ بالمتغيّر وحده) للمجموعات التي تختبر ما بعد التفعيل. */
+const enableThinking = (level = "low") =>
+  beforeEach(() => {
+    vi.stubEnv("SADEED_THINKING_LEVEL", level);
+  });
+
 beforeEach(async () => {
   sim.calls = [];
   sim.script = [];
+  // الأساس: المتغيّر غائب (الافتراض القديم) مهما كانت بيئة المشغِّل.
+  vi.stubEnv("SADEED_THINKING_LEVEL", undefined);
   resetThinkingStateForTests();
   const guards = await import("@/lib/governance/request-guards.server");
   guards.resetRequestGuardsForTests();
@@ -147,26 +157,67 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe("الخيار يصل Gemini بالمستوى الصحيح", () => {
-  it("نص: low مع includeThoughts:false", async () => {
-    const res = await post();
-    expect(res.headers.get("X-SADEED-Reply-Source")).toBe("model");
-    expect(sim.calls).toHaveLength(1);
-    expect(sim.calls[0]!.modelId).toBe("gemini-3.6-flash");
-    expect(googleOptions(0)).toEqual({
-      thinkingConfig: { thinkingLevel: "low", includeThoughts: false },
+describe("الافتراض (بلا SADEED_THINKING_LEVEL) = السلوك القديم: لا providerOptions", () => {
+  it("كل الأوضاع: نداء واحد، providerOptions غير مُمرَّرة أصلًا (لا مفتاح ولا undefined)", async () => {
+    const seen: Array<{ hasKey: boolean }> = [];
+    sim.script = [0, 1, 2, 3].map(() => (opts: GenerateOpts) => {
+      seen.push({ hasKey: "providerOptions" in opts });
     });
+    for (const extra of [
+      {},
+      { replyMode: "text" },
+      { replyMode: "voice" },
+      { replyMode: "deep" },
+    ]) {
+      const res = await post(extra);
+      expect(res.headers.get("X-SADEED-Reply-Source")).toBe("model");
+    }
+    expect(sim.calls).toHaveLength(4);
+    expect(sim.calls.map((c) => c.modelId)).toEqual(Array(4).fill("gemini-3.6-flash"));
+    for (let i = 0; i < 4; i++) {
+      expect(sim.calls[i]!.providerOptions, `نداء ${i}`).toBeUndefined();
+      expect(googleOptions(i), `نداء ${i}`).toBeUndefined();
+    }
+    // `"providerOptions" in opts` يمنع مفتاحًا قيمته undefined أيضًا (تكافؤ بايتًا ببايت).
+    expect(seen).toEqual(Array(4).fill({ hasKey: false }));
+    expect(timingLine()).toMatchObject({ thinking: "none" });
   });
 
-  it("صوت: low — والعميق: medium", async () => {
+  it("قيمة فارغة أو default أو مجهولة = الافتراض نفسه: لا خيار", async () => {
+    for (const value of ["", "  ", "default", "DEFAULT", "turbo", "none", "off"]) {
+      vi.stubEnv("SADEED_THINKING_LEVEL", value);
+      await post();
+    }
+    expect(sim.calls).toHaveLength(7);
+    for (let i = 0; i < 7; i++) expect(sim.calls[i]!.providerOptions, `نداء ${i}`).toBeUndefined();
+  });
+});
+
+describe("الخيار حين يُفعَّل بالمتغيّر يصل Gemini بالمستوى المضبوط", () => {
+  it("low: نص وصوت وعميق كلّها low مع includeThoughts:false — لا استثناء للعميق", async () => {
+    vi.stubEnv("SADEED_THINKING_LEVEL", "low");
+    const res = await post();
+    expect(res.headers.get("X-SADEED-Reply-Source")).toBe("model");
     await post({ replyMode: "voice" });
     await post({ replyMode: "deep" });
-    expect(googleOptions(0)).toEqual({
-      thinkingConfig: { thinkingLevel: "low", includeThoughts: false },
-    });
-    expect(googleOptions(1)).toEqual({
-      thinkingConfig: { thinkingLevel: "medium", includeThoughts: false },
-    });
+    expect(sim.calls).toHaveLength(3);
+    expect(sim.calls[0]!.modelId).toBe("gemini-3.6-flash");
+    for (let i = 0; i < 3; i++) {
+      expect(googleOptions(i), `نداء ${i}`).toEqual({
+        thinkingConfig: { thinkingLevel: "low", includeThoughts: false },
+      });
+    }
+  });
+
+  it("medium يسري على الكل أيضًا (لا افتراضٌ خاصّ بالعميق)", async () => {
+    vi.stubEnv("SADEED_THINKING_LEVEL", "medium");
+    await post({ replyMode: "text" });
+    await post({ replyMode: "deep" });
+    for (let i = 0; i < 2; i++) {
+      expect(googleOptions(i), `نداء ${i}`).toEqual({
+        thinkingConfig: { thinkingLevel: "medium", includeThoughts: false },
+      });
+    }
   });
 
   it("المحوّل الاختياري (OpenAI) لا يتلقّى خيار Gemini أبدًا", async () => {
@@ -180,6 +231,7 @@ describe("الخيار يصل Gemini بالمستوى الصحيح", () => {
     // ولو طُلب المستوى صراحةً بالبيئة.
     vi.stubEnv("SADEED_THINKING_LEVEL", "high");
     await post({}, { "X-SADEED-Provider": "openai" });
+    expect(sim.calls[1]!.providerOptions).toEqual({ openai: { store: false } });
     expect(googleOptions(1)).toBeUndefined();
   });
 });
@@ -197,10 +249,8 @@ describe("SADEED_THINKING_LEVEL يُقرأ عند كل طلب", () => {
     });
     // default ⇒ لا providerOptions أصلًا (السلوك القديم حرفًا).
     expect(sim.calls[1]!.providerOptions).toBeUndefined();
-    // مجهول ⇒ يعود الافتراض لا التعطيل.
-    expect(googleOptions(2)).toEqual({
-      thinkingConfig: { thinkingLevel: "low", includeThoughts: false },
-    });
+    // مجهول ⇒ يُعامَل كغائب: لا خيار أيضًا (لا تفعيل بالتخمين).
+    expect(sim.calls[2]!.providerOptions).toBeUndefined();
   });
 
   it("minimal يصل كما هو", async () => {
@@ -213,6 +263,8 @@ describe("SADEED_THINKING_LEVEL يُقرأ عند كل طلب", () => {
 });
 
 describe("السقوط مرّةً واحدة عند رفض الخيار نفسه", () => {
+  enableThinking("low");
+
   it("400 يذكر thinking ⇒ إعادة واحدة بلا خيار، وردّ النموذج يصل، والميزة معطّلة بعدها", async () => {
     vi.useFakeTimers({ toFake: ["Date"] });
     vi.setSystemTime(new Date("2026-11-03T10:00:00.000Z"));
@@ -276,6 +328,8 @@ describe("السقوط مرّةً واحدة عند رفض الخيار نفسه
 });
 
 describe("لا سقوط على غير رفض الخيار", () => {
+  enableThinking("low");
+
   const cases: Array<[string, () => Error]> = [
     [
       "429 حصّة ولو ذكرت thinking",
@@ -367,6 +421,8 @@ describe("لا سقوط على غير رفض الخيار", () => {
 });
 
 describe("الاحتياطي (بوّابة Lovable) لا يتلقّى خيار Gemini", () => {
+  enableThinking("low");
+
   it("فشل الأساسي ⇒ النداء الثاني للاحتياطي بلا providerOptions.google", async () => {
     vi.stubEnv("SADEED_BACKUP_PROVIDER", "lovable");
     vi.stubEnv("LOVABLE_API_KEY", "test-only-not-a-secret-00");

@@ -1,5 +1,5 @@
 /**
- * مستوى تفكير Gemini لدور الدردشة (٢٠٢٦/١١/٠٣).
+ * مستوى تفكير Gemini لدور الدردشة (٢٠٢٦/١١/٠٣) — **اختياريّ (opt-in)** بقرار النشر على مرحلتين.
  *
  * ## لماذا
  *
@@ -9,17 +9,26 @@
  * الأكبر من زمن الخادم بحسب الاستطلاع الأوّلي). الأثر على الزمن والجودة **غير مقيس بعد**: تقيسه أداة
  * `chat-timing.server.ts` (`usage.reasoningTokens` و`steps[].ms`) من سجلّ الإنتاج.
  *
+ * ## النشر على مرحلتين (قرار حارس الجودة بعد نقض الإصدار)
+ *
+ * ضوابط المالك لمسار الإجابة (خطوة صغيرة · اختبارات · تصريح الحارس · قياس قبل/بعد) لا تتحقق
+ * حين تُنشر عدّة تغييرات سلوكية دفعةً واحدة. فالمرحلة ١ (هذا الكود) تُبقي التغيير في الكود
+ * **ولا تفعّله**: الافتراض هو **السلوك القديم بايتًا ببايت** — لا `providerOptions` على نداء
+ * `generateText` أصلًا. وتُفعَّل الميزة بمتغيّر البيئة وحده (opt-in) بعد قياس «قبل»، وهذه
+ * المرحلة ٢ ولا تقع في الكود.
+ *
  * ## القواعد
  *
  * - **Gemini وحده.** المحوّل الاختياري (OpenAI) والاحتياطي (بوّابة Lovable) لا يتلقّيان
  *   خيارًا من هذا الباب أبدًا — لا استبدال صامت لسلوك مورّد.
- * - الافتراض `low` للنص والصوت، و`medium` للعميق (`replyMode: "deep"`).
- * - `SADEED_THINKING_LEVEL` ∈ {minimal, low, medium, high, default} يتجاوز الافتراضين
- *   ويُقرأ عند كل طلب من `process.env` — لكنّ **وصول تغيير المتغيّر إلى النشر القائم ليس
- *   فوريًّا**: على Vercel يلزمه إعادة نشر ليراه (تغيير المتغيّر لا يمسّ نشرًا يعمل)، فمسار
- *   التراجع `SADEED_THINKING_LEVEL=default` = تغيير المتغيّر ثم إعادة نشر. `default` = لا
- *   خيار = السلوك القديم. وقيمةٌ غير معروفة تُعامَل كغائبة (فيعود الافتراض)، لا كتعطيل
- *   ولا كتخمين.
+ * - **الافتراض = لا خيار.** غياب `SADEED_THINKING_LEVEL` أو فارغه أو `default` أو أي قيمة
+ *   غير معروفة ⇒ `null` = السلوك القديم. لا تخمين ولا مستوى افتراضي مخفيّ لوضعٍ دون آخر
+ *   (الافتراضان القديمان `low` للنص والصوت و`medium` للعميق حُذفا).
+ * - `SADEED_THINKING_LEVEL` ∈ {minimal, low, medium, high} يفعّل المستوى المطلوب **لكل أوضاع
+ *   الرد** (نص · صوت · عميق) بلا استثناء، ويُقرأ عند كل طلب من `process.env` — لكنّ **وصول
+ *   تغيير المتغيّر إلى النشر القائم ليس فوريًّا**: على Vercel يلزمه إعادة نشر ليراه (تغيير
+ *   المتغيّر لا يمسّ نشرًا يعمل). فالتفعيل = ضبط المتغيّر ثم إعادة نشر، والتراجع = إزالته (أو
+ *   `default`) ثم إعادة نشر.
  * - **سقوط مرّةً واحدة:** إن رفض المزوّد الخيار نفسه (400 / INVALID_ARGUMENT مع ذكر حقل
  *   التفكير بعينه: thinkingLevel · thinkingConfig · thinking_budget…) أُعيد الدور بلا خيار
  *   مرّةً، وعُطّلت الميزة في هذا المعزول عشر دقائق — كي لا يدفع كل سؤالٍ بعده إعادةً. ولا
@@ -57,21 +66,19 @@ export function resetThinkingStateForTests(): void {
 }
 
 /**
- * المستوى المطلوب لدورٍ مزوّده `vendor`، أو `null` = لا خيار. تقرأ البيئة والتعطيل
- * عند كل نداء، فلا تخزّن شيئًا.
+ * المستوى المطلوب لدورٍ مزوّده `vendor`، أو `null` = لا خيار (السلوك القديم). تقرأ البيئة
+ * والتعطيل عند كل نداء، فلا تخزّن شيئًا. المستوى المضبوط يسري على كل أوضاع الرد، فلا
+ * معامل لوضع الرد هنا.
  */
 export function resolveThinkingLevel(
   vendor: string,
-  replyMode: string,
   env: EnvLike = process.env,
   now: number = Date.now(),
 ): ThinkingLevel | null {
   if (vendor !== THINKING_VENDOR) return null;
   if (thinkingSuspended(now)) return null;
-  const override = env.SADEED_THINKING_LEVEL?.trim().toLowerCase() ?? "";
-  if (override === "default") return null;
-  if (LEVELS.has(override)) return override as ThinkingLevel;
-  return replyMode === "deep" ? "medium" : "low";
+  const requested = env.SADEED_THINKING_LEVEL?.trim().toLowerCase() ?? "";
+  return LEVELS.has(requested) ? (requested as ThinkingLevel) : null;
 }
 
 /** `providerOptions` لـ`generateText`: التفكير بمستوى، وبلا إظهار الأفكار في الناتج. */
