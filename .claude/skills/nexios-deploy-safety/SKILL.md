@@ -1,21 +1,24 @@
 ---
 name: nexios-deploy-safety
-description: أمان النشر لمشروع سَدِيد — يُستدعى قبل أي commit/push أو عمل على CI أو أسئلة «لماذا لا يظهر التغيير على neexios.com». يغطي خط النشر الفعلي (Lovable أساسي + GitHub Actions/Cloudflare اختياري)، انضباط الالتزام الواحد، والمحظورات وفحوصها.
+description: أمان النشر لمشروع سَدِيد — يُستدعى قبل أي commit/push أو عمل على CI أو أسئلة «لماذا لا يظهر التغيير على neexios.com». يغطي خط النشر الفعلي (Vercel عبر MCP — Lovable ليس ناشرًا؛ GitHub Actions/Cloudflare اختياري)، انضباط الالتزام الواحد، والمحظورات وفحوصها.
 ---
 
 # سَدِيد Deploy Safety — أمان النشر
 
 ## خط النشر الفعلي (لا تفترض غيره)
 
-- **GitHub هو مصدر الحقيقة**؛ الناشر الأساسي لإنتاج neexios.com هو
-  **خط Lovable** (زر Publish).
+- **GitHub هو مصدر الحقيقة**؛ الناشر الفعلي لإنتاج neexios.com هو
+  **Vercel** (مشروع `biz-pulse-ar`؛ `vercel.json` يعطّل نشر `main` التلقائي، فالنشر بـ`create_deployment` بمصدر GitHub ثم `request_promote` —
+  انظر «Mandatory Direct-to-Main Delivery Policy» في CLAUDE.md). **خط Lovable ليس ناشرًا ولا يُعوَّل عليه** (فصل ٢٠٢٦/١١/٠٣؛
+  `docs/operations/LOVABLE_DETACH_2026-11-03.md`).
 - GitHub Actions: workflow «CI Verification» — job `verify`
   (install → typecheck → lint → deadcode → tests → audit → build →
   budget → smoke) ثم job `deploy` (Cloudflare) ثم E2E.
 - **خطوات deploy تتخطى بصمت** إذا غاب السرّان
   `CLOUDFLARE_API_TOKEN` و`CLOUDFLARE_ACCOUNT_ID` من أسرار الريبو —
   هذا مقصود. إضافتهما تفعّل النشر التلقائي الدائم.
-- Vercel معطّل (لا تُعِد تفعيله ولا تلمس `vercel.json`).
+- **Vercel هو الناشر الفعلي** (الدوال في `syd1` بجوار قاعدة Supabase: `vercel.json` → `"regions": ["syd1"]` يحرسه
+  `src/lib/vercel-config.contract.test.ts`)؛ لا تغيّر `vercel.json` إلا بحارسه ومع قياس.
 - **فشل lint يجمّد الإنتاج**: verify أحمر ← deploy لا يعمل ← الموقع
   يبقى على آخر نسخة خضراء. لذلك Lint كامل الريبو محليًا قبل كل دفع.
 
