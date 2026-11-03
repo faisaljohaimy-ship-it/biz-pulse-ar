@@ -36,6 +36,14 @@ import {
 } from "@/lib/governance/request-guards.server";
 import { evaluateRagCoverage } from "@/lib/sadeed/rag.server";
 import { withChatTurnTrace } from "@/lib/sadeed/chat-timing.server";
+import {
+  googleThinkingOptions,
+  isThinkingOptionRejection,
+  resolveThinkingLevel,
+  suspendThinking,
+  THINKING_SUSPEND_MS,
+  type ThinkingLevel,
+} from "@/lib/sadeed/llm/thinking-level.server";
 import { parseIntent, resolveModel } from "@/lib/sadeed-core/server/ai-router.server";
 import { resolveProviderPlan, type PlannedModel } from "@/lib/sadeed/llm/provider-plan.server";
 import {
@@ -1253,7 +1261,7 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
             ignoreIncompleteToolCalls: true,
           });
           trace.lap("prompt");
-          const run = (m: LanguageModel, retries: number) => {
+          const generate = (m: LanguageModel, retries: number, thinking: ThinkingLevel | null) => {
             trace.modelRunStarted();
             return generateText({
               model: m,
@@ -1278,8 +1286,43 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
                 : replyMode === "voice"
                   ? 700
                   : 16_000,
-              ...(useOpenAi ? { providerOptions: { openai: { store: false } } } : {}),
+              ...(useOpenAi
+                ? { providerOptions: { openai: { store: false } } }
+                : thinking
+                  ? { providerOptions: googleThinkingOptions(thinking) }
+                  : {}),
             });
+          };
+          // مستوى التفكير لـGemini وحده (لا المحوّل ولا الاحتياطي)، يُقرأ عند كل نداء. وإن رفض
+          // المزوّد الخيارَ نفسه (400 يذكر thinking) أُعيد الدور مرّةً بلا خيار وعُطّلت الميزة في
+          // هذا المعزول عشر دقائق؛ لا سقوط على غير ذلك، ولا بعد خطوةٍ أنهت أدواتها
+          // (`thinking-level.server.ts`).
+          const run = async (m: LanguageModel, retries: number) => {
+            const thinking = resolveThinkingLevel(attempted.vendor, replyMode);
+            trace.note({ thinking: thinking ?? "none" });
+            try {
+              return await generate(m, retries, thinking);
+            } catch (error) {
+              if (
+                !thinking ||
+                stepsDone > 0 ||
+                turnSignal.aborted ||
+                !isThinkingOptionRejection(error)
+              )
+                throw error;
+              suspendThinking();
+              trace.note({ thinking: "fallback" });
+              console.warn(
+                "[api/chat] thinking option rejected by provider → one retry without it",
+                {
+                  requestId,
+                  event: "thinking.fallback",
+                  level: thinking,
+                  suspendedMs: THINKING_SUSPEND_MS,
+                },
+              );
+              return await generate(m, retries, null);
+            }
           };
           // الاحتياطي لا يُبنى إلا إن وُجد في الخطة (طلبٌ صريح من المالك) ولزم فعلًا.
           let gen: Awaited<ReturnType<typeof run>>;
