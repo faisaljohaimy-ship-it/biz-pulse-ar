@@ -18,8 +18,8 @@
 
 export const MAX_STEPS_TEXT_DEFAULT = 4;
 export const MAX_STEPS_DEEP = 8;
-export const MAX_STEPS_TEXT_MIN = 2;
-export const MAX_STEPS_TEXT_MAX = 8;
+const MAX_STEPS_TEXT_MIN = 2;
+const MAX_STEPS_TEXT_MAX = 8;
 
 type EnvLike = Record<string, string | undefined>;
 

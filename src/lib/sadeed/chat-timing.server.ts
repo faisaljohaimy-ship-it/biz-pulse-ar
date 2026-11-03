@@ -51,16 +51,16 @@ export const CHAT_STAGES = [
   "finalize",
 ] as const;
 
-export type ChatStage = (typeof CHAT_STAGES)[number];
+type ChatStage = (typeof CHAT_STAGES)[number];
 
-export type ChatStepRecord = {
+type ChatStepRecord = {
   /** الزمن منذ نهاية الخطوة السابقة (أو بدء النداء) إلى نهاية هذه الخطوة. */
   ms: number;
   finishReason: string | null;
   tools: string[];
 };
 
-export type ChatUsageRecord = {
+type ChatUsageRecord = {
   inputTokens: number | null;
   outputTokens: number | null;
   reasoningTokens: number | null;
@@ -68,7 +68,7 @@ export type ChatUsageRecord = {
 };
 
 /** حقائق ثابتة تُكتب في سطر القياس — رموزٌ وأعداد، لا نصّ مستخدم. */
-export type ChatTraceNotes = {
+type ChatTraceNotes = {
   replyMode?: string;
   provider?: string;
   model?: string;
@@ -78,7 +78,7 @@ export type ChatTraceNotes = {
   maxSteps?: number;
 };
 
-export type ChatTrace = {
+type ChatTrace = {
   /** يُضبط بعد التحقّق من الطلب (المعرّف يُحسب هناك). */
   setRequestId(id: string): void;
   /** يُسند الزمن منذ آخر `lap` إلى `stage` ويحرّك المؤشّر. */
@@ -151,7 +151,7 @@ function processUptimeMs(): number | null {
   }
 }
 
-export type CreateChatTraceOptions = {
+type CreateChatTraceOptions = {
   /** ساعة أحادية بالمللي ثانية — تُحقن في الاختبار. الافتراض `performance.now`. */
   now?: Clock;
   env?: Record<string, string | undefined>;

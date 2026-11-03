@@ -37,7 +37,7 @@ export type PatrolReportRow = {
   site?: unknown;
 };
 
-export type RegionPatrolSummary = {
+type RegionPatrolSummary = {
   /** الاسم العربي المختصر للمنطقة (من `regions.ts`) أو «غير محددة». */
   region: string;
   region_id: RegionId | null;
@@ -51,7 +51,7 @@ export type RegionPatrolSummary = {
   avg_checkpoint_pct: number | null;
 };
 
-export type PatrolRegionReport = {
+type PatrolRegionReport = {
   ok: true;
   regions: RegionPatrolSummary[];
   patrols_considered: number;
