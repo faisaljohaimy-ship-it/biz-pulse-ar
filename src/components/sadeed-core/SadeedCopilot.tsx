@@ -305,6 +305,9 @@ function rmsLevel(samples: Float32Array): number {
 const EMPTY_STATE_AR = "كيف يمكنني مساعدتك اليوم؟";
 /** بلا وعدٍ لا يفي به كود: لا تسجيل ولا إعادة آلية خلف هذا السطر (DEF-24، ٢٠٢٦/١٠/١٨). */
 const ERROR_MASK_AR = "تعذّر إكمال الطلب حاليًا — أعد المحاولة.";
+/** إشعاران يتكرّران في مسارات الصوت — نصٌّ واحد لكلٍّ (ميزانية الحزمة). */
+const NO_SPEECH_NOTICE_AR = "لم ألتقط صوتًا واضحًا — أواصل الاستماع.";
+const MIC_DENIED_AR = "تم رفض إذن الميكروفون — اسمح به للموقع من إعدادات المتصفح.";
 const EXPORT_ERROR_AR = "تعذّر تجهيز ملف PDF الآن — أعد المحاولة بعد لحظات.";
 const EXPORT_BUSY_AR = "يجهّز ملف PDF…";
 const EXPORT_DONE_AR = "تم تجهيز ملف PDF.";
@@ -1573,7 +1576,7 @@ export function SadeedCopilot() {
         }
         const transcript = payload.text.trim();
         if (!transcript) {
-          setConvNotice("لم ألتقط صوتًا واضحًا — أواصل الاستماع.");
+          setConvNotice(NO_SPEECH_NOTICE_AR);
           setConvPaused(false);
           scheduleConversationRelisten(450);
           return;
@@ -1648,7 +1651,7 @@ export function SadeedCopilot() {
         if (cancelled || !convModeRef.current) return;
         if (noSpeech) {
           sadeedState.set("idle");
-          setConvNotice("لم ألتقط صوتًا واضحًا — أواصل الاستماع.");
+          setConvNotice(NO_SPEECH_NOTICE_AR);
           setConvPaused(false);
           scheduleConversationRelisten(450);
           return;
@@ -1733,7 +1736,7 @@ export function SadeedCopilot() {
       setConvPaused(true);
       setConvNotice(
         error instanceof DOMException && error.name === "NotAllowedError"
-          ? "تم رفض إذن الميكروفون — اسمح به للموقع من إعدادات المتصفح."
+          ? MIC_DENIED_AR
           : "تعذّر الوصول إلى الميكروفون — تأكد من HTTPS وإذن المتصفح.",
       );
     }
@@ -1837,7 +1840,7 @@ export function SadeedCopilot() {
         }
         if (!convModeRef.current) return;
         if (event.error === "not-allowed") {
-          setConvNotice("تم رفض إذن الميكروفون — اسمح به للموقع من إعدادات المتصفح.");
+          setConvNotice(MIC_DENIED_AR);
           setConvPaused(true);
           return;
         }
