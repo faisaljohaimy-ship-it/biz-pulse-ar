@@ -12,10 +12,11 @@
 import { DefaultChatTransport } from "ai";
 import type { SadeedRouteHint } from "../types/sadeed";
 import { windowChatMessages } from "./chat-window";
+import { CHAT_TIMEOUT_CODE } from "./chat-timeout";
 import { supabase } from "@/integrations/supabase/client";
 
 let cachedHint: SadeedRouteHint | null = null;
-let cachedReplyMode: "text" | "voice" = "text";
+let cachedReplyMode: "text" | "voice" | "deep" = "text";
 
 /** Publish the current route hint. SadeedService attaches it as a request header. */
 export function setPendingRouteHint(hint: SadeedRouteHint | null) {
@@ -24,7 +25,7 @@ export function setPendingRouteHint(hint: SadeedRouteHint | null) {
 
 /** Select the presentation contract for the next request. Voice responses are
  * still retained as hidden conversation history, but the UI renders audio only. */
-export function setPendingReplyMode(mode: "text" | "voice") {
+export function setPendingReplyMode(mode: "text" | "voice" | "deep") {
   cachedReplyMode = mode;
 }
 
@@ -69,15 +70,45 @@ export function computeAutoRetryDelayMs(
   return Math.max(base, hintMs ?? 0) + jitter;
 }
 
+// ── مهلة الدور: مشتقّة من سقف الخادم لا مرقّمة جزافًا ───────────────────────
+// الخادم يخزّن الردّ كاملًا ولا يرسل الترويسات إلا بعد انتهاء الدور، فمهلة
+// «حتى الترويسات» تغطّي الدور كلّه. سقف دور النموذج في الخادم
+// (`MODEL_TURN_DEADLINE_MS` و`MODEL_TURN_DEADLINE_DEEP_MS` في
+// `routes/api/chat.ts`) 45 ث للنص والصوت و75 ث للعميق، وتسبقه بوّابات
+// (جلسة، حدّ المعدّل، حصّة، سياق) ≈ 5 ث (قِيست 5.2 ث في عيّنة إنتاج واحدة
+// n=1 — تقديرٌ لا ضمان)، ونضيف هامش شبكةٍ 5 ث كي يسبق الخادمُ العميلَ دائمًا.
+// كانت المهلة 30 ث صلبة فيُجهَض كل دورٍ بين 30 و45 ث في العميل. وتسري على كل
+// نداءٍ عبر هذه الدالة، فحتى فحص الصحّة (GET) صار سقفه 55 ث بعد أن كان 30 ث.
+const SERVER_TURN_CAP_MS = 45_000;
+const SERVER_TURN_CAP_DEEP_MS = 75_000;
+const SERVER_GATES_MS = 5_000;
+const NETWORK_MARGIN_MS = 5_000;
+/** مهلة دور نصّي/صوتي: 45 + 5 + 5 = 55 ث. */
+export const CHAT_DEADLINE_MS = SERVER_TURN_CAP_MS + SERVER_GATES_MS + NETWORK_MARGIN_MS;
+/** مهلة دور عميق: 75 + 5 + 5 = 85 ث. */
+export const CHAT_DEADLINE_DEEP_MS = SERVER_TURN_CAP_DEEP_MS + SERVER_GATES_MS + NETWORK_MARGIN_MS;
+
 // Authenticated fetch — attaches the Supabase Bearer token so /api/chat's
 // guard accepts the request. Without this the chat is silently rejected 401
-// and the user sees no reply. 30s hard timeout guarantees no infinite wait.
+// and the user sees no reply. A deadline guarantees no infinite wait.
 // Exported for the saved-repair-method contract test.
+//
+// عند انتهاء المهلة يُجهَض الطلب بسببٍ هو `TimeoutError` (رسالته
+// `CHAT_TIMEOUT_CODE`) لا `AbortError`: حزمة `ai` تعامل `AbortError` إيقافًا
+// من المستخدم فتضبط الحالة `ready` بلا خطأ، فيختفي «سَدِيد يفكّر…» بلا ردٍّ ولا
+// رسالة. أمّا Stop فيبقى `AbortError` — إيقافًا هادئًا بلا رسالة خطأ.
+// ويرفض `fetch` بـ`signal.reason` في كل متصفحٍ يعرّف `throwIfAborted` (الذي
+// تستعمله الدالة أصلًا: Chrome 100 · Safari 15.4 · Firefox 97)، فلا مسارٌ
+// احتياطيّ للمتصفحات الأقدم — هي نفسها لا تجد `throwIfAborted`.
 export async function sadeedAuthedFetch(input: RequestInfo | URL, init: RequestInit = {}) {
-  // The 30 s ceiling covers session lookup too, and still applies when the
-  // SDK passes its own (Stop) signal — both abort the request.
+  // The deadline covers session lookup too, and still applies when the
+  // SDK passes its own (Stop) signal — both abort the request. Stop سبق المهلة
+  // ⇒ يبقى إيقافًا: أوّل سبب إجهاضٍ يفوز، و`abort()` الثاني لا أثر له.
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 30_000);
+  const timer = setTimeout(
+    () => controller.abort(new DOMException(CHAT_TIMEOUT_CODE, "TimeoutError")),
+    cachedReplyMode === "deep" ? CHAT_DEADLINE_DEEP_MS : CHAT_DEADLINE_MS,
+  );
   // Forward Stop without relying on AbortSignal.any (older browsers lack it).
   const stopSignal = init.signal;
   const forwardStop = () => controller.abort(stopSignal?.reason);
