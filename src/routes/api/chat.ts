@@ -35,6 +35,16 @@ import {
   inflightModelCalls,
 } from "@/lib/governance/request-guards.server";
 import { evaluateRagCoverage } from "@/lib/sadeed/rag.server";
+import { withChatTurnTrace } from "@/lib/sadeed/chat-timing.server";
+import {
+  googleThinkingOptions,
+  isThinkingOptionRejection,
+  resolveThinkingLevel,
+  suspendThinking,
+  THINKING_SUSPEND_MS,
+  type ThinkingLevel,
+} from "@/lib/sadeed/llm/thinking-level.server";
+import { lastStepAnswers, maxStepsFor } from "@/lib/sadeed/llm/turn-limits.server";
 import { parseIntent, resolveModel } from "@/lib/sadeed-core/server/ai-router.server";
 import { resolveProviderPlan, type PlannedModel } from "@/lib/sadeed/llm/provider-plan.server";
 import {
@@ -392,15 +402,37 @@ export const Route = createFileRoute("/api/chat")({
           headers: responseHeaders(requestId),
         });
       },
-      POST: async ({ request }) => {
+      // `withChatTurnTrace`: أثر الدور (مراحل · خطوات · رموز) في سطر سجلّ واحد وترويسة
+      // `Server-Timing` على كل ردّ — قياسٌ بلا أثر على السلوك (chat-timing.server.ts).
+      POST: withChatTurnTrace(async ({ request }, trace) => {
         // مفتاح الإيقاف الفوري أوّلًا — متزامن، قبل أي شبكة.
         const off = aiDisabledResponse("chat");
         if (off) return off;
+
+        // ── تسخين الوحدات الثقيلة (استيرادات ديناميكية داخل المسار) ──────────────
+        // كل وحدةٍ تُستورد عند أول حاجةٍ إليها، فتدفع المعزولة الباردة تحميلها وتقييمها
+        // (مجموعات المشاريع والصيانة والبلاغات المستوردة، وملف أدوات سَدِيد الكبير)
+        // تسلسليًّا بين انتظارات الشبكة. هنا تبدأ كلها دفعةً **دون انتظار** فيتداخل
+        // تقييمها مع التحقّق من الطلب والجلسة والحدّ. الأثر على البدء البارد وحده، و**غير مقيس
+        // بعد** (يقيسه `isolateTurn` و`stages` في سطر timing). مواقع `await import(...)`
+        // الأصلية أدناه باقية حرفًا؛ وإخفاق استيرادٍ هنا يُبتلع ويُرمى عند موقعه الحقيقي كما كان.
+        // وحدة الاسترجاع ليست في القائمة عمدًا: مستوردةٌ ساكنًا في رأس الملف (`evaluateRagCoverage`)
+        // فهي محمَّلة قبل أول طلب. والأدوات للمسجَّل وحده، فلا يدفعها الزائر.
+        const warmUp: Array<Promise<unknown>> = [
+          import("@/lib/sadeed/instant-data-answers.server"),
+          import("@/lib/sadeed/llm/zero-cost-router.server"),
+          import("@/lib/sadeed-context.server"),
+        ];
+        if (request.headers.get("authorization")) warmUp.push(import("@/lib/sadeed-tools.server"));
+        void Promise.all(warmUp).catch(() => {});
 
         const guard = await validateChatRequest(request);
         if ("response" in guard) return guard.response;
         const { data: parsedData, authHeader, requestId } = guard;
         const { messages, threadId, model: modelId, grounded, replyMode = "text" } = parsedData;
+        trace.setRequestId(requestId);
+        trace.note({ replyMode });
+        trace.lap("validate");
 
         // ── SADEED Brain — server-side AI Router ───────────────────────────
         // If the client explicitly picked a model (legacy dev/tool path), honor it.
@@ -463,6 +495,7 @@ export const Route = createFileRoute("/api/chat")({
           // ولا سجلّ، وهي الطبقة نفسها التي يسقط إليها العميل عند 401 — ويُوسم
           // `X-SADEED-Auth: unverified`. لا يُمنح شيءٌ من صلاحيات الجلسة بلا تحقّق.
           const verdict = await withDeadline(supabase.auth.getUser(), CHAT_GATE_DEADLINE_MS);
+          trace.lap("auth");
           if (verdict === DEADLINE_HIT) {
             authState = "unverified";
             console.warn("[api/chat] session verification timed out — serving as guest", {
@@ -493,6 +526,7 @@ export const Route = createFileRoute("/api/chat")({
                 .order("joined_at", { ascending: true }),
               CHAT_GATE_DEADLINE_MS,
             );
+            trace.lap("org");
             if (membership === DEADLINE_HIT) {
               // بلا مؤسسةٍ متحقَّقة يفشل RAG مغلقًا أدناه — كما عند تعدّد العضويات.
               console.warn("[api/chat] org context timed out", {
@@ -573,7 +607,7 @@ export const Route = createFileRoute("/api/chat")({
         // حين يتعذّر المخزن والسياسة مغلقة، قبل الردّ المغلق (`gate` = `closed`):
         // قِيس والمخزن لا يردّ أن «كم عدد المشاريع؟» و«من أنت؟» أخذا السطر المغلق نفسه
         // (DEF-10). وذلك السطر بلا حدٍّ أصلًا، فما يحلّ محلّه لا يفتح إنفاقًا ولا قراءة.
-        const deterministicReply = async (gate: GateMode | "closed"): Promise<Response | null> => {
+        const deterministicLayers = async (gate: GateMode | "closed"): Promise<Response | null> => {
           if (!lastUserText) return null;
           const streamFixed = (text: string, tag: string) => {
             const stream = createUIMessageStream({
@@ -656,6 +690,14 @@ export const Route = createFileRoute("/api/chat")({
           }
           return null;
         };
+        // الطبقات الحتمية بمرحلتها في القياس (تُنادى من مسارين: العادي والبوّابة المغلقة).
+        const deterministicReply = async (gate: GateMode | "closed"): Promise<Response | null> => {
+          try {
+            return await deterministicLayers(gate);
+          } finally {
+            trace.lap("deterministic");
+          }
+        };
         const closedPolicyReply = async (which: "rate" | "quota") => {
           console.warn(
             `[api/chat] ${which} gate unavailable — closed policy, zero-cost reply or local guaranteed reply`,
@@ -682,6 +724,7 @@ export const Route = createFileRoute("/api/chat")({
         // في `enforceRateLimit` يجعل «غير متاح» فوريًّا بعد خمسة فشلٍ خلال 60 ث،
         // فلا يدفع كل طلبٍ مهلتين على مخزنٍ معروفٍ عطله.
         const rate = await enforceRateLimit(rateKey, limit.max, limit.windowSeconds, gate);
+        trace.lap("rate");
         let gateMode: GateMode = "verified";
         if (rate.unavailable) {
           if (gateDegradedMode() === "closed") return closedPolicyReply("rate");
@@ -741,6 +784,8 @@ export const Route = createFileRoute("/api/chat")({
           });
         }
 
+        trace.lap("adapter");
+
         if (gateMode === "verified") {
           const quota = tagged(
             await enforceAiQuota({
@@ -763,6 +808,7 @@ export const Route = createFileRoute("/api/chat")({
           const bounded = tagged(degradedAiQuota("chat", identity), "degraded");
           if (bounded) return bounded;
         }
+        trace.lap("quota");
         if (gateMode === "degraded") {
           console.warn("[api/chat] gate degraded — in-memory bounds", {
             requestId,
@@ -771,6 +817,7 @@ export const Route = createFileRoute("/api/chat")({
           });
         }
 
+        trace.note({ provider: primary.vendor, model: primary.modelId });
         console.log("[api/chat] provider", {
           requestId,
           provider: primary.vendor,
@@ -873,6 +920,8 @@ When the user attaches files (<attachment> text blocks, images, or PDFs):
             });
             return emptyRag;
           });
+          // مدّة الاسترجاع وحده (متوازية مع اللقطة): داخل مرحلة `context` لا إضافة عليها.
+          trace.watch("rag", ragPromise);
           // ── ذراع ويب سَدِيد (n8n): مطفأة افتراضًا (أمر المالك ٢٠٢٦/١٠/٣٠) ──
           // `null` ⇒ لم يُنظر فيها (الراية مطفأة أو مفتاح إيقاف): لا وعد ولا ترويسة ولا سجلّ.
           // وتبدأ هنا قبل أي انتظار فتعمل بالتوازي مع الاسترجاع واللقطة، وتُنتظر عند حاجتها
@@ -976,6 +1025,7 @@ ${untrustedPromptData(ragContext, 48_000)}
             }
           }
         }
+        trace.lap("context");
 
         // SADEED Council review. Every in-scope model turn is planned as SADEED
         // Chief + the complete canonical Council of Ten. Its output is an
@@ -1054,6 +1104,7 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
               error: councilError instanceof Error ? councilError.message : String(councilError),
             });
           }
+          trace.lap("council");
         }
 
         const tools = userId
@@ -1065,6 +1116,7 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
               agentsAvailable: plan.selected === "gemini",
             })
           : undefined;
+        trace.lap("tools");
 
         console.log("[api/chat] streaming", {
           requestId,
@@ -1086,7 +1138,6 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
         // INVARIANT-9 (measure every reply): capture start / first-token /
         // finish times to persist into finn_interactions.
         const startAt = Date.now();
-        const firstTokenAt: number | null = null;
 
         // ─── Inject bounded presentation preferences ───────────────────
         // Fixed enums only: never store/inject recipients, actions, secrets,
@@ -1108,6 +1159,7 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
           } catch (patErr) {
             console.warn("[api/chat] adaptive preferences skipped", patErr);
           }
+          trace.lap("prefs");
         }
 
         if (replyMode === "voice") {
@@ -1226,18 +1278,26 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
             tools,
             ignoreIncompleteToolCalls: true,
           });
-          const run = (m: LanguageModel, retries: number) =>
-            generateText({
+          // سقف الخطوات: 4 للنص والصوت، 8 للعميق (`turn-limits.server.ts`)؛ والمحوّل الاختياري 2.
+          const maxSteps = useOpenAi ? 2 : maxStepsFor(replyMode);
+          trace.note({ maxSteps });
+          trace.lap("prompt");
+          const generate = (m: LanguageModel, retries: number, thinking: ThinkingLevel | null) => {
+            trace.modelRunStarted();
+            return generateText({
               model: m,
               system: systemPrompt,
               messages: modelMessages,
               tools,
               toolChoice: "auto",
-              stopWhen: stepCountIs(useOpenAi ? 2 : 8),
+              stopWhen: stepCountIs(maxSteps),
+              // آخر خطوةٍ مسموحة تكتب الجواب: بلا ذلك يقف الدور عند السقف على نداء أدواتٍ ونصّه فارغ.
+              ...(tools && !useOpenAi ? { prepareStep: lastStepAnswers(maxSteps) } : {}),
               maxRetries: retries,
               abortSignal: turnSignal,
-              onStepFinish: () => {
+              onStepFinish: (step) => {
                 stepsDone += 1;
+                trace.step(step);
               },
               // Gemini 3.6 deprecates temperature/top-p/top-k controls. Keep
               // quality in the prompt, evidence gate and tool policy instead.
@@ -1249,8 +1309,44 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
                 : replyMode === "voice"
                   ? 700
                   : 16_000,
-              ...(useOpenAi ? { providerOptions: { openai: { store: false } } } : {}),
+              ...(useOpenAi
+                ? { providerOptions: { openai: { store: false } } }
+                : thinking
+                  ? { providerOptions: googleThinkingOptions(thinking) }
+                  : {}),
             });
+          };
+          // مستوى التفكير لـGemini وحده (لا المحوّل ولا الاحتياطي)، يُقرأ عند كل نداء. وإن رفض
+          // المزوّد الخيارَ نفسه (400 يذكر thinking) أُعيد الدور مرّةً بلا خيار وعُطّلت الميزة في
+          // هذا المعزول عشر دقائق؛ لا سقوط على غير ذلك، ولا بعد خطوةٍ أنهت أدواتها
+          // (`thinking-level.server.ts`).
+          const run = async (m: LanguageModel, retries: number) => {
+            const thinking = resolveThinkingLevel(attempted.vendor, replyMode);
+            trace.note({ thinking: thinking ?? "none" });
+            try {
+              return await generate(m, retries, thinking);
+            } catch (error) {
+              if (
+                !thinking ||
+                stepsDone > 0 ||
+                turnSignal.aborted ||
+                !isThinkingOptionRejection(error)
+              )
+                throw error;
+              suspendThinking();
+              trace.note({ thinking: "fallback" });
+              console.warn(
+                "[api/chat] thinking option rejected by provider → one retry without it",
+                {
+                  requestId,
+                  event: "thinking.fallback",
+                  level: thinking,
+                  suspendedMs: THINKING_SUSPEND_MS,
+                },
+              );
+              return await generate(m, retries, null);
+            }
+          };
           // الاحتياطي لا يُبنى إلا إن وُجد في الخطة (طلبٌ صريح من المالك) ولزم فعلًا.
           let gen: Awaited<ReturnType<typeof run>>;
           if (backupPlan && backup.primaryCoolingDown()) {
@@ -1306,6 +1402,7 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
           }
           answeredBy = attempted;
           rawModelText = gen.text;
+          trace.finishModel(gen);
           console.log("[api/chat] buffered finish", {
             requestId,
             vendor: answeredBy.vendor,
@@ -1348,6 +1445,11 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
           // تحرير حارسَي الطلب فور انتهاء النموذج — ما بعده (البثّ) لحظيّ.
           releaseGuards();
         }
+        trace.lap("model");
+        trace.note({
+          provider: (answeredBy ?? attempted).vendor,
+          model: (answeredBy ?? attempted).modelId,
+        });
         // مصدر الردّ في الترويسة: الأساسي، أو الاحتياطي، أو سطر الخطأ الآمن.
         const replySource = !answeredBy
           ? "model-error"
@@ -1389,6 +1491,11 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
           speakableText,
         });
         const coverage = evaluateRagCoverage(safeDisplayText, ragCitations);
+        trace.lap("finalize");
+        // الدور مخزَّن بالكامل (Option A) فلا بايت قبل اكتماله: أوّل رمزٍ يصل العميل هو لحظة
+        // الاكتمال هذه. كان `firstTokenAt = null` ثابتًا فبقي `first_token_ms` فارغًا دائمًا
+        // (INVARIANT-9). حين يوجد بثّ فعليّ يُقاس عند أول دلتا.
+        const firstTokenAt = Date.now();
 
         // Persist ONLY the safe text (never raw model output).
         if (userId) {
@@ -1420,7 +1527,7 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
                 answer: redactTelemetryText(a).slice(0, 8000),
                 model: (answeredBy ?? attempted).modelId,
                 latency_ms: Date.now() - startAt,
-                first_token_ms: firstTokenAt ? firstTokenAt - startAt : null,
+                first_token_ms: firstTokenAt - startAt,
                 device_class: deviceClass,
               })
               .then(({ error: insErr }) => {
@@ -1534,7 +1641,7 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
               : {}),
           },
         });
-      },
+      }),
     },
   },
 });

@@ -33,6 +33,10 @@ import {
   writeConfirmationAvailable,
 } from "@/lib/sadeed/write-confirmation.server";
 import { buildMakkahMoment } from "@/lib/sadeed/makkah-clock";
+import {
+  buildPatrolRegionReport,
+  PATROL_REPORT_ROW_LIMIT,
+} from "@/lib/sadeed/patrol-region-report.server";
 
 function genRef(prefix: string) {
   const d = new Date();
@@ -1767,6 +1771,29 @@ export function buildSadeedTools(
         const { data, error } = await q;
         if (error) return { ok: false, error: error.message };
         return { ok: true, patrols: data ?? [], count: data?.length ?? 0 };
+      },
+    }),
+
+    // قراءة فقط. المنطقة ليست على `sec_patrols` بل على `sec_circles.region` عبر
+    // `site_id → sec_sites.circle_id`: استعلامٌ واحد بصلاحيات المستدعي (RLS) يجلبها مضمَّنةً،
+    // والتجميع في الكود (`patrol-region-report.server.ts`) — فلا يدور النموذج بخطواتٍ متكرّرة.
+    sec_patrol_report_by_region: tool({
+      description:
+        "تقرير الدوريات حسب المنطقة (قراءة فقط): لكل منطقة العدد الكلي والنشطة والمجدولة والمكتملة والفائتة، " +
+        "ومتوسط نسبة إنجاز نقاط التفتيش (null حين لا توجد نقاط). استعمله لأسئلة «تقرير الدوريات في كل منطقة» " +
+        `بدل تكرار sec_list_patrols. المنطقة غير المعروفة «غير محددة»، وحقل truncated يعلن الاقتطاع عند ${PATROL_REPORT_ROW_LIMIT} دورية.`,
+      inputSchema: z.object({}),
+      execute: async () => {
+        const { data, error } = await supabase
+          .from("sec_patrols")
+          .select(
+            "status,checkpoints_total,checkpoints_done,site:sec_sites(circle:sec_circles(region))",
+          )
+          .order("created_at", { ascending: false })
+          // سقف+1 ليُعرف الاقتطاع دون استعلام عدٍّ ثانٍ.
+          .limit(PATROL_REPORT_ROW_LIMIT + 1);
+        if (error) return { ok: false, error: error.message };
+        return buildPatrolRegionReport(data ?? []);
       },
     }),
 
