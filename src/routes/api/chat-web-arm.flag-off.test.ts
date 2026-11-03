@@ -248,9 +248,20 @@ async function run(sc: Scenario): Promise<Capture> {
   const body = await res.text();
   spies.forEach((s) => s.mockRestore());
   const system = sim.systems[0] ?? null;
+  // أداة القياس (٢٠٢٦/١١/٠٣، chat-timing.server.ts) تضيف ترويسة `Server-Timing` وسطر سجلّ
+  // `[api/chat] timing` لكل دور — قياسٌ متعامد على ما يحرسه هذا الاختبار (الراية مطفأة ⇒
+  // لا أثر للذراع)، وقيمه متغيّرة بطبيعتها فلا تدخل البصمة. وجودهما يُتحقَّق منه هنا صراحةً
+  // كي لا يصير الاستثناء ثغرة، وحارسهما الكامل في `chat-timing.test.ts`.
+  expect(res.headers.get("server-timing"), "ترويسة القياس غائبة").toMatch(/total;dur=\d+/);
+  expect(
+    logs.filter((line) => line === "log:[api/chat] timing"),
+    "سطر القياس مرّة واحدة لكل دور",
+  ).toHaveLength(1);
   return {
     status: res.status,
-    headers: [...res.headers.entries()].sort(([a], [b]) => a.localeCompare(b)),
+    headers: [...res.headers.entries()]
+      .filter(([name]) => name !== "server-timing")
+      .sort(([a], [b]) => a.localeCompare(b)),
     bodyChars: body.length,
     bodySha256: createHash("sha256").update(body).digest("hex"),
     modelCalls: sim.modelCalls,
@@ -260,7 +271,7 @@ async function run(sc: Scenario): Promise<Capture> {
     systemChars: system === null ? null : system.length,
     systemSha256: system === null ? null : createHash("sha256").update(system).digest("hex"),
     generate: [...sim.generateArgs],
-    logLines: logs,
+    logLines: logs.filter((line) => line !== "log:[api/chat] timing"),
   };
 }
 

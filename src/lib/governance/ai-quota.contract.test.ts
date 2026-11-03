@@ -67,7 +67,9 @@ describe("① كل نقطة تُنفق مالًا محروسة بالحصّة ا
     // الملفّ كلّه، فأسقطت `sadeed-tts` ظلمًا: دالّتها المساعدة `synthesize`
     // تحمل `await fetch(` وتُعرَّف **فوق** المسار. فالشريحة تبدأ من
     // `POST:` — وحارسٌ يقيس خارج نطاقه يكذب في الاتجاهين.
-    const handlerAt = src.indexOf("POST: async");
+    // `/api/chat` يغلّف معالجه بأثر الدور (`POST: withChatTurnTrace(async …`، ٢٠٢٦/١١/٠٣)؛
+    // الشريحة تبدأ من المعالج نفسه في الصيغتين.
+    const handlerAt = src.search(/POST: (?:withChatTurnTrace\()?async/);
     expect(handlerAt, `${path} بلا معالج POST`).toBeGreaterThan(-1);
     const handler = src.slice(handlerAt);
 
