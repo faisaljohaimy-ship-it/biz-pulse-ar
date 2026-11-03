@@ -409,6 +409,23 @@ export const Route = createFileRoute("/api/chat")({
         const off = aiDisabledResponse("chat");
         if (off) return off;
 
+        // ── تسخين الوحدات الثقيلة (استيرادات ديناميكية داخل المسار) ──────────────
+        // كل وحدةٍ تُستورد عند أول حاجةٍ إليها، فتدفع المعزولة الباردة تحميلها وتقييمها
+        // (مجموعات المشاريع 697 والصيانة 249 والبلاغات 3,427 صفًّا، وأدوات سَدِيد 2,241
+        // سطرًا) تسلسليًّا بين انتظارات الشبكة. هنا تبدأ كلها دفعةً **دون انتظار** فيتداخل
+        // تقييمها مع التحقّق من الطلب والجلسة والحدّ. الأثر على البدء البارد وحده، و**غير مقيس
+        // بعد** (يقيسه `isolateTurn` و`stages` في سطر timing). مواقع `await import(...)`
+        // الأصلية أدناه باقية حرفًا؛ وإخفاق استيرادٍ هنا يُبتلع ويُرمى عند موقعه الحقيقي كما كان.
+        // وحدة الاسترجاع ليست في القائمة عمدًا: مستوردةٌ ساكنًا في رأس الملف (`evaluateRagCoverage`)
+        // فهي محمَّلة قبل أول طلب. والأدوات للمسجَّل وحده، فلا يدفعها الزائر.
+        const warmUp: Array<Promise<unknown>> = [
+          import("@/lib/sadeed/instant-data-answers.server"),
+          import("@/lib/sadeed/llm/zero-cost-router.server"),
+          import("@/lib/sadeed-context.server"),
+        ];
+        if (request.headers.get("authorization")) warmUp.push(import("@/lib/sadeed-tools.server"));
+        void Promise.all(warmUp).catch(() => {});
+
         const guard = await validateChatRequest(request);
         if ("response" in guard) return guard.response;
         const { data: parsedData, authHeader, requestId } = guard;
