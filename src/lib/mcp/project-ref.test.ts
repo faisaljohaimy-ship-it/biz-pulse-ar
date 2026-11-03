@@ -12,7 +12,7 @@
  * URL. tsc is happy, the build is happy, the server boots. It only fails at the
  * moment a human tries to link the system — the one path no test exercised.
  */
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   BUILTIN_PROJECT_REF,
@@ -151,5 +151,86 @@ describe("the repo agrees with itself about which project this is", () => {
     );
     expect(drifted).not.toBe(readFileSync("vite.config.ts", "utf8"));
     expect(new Set(fallbackRefs(drifted))).not.toEqual(new Set([declared()]));
+  });
+});
+
+describe("the publishable key baked into vite.config.ts (the third literal)", () => {
+  // The URL and the id are checked above, but a project ref says nothing about
+  // the key: a publishable key is an opaque token, and nothing inside it names
+  // the project that issued it. 2026-11-03 review: swapping the literal for the
+  // frozen Lovable Cloud project's key left every guard above green, while a
+  // build without VITE_SUPABASE_* would have paired the production host with
+  // that key and answered every call with "invalid API key". A build that sets
+  // its own variables never reads the literal, so the fault would surface only
+  // in a preview, a CI build or a local run — exactly where nobody looks.
+  // The pattern stops at the closing parenthesis on purpose: were the literal
+  // deleted, a looser pattern would run on into the next entry (the project id)
+  // and report that as the key.
+  //
+  // What this CAN prove: the literal exists, has the publishable shape, and is
+  // not the one key known to belong to the wrong project. What it CANNOT prove
+  // is that it is the production key — no file can. That was checked once, by
+  // hand, against Supabase's get_publishable_keys for the project, and is
+  // recorded in docs/operations/LOVABLE_DETACH_2026-11-03.md (A-6).
+  const SHAPE = /^sb_publishable_[A-Za-z0-9_-]{20,}$/;
+
+  // Prefix only, on purpose: it is enough to recognise the key and keeps the
+  // whole token out of the test. The key itself still sits in the migration
+  // below, which is why this list can be anchored to something real.
+  const FROZEN_PROJECT_KEY_PREFIX = "sb_publishable_8Mvuk";
+
+  // The last `|| "<literal>"` of the VITE_SUPABASE_PUBLISHABLE_KEY entry: the
+  // value that fills the gap when no variable is set.
+  const keyLiterals = (src: string) =>
+    [
+      ...src.matchAll(
+        /"import\.meta\.env\.VITE_SUPABASE_PUBLISHABLE_KEY":\s*JSON\.stringify\([^)]*?\|\|\s*"([^"]*)"\s*,?\s*\)/g,
+      ),
+    ].map((m) => m[1]);
+
+  const sourceOf = () => readFileSync("vite.config.ts", "utf8");
+
+  it("is present exactly once and has the sb_publishable_ shape", () => {
+    const found = keyLiterals(sourceOf());
+    expect(found).toHaveLength(1);
+    expect(found[0]).toMatch(SHAPE);
+  });
+
+  it("is not the frozen Lovable Cloud project's key — anywhere in the file", () => {
+    expect(keyLiterals(sourceOf())[0].startsWith(FROZEN_PROJECT_KEY_PREFIX)).toBe(false);
+    expect(sourceOf()).not.toContain(FROZEN_PROJECT_KEY_PREFIX);
+  });
+
+  it("the deny-list prefix is real: the frozen key is still in the 2026-07-07 migration", () => {
+    // Without this a mistyped prefix would make the deny-list vacuous and the
+    // planted test below would still pass, because it reuses the same prefix.
+    const dir = "supabase/migrations";
+    const file = readdirSync(dir).find((f) => f.startsWith("20260707220839_"));
+    expect(file).toBeDefined();
+    expect(readFileSync(`${dir}/${file}`, "utf8")).toContain(FROZEN_PROJECT_KEY_PREFIX);
+  });
+
+  it("the key guards go red on planted violations", () => {
+    const original = sourceOf();
+    const current = keyLiterals(original)[0];
+    const plant = (literal: string) => original.replace(`"${current}"`, `"${literal}"`);
+    expect(plant("sb_publishable_x")).not.toBe(original);
+
+    // 1. The frozen project's key: well-formed, so the shape check alone is
+    //    blind to it — the deny-list is what catches it.
+    const frozen = plant(FROZEN_PROJECT_KEY_PREFIX + "x".repeat(26));
+    expect(keyLiterals(frozen)[0]).toMatch(SHAPE);
+    expect(frozen).toContain(FROZEN_PROJECT_KEY_PREFIX);
+
+    // 2. A legacy JWT anon key, a truncated key and an empty literal all fail
+    //    the shape check.
+    for (const bad of ["eyJhbGciOiJIUzI1NiJ9." + "a".repeat(30), "sb_publishable_short", ""]) {
+      expect(keyLiterals(plant(bad))[0]).not.toMatch(SHAPE);
+    }
+
+    // 3. Removing the literal altogether leaves no key to check.
+    const removed = original.replace(/\|\|\s*"sb_publishable_[^"]*"/, "");
+    expect(removed).not.toBe(original);
+    expect(keyLiterals(removed)).toHaveLength(0);
   });
 });
