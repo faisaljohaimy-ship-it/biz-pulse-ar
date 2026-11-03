@@ -4,20 +4,21 @@ import { describe, expect, it } from "vitest";
 import {
   MAX_STEPS_DEEP,
   MAX_STEPS_TEXT_DEFAULT,
+  guardsLastStep,
   lastStepAnswers,
   maxStepsFor,
 } from "@/lib/sadeed/llm/turn-limits.server";
 
 describe("maxStepsFor", () => {
-  it("الافتراض: 4 للنص والصوت، 8 للعميق", () => {
-    expect(maxStepsFor("text", {})).toBe(4);
-    expect(maxStepsFor("voice", {})).toBe(4);
+  it("الافتراض (المرحلة ١): 8 لكل الأوضاع = السقف القديم", () => {
+    expect(maxStepsFor("text", {})).toBe(8);
+    expect(maxStepsFor("voice", {})).toBe(8);
     expect(maxStepsFor("deep", {})).toBe(8);
-    expect(MAX_STEPS_TEXT_DEFAULT).toBe(4);
+    expect(MAX_STEPS_TEXT_DEFAULT).toBe(8);
     expect(MAX_STEPS_DEEP).toBe(8);
   });
 
-  it("SADEED_MAX_STEPS_TEXT (2..8) يتجاوز النص والصوت وحدهما", () => {
+  it("SADEED_MAX_STEPS_TEXT (2..8) يخفّض النص والصوت وحدهما اختياريًّا", () => {
     for (let n = 2; n <= 8; n++) {
       const env = { SADEED_MAX_STEPS_TEXT: String(n) };
       expect(maxStepsFor("text", env), `text/${n}`).toBe(n);
@@ -27,7 +28,7 @@ describe("maxStepsFor", () => {
     expect(maxStepsFor("text", { SADEED_MAX_STEPS_TEXT: " 6 " })).toBe(6);
   });
 
-  it("ما خرج عن النطاق أو لم يكن عددًا صحيحًا خالصًا يُهمَل (4) — لا يُقصّ", () => {
+  it("ما خرج عن النطاق أو لم يكن عددًا صحيحًا خالصًا يُهمَل (8) — لا يُقصّ", () => {
     for (const bad of [
       "0",
       "1",
@@ -44,17 +45,35 @@ describe("maxStepsFor", () => {
       "٤",
       "04x",
     ]) {
-      expect(maxStepsFor("text", { SADEED_MAX_STEPS_TEXT: bad }), JSON.stringify(bad)).toBe(4);
+      expect(maxStepsFor("text", { SADEED_MAX_STEPS_TEXT: bad }), JSON.stringify(bad)).toBe(8);
     }
   });
 
   it("يُقرأ عند كل نداء", () => {
     const env: Record<string, string | undefined> = {};
+    expect(maxStepsFor("text", env)).toBe(8);
+    env.SADEED_MAX_STEPS_TEXT = "4";
     expect(maxStepsFor("text", env)).toBe(4);
-    env.SADEED_MAX_STEPS_TEXT = "7";
-    expect(maxStepsFor("text", env)).toBe(7);
     delete env.SADEED_MAX_STEPS_TEXT;
-    expect(maxStepsFor("text", env)).toBe(4);
+    expect(maxStepsFor("text", env)).toBe(8);
+  });
+});
+
+describe("guardsLastStep — prepareStep لا يُمرَّر إلا لسقفٍ مخفَّض", () => {
+  it("عند 8 (القديم) لا؛ ودونه نعم", () => {
+    expect(guardsLastStep(MAX_STEPS_DEEP)).toBe(false);
+    expect(guardsLastStep(8)).toBe(false);
+    for (let n = 1; n <= 7; n++) expect(guardsLastStep(n), `cap ${n}`).toBe(true);
+  });
+
+  it("الافتراض لا يحمله في أي وضع؛ والتخفيض الاختياري يحمله للنص والصوت وحدهما", () => {
+    for (const mode of ["text", "voice", "deep"]) {
+      expect(guardsLastStep(maxStepsFor(mode, {})), `${mode}/default`).toBe(false);
+    }
+    const env = { SADEED_MAX_STEPS_TEXT: "4" };
+    expect(guardsLastStep(maxStepsFor("text", env))).toBe(true);
+    expect(guardsLastStep(maxStepsFor("voice", env))).toBe(true);
+    expect(guardsLastStep(maxStepsFor("deep", env))).toBe(false);
   });
 });
 

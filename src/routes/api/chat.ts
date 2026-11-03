@@ -44,7 +44,7 @@ import {
   THINKING_SUSPEND_MS,
   type ThinkingLevel,
 } from "@/lib/sadeed/llm/thinking-level.server";
-import { lastStepAnswers, maxStepsFor } from "@/lib/sadeed/llm/turn-limits.server";
+import { guardsLastStep, lastStepAnswers, maxStepsFor } from "@/lib/sadeed/llm/turn-limits.server";
 import { parseIntent, resolveModel } from "@/lib/sadeed-core/server/ai-router.server";
 import { resolveProviderPlan, type PlannedModel } from "@/lib/sadeed/llm/provider-plan.server";
 import {
@@ -1278,7 +1278,8 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
             tools,
             ignoreIncompleteToolCalls: true,
           });
-          // سقف الخطوات: 4 للنص والصوت، 8 للعميق (`turn-limits.server.ts`)؛ والمحوّل الاختياري 2.
+          // سقف الخطوات: 8 لكل الأوضاع كما كان؛ و`SADEED_MAX_STEPS_TEXT` (2..8) يخفّضه للنص والصوت
+          // اختياريًّا (`turn-limits.server.ts`)؛ والمحوّل الاختياري 2.
           const maxSteps = useOpenAi ? 2 : maxStepsFor(replyMode);
           trace.note({ maxSteps });
           trace.lap("prompt");
@@ -1292,7 +1293,11 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
               toolChoice: "auto",
               stopWhen: stepCountIs(maxSteps),
               // آخر خطوةٍ مسموحة تكتب الجواب: بلا ذلك يقف الدور عند السقف على نداء أدواتٍ ونصّه فارغ.
-              ...(tools && !useOpenAi ? { prepareStep: lastStepAnswers(maxSteps) } : {}),
+              // لا يُمرَّر إلا حين خفّض المالك السقف دون 8 (`guardsLastStep`)؛ عند الافتراض 8 لا
+              // `prepareStep` فيطابق الطلبُ طلبَ `generateText` القديم.
+              ...(tools && !useOpenAi && guardsLastStep(maxSteps)
+                ? { prepareStep: lastStepAnswers(maxSteps) }
+                : {}),
               maxRetries: retries,
               abortSignal: turnSignal,
               onStepFinish: (step) => {
@@ -1316,13 +1321,14 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
                   : {}),
             });
           };
-          // مستوى التفكير لـGemini وحده (لا المحوّل ولا الاحتياطي)، يُقرأ عند كل نداء. وإن رفض
+          // مستوى التفكير لـGemini وحده (لا المحوّل ولا الاحتياطي)، اختياريّ بمتغيّر البيئة: غيابه =
+          // لا `providerOptions` أصلًا = السلوك القديم، ويُقرأ عند كل نداء. وإن رفض
           // المزوّد الخيارَ نفسه (400 يذكر حقل التفكير) أُعيد الدور مرّةً بلا خيار وعُطّلت الميزة
           // في هذا المعزول عشر دقائق؛ لا سقوط على غير ذلك. وبعد خطوةٍ أنهت أدواتها لا يُعاد
           // الدور (يُكرّر أثرها) لكنّ الميزة تُعطَّل ويُعاد رمي الخطأ — فيشفى الدور التالي بدل أن
           // يفشل كل دورٍ بأدوات حتى إعادة النشر (`thinking-level.server.ts`).
           const run = async (m: LanguageModel, retries: number) => {
-            const thinking = resolveThinkingLevel(attempted.vendor, replyMode);
+            const thinking = resolveThinkingLevel(attempted.vendor);
             trace.note({ thinking: thinking ?? "none" });
             try {
               return await generate(m, retries, thinking);

@@ -18,81 +18,73 @@ import {
 beforeEach(() => resetThinkingStateForTests());
 
 describe("resolveThinkingLevel", () => {
-  it("الافتراض: low للنص والصوت، medium للعميق — لـGemini وحده", () => {
-    expect(resolveThinkingLevel(THINKING_VENDOR, "text", {})).toBe("low");
-    expect(resolveThinkingLevel(THINKING_VENDOR, "voice", {})).toBe("low");
-    expect(resolveThinkingLevel(THINKING_VENDOR, "deep", {})).toBe("medium");
+  it("الافتراض (المرحلة ١): غياب المتغيّر ⇒ لا خيار = السلوك القديم، حتى لـGemini", () => {
+    expect(resolveThinkingLevel(THINKING_VENDOR, {})).toBeNull();
+    expect(resolveThinkingLevel(THINKING_VENDOR, { SADEED_THINKING_LEVEL: undefined })).toBeNull();
   });
 
   it("لا خيار لغير Gemini: المحوّل الاختياري والاحتياطي", () => {
     for (const vendor of ["openai", "lovable-gateway", "anthropic", ""]) {
-      for (const mode of ["text", "voice", "deep"]) {
-        expect(resolveThinkingLevel(vendor, mode, {}), `${vendor}/${mode}`).toBeNull();
-      }
+      expect(resolveThinkingLevel(vendor, {}), vendor).toBeNull();
       // ولا التجاوز بالبيئة يفتح الباب لغيره.
-      expect(resolveThinkingLevel(vendor, "text", { SADEED_THINKING_LEVEL: "high" })).toBeNull();
+      expect(resolveThinkingLevel(vendor, { SADEED_THINKING_LEVEL: "high" }), vendor).toBeNull();
     }
   });
 
-  it("SADEED_THINKING_LEVEL يتجاوز الافتراضين لكل الأوضاع، بلا حساسية لحالة الأحرف", () => {
+  it("SADEED_THINKING_LEVEL = minimal|low|medium|high يفعّل المستوى المطلوب، بلا حساسية لحالة الأحرف", () => {
     for (const level of ["minimal", "low", "medium", "high"] as const) {
-      for (const mode of ["text", "voice", "deep"]) {
-        expect(
-          resolveThinkingLevel(THINKING_VENDOR, mode, { SADEED_THINKING_LEVEL: level }),
-          `${level}/${mode}`,
-        ).toBe(level);
-      }
+      expect(resolveThinkingLevel(THINKING_VENDOR, { SADEED_THINKING_LEVEL: level }), level).toBe(
+        level,
+      );
     }
-    expect(resolveThinkingLevel(THINKING_VENDOR, "text", { SADEED_THINKING_LEVEL: " HIGH " })).toBe(
-      "high",
-    );
+    expect(resolveThinkingLevel(THINKING_VENDOR, { SADEED_THINKING_LEVEL: " HIGH " })).toBe("high");
   });
 
-  it("default = لا خيار = السلوك القديم (حتى للعميق)", () => {
-    for (const mode of ["text", "voice", "deep"]) {
+  it("default = لا خيار = السلوك القديم", () => {
+    expect(resolveThinkingLevel(THINKING_VENDOR, { SADEED_THINKING_LEVEL: "default" })).toBeNull();
+    expect(
+      resolveThinkingLevel(THINKING_VENDOR, { SADEED_THINKING_LEVEL: " Default " }),
+    ).toBeNull();
+  });
+
+  it("قيمةٌ مجهولة أو فارغة تُعامَل كغائبة: لا خيار (لا تفعيل بالتخمين)", () => {
+    for (const bad of ["turbo", "", "  ", "0", "none", "off", "lowest", "mediumm"]) {
       expect(
-        resolveThinkingLevel(THINKING_VENDOR, mode, { SADEED_THINKING_LEVEL: "default" }),
+        resolveThinkingLevel(THINKING_VENDOR, { SADEED_THINKING_LEVEL: bad }),
+        JSON.stringify(bad),
       ).toBeNull();
-    }
-  });
-
-  it("قيمةٌ مجهولة أو فارغة تُعامَل كغائبة: يعود الافتراض لا التعطيل", () => {
-    for (const bad of ["turbo", "", "  ", "0", "none", "off"]) {
-      expect(
-        resolveThinkingLevel(THINKING_VENDOR, "text", { SADEED_THINKING_LEVEL: bad }),
-        bad,
-      ).toBe("low");
     }
   });
 
   it("يُقرأ عند كل نداء: تعديل البيئة بين نداءين يظهر فورًا", () => {
     const env: Record<string, string | undefined> = {};
-    expect(resolveThinkingLevel(THINKING_VENDOR, "text", env)).toBe("low");
+    expect(resolveThinkingLevel(THINKING_VENDOR, env)).toBeNull();
     env.SADEED_THINKING_LEVEL = "high";
-    expect(resolveThinkingLevel(THINKING_VENDOR, "text", env)).toBe("high");
+    expect(resolveThinkingLevel(THINKING_VENDOR, env)).toBe("high");
     env.SADEED_THINKING_LEVEL = "default";
-    expect(resolveThinkingLevel(THINKING_VENDOR, "text", env)).toBeNull();
+    expect(resolveThinkingLevel(THINKING_VENDOR, env)).toBeNull();
+    env.SADEED_THINKING_LEVEL = "low";
+    expect(resolveThinkingLevel(THINKING_VENDOR, env)).toBe("low");
   });
 });
 
 describe("التعطيل المؤقت (10 دقائق في المعزول)", () => {
-  it("بعد suspendThinking لا خيار حتى تنقضي المدّة، ثم يعود", () => {
+  const ON = { SADEED_THINKING_LEVEL: "low" };
+
+  it("بعد suspendThinking لا خيار حتى تنقضي المدّة، ثم يعود المستوى المضبوط", () => {
     const t0 = 1_000_000;
     expect(thinkingSuspended(t0)).toBe(false);
+    expect(resolveThinkingLevel(THINKING_VENDOR, ON, t0)).toBe("low");
     suspendThinking(t0);
-    expect(resolveThinkingLevel(THINKING_VENDOR, "text", {}, t0 + 1)).toBeNull();
-    expect(
-      resolveThinkingLevel(THINKING_VENDOR, "deep", {}, t0 + THINKING_SUSPEND_MS - 1),
-    ).toBeNull();
-    expect(resolveThinkingLevel(THINKING_VENDOR, "text", {}, t0 + THINKING_SUSPEND_MS)).toBe("low");
+    expect(resolveThinkingLevel(THINKING_VENDOR, ON, t0 + 1)).toBeNull();
+    expect(resolveThinkingLevel(THINKING_VENDOR, ON, t0 + THINKING_SUSPEND_MS - 1)).toBeNull();
+    expect(resolveThinkingLevel(THINKING_VENDOR, ON, t0 + THINKING_SUSPEND_MS)).toBe("low");
     expect(THINKING_SUSPEND_MS).toBe(600_000);
   });
 
   it("التعطيل يسبق تجاوز البيئة (المزوّد رفض فلا نُصرّ)", () => {
     suspendThinking(0);
-    expect(
-      resolveThinkingLevel(THINKING_VENDOR, "text", { SADEED_THINKING_LEVEL: "high" }, 1),
-    ).toBeNull();
+    expect(resolveThinkingLevel(THINKING_VENDOR, { SADEED_THINKING_LEVEL: "high" }, 1)).toBeNull();
   });
 });
 
