@@ -21,14 +21,44 @@ const LeadSchema = z.object({
 
 export type LeadInput = z.infer<typeof LeadSchema>;
 
+/**
+ * نتيجة قناة البريد كما تُسجَّل في `leads.metadata.email_delivery`. `provider: "none"` =
+ * لم يوجد ناقلٌ فعلي فتُخطّيت القناة صراحةً (لا إدراج ولا إعادة)، وليس أنّ الإرسال فشل.
+ */
+type EmailOutcome = {
+  provider: "lovable-email" | "none";
+  internal_skipped: boolean;
+  internal_ok: boolean;
+  confirm_ok: boolean;
+  internal_error?: string;
+  confirm_error?: string;
+  error?: string;
+};
+
 async function sendNotificationEmails(args: {
   requestId: string;
   data: LeadInput;
   country: string | null;
   ip: string | null;
-}) {
+}): Promise<EmailOutcome> {
   const { requestId, data, country } = args;
   const submittedAt = new Date().toISOString();
+  const internalRecipient = process.env.LEADS_NOTIFY_EMAIL?.trim();
+
+  // لا ناقل ⇒ لا إدراج: `enqueue_email` تُنشئ الطابور وتنجح فيبدو الإرسال ناجحًا ولا يصل بريد
+  // (انظر transport.server.ts). نتيجةٌ صادقة بدل نجاحٍ كاذب، والطلب نفسه محفوظٌ في `leads`.
+  const { EMAIL_TRANSPORT_NOT_CONFIGURED, emailTransportConfigured } =
+    await import("@/lib/email/transport.server");
+  if (!emailTransportConfigured()) {
+    return {
+      provider: "none",
+      internal_skipped: !internalRecipient,
+      internal_ok: false,
+      confirm_ok: false,
+      error: EMAIL_TRANSPORT_NOT_CONFIGURED,
+    };
+  }
+
   const { enqueueTemplateEmail } = await import("@/lib/email/enqueue.server");
 
   const internalData = {
@@ -47,7 +77,6 @@ async function sendNotificationEmails(args: {
     source: data.source ?? "",
   };
 
-  const internalRecipient = process.env.LEADS_NOTIFY_EMAIL?.trim();
   const internalPromise = internalRecipient
     ? enqueueTemplateEmail({
         templateName: "demo-internal",
@@ -68,7 +97,7 @@ async function sendNotificationEmails(args: {
   ]);
 
   return {
-    provider: "lovable-email" as const,
+    provider: "lovable-email",
     internal_skipped: !internalRecipient,
     internal_ok: internalRes.status === "fulfilled" && !!internalRes.value.ok,
     confirm_ok: confirmRes.status === "fulfilled" && !!confirmRes.value.ok,
@@ -145,7 +174,7 @@ export const submitLead = createServerFn({ method: "POST" })
     // 429/5xx (5 attempts, then DLQ). We additionally retry the *enqueue*
     // call up to 3 times in case of transient DB errors so a submission is
     // never lost.
-    let emailStatus: Awaited<ReturnType<typeof sendNotificationEmails>> & { error?: string } = {
+    let emailStatus: EmailOutcome = {
       provider: "lovable-email",
       internal_skipped: !process.env.LEADS_NOTIFY_EMAIL?.trim(),
       internal_ok: false,
@@ -160,6 +189,8 @@ export const submitLead = createServerFn({ method: "POST" })
       try {
         emailStatus = await sendNotificationEmails({ requestId, data, country, ip });
         if (emailStatus.internal_ok && emailStatus.confirm_ok) break;
+        // قناةٌ مُتخطّاة لغياب الناقل: إعادةُ المحاولة لا تُنشئ ناقلًا، وتؤخّر الردّ بلا فائدة.
+        if (emailStatus.provider === "none") break;
       } catch (err) {
         emailStatus.error = err instanceof Error ? err.message : String(err);
       }
@@ -175,7 +206,11 @@ export const submitLead = createServerFn({ method: "POST" })
             ...(data.metadata ?? {}),
             timezone: data.timezone ?? null,
             submitted_at: new Date().toISOString(),
-            email_delivery: { ...emailStatus, attempts: attempt },
+            // قناةٌ مُتخطّاة ⇒ صفر محاولات إرسال فعلية، لا واحدة.
+            email_delivery: {
+              ...emailStatus,
+              attempts: emailStatus.provider === "none" ? 0 : attempt,
+            },
           } as never,
         })
         .eq("id", inserted.id);
@@ -183,7 +218,12 @@ export const submitLead = createServerFn({ method: "POST" })
       /* metadata write failure must not break flow */
     }
 
-    if (!emailStatus.internal_ok || !emailStatus.confirm_ok) {
+    if (emailStatus.provider === "none") {
+      // جدول `leads` مصدر الحقيقة: الطلب محفوظ ولم يُرسَل بريد. المعرّف وحده يُسجَّل (لا بريد ولا اسم).
+      console.error("[leads] email transport not configured; lead saved, no email sent", {
+        requestId,
+      });
+    } else if (!emailStatus.internal_ok || !emailStatus.confirm_ok) {
       console.error("[leads] Email enqueue partial/failed", { requestId, ...emailStatus });
     }
 
