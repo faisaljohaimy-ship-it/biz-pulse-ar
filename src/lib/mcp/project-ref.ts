@@ -44,14 +44,23 @@ export const UNRESOLVED_PROJECT_REF = "project-ref-unset";
  *
  * THE VALUE IS NOT FREE TO CHOOSE. It must equal `project_id` in
  * supabase/config.toml — the declared project — and the test below enforces
- * that. An earlier revision baked in `jhutlofapjfjjeajawie`, a ref this repo
- * had already retired twice. That is worse than no fallback: it replaces a
+ * that. An earlier revision baked in a ref this repo had already retired
+ * twice. That is worse than no fallback: it replaces a
  * LOUD failure (`project-ref-unset`, unmistakable in the discovery document —
  * it is how this whole bug was spotted from one screenshot) with a SILENT one,
  * a plausible-looking host whose tokens are simply never accepted, and no way
  * to tell from the outside why.
+ *
+ * 2026-11-03: moved, together with config.toml, the MCP manifest, the test's
+ * LIVE constant and the vite.config.ts fallbacks, from the frozen Lovable Cloud
+ * copy (jhutlofapjfjjeajawie, writes rejected since 2026-10-22) to the
+ * independent production project that actually serves the app. Evidence: the
+ * project is listed ACTIVE_HEALTHY under the owner's own Supabase account and
+ * the owner's comment on the Vercel VITE_SUPABASE_* variables records the
+ * production cutover to it (the values are encrypted, so not decoded) — see
+ * docs/operations/LOVABLE_DETACH_2026-11-03.md.
  */
-export const BUILTIN_PROJECT_REF = "jhutlofapjfjjeajawie";
+export const BUILTIN_PROJECT_REF = "cnaevysaoimzusnvpazr";
 
 /** A Supabase project ref is a 20-character lowercase alphanumeric label. */
 const SUPABASE_HOST = /^https?:\/\/([a-z0-9]{20})\.supabase\.co\/?$/i;

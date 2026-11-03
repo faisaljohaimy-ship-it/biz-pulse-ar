@@ -22,7 +22,7 @@ import {
   resolveProjectRef,
 } from "./project-ref";
 
-const LIVE = "jhutlofapjfjjeajawie";
+const LIVE = "cnaevysaoimzusnvpazr";
 
 describe("project ref resolution", () => {
   it("prefers the explicit variable when it is set", () => {
@@ -98,6 +98,11 @@ describe("the repo agrees with itself about which project this is", () => {
   //
   // So: this test stops the three copies from drifting apart. It cannot tell
   // you the ref is right. Only production can, and Article 4 says so.
+  //
+  // 2026-11-03: all copies moved together to cnaevysaoimzusnvpazr, the
+  // independent production project (the frozen Lovable Cloud copy
+  // jhutlofapjfjjeajawie rejects writes since 2026-10-22). The evidence was
+  // production's own binding, not memory — docs/operations/LOVABLE_DETACH_2026-11-03.md.
   const ref = (s: string) => s.match(/[a-z0-9]{20}/)?.[0];
   const declared = () => ref(readFileSync("supabase/config.toml", "utf8"));
 
@@ -123,5 +128,28 @@ describe("the repo agrees with itself about which project this is", () => {
 
   it("the ref this suite asserts against is the declared one", () => {
     expect(declared()).toBe(LIVE);
+  });
+
+  // The fifth copy. vite.config.ts bakes the project URL and id into the client
+  // bundle as a last-resort fallback; before 2026-11-03 it silently kept naming
+  // the frozen Lovable Cloud copy while everything else was meant to agree.
+  const fallbackRefs = (src: string) => [
+    ...[...src.matchAll(/"https:\/\/([a-z0-9]{20})\.supabase\.co"/g)].map((m) => m[1]),
+    ...[...src.matchAll(/SUPABASE_PROJECT_ID\s*\|\|\s*"([a-z0-9]{20})"/g)].map((m) => m[1]),
+  ];
+
+  it("the vite.config.ts build-time fallbacks (URL and id) name the declared project", () => {
+    const refs = fallbackRefs(readFileSync("vite.config.ts", "utf8"));
+    expect(refs).toHaveLength(2);
+    expect(new Set(refs)).toEqual(new Set([declared()]));
+  });
+
+  it("the fallback guard goes red when one literal drifts to another project (planted)", () => {
+    const drifted = readFileSync("vite.config.ts", "utf8").replace(
+      `"https://${declared()}.supabase.co"`,
+      '"https://jhutlofapjfjjeajawie.supabase.co"',
+    );
+    expect(drifted).not.toBe(readFileSync("vite.config.ts", "utf8"));
+    expect(new Set(fallbackRefs(drifted))).not.toEqual(new Set([declared()]));
   });
 });
