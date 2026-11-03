@@ -30,21 +30,23 @@ export default defineConfig({
     // browser client fell back to the "unconfigured" host and every auth/data
     // call failed. Platform-provided env still wins; these literals only fill
     // the gap. Both values are public/publishable — no secret is exposed.
+    // They name the independent production project (cnaevysaoimzusnvpazr), not
+    // the frozen Lovable Cloud copy — see docs/operations/LOVABLE_DETACH_2026-11-03.md.
     define: {
       "import.meta.env.VITE_SUPABASE_URL": JSON.stringify(
         process.env.VITE_SUPABASE_URL ||
           process.env.SUPABASE_URL ||
-          "https://jhutlofapjfjjeajawie.supabase.co",
+          "https://cnaevysaoimzusnvpazr.supabase.co",
       ),
       "import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY": JSON.stringify(
         process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
           process.env.SUPABASE_PUBLISHABLE_KEY ||
-          "sb_publishable_8MvukD2H6Xyl76FVdytTTA_0v1UL5Yo",
+          "sb_publishable_1p_17X2c_IAC280bLHv8lQ_D9HaPYGn",
       ),
       "import.meta.env.VITE_SUPABASE_PROJECT_ID": JSON.stringify(
         process.env.VITE_SUPABASE_PROJECT_ID ||
           process.env.SUPABASE_PROJECT_ID ||
-          "jhutlofapjfjjeajawie",
+          "cnaevysaoimzusnvpazr",
       ),
     },
 
