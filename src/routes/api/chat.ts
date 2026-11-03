@@ -44,6 +44,7 @@ import {
   THINKING_SUSPEND_MS,
   type ThinkingLevel,
 } from "@/lib/sadeed/llm/thinking-level.server";
+import { maxStepsFor } from "@/lib/sadeed/llm/turn-limits.server";
 import { parseIntent, resolveModel } from "@/lib/sadeed-core/server/ai-router.server";
 import { resolveProviderPlan, type PlannedModel } from "@/lib/sadeed/llm/provider-plan.server";
 import {
@@ -1260,6 +1261,9 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
             tools,
             ignoreIncompleteToolCalls: true,
           });
+          // سقف الخطوات: 4 للنص والصوت، 8 للعميق (`turn-limits.server.ts`)؛ والمحوّل الاختياري 2.
+          const maxSteps = useOpenAi ? 2 : maxStepsFor(replyMode);
+          trace.note({ maxSteps });
           trace.lap("prompt");
           const generate = (m: LanguageModel, retries: number, thinking: ThinkingLevel | null) => {
             trace.modelRunStarted();
@@ -1269,7 +1273,7 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
               messages: modelMessages,
               tools,
               toolChoice: "auto",
-              stopWhen: stepCountIs(useOpenAi ? 2 : 8),
+              stopWhen: stepCountIs(maxSteps),
               maxRetries: retries,
               abortSignal: turnSignal,
               onStepFinish: (step) => {
