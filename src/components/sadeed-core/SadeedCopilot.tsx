@@ -602,18 +602,15 @@ export function SadeedCopilot() {
       composerRef.current?.focus({ preventScroll: true });
     });
     if (typeof document !== "undefined") {
-      const heads: HTMLLinkElement[] = [];
-      for (const href of [window.location.origin, "https://generativelanguage.googleapis.com"]) {
-        const l = document.createElement("link");
-        l.rel = "preconnect";
-        l.href = href;
-        l.crossOrigin = "";
-        document.head.appendChild(l);
-        heads.push(l);
-      }
+      // أصل الصفحة وحده: المتصفح لا يكلّم مزوّد النموذج أبدًا (كل النداءات من الخادم).
+      const l = document.createElement("link");
+      l.rel = "preconnect";
+      l.href = window.location.origin;
+      l.crossOrigin = "";
+      document.head.appendChild(l);
       return () => {
         cancelled = true;
-        heads.forEach((h) => h.remove());
+        l.remove();
       };
     }
     return () => {
