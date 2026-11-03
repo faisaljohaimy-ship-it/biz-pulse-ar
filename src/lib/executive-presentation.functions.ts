@@ -182,7 +182,13 @@ export const getSystemPulse = createServerFn({ method: "GET" })
     // Voice / Avatar readiness: verify configured secrets exist server-side.
     const voiceReady = Boolean(process.env.ELEVENLABS_API_KEY);
     const avatarReady = Boolean(process.env.HEYGEN_API_KEY || process.env.LIVEAVATAR_API_KEY);
-    const aiKeyReady = Boolean(process.env.LOVABLE_API_KEY);
+    // جاهزية الذكاء = مفتاح Gemini المباشر (وجودٌ فقط، لا قراءة قيمة ولا طباعتها) — الشرط نفسه
+    // الذي يبني به المحرّك مزوّده (`resolveSadeedGeminiRuntimes`). كان `LOVABLE_API_KEY` وحده
+    // يقود هذه الشريحة، وهو مفتاح بوّابة الاحتياط الاختيارية لا المحرّك: فتُعرض «حرج» على لوحة
+    // تنفيذية والمساعد يعمل بمفتاح Gemini المباشر.
+    const aiKeyReady = Boolean(
+      process.env.GEMINI_API_KEY?.trim() || process.env.GOOGLE_GENERATIVE_AI_API_KEY?.trim(),
+    );
 
     const chips: PulseChip[] = [
       {
