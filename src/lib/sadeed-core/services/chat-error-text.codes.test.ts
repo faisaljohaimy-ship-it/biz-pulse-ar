@@ -3,7 +3,10 @@ import {
   CHAT_CONNECTION_ERROR_AR,
   CHAT_DUPLICATE_AR,
   CHAT_SERVER_BUSY_AR,
+  CHAT_TIMEOUT_AR,
+  CHAT_TIMEOUT_CODE,
   chatErrorText,
+  isChatTimeout,
 } from "./chat-error-text";
 
 const HAS_ARABIC = /[؀-ۿ]/;
@@ -40,6 +43,35 @@ describe("رموز البوّابة الجديدة (VIBE 5.1) تصل جملًا 
       const shown = chatErrorText(JSON.stringify({ error: code }));
       expect(HAS_ARABIC.test(shown), code).toBe(true);
       expect(shown).not.toContain(code);
+    }
+  });
+});
+
+describe("مهلة العميل (F1، ٢٠٢٦/١١/٠٣) تصل جملةً عربية صادقة", () => {
+  it("رمز المهلة ⇐ «استغرق الرد أطول من المعتاد» لا الرسالة المحايدة ولا الرمز", () => {
+    const shown = chatErrorText(CHAT_TIMEOUT_CODE);
+    expect(shown).toBe(CHAT_TIMEOUT_AR);
+    expect(shown).not.toBe(CHAT_CONNECTION_ERROR_AR);
+    expect(shown).toContain("أطول من المعتاد");
+    expect(shown).not.toContain(CHAT_TIMEOUT_CODE);
+    expect(HAS_ARABIC.test(shown)).toBe(true);
+    // وبصيغة JSON من الخادم كذلك (code/error) — لا يتبدّل المعنى.
+    expect(chatErrorText(JSON.stringify({ error: CHAT_TIMEOUT_CODE }))).toBe(CHAT_TIMEOUT_AR);
+    expect(chatErrorText(JSON.stringify({ code: CHAT_TIMEOUT_CODE }))).toBe(CHAT_TIMEOUT_AR);
+  });
+
+  it("isChatTimeout يميّز المهلة وحدها عن بقية الأخطاء (لا إعادة تلقائية لها)", () => {
+    expect(isChatTimeout(new DOMException(CHAT_TIMEOUT_CODE, "TimeoutError"))).toBe(true);
+    expect(isChatTimeout({ message: CHAT_TIMEOUT_CODE })).toBe(true);
+    for (const other of [
+      undefined,
+      null,
+      new Error("Failed to fetch"),
+      new Error(JSON.stringify({ error: "busy" })),
+      new DOMException("The operation was aborted.", "AbortError"),
+      { message: "" },
+    ]) {
+      expect(isChatTimeout(other as Error | undefined), String(other)).toBe(false);
     }
   });
 });

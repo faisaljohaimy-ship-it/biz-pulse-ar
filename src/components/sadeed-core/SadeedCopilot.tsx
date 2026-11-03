@@ -71,7 +71,7 @@ import {
 } from "@/lib/sadeed/output/client-consumer";
 import { stripTashkeel } from "@/lib/sadeed/tashkeel";
 import { VENDOR_MASK_RE } from "@/lib/sadeed/vendor-mask";
-import { chatErrorText } from "@/lib/sadeed-core/services/chat-error-text";
+import { chatErrorText, isChatTimeout } from "@/lib/sadeed-core/services/chat-error-text";
 import { chooseSadeedRecorderMime, recorderFileExtension } from "@/lib/sadeed/media-recorder";
 import {
   advanceSadeedVoiceActivity,
@@ -91,6 +91,7 @@ import type { UIMessage } from "ai";
 // تصدير PDF — الأنواع وحدها ثابتة؛ الوحدة نفسها (ومحرّك `chat-pdf` خلفها)
 // تُحمَّل ديناميكيًّا عند النقر فلا تكبر الحزمة الأولى.
 import type { ExportableMessage } from "./chat-export";
+import { THINKING_AR, ThinkingBubble, autoRetryNoticeAr } from "./ThinkingBubble";
 import { SADEED_PORTRAIT_SRC } from "@/lib/sadeed/portrait";
 // وضع العرض التنفيذي — نُقل من شاشة مركز القيادة المحجوبة (قرار المالك
 // ٢٠٢٦/٠٨/١٢) إلى زرّ في ترويسة هذه اللوحة. يُحمَّل كسولًا وجوبًا:
@@ -304,7 +305,9 @@ function rmsLevel(samples: Float32Array): number {
 const EMPTY_STATE_AR = "كيف يمكنني مساعدتك اليوم؟";
 /** بلا وعدٍ لا يفي به كود: لا تسجيل ولا إعادة آلية خلف هذا السطر (DEF-24، ٢٠٢٦/١٠/١٨). */
 const ERROR_MASK_AR = "تعذّر إكمال الطلب حاليًا — أعد المحاولة.";
-const THINKING_AR = `${SADEED_DISPLAY_NAME_AR} يفكّر…`;
+/** إشعاران يتكرّران في مسارات الصوت — نصٌّ واحد لكلٍّ (ميزانية الحزمة). */
+const NO_SPEECH_NOTICE_AR = "لم ألتقط صوتًا واضحًا — أواصل الاستماع.";
+const MIC_DENIED_AR = "تم رفض إذن الميكروفون — اسمح به للموقع من إعدادات المتصفح.";
 const EXPORT_ERROR_AR = "تعذّر تجهيز ملف PDF الآن — أعد المحاولة بعد لحظات.";
 const EXPORT_BUSY_AR = "يجهّز ملف PDF…";
 const EXPORT_DONE_AR = "تم تجهيز ملف PDF.";
@@ -602,18 +605,15 @@ export function SadeedCopilot() {
       composerRef.current?.focus({ preventScroll: true });
     });
     if (typeof document !== "undefined") {
-      const heads: HTMLLinkElement[] = [];
-      for (const href of [window.location.origin, "https://generativelanguage.googleapis.com"]) {
-        const l = document.createElement("link");
-        l.rel = "preconnect";
-        l.href = href;
-        l.crossOrigin = "";
-        document.head.appendChild(l);
-        heads.push(l);
-      }
+      // أصل الصفحة وحده: المتصفح لا يكلّم مزوّد النموذج أبدًا (كل النداءات من الخادم).
+      const l = document.createElement("link");
+      l.rel = "preconnect";
+      l.href = window.location.origin;
+      l.crossOrigin = "";
+      document.head.appendChild(l);
       return () => {
         cancelled = true;
-        heads.forEach((h) => h.remove());
+        l.remove();
       };
     }
     return () => {
@@ -1576,7 +1576,7 @@ export function SadeedCopilot() {
         }
         const transcript = payload.text.trim();
         if (!transcript) {
-          setConvNotice("لم ألتقط صوتًا واضحًا — أواصل الاستماع.");
+          setConvNotice(NO_SPEECH_NOTICE_AR);
           setConvPaused(false);
           scheduleConversationRelisten(450);
           return;
@@ -1651,7 +1651,7 @@ export function SadeedCopilot() {
         if (cancelled || !convModeRef.current) return;
         if (noSpeech) {
           sadeedState.set("idle");
-          setConvNotice("لم ألتقط صوتًا واضحًا — أواصل الاستماع.");
+          setConvNotice(NO_SPEECH_NOTICE_AR);
           setConvPaused(false);
           scheduleConversationRelisten(450);
           return;
@@ -1736,7 +1736,7 @@ export function SadeedCopilot() {
       setConvPaused(true);
       setConvNotice(
         error instanceof DOMException && error.name === "NotAllowedError"
-          ? "تم رفض إذن الميكروفون — اسمح به للموقع من إعدادات المتصفح."
+          ? MIC_DENIED_AR
           : "تعذّر الوصول إلى الميكروفون — تأكد من HTTPS وإذن المتصفح.",
       );
     }
@@ -1840,7 +1840,7 @@ export function SadeedCopilot() {
         }
         if (!convModeRef.current) return;
         if (event.error === "not-allowed") {
-          setConvNotice("تم رفض إذن الميكروفون — اسمح به للموقع من إعدادات المتصفح.");
+          setConvNotice(MIC_DENIED_AR);
           setConvPaused(true);
           return;
         }
@@ -1884,32 +1884,40 @@ export function SadeedCopilot() {
      status line and keeps listening, with a fresh retry budget for the
      next utterance. */
   const autoRetryRef = useRef(0);
+  // رقم الإعادة التلقائية الجارية (٠ = لا شيء) — يُظهر إشعارها في النصّ لا في الصوت وحده.
+  const [retrying, setRetrying] = useState(0);
   const regenerateRef = useRef(chat.regenerate);
   useEffect(() => {
     regenerateRef.current = chat.regenerate;
   });
   useEffect(() => {
-    if (chat.status === "ready" && !chat.error) autoRetryRef.current = 0;
+    if (chat.status === "ready" && !chat.error) {
+      autoRetryRef.current = 0;
+      setRetrying(0);
+    }
   }, [chat.status, chat.error]);
 
+  // مهلة العميل لا تُعاد تلقائيًّا: إعادة الدور نفسه تُنفق الحصّة والنموذج مرّةً
+  // ثانية على سؤالٍ لم يردّ في سقفه — الإعادة بيد المستخدم (زرّ «إعادة المحاولة»).
+  const timedOut = isChatTimeout(chat.error);
   useEffect(() => {
     if (!hasError) return;
-    if (autoRetryRef.current < 2) {
+    if (autoRetryRef.current < 2 && !timedOut) {
       // تراجعٌ بتشويش واحترامٌ لـ`Retry-After` (VIBE 5.1): تلميحٌ أطول من عشر
       // ثوانٍ ليس تعذّرًا مؤقتًا — لا إعادة تلقائية، ويبقى زرّ إعادة المحاولة.
       const delay = computeAutoRetryDelayMs(autoRetryRef.current + 1, lastGateRetryAfter());
       if (delay !== null) {
         autoRetryRef.current += 1;
         const attempt = autoRetryRef.current;
-        if (convModeRef.current) {
-          setConvNotice(`تعذّر مؤقت في الرد — إعادة المحاولة تلقائيًا (${attempt}/2)…`);
-        }
+        setRetrying(attempt);
+        if (convModeRef.current) setConvNotice(autoRetryNoticeAr(attempt));
         const t = window.setTimeout(() => {
           void regenerateRef.current?.();
         }, delay);
         return () => window.clearTimeout(t);
       }
     }
+    setRetrying(0);
     if (convModeRef.current) {
       speakNextReplyRef.current = false;
       sadeedState.set("idle");
@@ -1929,7 +1937,7 @@ export function SadeedCopilot() {
       })();
       return () => controller.abort();
     }
-  }, [hasError, fetchTTS, playAudioClip]);
+  }, [hasError, timedOut, fetchTTS, playAudioClip]);
 
   const playConversationGreeting = useCallback(async () => {
     // الصوت مكتوم: لا تُشترى تحية لن تُسمع. الناقل كان سيرفض القناة بعد
@@ -2226,19 +2234,10 @@ export function SadeedCopilot() {
             </li>
           );
         })}
-        {isBusy && (
-          <li className="flex justify-start">
-            <div className="flex items-center gap-2 rounded-2xl bg-background/60 px-3 py-2 backdrop-blur-md ring-1 ring-primary/20">
-              <div className="flex gap-1">
-                <span className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.3s]" />
-                <span className="h-2 w-2 animate-bounce rounded-full bg-primary [animation-delay:-0.15s]" />
-                <span className="h-2 w-2 animate-bounce rounded-full bg-primary" />
-              </div>
-              <span className="text-xs text-muted-foreground">{THINKING_AR}</span>
-            </div>
-          </li>
-        )}
-        {hasError && !isBusy && (
+        {/* الفقاعة تبقى قائمةً في فاصل الإعادة التلقائية (لا وميض خطأ ثم عودة)،
+            وعدّادها يقيس انتظار المستخدم كلّه عبر المحاولات. */}
+        {(isBusy || (hasError && retrying > 0)) && <ThinkingBubble retry={retrying} />}
+        {hasError && !isBusy && !retrying && (
           <li className="flex justify-start">
             <div className="max-w-[85%] rounded-2xl bg-destructive/15 px-3 py-2 text-sm text-destructive-foreground ring-1 ring-destructive/50 backdrop-blur-md">
               <div className="flex items-start gap-2">
@@ -2277,6 +2276,7 @@ export function SadeedCopilot() {
       chat.error,
       isBusy,
       hasError,
+      retrying,
       copiedMessageId,
       lastAssistantMessageId,
       copyMessage,

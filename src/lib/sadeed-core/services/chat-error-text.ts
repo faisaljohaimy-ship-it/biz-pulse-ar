@@ -16,6 +16,9 @@
  * 4. كل ما سوى ذلك — رمزٌ مجهول، إنجليزية، فراغ ⇐ الرسالة المحايدة.
  */
 import { VENDOR_MASK_RE } from "@/lib/sadeed/vendor-mask";
+import { CHAT_TIMEOUT_CODE } from "./chat-timeout";
+
+export { CHAT_TIMEOUT_CODE };
 
 export const CHAT_CONNECTION_ERROR_AR = "تعذّر الاتصال — أعد المحاولة";
 
@@ -27,10 +30,27 @@ export const CHAT_SERVER_BUSY_AR = "سَدِيد مشغول بطلباتٍ أخ�
 /** الطلب نفسه ما زال قيد المعالجة (نقرٌ مزدوج أو إعادة محاولة مبكرة). */
 export const CHAT_DUPLICATE_AR = "طلبك السابق قيد المعالجة — انتظر لحظة.";
 
+/**
+ * مهلة العميل (`sadeedAuthedFetch`): الدور لم يردّ في سقفه. يحمل `message`
+ * في `TimeoutError` رمزَ `chat-timeout.ts`، فيصير نصًّا عربيًّا هنا — ولا يُعاد الدور
+ * تلقائيًّا (إعادته تُنفق الحصّة والنموذج مرّةً ثانية على السؤال نفسه)؛
+ * الإعادة بيد المستخدم.
+ */
+export const CHAT_TIMEOUT_AR = "استغرق الرد أطول من المعتاد — أعد المحاولة.";
+
+/** هل خطأ الدردشة هذا مهلةُ العميل؟ (لا تُعاد تلقائيًّا.) */
+export function isChatTimeout(error: { message?: string } | null | undefined): boolean {
+  return error?.message === CHAT_TIMEOUT_CODE;
+}
+
+/** تعذّر التحقّق من الطلب (المخزن/الحصّة) — جملةٌ واحدة للرمزين. */
+const VERIFY_FAILED_AR = "تعذّر التحقّق من الطلب لحظيًّا — أعد المحاولة بعد لحظات.";
+
 const KNOWN_CODES: Readonly<Record<string, string>> = Object.freeze({
+  [CHAT_TIMEOUT_CODE]: CHAT_TIMEOUT_AR,
   rate_limited: CHAT_BUSY_AR,
-  rate_limit_unavailable: "تعذّر التحقّق من الطلب لحظيًّا — أعد المحاولة بعد لحظات.",
-  quota_unavailable: "تعذّر التحقّق من الطلب لحظيًّا — أعد المحاولة بعد لحظات.",
+  rate_limit_unavailable: VERIFY_FAILED_AR,
+  quota_unavailable: VERIFY_FAILED_AR,
   busy: CHAT_SERVER_BUSY_AR,
   duplicate_request: CHAT_DUPLICATE_AR,
   daily_global_cap: "بلغ النظام سقفه اليومي — تُستأنف الخدمة بعد منتصف الليل.",
