@@ -3,6 +3,7 @@
   "buildCommand": "npm run build",
   "installCommand": "npm ci --no-audit --no-fund",
   "framework": null,
+  "regions": ["syd1"],
   "build": {
     "env": {
       "NODE_OPTIONS": "--max-old-space-size=5120"
