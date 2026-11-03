@@ -5,7 +5,7 @@
  */
 import { useRouter } from "@tanstack/react-router";
 import { userFacingError } from "@/lib/errors/user-facing-error";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
 interface Props {
   error: unknown;
@@ -14,7 +14,12 @@ interface Props {
 }
 
 export function RouteErrorBoundary({ error: rawError, reset, routeLabel }: Props) {
-  const error = rawError instanceof Error ? rawError : new Error(String(rawError));
+  // Keep the normalized Error stable across unrelated renders so the effect
+  // records one event per failure, not one event per render.
+  const error = useMemo(
+    () => (rawError instanceof Error ? rawError : new Error(String(rawError))),
+    [rawError],
+  );
   const router = useRouter();
 
   useEffect(() => {
