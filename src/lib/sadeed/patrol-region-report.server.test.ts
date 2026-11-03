@@ -7,6 +7,7 @@ import { describe, expect, it } from "vitest";
 import { REGIONS } from "@/lib/regions";
 import {
   buildPatrolRegionReport,
+  NO_VISIBLE_PATROLS_NOTE_AR,
   PATROL_REPORT_ROW_LIMIT,
   UNSPECIFIED_REGION_AR,
   type PatrolReportRow,
@@ -240,15 +241,25 @@ describe("الاقتطاع", () => {
 });
 
 describe("الفراغ والتاريخ", () => {
-  it("لا صفوف ⇒ ok بمناطق فارغة — لا أصفار مختلَقة لمناطق لم تظهر", () => {
+  it("لا صفوف ⇒ ok بمناطق فارغة وملاحظة صادقة — لا أصفار مختلَقة ولا نفي لوجود الدوريات", () => {
     const report = buildPatrolRegionReport([], NOW);
     expect(report).toMatchObject({
       ok: true,
       regions: [],
       patrols_considered: 0,
       truncated: false,
-      note_ar: null,
+      note_ar: NO_VISIBLE_PATROLS_NOTE_AR,
     });
+    // الصياغة: «لا ظاهر بصلاحياتك» لا «لا توجد» — قد تكون محجوبة بالصلاحيات لا معدومة.
+    expect(NO_VISIBLE_PATROLS_NOTE_AR).toContain("لا دوريات ظاهرة بصلاحياتك الحالية");
+    expect(NO_VISIBLE_PATROLS_NOTE_AR).toContain("محجوبة بالصلاحيات لا معدومة");
+    expect(NO_VISIBLE_PATROLS_NOTE_AR).not.toMatch(/لا توجد|٠|\b0\b/);
+    // وليس في الناتج أي منطقةٍ بصفر.
+    expect(JSON.stringify(report)).not.toContain('"total":0');
+  });
+
+  it("صفوفٌ موجودة ⇒ لا ملاحظة فراغ (note_ar تبقى null ما لم يُقتطع)", () => {
+    expect(buildPatrolRegionReport([patrol("western", "active")], NOW).note_ar).toBeNull();
   });
 
   it("generated_at من الوقت الممرَّر بصيغة ISO", () => {

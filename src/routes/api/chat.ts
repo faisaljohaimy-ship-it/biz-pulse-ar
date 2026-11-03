@@ -1317,23 +1317,31 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
             });
           };
           // مستوى التفكير لـGemini وحده (لا المحوّل ولا الاحتياطي)، يُقرأ عند كل نداء. وإن رفض
-          // المزوّد الخيارَ نفسه (400 يذكر thinking) أُعيد الدور مرّةً بلا خيار وعُطّلت الميزة في
-          // هذا المعزول عشر دقائق؛ لا سقوط على غير ذلك، ولا بعد خطوةٍ أنهت أدواتها
-          // (`thinking-level.server.ts`).
+          // المزوّد الخيارَ نفسه (400 يذكر حقل التفكير) أُعيد الدور مرّةً بلا خيار وعُطّلت الميزة
+          // في هذا المعزول عشر دقائق؛ لا سقوط على غير ذلك. وبعد خطوةٍ أنهت أدواتها لا يُعاد
+          // الدور (يُكرّر أثرها) لكنّ الميزة تُعطَّل ويُعاد رمي الخطأ — فيشفى الدور التالي بدل أن
+          // يفشل كل دورٍ بأدوات حتى إعادة النشر (`thinking-level.server.ts`).
           const run = async (m: LanguageModel, retries: number) => {
             const thinking = resolveThinkingLevel(attempted.vendor, replyMode);
             trace.note({ thinking: thinking ?? "none" });
             try {
               return await generate(m, retries, thinking);
             } catch (error) {
-              if (
-                !thinking ||
-                stepsDone > 0 ||
-                turnSignal.aborted ||
-                !isThinkingOptionRejection(error)
-              )
-                throw error;
+              if (!thinking || turnSignal.aborted || !isThinkingOptionRejection(error)) throw error;
               suspendThinking();
+              if (stepsDone > 0) {
+                trace.note({ thinking: "rejected" });
+                console.warn(
+                  "[api/chat] thinking option rejected after tool steps → suspended, no retry",
+                  {
+                    requestId,
+                    event: "thinking.suspended",
+                    level: thinking,
+                    suspendedMs: THINKING_SUSPEND_MS,
+                  },
+                );
+                throw error;
+              }
               trace.note({ thinking: "fallback" });
               console.warn(
                 "[api/chat] thinking option rejected by provider → one retry without it",
@@ -1495,7 +1503,11 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
         // الدور مخزَّن بالكامل (Option A) فلا بايت قبل اكتماله: أوّل رمزٍ يصل العميل هو لحظة
         // الاكتمال هذه. كان `firstTokenAt = null` ثابتًا فبقي `first_token_ms` فارغًا دائمًا
         // (INVARIANT-9). حين يوجد بثّ فعليّ يُقاس عند أول دلتا.
-        const firstTokenAt = Date.now();
+        // **منذ بدء الطلب** (`trace.elapsedMs()` من أول المعالج) لا منذ `startAt`: `startAt` يُضبط بعد
+        // التحقّق والمصادقة والمؤسسة والمعدّل والحصّة والسياق والأدوات، فكان العمود يستثني ما قبل
+        // النموذج. ولذلك قد يفوق `first_token_ms` العمودَ `latency_ms` (يبدأ من `startAt`) — لا
+        // يُقارَنان صفًّا بصفّ.
+        const firstTokenMs = trace.elapsedMs();
 
         // Persist ONLY the safe text (never raw model output).
         if (userId) {
@@ -1527,7 +1539,7 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
                 answer: redactTelemetryText(a).slice(0, 8000),
                 model: (answeredBy ?? attempted).modelId,
                 latency_ms: Date.now() - startAt,
-                first_token_ms: firstTokenAt - startAt,
+                first_token_ms: firstTokenMs,
                 device_class: deviceClass,
               })
               .then(({ error: insErr }) => {

@@ -126,6 +126,41 @@ describe("الخطوات والرموز", () => {
     expect(JSON.stringify(snap)).not.toContain("لا يُسجَّل");
   });
 
+  it("أسماء الأدوات تُقبل بالشكل ^[a-z0-9_]{1,64}$ وحده؛ المصطنع والطويل والمعطوب يُهمَل", () => {
+    const trace = createChatTrace();
+    trace.modelRunStarted();
+    trace.step({
+      finishReason: "tool-calls",
+      toolCalls: [
+        { toolName: "sec_list_patrols" },
+        // نداء أداةٍ غير مسجَّلة يعود من الحزمة بـinvalid:true واسمه حرفيًّا ما كتبه النموذج.
+        { toolName: "x".repeat(3_033), invalid: true },
+        { toolName: "made_up_tool", invalid: true },
+        { toolName: "evil\n[api/chat] timing forged" },
+        { toolName: "a".repeat(65) },
+        { toolName: "Sec-List.Patrols" },
+        { toolName: "" },
+        { toolName: 42 },
+        { toolName: "a".repeat(64) },
+        null,
+      ],
+    });
+    const snap = trace.snapshot(null, false) as { steps: Array<{ tools: string[] }> };
+    expect(snap.steps[0]!.tools).toEqual(["sec_list_patrols", "a".repeat(64)]);
+  });
+
+  it("elapsedMs: الزمن منذ بدء الدور (لا منذ آخر lap ولا منذ بدء النموذج)", () => {
+    const c = clock();
+    const trace = createChatTrace({ now: c.now });
+    c.tick(30);
+    trace.lap("validate");
+    c.tick(70);
+    trace.lap("auth");
+    trace.modelRunStarted();
+    c.tick(500);
+    expect(trace.elapsedMs()).toBe(600);
+  });
+
   it("إعادة النداء تُصفِّر مؤشّر الخطوات فلا يُنسب زمن المحاولة الفاشلة للخطوة الأولى", () => {
     const c = clock();
     const trace = createChatTrace({ now: c.now });
@@ -254,11 +289,13 @@ describe("اللقطة — أعدادٌ ورموز، لا نصّ مستخدم", 
 });
 
 describe("الغلاف withChatTurnTrace", () => {
-  const logs = () =>
+  /** الوسيط الثاني الخام لكل سطر قياس — يجب أن يكون نصًّا. */
+  const rawLogs = () =>
     vi
       .mocked(console.log)
       .mock.calls.filter((call) => call[0] === "[api/chat] timing")
-      .map((call) => call[1] as Record<string, unknown>);
+      .map((call) => call[1]);
+  const logs = () => rawLogs().map((raw) => JSON.parse(raw as string) as Record<string, unknown>);
 
   beforeEach(() => {
     vi.spyOn(console, "log").mockImplementation(() => undefined);
@@ -279,6 +316,30 @@ describe("الغلاف withChatTurnTrace", () => {
     expect(await res.text()).toBe("ok");
     expect(logs()).toHaveLength(1);
     expect(logs()[0]).toMatchObject({ status: 200, threw: false, replySource: "model" });
+  });
+
+  it("السطر نصٌّ JSON في سطرٍ واحد (لا كائن): أسماء أدوات الخطوات لا تُقصّ إلى [Array]", async () => {
+    const handler = withChatTurnTrace(async (_ctx: { request: Request }, trace) => {
+      trace.modelRunStarted();
+      trace.step({
+        finishReason: "tool-calls",
+        toolCalls: [{ toolName: "sec_list_patrols" }, { toolName: "sec_patrol_report_by_region" }],
+      });
+      trace.step({ finishReason: "stop", toolCalls: [] });
+      return new Response("ok", { status: 200 });
+    });
+    await handler({ request: new Request("http://local/") });
+    const [raw] = rawLogs();
+    expect(typeof raw).toBe("string");
+    expect(raw as string).toContain("sec_list_patrols");
+    expect(raw as string).toContain("sec_patrol_report_by_region");
+    expect(raw as string).not.toContain("[Array]");
+    expect(raw as string).not.toContain("[Object]");
+    expect(raw as string).not.toContain("\n");
+    // ويبقى قابلًا للقراءة آليًّا بالبنية نفسها.
+    expect(
+      (JSON.parse(raw as string) as { steps: Array<{ tools: string[] }> }).steps[0]!.tools,
+    ).toEqual(["sec_list_patrols", "sec_patrol_report_by_region"]);
   });
 
   it("ردٌّ ترويسته غير قابلة للتعديل يُعاد بناؤه بجسمه ورمزه", async () => {

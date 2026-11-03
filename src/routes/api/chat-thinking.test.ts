@@ -3,7 +3,8 @@
  *
  * يُثبت: الخيار يصل Gemini وحده، والافتراض لكل وضع، وتجاوز البيئة يُقرأ عند كل طلب،
  * والسقوط مرّةً واحدة عند رفض الخيار نفسه مع تعطيل عشر دقائق، وأنه لا يسقط على غير ذلك
- * (429/5xx/401/404/400 لا يتعلّق بالتفكير)، ولا بعد خطوةٍ أنهت أدواتها.
+ * (429/5xx/401/404/400 لا يتعلّق بالتفكير)، ولا بعد خطوةٍ أنهت أدواتها (لا إعادة للدور، لكن
+ * الميزة تُعطَّل فيشفى الدور التالي)، ولا مع إلغاء الدور، وأن الاحتياطي لا يتلقّى خيار Gemini.
  * مزوّد النموذج مزيَّف: `generateText` يسجّل `providerOptions` ويُنفِّذ سيناريو الفشل.
  */
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -75,13 +76,18 @@ afterAll(() => vi.unstubAllEnvs());
 vi.setConfig({ testTimeout: 20_000, hookTimeout: 30_000 });
 
 type Handler = (args: { request: Request }) => Promise<Response>;
-async function post(extra: { replyMode?: string } = {}, headers: Record<string, string> = {}) {
+async function post(
+  extra: { replyMode?: string } = {},
+  headers: Record<string, string> = {},
+  signal?: AbortSignal,
+) {
   const mod = (await import("@/routes/api/chat")) as unknown as {
     Route: { options: { server: { handlers: { POST: Handler } } } };
   };
   return mod.Route.options.server.handlers.POST({
     request: new Request("http://local/api/chat", {
       method: "POST",
+      ...(signal ? { signal } : {}),
       headers: { "content-type": "application/json", ...headers },
       body: JSON.stringify({
         messages: [
@@ -109,6 +115,14 @@ const thinkingRejected = () =>
     "Bad Request",
     '{"error":{"code":400,"message":"thinking_level is not supported by this model","status":"INVALID_ARGUMENT"}}',
   );
+
+/** سطر القياس `[api/chat] timing` مفكوكًا (يُطبع نصَّ JSON لا كائنًا). */
+const timingLine = () => {
+  const raw = vi
+    .mocked(console.log)
+    .mock.calls.find((call) => call[0] === "[api/chat] timing")?.[1];
+  return typeof raw === "string" ? (JSON.parse(raw) as Record<string, unknown>) : undefined;
+};
 
 const googleOptions = (i: number) =>
   (sim.calls[i]?.providerOptions as { google?: { thinkingConfig?: unknown } } | undefined)?.google;
@@ -228,6 +242,20 @@ describe("السقوط مرّةً واحدة عند رفض الخيار نفسه
     });
   });
 
+  it("RetryError يلفّ 400 يذكر thinkingConfig ⇒ يُفسَّر رفضًا: إعادة واحدة بلا خيار", async () => {
+    const wrapped = Object.assign(new Error("Failed after 3 attempts. Last error: Bad Request"), {
+      name: "AI_RetryError",
+      reason: "maxRetriesExceeded",
+      lastError: thinkingRejected(),
+    });
+    sim.script = [failWith(wrapped)];
+    const res = await post();
+    expect(res.headers.get("X-SADEED-Reply-Source")).toBe("model");
+    expect(sim.calls).toHaveLength(2);
+    expect(googleOptions(0)).toBeDefined();
+    expect(sim.calls[1]!.providerOptions).toBeUndefined();
+  });
+
   it("إن رُفضت الإعادة نفسها لسببٍ آخر فلا حلقة: نداءان فقط ثم سطر الخطأ الآمن", async () => {
     sim.script = [failWith(thinkingRejected()), failWith(apiError(401, "API key not valid"))];
     const res = await post();
@@ -238,11 +266,7 @@ describe("السقوط مرّةً واحدة عند رفض الخيار نفسه
   it("السجلّ يشهد بالسقوط: thinking:fallback ونداءان للنموذج", async () => {
     sim.script = [failWith(thinkingRejected())];
     await post();
-    const line = vi
-      .mocked(console.log)
-      .mock.calls.find((call) => call[0] === "[api/chat] timing")?.[1] as
-      { thinking: string; modelRuns: number } | undefined;
-    expect(line).toMatchObject({ thinking: "fallback", modelRuns: 2 });
+    expect(timingLine()).toMatchObject({ thinking: "fallback", modelRuns: 2 });
     expect(
       vi
         .mocked(console.warn)
@@ -261,6 +285,10 @@ describe("لا سقوط على غير رفض الخيار", () => {
     ["403", () => apiError(403, "permission denied")],
     ["404", () => apiError(404, "models/x is not found")],
     ["400 لا يتعلّق بالتفكير", () => apiError(400, "Request payload size exceeds the limit")],
+    [
+      "400 تجاوز السياق يذكر thinking عرضًا",
+      () => apiError(400, "input token count + thinking tokens exceed the context window"),
+    ],
   ];
   it.each(cases)(
     "%s ⇒ نداء واحد، سطر الخطأ الآمن، والخيار يبقى مفعّلًا للطلب التالي",
@@ -286,7 +314,7 @@ describe("لا سقوط على غير رفض الخيار", () => {
     expect(googleOptions(2)).toBeDefined();
   });
 
-  it("بعد أن أنهت خطوةٌ أدواتها لا يُعاد الدور (يُكرّر أثر الأدوات)", async () => {
+  it("بعد أن أنهت خطوةٌ أدواتها لا يُعاد الدور (يُكرّر أثر الأدوات) — لكنّ الرفض يُعطّل الميزة فيشفى الدور التالي", async () => {
     sim.script = [
       (opts) => {
         opts.onStepFinish?.({ finishReason: "tool-calls", toolCalls: [{ toolName: "x" }] });
@@ -296,5 +324,82 @@ describe("لا سقوط على غير رفض الخيار", () => {
     const res = await post();
     expect(sim.calls).toHaveLength(1);
     expect(res.headers.get("X-SADEED-Reply-Source")).toBe("model-error");
+    expect(timingLine()).toMatchObject({ thinking: "rejected", modelRuns: 1 });
+    expect(
+      vi
+        .mocked(console.warn)
+        .mock.calls.some((c) => String(c[0]).includes("thinking option rejected after tool steps")),
+    ).toBe(true);
+    // الدور التالي في المعزول نفسه: نداء واحد ناجح بلا خيار — لا تتكرّر الأخطاء حتى إعادة نشر.
+    const next = await post();
+    expect(next.headers.get("X-SADEED-Reply-Source")).toBe("model");
+    expect(sim.calls).toHaveLength(2);
+    expect(sim.calls[1]!.providerOptions).toBeUndefined();
+  });
+
+  it("رفضٌ بعد خطوة لا يظنّ غير الرفض رفضًا: 429 بعد خطوة لا يُعطّل الميزة", async () => {
+    sim.script = [
+      (opts) => {
+        opts.onStepFinish?.({ finishReason: "tool-calls", toolCalls: [{ toolName: "x" }] });
+        throw apiError(429, "RESOURCE_EXHAUSTED: thinking tokens quota");
+      },
+    ];
+    await post();
+    expect(sim.calls).toHaveLength(1);
+    await post();
+    expect(googleOptions(1)).toBeDefined();
+  });
+
+  it("إلغاء الدور (AbortSignal مُجهَض) مع خطأٍ يشبه رفض الخيار ⇒ نداء واحد بلا إعادة ولا تعطيل", async () => {
+    const abort = new AbortController();
+    sim.script = [
+      () => {
+        abort.abort();
+        throw thinkingRejected();
+      },
+    ];
+    await post({}, {}, abort.signal);
+    expect(sim.calls).toHaveLength(1);
+    // لم تُعطَّل الميزة: الطلب التالي يحمل الخيار.
+    await post();
+    expect(googleOptions(1)).toBeDefined();
+  });
+});
+
+describe("الاحتياطي (بوّابة Lovable) لا يتلقّى خيار Gemini", () => {
+  it("فشل الأساسي ⇒ النداء الثاني للاحتياطي بلا providerOptions.google", async () => {
+    vi.stubEnv("SADEED_BACKUP_PROVIDER", "lovable");
+    vi.stubEnv("LOVABLE_API_KEY", "test-only-not-a-secret-00");
+    sim.script = [failWith(apiError(503, "The service is unavailable, try again later"))];
+    try {
+      const res = await post();
+      expect(res.headers.get("X-SADEED-Reply-Source")).toBe("model-backup");
+      expect(sim.calls).toHaveLength(2);
+      expect(sim.calls[0]!.modelId).toBe("gemini-3.6-flash");
+      expect(googleOptions(0)).toBeDefined();
+      expect(sim.calls[1]!.modelId).not.toBe("gemini-3.6-flash");
+      expect(sim.calls[1]!.providerOptions).toBeUndefined();
+      expect(googleOptions(1)).toBeUndefined();
+      expect(timingLine()).toMatchObject({ provider: "lovable-gateway", thinking: "none" });
+    } finally {
+      const backup = await import("@/lib/sadeed/backup-provider.server");
+      backup.coolPrimary(0, 0);
+    }
+  });
+
+  it("الأساسي في تبريد ⇒ الدور كله على الاحتياطي، بلا خيار Gemini ولو طُلب المستوى بالبيئة", async () => {
+    vi.stubEnv("SADEED_BACKUP_PROVIDER", "lovable");
+    vi.stubEnv("LOVABLE_API_KEY", "test-only-not-a-secret-00");
+    vi.stubEnv("SADEED_THINKING_LEVEL", "high");
+    const backup = await import("@/lib/sadeed/backup-provider.server");
+    backup.coolPrimary(60_000);
+    try {
+      await post();
+      expect(sim.calls).toHaveLength(1);
+      expect(sim.calls[0]!.modelId).not.toBe("gemini-3.6-flash");
+      expect(sim.calls[0]!.providerOptions).toBeUndefined();
+    } finally {
+      backup.coolPrimary(0, 0);
+    }
   });
 });

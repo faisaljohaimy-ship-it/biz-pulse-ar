@@ -3,7 +3,8 @@
  *
  * يُثبت: ترويسة `Server-Timing` على كل ردّ (نموذج · منع · كشف إيقاف)، وسطرًا واحدًا
  * `[api/chat] timing` لكل دور بمراحله وخطواته ورموزه، وخلوّه من نصّ المستخدم ومعرّفاته،
- * وأن `first_token_ms` صار رقمًا (كان `null` ثابتًا — المتغيّر الميّت `firstTokenAt`).
+ * وأن `first_token_ms` صار رقمًا (كان `null` ثابتًا — المتغيّر الميّت `firstTokenAt`) يُقاس من أول الطلب،
+ * وأن سطر القياس نصّ JSON لا كائن (فلا تُقصّ أسماء أدوات الخطوات إلى `[Array]` في سجلّ الإنتاج).
  */
 import { readFileSync } from "node:fs";
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -21,6 +22,8 @@ const sim = vi.hoisted(() => ({
   member: false,
   rate: { allowed: true } as { allowed: boolean },
   delayMs: 0,
+  /** تأخير مرحلة المعدّل (قبل `startAt` الداخلي وقبل النموذج). */
+  rateDelayMs: 0,
   steps: [] as unknown[],
   totalUsage: undefined as unknown,
   inserts: [] as Array<{ table: string; payload: Record<string, unknown> }>,
@@ -70,7 +73,10 @@ vi.mock("@/integrations/supabase/client.server", () => ({
 }));
 vi.mock("@/lib/governance/rate-limit.server", async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
-  enforceRateLimit: async () => sim.rate,
+  enforceRateLimit: async () => {
+    if (sim.rateDelayMs) await new Promise((resolve) => setTimeout(resolve, sim.rateDelayMs));
+    return sim.rate;
+  },
 }));
 vi.mock("@/lib/governance/ai-quota.server", async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
@@ -122,11 +128,15 @@ async function post(text = QUESTION) {
   });
 }
 
-const timingLogs = () =>
+/** الوسيط الثاني الخام لسطر القياس: يجب أن يكون نصًّا (JSON) لا كائنًا. */
+const rawTimingArgs = () =>
   vi
     .mocked(console.log)
     .mock.calls.filter((call) => call[0] === "[api/chat] timing")
-    .map((call) => call[1] as Record<string, unknown>);
+    .map((call) => call[1]);
+
+const timingLogs = () =>
+  rawTimingArgs().map((raw) => JSON.parse(raw as string) as Record<string, unknown>);
 
 const stageNames = (res: Response) =>
   (res.headers.get("Server-Timing") ?? "").split(", ").map((part) => part.split(";")[0]);
@@ -135,6 +145,7 @@ beforeEach(async () => {
   sim.member = false;
   sim.rate = { allowed: true };
   sim.delayMs = 0;
+  sim.rateDelayMs = 0;
   sim.steps = [];
   sim.totalUsage = undefined;
   sim.inserts = [];
@@ -233,7 +244,22 @@ describe("ترويسة Server-Timing وسطر القياس — دور مسجَّ
     expect(line).not.toMatch(/Bearer|jwt/i);
   });
 
-  it("first_token_ms رقمٌ لا null: زمن اكتمال الدور، ولا يتجاوز latency_ms", async () => {
+  it("سطر القياس نصٌّ JSON في سطرٍ واحد يحمل أسماء الأدوات (لا [Array] كما يطبع console.log الكائن)", async () => {
+    sim.steps = [
+      { finishReason: "tool-calls", toolCalls: [{ toolName: "sec_list_patrols" }] },
+      { finishReason: "stop", toolCalls: [] },
+    ];
+    await post();
+    const raws = rawTimingArgs();
+    expect(raws).toHaveLength(1);
+    const raw = raws[0];
+    expect(typeof raw).toBe("string");
+    expect(raw as string).toContain("sec_list_patrols");
+    expect(raw as string).not.toContain("[Array]");
+    expect(raw as string).not.toContain("\n");
+  });
+
+  it("first_token_ms رقمٌ لا null: زمن اكتمال الدور، ولا يقلّ عن زمن النموذج", async () => {
     sim.delayMs = 40;
     await post();
     // الإدراجات بلا انتظار (void) — دورة مهامّ واحدة تكفي.
@@ -242,7 +268,19 @@ describe("ترويسة Server-Timing وسطر القياس — دور مسجَّ
     expect(row, "لم يُكتب finn_interactions").toBeDefined();
     expect(typeof row!.first_token_ms).toBe("number");
     expect(row!.first_token_ms as number).toBeGreaterThanOrEqual(35);
-    expect(row!.first_token_ms as number).toBeLessThanOrEqual(row!.latency_ms as number);
+  });
+
+  it("first_token_ms يُقاس من أول الطلب: يشمل زمن المراحل المبكّرة (المعدّل) قبل النموذج", async () => {
+    sim.rateDelayMs = 90; // قبل `startAt` الداخلي — كان العمود يستثنيه.
+    sim.delayMs = 0;
+    await post();
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    const row = sim.inserts.find((i) => i.table === "finn_interactions")?.payload;
+    expect(row, "لم يُكتب finn_interactions").toBeDefined();
+    // مرحلة المعدّل وحدها 90ms ⇒ من أول الطلب لا يقلّ عنها؛ ومن `startAt` كان سيكون بضعة ms.
+    expect(row!.first_token_ms as number).toBeGreaterThanOrEqual(85);
+    // و`latency_ms` يبدأ من `startAt` بعد المراحل المبكّرة فلا يشملها.
+    expect(row!.latency_ms as number).toBeLessThan(row!.first_token_ms as number);
   });
 });
 
@@ -298,9 +336,11 @@ describe("حارس البنية — بقاء القياس والمتغيّر ا�
     // الصياغة الميّتة كانت `const firstTokenAt: number | null = null;` ثم
     // `first_token_ms: firstTokenAt ? … : null` — فالعمود فارغ دائمًا.
     expect(code).not.toMatch(/firstTokenAt\s*(?::[^=;]+)?=\s*null/);
-    expect(code).toMatch(/const firstTokenAt = Date\.now\(\)/);
-    expect(code).toMatch(/first_token_ms: firstTokenAt - startAt/);
     expect(code).not.toMatch(/first_token_ms:[^,\n]*\?[^,\n]*:\s*null/);
+    // من أول الطلب (أثر الدور) لا من `startAt` الداخلي الذي يُضبط بعد المراحل المبكّرة.
+    expect(code).toMatch(/const firstTokenMs = trace\.elapsedMs\(\)/);
+    expect(code).toMatch(/first_token_ms: firstTokenMs/);
+    expect(code).not.toMatch(/first_token_ms:[^,\n]*startAt/);
   });
 
   it("المراحل الإلزامية تُسجَّل عند نقاطها (lap/watch/note/step/finishModel)", () => {

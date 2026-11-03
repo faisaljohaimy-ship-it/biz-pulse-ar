@@ -154,10 +154,10 @@ describe("سقف الخطوات لكل وضع", () => {
 
   it("السقف يصل سطر القياس (maxSteps) ليُقاس به", async () => {
     await post("voice");
-    const line = vi
+    const raw = vi
       .mocked(console.log)
-      .mock.calls.find((call) => call[0] === "[api/chat] timing")?.[1] as
-      { maxSteps: number } | undefined;
+      .mock.calls.find((call) => call[0] === "[api/chat] timing")?.[1];
+    const line = typeof raw === "string" ? (JSON.parse(raw) as { maxSteps: number }) : undefined;
     expect(line?.maxSteps).toBe(4);
   });
 

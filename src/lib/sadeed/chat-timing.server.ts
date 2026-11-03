@@ -12,10 +12,14 @@
  *
  * ## ما يخرج
  *
- * - **سطر سجلّ واحد لكل دور:** `console.log("[api/chat] timing", {...})` — أعدادٌ
+ * - **سطر سجلّ واحد لكل دور:** `console.log("[api/chat] timing", "<JSON>")` — أعدادٌ
  *   ورموزٌ ثابتة فقط: لا نصّ مستخدم، ولا معرّف مستخدم/خيط/مؤسسة. المعرّف الوحيد
  *   `requestId` (يربط السطر بترويسة الردّ). أسماء الأدوات ومعرّف النموذج مسموحة
- *   (تسمية ثابتة من الكود لا من المستخدم).
+ *   (تسمية ثابتة من الكود لا من المستخدم) — ولا تُقبل أسماء الأدوات إلا بالشكل
+ *   `^[a-z0-9_]{1,64}$`: ما سواه (اسمٌ طويل أو مصطنع من نداء أداةٍ غير مسجَّلة) يُهمَل.
+ *   **الحمولة نصٌّ JSON في سطرٍ واحد لا كائن:** `console.log` يطبع الكائن بعمق
+ *   `util.inspect` الافتراضي 2 فتظهر `steps[].tools` على شكل `[Array]` في سجلّ الإنتاج،
+ *   وهي أهم ما يلتقطه القياس.
  * - **ترويسة `Server-Timing`** على كل ردّ يخرج من المعالج (ومنها ردود المنع
  *   والردود الحتمية): مراحل بالمللي ثانية فقط.
  *
@@ -73,7 +77,10 @@ type ChatTraceNotes = {
   replyMode?: string;
   provider?: string;
   model?: string;
-  /** مستوى التفكير المطبَّق: `low`… أو `none` (لا خيار) أو `fallback` (رُفض فأُعيد بلا خيار). */
+  /**
+   * مستوى التفكير المطبَّق: `low`… أو `none` (لا خيار) أو `fallback` (رُفض فأُعيد بلا خيار)
+   * أو `rejected` (رُفض بعد أن أنهت خطوةٌ أدواتها: عُطّل للأدوار التالية ولم يُعَد الدور).
+   */
   thinking?: string;
   /** سقف خطوات الأدوات الذي حُكم به هذا الدور. */
   maxSteps?: number;
@@ -87,6 +94,8 @@ type ChatTrace = {
   /** يقيس مدّة وعدٍ حتى ينتهي (نجاحًا أو رفضًا) دون تحريك المؤشّر ودون تغيير الوعد. */
   watch(stage: ChatStage, pending: PromiseLike<unknown>): void;
   note(fields: ChatTraceNotes): void;
+  /** الزمن بالمللي ثانية منذ بدء الدور (أول المعالج)، لا منذ أي مرحلة لاحقة. */
+  elapsedMs(): number;
   /** بداية نداء نموذج (أول، أو إعادة، أو احتياطي): يُصفِّر مؤشّر زمن الخطوات. */
   modelRunStarted(): void;
   /** من `onStepFinish`: يقرأ `finishReason` وأسماء الأدوات دفاعيًّا. */
@@ -106,6 +115,18 @@ const finiteOrNull = (value: unknown): number | null =>
 
 const stringOrNull = (value: unknown): string | null =>
   typeof value === "string" && value ? value : null;
+
+/**
+ * اسم أداةٍ صالح للسجلّ: حروف صغيرة وأرقام وشرطة سفلية حتى 64. اسم نداءٍ لأداةٍ غير مسجَّلة
+ * يعود من الحزمة حرفيًّا كما كتبه النموذج (قد يكون طويلًا أو مصطنعًا)، فلا يدخل السجلّ.
+ */
+const TOOL_NAME_PATTERN = /^[a-z0-9_]{1,64}$/;
+
+function toolNameOrNull(call: unknown): string | null {
+  if (field(call, "invalid") === true) return null;
+  const name = stringOrNull(field(call, "toolName"));
+  return name !== null && TOOL_NAME_PATTERN.test(name) ? name : null;
+}
 
 /** يقرأ حقلًا من كائنٍ مجهول البنية دون رمي. */
 function field(source: unknown, key: string): unknown {
@@ -202,6 +223,9 @@ export function createChatTrace(options: CreateChatTraceOptions = {}): ChatTrace
         if (value !== undefined) (notes as Record<string, unknown>)[key] = value;
       }
     },
+    elapsedMs() {
+      return round(now() - startedAt);
+    },
     modelRunStarted() {
       modelRuns += 1;
       stepCursor = now();
@@ -213,9 +237,7 @@ export function createChatTrace(options: CreateChatTraceOptions = {}): ChatTrace
         ms: round(t - stepCursor),
         finishReason: stringOrNull(field(stepResult, "finishReason")),
         tools: Array.isArray(calls)
-          ? calls
-              .map((call) => stringOrNull(field(call, "toolName")))
-              .filter((name): name is string => name !== null)
+          ? calls.map(toolNameOrNull).filter((name): name is string => name !== null)
           : [],
       });
       stepCursor = t;
@@ -294,7 +316,7 @@ export function withChatTurnTrace<C extends { request: Request }>(
       throw error;
     } finally {
       try {
-        console.log("[api/chat] timing", trace.snapshot(final, threw));
+        console.log("[api/chat] timing", JSON.stringify(trace.snapshot(final, threw)));
       } catch {
         /* القياس لا يُسقط ردًّا */
       }

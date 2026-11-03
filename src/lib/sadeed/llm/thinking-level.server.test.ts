@@ -128,11 +128,99 @@ describe("isThinkingOptionRejection — رفض الخيار نفسه فقط", ()
     ).toBe(true);
   });
 
-  it("بلا رمز: INVALID_ARGUMENT أو 400 في النصّ مع thinking ⇒ نعم", () => {
+  it("بلا رمز: INVALID_ARGUMENT أو 400 في النصّ مع ذكر الحقل ⇒ نعم", () => {
     expect(
       isThinkingOptionRejection(new Error("INVALID_ARGUMENT: thinking level unsupported")),
     ).toBe(true);
     expect(isThinkingOptionRejection(new Error("400 thinking config rejected"))).toBe(true);
+    expect(
+      isThinkingOptionRejection(new Error("INVALID_ARGUMENT: thinking_budget is invalid")),
+    ).toBe(true);
+  });
+
+  it("يلزم ذكر الحقل بعينه: كل صيغ الحقل المعتمدة مع 400 ⇒ نعم", () => {
+    for (const field of [
+      "thinkingLevel",
+      "thinking_level",
+      "thinkingConfig",
+      "thinking_config",
+      "thinking_budget",
+      "thinkingBudget",
+    ]) {
+      expect(isThinkingOptionRejection(apiError(400, `Invalid value at '${field}'`)), field).toBe(
+        true,
+      );
+    }
+  });
+
+  it("400 يذكر «thinking» عرضًا (بلا ذكر الحقل) ليس رفضًا للخيار", () => {
+    // تجاوز السياق: رموز التفكير تُحتسب لكنّ الخيار لم يُرفض.
+    expect(
+      isThinkingOptionRejection(
+        apiError(400, "input token count + thinking tokens exceed the context window"),
+      ),
+    ).toBe(false);
+    expect(isThinkingOptionRejection(apiError(400, "Unsupported MIME type: thinking/x"))).toBe(
+      false,
+    );
+    expect(
+      isThinkingOptionRejection(
+        apiError(
+          400,
+          "Bad Request",
+          '{"error":{"message":"thinking output is too long","status":"INVALID_ARGUMENT"}}',
+        ),
+      ),
+    ).toBe(false);
+    // بلا رمز: INVALID_ARGUMENT يذكر الكلمة وحدها.
+    expect(isThinkingOptionRejection(new Error("INVALID_ARGUMENT: thinking tokens exceed"))).toBe(
+      false,
+    );
+  });
+
+  it("RetryError يلفّ الرفض: يُفحص lastError و cause", () => {
+    const rejected = apiError(
+      400,
+      "Bad Request",
+      '{"error":{"message":"Unknown name \\"thinkingConfig\\": Cannot find field.","status":"INVALID_ARGUMENT"}}',
+    );
+    const retryError = Object.assign(
+      new Error("Failed after 3 attempts. Last error: Bad Request"),
+      {
+        name: "AI_RetryError",
+        reason: "maxRetriesExceeded",
+        lastError: rejected,
+        errors: [rejected],
+      },
+    );
+    expect(isThinkingOptionRejection(retryError)).toBe(true);
+    const caused = Object.assign(new Error("wrapped"), { cause: rejected });
+    expect(isThinkingOptionRejection(caused)).toBe(true);
+    // RetryError يلفّ 400 لا يتعلّق بالتفكير، أو 429 يذكر الحقل ⇒ لا.
+    for (const inner of [
+      apiError(400, "Request payload size exceeds the limit"),
+      apiError(400, "input + thinking tokens exceed the context window"),
+      apiError(429, "RESOURCE_EXHAUSTED thinkingConfig quota"),
+    ]) {
+      const wrapped = Object.assign(new Error("Failed after 3 attempts"), {
+        name: "AI_RetryError",
+        lastError: inner,
+      });
+      expect(isThinkingOptionRejection(wrapped)).toBe(false);
+    }
+    // دورة cause لا تعلّق ولا ترمي.
+    const loop: { cause?: unknown } = new Error("loop");
+    loop.cause = loop;
+    expect(isThinkingOptionRejection(loop)).toBe(false);
+  });
+
+  it("إلغاءٌ أو مهلةٌ داخل RetryError ليسا رفضًا ولو ذكرا الحقل", () => {
+    const aborted = Object.assign(new Error("thinkingConfig aborted"), { name: "AbortError" });
+    expect(
+      isThinkingOptionRejection(
+        Object.assign(new Error("Failed after 3 attempts"), { lastError: aborted }),
+      ),
+    ).toBe(false);
   });
 
   it("لا يسقط على غير الرفض: 429 · 5xx · 401 · 403 · 404 — ولو ذكرت الرسالة thinking", () => {
@@ -149,6 +237,17 @@ describe("isThinkingOptionRejection — رفض الخيار نفسه فقط", ()
       false,
     );
     expect(isThinkingOptionRejection(new Error("429 RESOURCE_EXHAUSTED thinking quota"))).toBe(
+      false,
+    );
+  });
+
+  it("رقمٌ من ثلاث خانات في النصّ ليس رمز حالة: «thinking budget 512» بلا رمز ⇒ يُحكم بـINVALID_ARGUMENT", () => {
+    expect(
+      isThinkingOptionRejection(
+        new Error("INVALID_ARGUMENT: thinking budget 512 is not supported"),
+      ),
+    ).toBe(true);
+    expect(isThinkingOptionRejection(new Error("thinking budget 512 is not supported"))).toBe(
       false,
     );
   });
@@ -181,7 +280,8 @@ describe("isThinkingOptionRejection — رفض الخيار نفسه فقط", ()
     for (const v of [undefined, null, 42, "thinking 400", {}, { message: "thinking" }]) {
       expect(() => isThinkingOptionRejection(v)).not.toThrow();
     }
-    expect(isThinkingOptionRejection("thinking 400 invalid_argument")).toBe(true);
+    expect(isThinkingOptionRejection("thinking 400 invalid_argument")).toBe(false);
+    expect(isThinkingOptionRejection("thinkingConfig 400 invalid_argument")).toBe(true);
     expect(isThinkingOptionRejection(null)).toBe(false);
   });
 });
