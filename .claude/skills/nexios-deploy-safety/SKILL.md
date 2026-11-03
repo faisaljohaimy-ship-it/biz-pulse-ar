@@ -54,6 +54,5 @@ grep -rn "lovable.app" src/ --include="*.tsx" \
 ## التراجع (Rollback)
 
 - الطريقة: `git revert <sha>` (لا force-push على main) ثم بوابة التحقق
-  كاملة ثم الدفع، وإعادة النشر من Lovable.
-- ملاحظة: لا يوجد ملف ROLLBACK.md في الجذر حاليًا — إن لزم توثيق حادثة
-  تراجع، أنشئه عبر وكيل nexios-docs-keeper.
+  كاملة ثم الدفع، وإعادة النشر عبر Vercel: `create_deployment` (مصدر GitHub، `target: production`) ثم `request_promote`.
+- `ROLLBACK.md` في الجذر هو السجل الرسمي (المادة ١٨)؛ يحدّثه وكيل nexios-docs-keeper مع كل تراجع.

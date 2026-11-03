@@ -1,7 +1,7 @@
 # ROLLBACK — NEXIOS AI OS
 
 سجل التراجع الرسمي (الدستور المادة ١٨). المنهج المعتمد: `git revert <commit>`
-(لا force-push على main)، ثم البوابة كاملة، ثم إعادة النشر عبر Lovable.
+(لا force-push على main)، ثم البوابة كاملة، ثم إعادة النشر عبر Vercel (`create_deployment` ثم `request_promote`).
 كل صف يذكر: الـ commit · ماذا فعل · كيف تعكسه · أثر التراجع.
 
 ## إعادة تسمية المساعد ARIA → SADEED (شخصية رجل) — 2026-07-22
