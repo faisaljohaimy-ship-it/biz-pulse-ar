@@ -1495,7 +1495,11 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
         // الدور مخزَّن بالكامل (Option A) فلا بايت قبل اكتماله: أوّل رمزٍ يصل العميل هو لحظة
         // الاكتمال هذه. كان `firstTokenAt = null` ثابتًا فبقي `first_token_ms` فارغًا دائمًا
         // (INVARIANT-9). حين يوجد بثّ فعليّ يُقاس عند أول دلتا.
-        const firstTokenAt = Date.now();
+        // **منذ بدء الطلب** (`trace.elapsedMs()` من أول المعالج) لا منذ `startAt`: `startAt` يُضبط بعد
+        // التحقّق والمصادقة والمؤسسة والمعدّل والحصّة والسياق والأدوات، فكان العمود يستثني ما قبل
+        // النموذج. ولذلك قد يفوق `first_token_ms` العمودَ `latency_ms` (يبدأ من `startAt`) — لا
+        // يُقارَنان صفًّا بصفّ.
+        const firstTokenMs = trace.elapsedMs();
 
         // Persist ONLY the safe text (never raw model output).
         if (userId) {
@@ -1527,7 +1531,7 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
                 answer: redactTelemetryText(a).slice(0, 8000),
                 model: (answeredBy ?? attempted).modelId,
                 latency_ms: Date.now() - startAt,
-                first_token_ms: firstTokenAt - startAt,
+                first_token_ms: firstTokenMs,
                 device_class: deviceClass,
               })
               .then(({ error: insErr }) => {

@@ -110,6 +110,14 @@ const thinkingRejected = () =>
     '{"error":{"code":400,"message":"thinking_level is not supported by this model","status":"INVALID_ARGUMENT"}}',
   );
 
+/** سطر القياس `[api/chat] timing` مفكوكًا (يُطبع نصَّ JSON لا كائنًا). */
+const timingLine = () => {
+  const raw = vi
+    .mocked(console.log)
+    .mock.calls.find((call) => call[0] === "[api/chat] timing")?.[1];
+  return typeof raw === "string" ? (JSON.parse(raw) as Record<string, unknown>) : undefined;
+};
+
 const googleOptions = (i: number) =>
   (sim.calls[i]?.providerOptions as { google?: { thinkingConfig?: unknown } } | undefined)?.google;
 
@@ -238,11 +246,7 @@ describe("السقوط مرّةً واحدة عند رفض الخيار نفسه
   it("السجلّ يشهد بالسقوط: thinking:fallback ونداءان للنموذج", async () => {
     sim.script = [failWith(thinkingRejected())];
     await post();
-    const line = vi
-      .mocked(console.log)
-      .mock.calls.find((call) => call[0] === "[api/chat] timing")?.[1] as
-      { thinking: string; modelRuns: number } | undefined;
-    expect(line).toMatchObject({ thinking: "fallback", modelRuns: 2 });
+    expect(timingLine()).toMatchObject({ thinking: "fallback", modelRuns: 2 });
     expect(
       vi
         .mocked(console.warn)
