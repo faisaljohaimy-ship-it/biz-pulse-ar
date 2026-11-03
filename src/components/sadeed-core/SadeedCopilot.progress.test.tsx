@@ -12,6 +12,11 @@
  *  ③ المهلة (`TimeoutError`): رسالة «استغرق الرد أطول من المعتاد» مع زرّ إعادة
  *    المحاولة اليدوي، و**لا** `regenerate` تلقائية مهما طال الوقت.
  *  ④ نفاد الإعادتين: يظهر الخطأ الحقيقي بزرّه، لا إشعارٌ عالق.
+ *  ⑤ الاستمرارية (المراجعة ٢٠٢٦/١١/٠٣): العدّاد ومراحل ١٢/٢٥ ث تقيس انتظار المستخدم
+ *     كلّه عبر الإعادة التلقائية (الفقاعة تُفكَّك وتُركَّب في الفاصل)، وتبدأ من الصفر
+ *     عند كل هدوء: ردٌّ جاهز، إيقاف، خطأٌ نهائي، أو دورٌ جديد يبدأ في الفاصل.
+ *  ⑥ دورٌ جديد في الفاصل: لا إشعار إعادةٍ على سؤالٍ لم يفشل، ولا إعادة تنطلق،
+ *     وحصّة الإعادة كاملة للدور الجديد.
  */
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { createElement, useSyncExternalStore } from "react";
@@ -77,7 +82,7 @@ import { SadeedCopilot } from "./SadeedCopilot";
 import { THINKING_AR, autoRetryNoticeAr } from "./ThinkingBubble";
 
 // نصّ المالك حرفيًّا — لا ثوابت الكود (راجع ThinkingBubble.test.tsx).
-const WORKING_AR = "ما زال سَدِيد يعمل — الأسئلة التحليلية قد تستغرق حتى نصف دقيقة";
+const WORKING_AR = "ما زال سَدِيد يعمل على ردّك — قد يستغرق بعض الأسئلة قرابة نصف دقيقة";
 const SLOW_AR = "يستغرق أطول من المعتاد — يمكنك إيقاف الطلب أو الانتظار";
 
 /** يحرّك حالة الدردشة المزيَّفة ويُعيد رسم اللوحة. */
@@ -219,6 +224,90 @@ describe("مهلة العميل — رسالة صادقة وإعادة يدوي�
 
     // اليدويّة تعمل.
     fireEvent.click(retry);
+    expect(fake.holder.chat.regenerate).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("استمرارية الانتظار عبر الإعادة التلقائية — الفقاعة تُفكَّك وتُركَّب في الفاصل", () => {
+  const busy = () => errorOf(JSON.stringify({ error: "busy" }));
+
+  it("العدّاد والمراحل تقيس الانتظار كلّه: ٣٠ ث ثم خطأ مؤقّت ثم إعادة ⇒ لا صفر جديد", async () => {
+    renderPanel();
+    setChat({ status: "submitted" });
+    await elapse(30_000);
+    expect(screen.getByText("30 ث")).toBeInTheDocument();
+    expect(screen.getByText(SLOW_AR)).toBeInTheDocument();
+
+    // الفاصل: إشعار الإعادة (لا «يمكنك إيقاف الطلب» — لا طلب جارٍ) والعدّاد لم يُصفَّر.
+    setChat({ status: "error", error: busy() });
+    expect(screen.getByText(autoRetryNoticeAr(1))).toBeInTheDocument();
+    expect(screen.queryByText(SLOW_AR)).not.toBeInTheDocument();
+    expect(screen.getByText("30 ث")).toBeInTheDocument();
+
+    await elapse(3_000);
+    expect(fake.holder.chat.regenerate).toHaveBeenCalledTimes(1);
+    // الإعادة جارية: الزمن الكلّي ٣٣ ث والمرحلة «أطول من المعتاد» فورًا لا بعد ٢٥ ث أخرى.
+    setChat({ status: "submitted", error: undefined });
+    expect(screen.getByText("33 ث")).toBeInTheDocument();
+    expect(screen.getByText(SLOW_AR)).toBeInTheDocument();
+    expect(stopButton()).toBeInTheDocument();
+  });
+
+  it("الردّ الجاهز يصفّر الانتظار: الدور التالي يبدأ من الصفر", async () => {
+    renderPanel();
+    setChat({ status: "submitted" });
+    await elapse(20_000);
+    expect(screen.getByText("20 ث")).toBeInTheDocument();
+
+    setChat({ status: "ready" });
+    setChat({ status: "submitted" });
+    expect(screen.getByText(THINKING_AR)).toBeInTheDocument();
+    expect(screen.queryByText(/\d+ ث/)).not.toBeInTheDocument();
+    await elapse(2_000);
+    expect(screen.queryByText(/\d+ ث/)).not.toBeInTheDocument();
+  });
+
+  it("الخطأ النهائي يصفّر الانتظار: الإعادة اليدوية تبدأ من الصفر لا من زمن الفشل", async () => {
+    renderPanel();
+    setChat({ status: "submitted" });
+    await elapse(20_000);
+    expect(screen.getByText("20 ث")).toBeInTheDocument();
+
+    // مهلة العميل لا تُعاد تلقائيًّا ⇒ خطأ نهائي بزرّه.
+    setChat({ status: "error", error: errorOf(CHAT_TIMEOUT_CODE) });
+    fireEvent.click(screen.getByRole("button", { name: /إعادة المحاولة/ }));
+    expect(fake.holder.chat.regenerate).toHaveBeenCalledTimes(1);
+
+    setChat({ status: "submitted", error: undefined });
+    expect(screen.getByText(THINKING_AR)).toBeInTheDocument();
+    expect(screen.queryByText(/\d+ ث/)).not.toBeInTheDocument();
+    await elapse(2_000);
+    expect(screen.queryByText(/\d+ ث/)).not.toBeInTheDocument();
+  });
+
+  it("دورٌ جديد في فاصل الإعادة ⇒ لا إشعار ولا إعادة، والانتظار والحصّة من جديد", async () => {
+    renderPanel();
+    setChat({ status: "submitted" });
+    await elapse(20_000);
+    setChat({ status: "error", error: busy() });
+    expect(screen.getByText(autoRetryNoticeAr(1))).toBeInTheDocument();
+
+    // المستخدم يرسل سؤالًا آخر قبل أن تنطلق الإعادة (الفاصل ≥ 1.2 ث).
+    await elapse(500);
+    setChat({ status: "submitted", error: undefined });
+    expect(screen.queryByText(autoRetryNoticeAr(1))).not.toBeInTheDocument();
+    expect(screen.getByText(THINKING_AR)).toBeInTheDocument();
+
+    // مؤقّت الإعادة أُلغي، والانتظار لا يرث ٢٠ ث السؤال السابق.
+    await elapse(2_000);
+    expect(fake.holder.chat.regenerate).not.toHaveBeenCalled();
+    expect(screen.queryByText(/\d+ ث/)).not.toBeInTheDocument();
+    expect(screen.queryByText(WORKING_AR)).not.toBeInTheDocument();
+
+    // الدور الجديد يفشل بدوره: حصّته كاملة — الإعادة الأولى (1/2) لا الثانية.
+    setChat({ status: "error", error: busy() });
+    expect(screen.getByText(autoRetryNoticeAr(1))).toBeInTheDocument();
+    await elapse(3_000);
     expect(fake.holder.chat.regenerate).toHaveBeenCalledTimes(1);
   });
 });

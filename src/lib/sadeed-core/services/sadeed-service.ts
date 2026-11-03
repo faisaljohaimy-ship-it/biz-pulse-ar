@@ -16,7 +16,7 @@ import { CHAT_TIMEOUT_CODE } from "./chat-timeout";
 import { supabase } from "@/integrations/supabase/client";
 
 let cachedHint: SadeedRouteHint | null = null;
-let cachedReplyMode: "text" | "voice" | "deep" = "text";
+let cachedReplyMode: "text" | "voice" = "text";
 
 /** Publish the current route hint. SadeedService attaches it as a request header. */
 export function setPendingRouteHint(hint: SadeedRouteHint | null) {
@@ -25,7 +25,7 @@ export function setPendingRouteHint(hint: SadeedRouteHint | null) {
 
 /** Select the presentation contract for the next request. Voice responses are
  * still retained as hidden conversation history, but the UI renders audio only. */
-export function setPendingReplyMode(mode: "text" | "voice" | "deep") {
+export function setPendingReplyMode(mode: "text" | "voice") {
   cachedReplyMode = mode;
 }
 
@@ -41,10 +41,7 @@ export function lastGateRetryAfter(): number | null {
 }
 
 function noteGateResponse(res: Response): void {
-  if (res.status !== 429 && res.status !== 503) {
-    lastGateRetryAfterMs = null;
-    return;
-  }
+  if (res.status !== 429 && res.status !== 503) return;
   const raw = res.headers.get("retry-after");
   const seconds = raw ? Number(raw.trim()) : Number.NaN;
   lastGateRetryAfterMs = Number.isFinite(seconds) ? Math.max(0, Math.round(seconds * 1000)) : null;
@@ -73,20 +70,25 @@ export function computeAutoRetryDelayMs(
 // ── مهلة الدور: مشتقّة من سقف الخادم لا مرقّمة جزافًا ───────────────────────
 // الخادم يخزّن الردّ كاملًا ولا يرسل الترويسات إلا بعد انتهاء الدور، فمهلة
 // «حتى الترويسات» تغطّي الدور كلّه. سقف دور النموذج في الخادم
-// (`MODEL_TURN_DEADLINE_MS` و`MODEL_TURN_DEADLINE_DEEP_MS` في
-// `routes/api/chat.ts`) 45 ث للنص والصوت و75 ث للعميق، وتسبقه بوّابات
-// (جلسة، حدّ المعدّل، حصّة، سياق) ≈ 5 ث (قِيست 5.2 ث في عيّنة إنتاج واحدة
-// n=1 — تقديرٌ لا ضمان)، ونضيف هامش شبكةٍ 5 ث كي يسبق الخادمُ العميلَ دائمًا.
-// كانت المهلة 30 ث صلبة فيُجهَض كل دورٍ بين 30 و45 ث في العميل. وتسري على كل
-// نداءٍ عبر هذه الدالة، فحتى فحص الصحّة (GET) صار سقفه 55 ث بعد أن كان 30 ث.
+// (`MODEL_TURN_DEADLINE_MS` في `routes/api/chat.ts`) 45 ث للنص والصوت، وتسبقه
+// بوّابات (جلسة، حدّ المعدّل، حصّة، سياق) ≈ 5 ث (قِيس 5.2 ث في عيّنة إنتاج
+// واحدة n=1 — تقديرٌ لا ضمان)، ونضيف هامش شبكةٍ 5 ث كي يسبق الخادمُ العميلَ.
+// كانت المهلة 30 ث صلبة فيُجهَض كل دورٍ بين 30 و45 ث في العميل.
+//
+// الدور «العميق» (سقف الخادم 75 ث) لا مستدعيَ له في العميل اليوم — فحُذف فرعه
+// من هنا بدل أن يبقى شيفرةً ميتةً في الحزمة. وحين يُوصَل يُشتقّ من جديد، ولا
+// يكفي 75+5+5: المجلس يعمل **تسلسليًّا قبل** دور الإجابة بمهلة 50 ث
+// (`runAgentMission` في `chat.ts`)، فالسقف الفعلي ≈ 50 + 75 + بوّابات.
 const SERVER_TURN_CAP_MS = 45_000;
-const SERVER_TURN_CAP_DEEP_MS = 75_000;
 const SERVER_GATES_MS = 5_000;
 const NETWORK_MARGIN_MS = 5_000;
 /** مهلة دور نصّي/صوتي: 45 + 5 + 5 = 55 ث. */
 export const CHAT_DEADLINE_MS = SERVER_TURN_CAP_MS + SERVER_GATES_MS + NETWORK_MARGIN_MS;
-/** مهلة دور عميق: 75 + 5 + 5 = 85 ث. */
-export const CHAT_DEADLINE_DEEP_MS = SERVER_TURN_CAP_DEEP_MS + SERVER_GATES_MS + NETWORK_MARGIN_MS;
+/**
+ * مهلة فحص الصحّة (GET): نداءٌ قصير لا دور نموذج — لو ورث مهلة الدور لبقي مؤشّر
+ * الجاهزية «قيد الفحص» قرابة دقيقة حين يعلق `/api/chat/health`.
+ */
+const HEALTH_DEADLINE_MS = 8_000;
 
 // Authenticated fetch — attaches the Supabase Bearer token so /api/chat's
 // guard accepts the request. Without this the chat is silently rejected 401
@@ -97,17 +99,30 @@ export const CHAT_DEADLINE_DEEP_MS = SERVER_TURN_CAP_DEEP_MS + SERVER_GATES_MS +
 // `CHAT_TIMEOUT_CODE`) لا `AbortError`: حزمة `ai` تعامل `AbortError` إيقافًا
 // من المستخدم فتضبط الحالة `ready` بلا خطأ، فيختفي «سَدِيد يفكّر…» بلا ردٍّ ولا
 // رسالة. أمّا Stop فيبقى `AbortError` — إيقافًا هادئًا بلا رسالة خطأ.
-// ويرفض `fetch` بـ`signal.reason` في كل متصفحٍ يعرّف `throwIfAborted` (الذي
-// تستعمله الدالة أصلًا: Chrome 100 · Safari 15.4 · Firefox 97)، فلا مسارٌ
-// احتياطيّ للمتصفحات الأقدم — هي نفسها لا تجد `throwIfAborted`.
-export async function sadeedAuthedFetch(input: RequestInfo | URL, init: RequestInit = {}) {
+//
+// **لا نعتمد على أن `fetch` يرفض بـ`signal.reason`.** تقول المواصفة ذلك وتفعله
+// Chrome وFirefox، لكن WebKit (Safari وكل متصفحات iOS) يرفض `fetch` المُجهَض
+// *بعد* استدعائه بـ`AbortError` عامة («Fetch is aborted») ويستعمل السبب للإجهاض
+// المسبق وحده — بحسب قراءة مصدر WebKit ومحاكاةٍ على `Chat` الحقيقية (المراجعة،
+// ٢٠٢٦/١١/٠٣)؛ لم يُجرَّب على جهاز Safari. فيعيد `catch` أدناه رمي سبب الإجهاض
+// نفسه متى كان هو المهلة، ويترك أي خطأٍ آخر (Stop، شبكة) كما جاء.
+//
+// `timeoutMs`: الافتراضي مهلة الدور؛ فحص الصحّة يمرّر مهلةً أقصر.
+export async function sadeedAuthedFetch(
+  input: RequestInfo | URL,
+  init: RequestInit = {},
+  timeoutMs: number = CHAT_DEADLINE_MS,
+) {
+  // كل نداءٍ يبدأ بلا تلميح: `Retry-After` من ردٍّ سابق لا يحكم إعادة هذا النداء إن
+  // انتهى بلا ردّ (مهلة، شبكة) — يضبطه `noteGateResponse` من ردٍّ 429/503 فقط.
+  lastGateRetryAfterMs = null;
   // The deadline covers session lookup too, and still applies when the
   // SDK passes its own (Stop) signal — both abort the request. Stop سبق المهلة
   // ⇒ يبقى إيقافًا: أوّل سبب إجهاضٍ يفوز، و`abort()` الثاني لا أثر له.
   const controller = new AbortController();
   const timer = setTimeout(
     () => controller.abort(new DOMException(CHAT_TIMEOUT_CODE, "TimeoutError")),
-    cachedReplyMode === "deep" ? CHAT_DEADLINE_DEEP_MS : CHAT_DEADLINE_MS,
+    timeoutMs,
   );
   // Forward Stop without relying on AbortSignal.any (older browsers lack it).
   const stopSignal = init.signal;
@@ -155,6 +170,9 @@ export async function sadeedAuthedFetch(input: RequestInfo | URL, init: RequestI
     }
     noteGateResponse(res);
     return res;
+  } catch (e) {
+    // أوّل سبب إجهاضٍ يفوز: `signal.reason` هو المهلة فقط إن سبقت Stop.
+    throw signal.reason?.message === CHAT_TIMEOUT_CODE ? signal.reason : e;
   } finally {
     clearTimeout(timer);
     clearTimeout(sessionTimer);
@@ -173,11 +191,15 @@ export async function pingChat(): Promise<{
   gate?: "verified" | "closed" | "degraded";
 }> {
   try {
-    const r = await sadeedAuthedFetch(`/api/chat/health?t=${Date.now()}`, {
-      method: "GET",
-      cache: "no-store",
-      headers: { "cache-control": "no-cache", pragma: "no-cache" },
-    });
+    const r = await sadeedAuthedFetch(
+      `/api/chat/health?t=${Date.now()}`,
+      {
+        method: "GET",
+        cache: "no-store",
+        headers: { "cache-control": "no-cache", pragma: "no-cache" },
+      },
+      HEALTH_DEADLINE_MS,
+    );
     if (!r.ok) return { ok: false };
     const j = await r.json().catch(() => null);
     return j && typeof j === "object"

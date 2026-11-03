@@ -1886,6 +1886,10 @@ export function SadeedCopilot() {
   const autoRetryRef = useRef(0);
   // رقم الإعادة التلقائية الجارية (٠ = لا شيء) — يُظهر إشعارها في النصّ لا في الصوت وحده.
   const [retrying, setRetrying] = useState(0);
+  // بداية انتظار المستخدم الجارية (`ThinkingBubble`): ملكي لا ملك الفقاعة لأنها تُفكَّك
+  // وتُركَّب في فاصل الإعادة. تُصفَّر (`null`) عند كل هدوء: ردٌّ جاهز أو إيقاف، خطأٌ
+  // نهائي، أو دورٌ جديد يبدأ في الفاصل.
+  const waitSinceRef = useRef<number | null>(null);
   const regenerateRef = useRef(chat.regenerate);
   useEffect(() => {
     regenerateRef.current = chat.regenerate;
@@ -1893,6 +1897,7 @@ export function SadeedCopilot() {
   useEffect(() => {
     if (chat.status === "ready" && !chat.error) {
       autoRetryRef.current = 0;
+      waitSinceRef.current = null;
       setRetrying(0);
     }
   }, [chat.status, chat.error]);
@@ -1911,17 +1916,31 @@ export function SadeedCopilot() {
         const attempt = autoRetryRef.current;
         setRetrying(attempt);
         if (convModeRef.current) setConvNotice(autoRetryNoticeAr(attempt));
+        let fired = false;
         const t = window.setTimeout(() => {
+          fired = true;
           void regenerateRef.current?.();
         }, delay);
-        return () => window.clearTimeout(t);
+        return () => {
+          window.clearTimeout(t);
+          // الخطأ زال قبل أن تنطلق الإعادة ⇒ دورٌ جديد بدأ في الفاصل: لا إشعار إعادةٍ
+          // على سؤالٍ لم يفشل، ولا حصّةَ مستهلَكةً له، ولا انتظارَ موروثًا.
+          if (!fired) {
+            autoRetryRef.current = 0;
+            waitSinceRef.current = null;
+            setRetrying(0);
+          }
+        };
       }
     }
     setRetrying(0);
+    waitSinceRef.current = null;
     if (convModeRef.current) {
       speakNextReplyRef.current = false;
       sadeedState.set("idle");
-      setConvNotice("تعذّر الاتصال بمحرك الذكاء الآن — أواصل الإصغاء وسأجيب فور استقراره.");
+      // لا وعدَ بجوابٍ لاحق: لا شيء في الكود يعيد السؤال بعد الفشل (مهلةً كان أو
+      // إعادتين مستنفدتين)، فالمستخدم يكرّره. وصفٌ صادقٌ للحالتين: الردّ لم يصل.
+      setConvNotice("تعذّر الرد — أواصل الإصغاء، كرّر سؤالك.");
       autoRetryRef.current = 0;
       const controller = new AbortController();
       void (async () => {
@@ -2234,9 +2253,12 @@ export function SadeedCopilot() {
             </li>
           );
         })}
-        {/* الفقاعة تبقى قائمةً في فاصل الإعادة التلقائية (لا وميض خطأ ثم عودة)،
-            وعدّادها يقيس انتظار المستخدم كلّه عبر المحاولات. */}
-        {(isBusy || (hasError && retrying > 0)) && <ThinkingBubble retry={retrying} />}
+        {/* الفقاعة تُعرض في فاصل الإعادة التلقائية (لا وميض خطأ ثم عودة)، وعدّادها
+            يقيس انتظار المستخدم كلّه عبر المحاولات: البداية في `waitSinceRef` لأن
+            الفقاعة تُفكَّك وتُركَّب لحظة الخطأ قبل أن يضبط الأثر `retrying`. */}
+        {(isBusy || (hasError && retrying > 0)) && (
+          <ThinkingBubble retry={retrying} gap={!isBusy} since={waitSinceRef} />
+        )}
         {hasError && !isBusy && !retrying && (
           <li className="flex justify-start">
             <div className="max-w-[85%] rounded-2xl bg-destructive/15 px-3 py-2 text-sm text-destructive-foreground ring-1 ring-destructive/50 backdrop-blur-md">
