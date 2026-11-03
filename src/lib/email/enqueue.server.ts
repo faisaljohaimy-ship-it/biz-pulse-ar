@@ -15,6 +15,7 @@ import { TEMPLATES } from "@/lib/email-templates/registry";
 // Product name comes from the single source (lib/domain) — this file used to
 // hardcode "SADEED", which is how the misspelling reached real emails.
 import { PRODUCT_NAME } from "@/lib/domain";
+import { EMAIL_TRANSPORT_NOT_CONFIGURED, emailTransportConfigured } from "./transport.server";
 const SITE_NAME = PRODUCT_NAME;
 const SENDER_DOMAIN = "notify.neexios.com";
 const FROM_DOMAIN = "notify.neexios.com";
@@ -40,6 +41,10 @@ export async function enqueueTemplateEmail(opts: {
   templateData?: Record<string, unknown>;
   idempotencyKey?: string;
 }): Promise<EnqueueResult> {
+  // لا إدراج في طابور لا مستهلك له: `enqueue_email` تُنشئ الطابور وتنجح، فيظهر
+  // «نجاحٌ» لرسالةٍ لن تُرسل ويبقى سجلّها `pending` إلى الأبد (انظر transport.server.ts).
+  if (!emailTransportConfigured()) return { ok: false, error: EMAIL_TRANSPORT_NOT_CONFIGURED };
+
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const template = TEMPLATES[opts.templateName];
   if (!template) return { ok: false, error: `Template '${opts.templateName}' not found` };

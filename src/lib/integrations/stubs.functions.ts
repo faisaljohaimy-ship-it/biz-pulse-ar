@@ -75,7 +75,7 @@ const PROVIDERS: IntegrationStatus[] = [
   },
   {
     id: "supabase",
-    label: "Supabase (Lovable Cloud)",
+    label: "Supabase",
     category: "data",
     status: "not_configured",
     scopes: ["postgrest", "auth", "storage", "realtime"],

@@ -104,12 +104,7 @@ export type RotationEntry = {
   days_overdue: number | null;
 };
 
-const TRACKED_SECRETS = [
-  "LOVABLE_API_KEY",
-  "MICROSOFT_GRAPH_CLIENT_SECRET",
-  "ELEVENLABS_API_KEY",
-  "RESEND_API_KEY",
-];
+const TRACKED_SECRETS = ["MICROSOFT_GRAPH_CLIENT_SECRET", "ELEVENLABS_API_KEY", "RESEND_API_KEY"];
 
 export const getSecretsRotationStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])

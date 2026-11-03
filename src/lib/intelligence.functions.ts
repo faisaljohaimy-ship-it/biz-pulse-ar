@@ -179,7 +179,7 @@ export const getFabricSnapshot = createServerFn({ method: "GET" })
       })),
       forgotten,
       sources: [
-        { id: "supabase", label: "Lovable Cloud", available: true },
+        { id: "supabase", label: "Supabase", available: true },
         {
           id: "powerbi",
           label: "Microsoft Power BI",
