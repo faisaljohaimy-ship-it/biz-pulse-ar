@@ -1,8 +1,12 @@
 # RAG layer — apply runbook (STAGED · not yet applied)
 
-Project: **`jhutlofapjfjjeajawie`** (owner-declared, and now the value in
-`config.toml` — the two agree since 2026-07-30; before that config.toml
-carried a stale ref, which is why several files still explain the mismatch).
+Project: **`cnaevysaoimzusnvpazr`** — the independent production project, and
+the value in `supabase/config.toml` since 2026-11-03.
+**`jhutlofapjfjjeajawie` is the frozen Lovable Cloud copy** (every write is
+rejected with `25006` since 2026-10-22) and is **not a target for anything in
+this runbook**. Earlier revisions named it as the owner-declared project; the
+measurements recorded below were taken while it was production, and say so.
+Every `--project-ref` command below writes to production: owner approval first.
 
 **Approved decisions**
 
@@ -147,10 +151,10 @@ DROP INDEX IF EXISTS public.rag_documents_org_source_title_uq;
 
 ```bash
 # secrets first (values from your vault — never from the repo):
-supabase secrets set GEMINI_API_KEY=*** --project-ref jhutlofapjfjjeajawie
+supabase secrets set GEMINI_API_KEY=*** --project-ref cnaevysaoimzusnvpazr
 # deploy:
-supabase functions deploy rag-retrieve --project-ref jhutlofapjfjjeajawie
-supabase functions deploy rag-ingest   --project-ref jhutlofapjfjjeajawie
+supabase functions deploy rag-retrieve --project-ref cnaevysaoimzusnvpazr
+supabase functions deploy rag-ingest   --project-ref cnaevysaoimzusnvpazr
 ```
 
 Neither function ever uses `service_role` — both forward the CALLER's JWT so
@@ -159,7 +163,7 @@ RLS enforces org isolation (read: viewer، write: admin — مطابق aria_know
 **Verification (positive):**
 
 ```bash
-curl -sX POST "https://jhutlofapjfjjeajawie.supabase.co/functions/v1/rag-retrieve" \
+curl -sX POST "https://cnaevysaoimzusnvpazr.supabase.co/functions/v1/rag-retrieve" \
   -H "Authorization: Bearer <USER_JWT>" -H "Content-Type: application/json" \
   -d '{"query":"ما نطاق SEC-18؟"}'
 # expect: {"results":[…],"insufficient_evidence":…,"degraded":null}
@@ -195,16 +199,19 @@ commit — no DB objects are involved in this phase.
 
 ## Live evaluation (operator-run) — NOT RUNNABLE YET
 
-**حالة مؤكَّدة: القاعدة غير مطبَّقة.** لم يُنفَّذ أي migration على
-`jhutlofapjfjjeajawie`؛ لا `rag_documents` ولا `rag_chunks` ولا
-`rag_hybrid_search`، والدالتان غير منشورتين. **لم يُشغَّل أي استرجاع، ولا
+**حالة مؤكَّدة (قياس ٢٠٢٦/١٠/١٢ على `jhutlofapjfjjeajawie`، وكانت الإنتاج
+حينها): القاعدة غير مطبَّقة.** لم يُنفَّذ أي migration عليها؛ لا
+`rag_documents` ولا `rag_chunks` ولا `rag_hybrid_search`، والدالتان غير
+منشورتين. **لم تُقَس هذه الحالة على `cnaevysaoimzusnvpazr`** (الإنتاج الحالي،
+مستنسخ من نسخة ٢٠٢٦/١٠/٢٠ ثم كُتب عليه بعدها) — أعد القياس عليه قبل الاعتماد
+على أي سطر هنا. **لم يُشغَّل أي استرجاع، ولا
 يوجد أي رقم recall أو دقة استشهاد — أي رقم يُذكر سيكون مُختلقًا.**
 
 الشروط الأربعة لتشغيله: (1) تطبيق migrations 1–5، (2) نشر الدالتين،
 (3) ابتلاع المحتوى للمؤسسة الهدف، (4) توفير المتغيّرين أدناه.
 
 ```bash
-VITE_SUPABASE_URL=https://jhutlofapjfjjeajawie.supabase.co \
+VITE_SUPABASE_URL=https://cnaevysaoimzusnvpazr.supabase.co \
 RAG_EVAL_JWT=<JWT جلسة مستخدم حقيقي في مؤسسة مبتلَع محتواها> \
 npx vitest run src/test/rag-live-eval.test.ts
 ```

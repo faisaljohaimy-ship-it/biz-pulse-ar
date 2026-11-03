@@ -7,10 +7,23 @@ description: طبقة بيانات سَدِيد على Supabase — تُستدع
 
 ## المشروع
 
-- المشروع النشط الذي صرّح به المالك: `jhutlofapjfjjeajawie`.
-- `supabase/config.toml` صار يحمل المعرّف نفسه (صُحّح 2026-07-30 بعد أن
-  ظلّ يحمل `jhutlofapjfjjeajawie` القديم). ومع ذلك يبقى `VITE_SUPABASE_URL`
-  البيئي هو الفيصل وقت التشغيل — config.toml يوجّه أدوات CLI لا التطبيق.
+- **مشروع الإنتاج الفعلي: `cnaevysaoimzusnvpazr`** — Supabase مستقل تحت
+  حساب المالك (`ACTIVE_HEALTHY` بحسب `list_projects` ٢٠٢٦/١١/٠٣). يحمله
+  اليوم `supabase/config.toml` و`BUILTIN_PROJECT_REF` ومانيفست MCP وحرفيات
+  `vite.config.ts`، ويحرس اتفاقها `src/lib/mcp/project-ref.test.ts`.
+- **`jhutlofapjfjjeajawie` مجمَّد منذ ٢٠٢٦/١٠/٢٢ ولا يُستهدف أبدًا.** هو
+  نسخة Lovable Cloud القديمة؛ كل كتابة عليها ترفض بـ`25006`. فأي
+  `apply_migration` أو `deploy_edge_function` أو `--project-ref` موجَّه إليه
+  يفشل مغلقًا، أو — أسوأ — يشهد بصحة RLS على لقطة أقدم من الإنتاج. ملفات
+  `supabase/migrations/**` تحمل اسمه في تاريخها ولا تُعدَّل.
+- اتفاق الملفات على معرّفٍ **ليس برهانًا** أنه الصحيح (غُيِّر المعرّف مرّات
+  من الذاكرة فصارت الملفات متّسقة وخاطئة): الحاكم هو الإنتاج الحيّ
+  (`/.well-known/oauth-protected-resource` المنشور، و`list_projects` بحساب
+  المالك) — راجع المادة ٤ في الدستور. و`config.toml` يوجّه أدوات CLI لا
+  التطبيق؛ `VITE_SUPABASE_URL` البيئي هو ما يستعمله التطبيق وقت التشغيل.
+- **أي تغيير على قاعدة الإنتاج (ترحيل أو DDL أو كتابة بيانات) خلف إذن المالك
+  الصريح** — ولو لم يكن مدمِّرًا (CLAUDE.md، ٢٠٢٦/١٠/١٣). القراءة الخالصة
+  للفحص ليست تغييرًا.
 - **عميل واحد موحّد** `src/integrations/supabase/client.ts` — لا تنشئ
   عملاء جددًا. على الخادم: `supabaseAdmin` من `client.server.ts` للكتابات
   الإدارية فقط.
