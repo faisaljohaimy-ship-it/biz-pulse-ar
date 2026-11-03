@@ -82,33 +82,42 @@ the bilingual `name_ar` / `name_en` pattern.
 ### المادة ٤ — مصادر الحقيقة الوحيدة
 
 - **الكود**: GitHub (`faisaljohaimy-ship-it/biz-pulse-ar`).
-- **البيانات**: Supabase — المشروع النشط `jhutlofapjfjjeajawie`
+- **البيانات**: Supabase — المشروع النشط `cnaevysaoimzusnvpazr`
+  («AI-command-center»، ap-southeast-2، حالته `ACTIVE_HEALTHY`)
   (المتغير البيئي `VITE_SUPABASE_URL` هو الفيصل، لا config.toml).
   **لا يُغيَّر هذا المعرّف إلا بدليل من الإنتاج الحيّ**، أي من
-  `https://neexios.com/.well-known/oauth-protected-resource` أو من ربط
-  Supabase في لوحة Lovable — لا من الذاكرة ولا من لوحة Supabase الشخصية.
-  السبب مسجَّل لأنه كلّف جلسة كاملة: المشروع الذي يشغّل الإنتاج
-  **تديره Lovable** ولا يظهر في مؤسسة المالك على Supabase. مشروعا المالك
-  الشخصيان موقوفان ولا يستخدمهما التطبيق، فقراءة معرّف من تلك اللوحة
-  تعطي رقماً صحيح الشكل خاطئ المرجع. وقد بُدِّل هذا المعرّف ثلاث مرات
-  بناءً على ذلك (`khytdwgyrnztqabhfgbb` ثم `adhhxmmgfatkmzpokvil`) قبل أن
-  يُثبت الإنتاج الحيّ أن الأصل كان صحيحاً. علامة الخطأ الفارقة: إضافة
-  البناء تعيد توليد `.lovable/mcp/manifest.json` إلى المعرّف الحقيقي —
-  إن «انحرف» المانيفست عمّا في config.toml فالمانيفست هو المُحِقّ.
+  `https://neexios.com/.well-known/oauth-protected-resource` (حقل
+  `authorization_servers`) — لا من الذاكرة ولا من لوحة Supabase الشخصية.
+  **الدليل الحيّ لهذا التعديل (قِيس ٢٠٢٦/١١/٠٣ على الإنتاج):** الحقل يعيد
+  `https://cnaevysaoimzusnvpazr.supabase.co/auth/v1`؛ ومشروع المالك يظهر في
+  `list_projects` بالمعرّف نفسه؛ وقاعدة Lovable Cloud `jhutlofapjfjjeajawie`
+  **مجمَّدة منذ ٢٠٢٦/١٠/٢٢** (triggers ترفض الكتابة بالخطأ 25006 على جداولها
+  الـ148) ونسخةٌ أقدم من الإنتاج: الفارق في بيانات الأعمال صفر صف
+  (`docs/operations/LOVABLE_DETACH_2026-11-03.md`). **السبب التاريخي مسجَّل
+  لأنه كلّف جلسة كاملة:** كان المعرّف يُقرأ من لوحة Supabase الشخصية فيعطي
+  رقمًا صحيح الشكل خاطئ المرجع (بُدِّل ثلاث مرات قبل أن يثبت الإنتاج الحيّ ما
+  كان صحيحًا آنذاك)؛ فالقاعدة باقية: **الفيصل هو الإنتاج الحيّ لا اللوحة**.
+  علامة الخطأ الفارقة: إضافة البناء تعيد توليد `.lovable/mcp/manifest.json`
+  إلى المعرّف الحقيقي — إن «انحرف» المانيفست عمّا في config.toml فالفيصل
+  `/.well-known/oauth-protected-resource`.
 - **الجغرافيا الإقليمية**: `src/lib/regions.ts` حصرًا — الألوان
   الفعلية المعتمدة فيه: Central `#3B82F6` · Western `#22D3EE` ·
   Eastern `#22C55E` · Southern `#F59E0B`.
-- **النشر**: خط Lovable هو الناشر الأساسي لإنتاج neexios.com،
-  وGitHub Actions → Cloudflare نشر تلقائي اختياري يتفعّل بإضافة
-  سرَّي `CLOUDFLARE_API_TOKEN` و`CLOUDFLARE_ACCOUNT_ID`
-  (Vercel معطَّل ولا يُعاد تفعيله إلا بقرار بشري).
+- **النشر**: Vercel هو الناشر الفعلي لإنتاج neexios.com (مشروع
+  `biz-pulse-ar`؛ الدوال في `syd1` بجوار قاعدة Supabase). خط Lovable **ليس**
+  ناشرًا ولا يُعوَّل عليه؛ وGitHub Actions → Cloudflare اختياري يتفعّل بسرَّي
+  `CLOUDFLARE_API_TOKEN` و`CLOUDFLARE_ACCOUNT_ID`.
 - **النصوص التنظيمية الرسمية**: hcis.gov.sa حصرًا.
   **Article 4 — Single sources of truth.** Code: GitHub. Data: Supabase
-  project `jhutlofapjfjjeajawie` (env `VITE_SUPABASE_URL` decides, not
-  config.toml). Regional geography: `src/lib/regions.ts` exclusively with
-  the actual colors listed above. Deploy: Lovable pipeline is the primary
-  publisher; GitHub Actions → Cloudflare is optional auto-deploy;
-  Vercel is disabled. Official regulatory texts: hcis.gov.sa only.
+  project `cnaevysaoimzusnvpazr` (env `VITE_SUPABASE_URL` decides, not
+  config.toml; changed only on live-production evidence, i.e. the
+  `authorization_servers` field of `/.well-known/oauth-protected-resource`).
+  The former Lovable Cloud project `jhutlofapjfjjeajawie` is frozen (since
+  2026-10-22) and an older copy of production. Regional geography:
+  `src/lib/regions.ts` exclusively with the actual colors listed above.
+  Deploy: Vercel publishes neexios.com (functions in `syd1`, next to the
+  database); the Lovable pipeline is not a publisher; GitHub Actions →
+  Cloudflare is optional. Official regulatory texts: hcis.gov.sa only.
 
 ### المادة ٥ — حرمة الأصول المحمية
 
@@ -703,3 +712,4 @@ is an operational decision the implementer does not own.
 | 2026-08-09   | ١·١٠·١٢·٢٢·٢٦  | **اسم المساعد: FINN ← سَدِيد** — بقرار صريح من مالك المنتج يشمل وثائق الحوكمة والدستور نفسه، استثناءً واعيًا من قاعدة «لا تُمسّ وثائق الحوكمة». المساعد **مذكّر** نحويًّا. والمعرّفات التقنية `finn-*` (المسارات · الوحدات · المكوّنات · `FINN_*` · الترويسات · الجداول) تبقى كما هي في الوثائق لأنها عقود حيّة، وتغييرها نصًّا يجعل الوثيقة تكذب على الكود · **Assistant name: FINN → SADEED**, by explicit product-owner decision extending to governance docs and this constitution; the assistant is grammatically masculine; `finn-*` technical identifiers remain verbatim as live contracts                                                                                                                                                                                                                                                                                                                                               | مالك المنتج Product Owner |
 | 2026-08-09   | ١٠·٢٢          | **كسرٌ نظيف للمعرّفات: `finn-*` ← `sadeed-*`** — ناسخٌ للسطر السابق بقرار المالك في اليوم نفسه («اكسر نظيف بلا جسور»). أُعيدت تسمية المجلدات والملفات والمكوّنات والدوال وأصناف CSS والأصول والمسارات (`/finn` ← `/sadeed` · `/api/finn/*` ← `/api/sadeed/*` · `/api/public/finn-*` ← `/api/public/sadeed-*`) ومتغيّرات البيئة `FINN_*` ← `SADEED_*`، **بلا موجِّه ولا مسار قديم**. الباقي `finn` عمدًا وحصرًا: أسماء جداول القاعدة `finn_*` وسياساتها، وملفات الترحيل المطبَّقة، ومفاتيح استدعاء `.claude/`، وواصفات أصول Lovable البعيدة (`*.asset.json`) · **Clean break: `finn-*` → `sadeed-*`** — supersedes the row above by the owner's same-day decision. Folders, files, components, functions, CSS classes, assets, routes and `FINN_*` env vars renamed with no compatibility shim. Only Supabase `finn_*` table/policy names, applied migrations, `.claude/` invocation keys and remote Lovable asset descriptors keep the old token | مالك المنتج Product Owner |
 | 2026-10-23   | ١              | **استثناءٌ وحيد: «فِن/FINN» اسمًا لوكيل البرمجة والأتمتة المنفصل** — بقرار صريح من مالك المنتج (أمرٌ مكتوب ثم تأكيدٌ جوابًا على سؤال المادة ١٩). الوكيل شاتٌ منفصل عن سَدِيد (لا لوحته ولا صوته ولا سجلّه)، للمالك وحده خادميًّا (`FINN_OWNER_USER_IDS`)، يقترح ولا ينفّذ. اسم **المساعد** باقٍ «سَدِيد» ولا يعود FINN لأي سطح آخر · **Sole exception: «فِن/FINN» as the display name of the separate programming-and-automation agent**, by explicit product-owner decision (written order, then confirmed in answer to the Article 19 question). The agent is a chat separate from SADEED (not its panel, voice or log), owner-only server-side, propose-only. The **assistant** stays «سَدِيد»; FINN returns to no other surface                                                                                                                                                                                                              | مالك المنتج Product Owner |
+| 2026-11-03   | ٤              | **مصدر البيانات والناشر: `jhutlofapjfjjeajawie` ← `cnaevysaoimzusnvpazr` · Lovable ← Vercel** — بتفويض صريح من مالك المنتج («تعامل مع المشروع كمالك… بدون الرجوع إليّ»، ٢٠٢٦/١١/٠٣) ودليل الإنتاج الحيّ الذي تشترطه المادة نفسها (`/.well-known/oauth-protected-resource` ← `cnaevysaoimzusnvpazr`). النصّ السابق كان يسمّي مشروعًا مجمَّدًا ويصف Lovable ناشرًا وVercel معطَّلًا، وكلاهما خلاف الواقع المقيس. · Article 4: data source and publisher corrected on live-production evidence, under the owner's explicit delegation                                                                                                                                                                                                                                                                                                                                                                                                               |
