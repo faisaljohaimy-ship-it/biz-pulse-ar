@@ -1777,14 +1777,19 @@ export function buildSadeedTools(
     // قراءة فقط. المنطقة ليست على `sec_patrols` بل على `sec_circles.region` عبر
     // `site_id → sec_sites.circle_id`: استعلامٌ واحد بصلاحيات المستدعي (RLS) يجلبها مضمَّنةً،
     // والتجميع في الكود (`patrol-region-report.server.ts`) — فلا يدور النموذج بخطواتٍ متكرّرة.
+    // وحين تتوفّر المؤسسة الفعّالة في السياق يُضاف `org_id` تضييقًا (مستخدمٌ في أكثر من مؤسسة لا
+    // تتجمّع دورياتها معًا)؛ أمّا العزل نفسه فبيد RLS لا الكود، وقد قِيس أن غير المدير لا يرى صفًّا
+    // — فالفراغ يعود بملاحظة صادقة لا بأصفار.
     sec_patrol_report_by_region: tool({
       description:
         "تقرير الدوريات حسب المنطقة (قراءة فقط): لكل منطقة العدد الكلي والنشطة والمجدولة والمكتملة والفائتة، " +
         "ومتوسط نسبة إنجاز نقاط التفتيش (null حين لا توجد نقاط). استعمله لأسئلة «تقرير الدوريات في كل منطقة» " +
-        `بدل تكرار sec_list_patrols. المنطقة غير المعروفة «غير محددة»، وحقل truncated يعلن الاقتطاع عند ${PATROL_REPORT_ROW_LIMIT} دورية.`,
+        `بدل تكرار sec_list_patrols. المنطقة غير المعروفة «غير محددة»، وtruncated يعلن الاقتطاع عند ${PATROL_REPORT_ROW_LIMIT} دورية. ` +
+        "إن عادت patrols_considered=0 فهذا يعني «لا دوريات ظاهرة بصلاحيات المستخدم» وقد تكون محجوبة لا معدومة: " +
+        "قل ذلك (note_ar) ولا تنفِ وجود دوريات ولا تذكر أصفارًا.",
       inputSchema: z.object({}),
       execute: async () => {
-        const { data, error } = await supabase
+        let q = supabase
           .from("sec_patrols")
           .select(
             "status,checkpoints_total,checkpoints_done,site:sec_sites(circle:sec_circles(region))",
@@ -1792,6 +1797,8 @@ export function buildSadeedTools(
           .order("created_at", { ascending: false })
           // سقف+1 ليُعرف الاقتطاع دون استعلام عدٍّ ثانٍ.
           .limit(PATROL_REPORT_ROW_LIMIT + 1);
+        if (runtime.orgId) q = q.eq("org_id", runtime.orgId);
+        const { data, error } = await q;
         if (error) return { ok: false, error: error.message };
         return buildPatrolRegionReport(data ?? []);
       },

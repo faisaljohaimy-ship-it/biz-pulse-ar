@@ -73,10 +73,11 @@ type ToolLike = {
   execute: (a: unknown, o: unknown) => Promise<Record<string, unknown>>;
 };
 
-async function toolsFor(client: SupabaseClient) {
+async function toolsFor(client: SupabaseClient, orgId?: string | null) {
   const { buildSadeedTools } = await import("@/lib/sadeed-tools.server");
   return buildSadeedTools(client, USER_A, {
     lastUserText: "أعطني تقرير الدوريات في كل منطقة",
+    ...(orgId === undefined ? {} : { orgId }),
   }) as unknown as Record<string, ToolLike>;
 }
 
@@ -145,9 +146,44 @@ describe("sec_patrol_report_by_region", () => {
     expect(result.note_ar).toMatch(/اقتُطع/);
   });
 
-  it("فراغ القاعدة ⇒ ok بلا مناطق (لا أصفار مختلَقة)", async () => {
-    const result = await run(await toolsFor(fakeCaller({ data: null, error: null }).client));
-    expect(result).toMatchObject({ ok: true, regions: [], patrols_considered: 0 });
+  it("فراغ القاعدة (RLS يحجب غير المدير) ⇒ ok بلا مناطق وبملاحظة صادقة: لا أصفار مختلَقة ولا نفي للوجود", async () => {
+    for (const data of [null, []]) {
+      const result = await run(await toolsFor(fakeCaller({ data, error: null }).client));
+      expect(result).toMatchObject({ ok: true, regions: [], patrols_considered: 0 });
+      expect(result.note_ar).toBe(
+        "لا دوريات ظاهرة بصلاحياتك الحالية — قد تكون محجوبة بالصلاحيات لا معدومة.",
+      );
+      expect(JSON.stringify(result)).not.toContain('"total":0');
+    }
+  });
+
+  it("الوصف يمنع قراءة الفراغ نفيًا للوجود", async () => {
+    const tools = await toolsFor(fakeCaller({ data: [], error: null }).client);
+    const description = tools.sec_patrol_report_by_region!.description!;
+    expect(description).toContain("patrols_considered=0");
+    expect(description).toContain("محجوبة لا معدومة");
+    expect(description).toContain("ولا تنفِ وجود دوريات");
+  });
+
+  it("المؤسسة الفعّالة في السياق ⇒ تضييق org_id على الاستعلام نفسه (والعزل بيد RLS لا الكود)", async () => {
+    const orgId = "11111111-1111-4111-8111-111111111111";
+    const fake = fakeCaller({ data: rows, error: null });
+    await run(await toolsFor(fake.client, orgId));
+    const eq = fake.calls.filter((c) => c.method === "eq");
+    expect(eq).toEqual([{ method: "eq", args: ["org_id", orgId] }]);
+    expect(fake.tables).toEqual(["sec_patrols"]);
+    expect(fake.calls.map((c) => c.method).sort()).toEqual(["eq", "limit", "order", "select"]);
+  });
+
+  it("لا مؤسسة في السياق (null أو غائبة) ⇒ لا فلتر org_id مُختلَق", async () => {
+    for (const orgId of [null, undefined, ""] as const) {
+      const fake = fakeCaller({ data: rows, error: null });
+      await run(await toolsFor(fake.client, orgId));
+      expect(
+        fake.calls.some((c) => c.method === "eq"),
+        String(orgId),
+      ).toBe(false);
+    }
   });
 
   it("خطأ القاعدة يعود صادقًا { ok:false, error } ولا يرمي", async () => {
