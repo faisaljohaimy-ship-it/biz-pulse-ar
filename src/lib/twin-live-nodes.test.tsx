@@ -31,10 +31,9 @@ afterEach(cleanup);
 
 describe("digital twin signal memo — locale regression", () => {
   it("updates missing labels immediately on Arabic/English switch with identical signals", () => {
-    const { result, rerender } = renderHook(
-      ({ ar }) => useLiveTwinNodes(nodes, baseSignals, ar),
-      { initialProps: { ar: true } },
-    );
+    const { result, rerender } = renderHook(({ ar }) => useLiveTwinNodes(nodes, baseSignals, ar), {
+      initialProps: { ar: true },
+    });
     expect(valueOf(result.current, "know")).toBe(unmeasuredLabel(true));
     expect(valueOf(result.current, "exec")).toBe(unmeasuredLabel(true));
     expect(valueOf(result.current, "data")).toBe("42");
