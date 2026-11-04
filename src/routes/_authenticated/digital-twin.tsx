@@ -3,21 +3,12 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useI18n } from "@/lib/i18n";
+import { useLiveTwinNodes, twinValue } from "@/lib/twin-live-nodes";
 import { unmeasuredLabel } from "@/lib/evidence/evidence";
 import { useEnterprisePulse } from "@/lib/enterprise-pulse";
 import { PredictionsPanel } from "@/components/predictions-panel";
 import { getTwinSignals, type TwinSignals } from "@/lib/intelligence.functions";
 
-/**
- * عدٌّ/نسبةٌ للعرض — **والغياب يُقال لا يُختلق** (المادة ٢٧ · §07).
- *
- * `String(null)` يعطي «null» و`${null}%` يعطي «null%»، ولا يمسكهما
- * `tsc` لأن القالب يقبل `null`. وهو صنفُ العطل الذي قِيس على
- * `/live-dashboard` («Resolution null%»)، فيُغلق هنا بدالّةٍ واحدة.
- */
-function twinValue(v: number | null | undefined, ar: boolean, suffix = ""): string {
-  return v == null || !Number.isFinite(v) ? unmeasuredLabel(ar) : `${v}${suffix}`;
-}
 import {
   Boxes,
   Building2,
@@ -230,22 +221,7 @@ function DigitalTwinPage() {
   });
   const signals: TwinSignals | undefined = signalsQuery.data;
 
-  const liveNodes = useMemo(() => {
-    if (!signals) return NODES;
-    const map: Record<string, string> = {
-      depts: String(signals.departments || NODES.find((n) => n.id === "depts")!.value),
-      data: String(signals.events),
-      agents: String(signals.agents || NODES.find((n) => n.id === "agents")!.value),
-      integ: String(signals.integrations || NODES.find((n) => n.id === "integ")!.value),
-      flows: String(signals.automations),
-      know: twinValue(signals.documents, ar),
-      risk: String(signals.criticalRisks),
-      board: String(signals.boardActions),
-      intel: String(signals.intelligenceSignals),
-      exec: twinValue(signals.executionVelocity, ar, "%"),
-    };
-    return NODES.map((n) => ({ ...n, value: map[n.id] ?? n.value }));
-  }, [signals]);
+  const liveNodes = useLiveTwinNodes(NODES, signals, ar);
 
   const [t, setT] = useState(0); // animation clock (frames)
   const [active, setActive] = useState<string | null>("data");
