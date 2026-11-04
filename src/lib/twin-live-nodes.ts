@@ -5,7 +5,7 @@ import { unmeasuredLabel } from "@/lib/evidence/evidence";
 type TwinValueNode = { id: string; value: string };
 
 /** Display missing values in the current locale, not as null, NaN or a fabricated zero. */
-function twinValue(v: number | null | undefined, ar: boolean, suffix = ""): string {
+export function twinValue(v: number | null | undefined, ar: boolean, suffix = ""): string {
   return v == null || !Number.isFinite(v) ? unmeasuredLabel(ar) : String(v) + suffix;
 }
 
