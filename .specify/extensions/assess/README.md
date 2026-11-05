@@ -1,8 +1,8 @@
 # Idea Assessment Pipeline Extension
 
-A five-stage assessment pipeline for Spec Kit that turns **any idea** into a defensible **go / needs-clarification / kill** decision _before_ it enters Spec-Driven Development. It is the missing **discovery track** that sits in front of the SDD **delivery track** (`specify → clarify → plan → tasks → analyze → implement`).
+A five-stage assessment pipeline for Spec Kit that turns **any idea** into a defensible **go / needs-clarification / kill** decision *before* it enters Spec-Driven Development. It is the missing **discovery track** that sits in front of the SDD **delivery track** (`specify → clarify → plan → tasks → analyze → implement`).
 
-Discovery answers _"is this worth building?"_ Delivery answers _"how do we build it?"_ Only ideas that survive assessment hand off to `/speckit-specify`.
+Discovery answers *"is this worth building?"* Delivery answers *"how do we build it?"* Only ideas that survive assessment hand off to `/speckit-specify`.
 
 ## Overview
 
@@ -36,13 +36,13 @@ Slash commands in this README use GitHub Copilot's default skills syntax.
 For another agent, use its
 [equivalent invocation syntax](https://github.github.io/spec-kit/integrations/cli.html#command-invocation).
 
-| Command                    | Stage                                                                                  | Output        |
-| -------------------------- | -------------------------------------------------------------------------------------- | ------------- |
-| `/speckit-assess-intake`   | Capture & normalize a raw idea (text, URL, ticket, or codebase pointer).               | `intake.md`   |
-| `/speckit-assess-research` | Gather users/market/prior-art/data evidence — and evidence _against_ the idea.         | `research.md` |
-| `/speckit-assess-define`   | Define the problem: users, goals, non-goals, success metrics, cost of inaction.        | `problem.md`  |
-| `/speckit-assess-shape`    | Shape 2–3 concept-level options with appetite and trade-offs; recommend one (or none). | `concept.md`  |
-| `/speckit-assess-decide`   | Score against criteria and render the verdict; hand `go` ideas to `/speckit-specify`.  | `decision.md` |
+| Command | Stage | Output |
+|---------|-------|--------|
+| `/speckit-assess-intake` | Capture & normalize a raw idea (text, URL, ticket, or codebase pointer). | `intake.md` |
+| `/speckit-assess-research` | Gather users/market/prior-art/data evidence — and evidence *against* the idea. | `research.md` |
+| `/speckit-assess-define` | Define the problem: users, goals, non-goals, success metrics, cost of inaction. | `problem.md` |
+| `/speckit-assess-shape` | Shape 2–3 concept-level options with appetite and trade-offs; recommend one (or none). | `concept.md` |
+| `/speckit-assess-decide` | Score against criteria and render the verdict; hand `go` ideas to `/speckit-specify`. | `decision.md` |
 
 Stages are meant to run in order but are not rigidly gated:
 
@@ -73,7 +73,7 @@ Rerunning an earlier assessment command is the exception (for example after a wr
 
 ## Slug Conventions
 
-A _slug_ is the per-idea directory name under `.specify/assessments/`. It is the handle all five commands share.
+A *slug* is the per-idea directory name under `.specify/assessments/`. It is the handle all five commands share.
 
 - **User-provided**: normalized to lowercase kebab-case (e.g. `offline-mode`, `cut-onboarding-friction`). Preserved verbatim after normalization — no timestamps or numbers appended.
 - **Asked for**: in interactive use, `/speckit-assess-intake` asks for a slug when none is supplied, suggesting a kebab-case default derived from the idea.
@@ -127,7 +127,7 @@ use its [equivalent invocation syntax](https://github.github.io/spec-kit/integra
 
 - Only the five assessment commands write, and only inside `.specify/assessments/<slug>/`. **None of them modify source code** — solution design and implementation belong to the SDD lifecycle (`/speckit-specify` onward).
 - Web content fetched during `intake`/`research` is treated as untrusted data, governed by an explicit URL Trust Policy (allowlisted public sources fetched freely; unknown hosts prompted or skipped; loopback/RFC1918/metadata endpoints refused).
-- Evidence is never over-claimed: unsourced statements are tagged `ASSUMPTION`, and `research.md` always includes an _Evidence Against the Idea_ section.
+- Evidence is never over-claimed: unsourced statements are tagged `ASSUMPTION`, and `research.md` always includes an *Evidence Against the Idea* section.
 - Verdicts are never over-claimed: a `go` requires a valid problem, `adequate`+ evidence (never weak/unknown), and a shaped concept; otherwise the honest verdict is `needs-clarification`.
 - Slugs are normalized to `[a-z0-9-]` and an empty result is rejected; before any read or write, each command also rejects symlinked path components and verifies the resolved path stays inside the project root — so an assessment can never escape `.specify/assessments/`, even in a crafted or cloned project.
 - No command overwrites an existing artifact without confirmation; in automated mode it refuses.
