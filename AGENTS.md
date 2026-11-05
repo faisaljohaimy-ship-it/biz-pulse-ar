@@ -1,6 +1,7 @@
 # AGENTS.md — instructions for coding agents (Codex, Claude Code)
 
 - Read `CLAUDE.md` and `SADEED_CONSTITUTION.md` first; they govern this repo and win on conflict.
+- Use GitHub Spec Kit by default for features, bug fixes and idea assessment. Resume the active specification across Codex and Claude Code. For a small change use one acceptance criterion and a focused check. See [the project workflow](docs/operations/SPEC_KIT_AR.md).
 - Work on a feature branch and open a pull request; never push concurrently to `main` or force-push. Why: two agents share one repo.
 - Run `npm ci` then `npm run check` (types, lint, tests, build, secret scan, audit) before proposing a merge. Why: same gate as CI.
 - Never commit secrets, `.env`, or production data exports. Why: the repo is the shared source of truth.
