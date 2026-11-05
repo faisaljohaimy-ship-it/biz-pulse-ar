@@ -2,8 +2,7 @@
 export const PUBLIC_INCIDENT_MAX_BYTES = 4096;
 
 type IncidentBodyResult =
-  | { ok: true; value: Record<string, unknown> }
-  | { ok: false; status: 400 | 413; message: string };
+  { ok: true; value: Record<string, unknown> } | { ok: false; status: 400 | 413; message: string };
 
 export async function readPublicIncidentBody(request: Request): Promise<IncidentBodyResult> {
   const declaredLength = Number(request.headers.get("content-length") ?? "0");

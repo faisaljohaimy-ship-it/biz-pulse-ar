@@ -39,9 +39,9 @@ describe("public incident bounded JSON parsing", () => {
   );
 
   it("keeps the existing declared-size rejection", async () => {
-    expect(
-      await readPublicIncidentBody(request("{}", { "content-length": "4097" })),
-    ).toMatchObject({ ok: false, status: 413 });
+    expect(await readPublicIncidentBody(request("{}", { "content-length": "4097" }))).toMatchObject(
+      { ok: false, status: 413 },
+    );
   });
 
   it("accepts exactly 4096 bytes", async () => {
