@@ -80,6 +80,7 @@
     "@tanstack/react-start": "1.168.60",
     "@tanstack/router-plugin": "1.168.42",
     "@types/leaflet": "^1.9.21",
+    "@vercel/analytics": "^2.0.1",
     "ai": "^6.0.191",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
