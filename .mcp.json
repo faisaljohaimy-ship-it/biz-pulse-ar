@@ -1,5 +1,10 @@
 {
   "mcpServers": {
+    "robin": {
+      "type": "stdio",
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "-v", "robin-investigations:/app/investigations", "docker.io/apurvsg/robin:v3.0", "mcp"]
+    },
     "context7": {
       "command": "npx",
       "args": ["-y", "@upstash/context7-mcp"],

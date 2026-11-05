@@ -1,0 +1,5 @@
+[mcp_servers.robin]
+command = "docker"
+args = ["run", "-i", "--rm", "-v", "robin-investigations:/app/investigations", "docker.io/apurvsg/robin:v3.0", "mcp"]
+startup_timeout_sec = 120
+tool_timeout_sec = 600
