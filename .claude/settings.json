@@ -3,14 +3,24 @@
   "enabledMcpjsonServers": ["playwright"],
   "extraKnownMarketplaces": {
     "llm-wiki": {
-      "source": { "source": "github", "repo": "nvk/llm-wiki" }
+      "source": {
+        "source": "github",
+        "repo": "nvk/llm-wiki"
+      }
     },
     "claude-mem": {
-      "source": { "source": "github", "repo": "thedotmack/claude-mem" }
+      "source": {
+        "source": "github",
+        "repo": "thedotmack/claude-mem"
+      }
     }
   },
   "permissions": {
-    "allow": ["Bash(node scripts/toolchain/delegate.mjs doctor)"],
+    "allow": [
+      "Bash(node scripts/toolchain/delegate.mjs doctor)",
+      "Bash(node scripts/toolchain/video-skills.mjs doctor)",
+      "Bash(node scripts/toolchain/video-skills.mjs verify)"
+    ],
     "deny": [
       "Bash(opencode)",
       "Bash(opencode *)",
@@ -18,6 +28,19 @@
       "Bash(npx @opencode/cli *)",
       "Bash(npm install -g opencode-ai*)",
       "Bash(npm i -g opencode-ai*)"
+    ]
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR:-.}/scripts/toolchain/video-prompt-router.mjs\"",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   }
 }

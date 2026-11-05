@@ -91,3 +91,6 @@ n8n/workflows.stub/
 # نسخ التضعيف المؤقتة لاختبارات براهين التحمير (src/lib/finn-import/mutant-scratch.test-support.ts) —
 # خارج src/ عمدًا كي لا تلتقطها globSync الحرّاس، وتُحذف فور استيرادها.
 .mutant-scratch/
+
+# أدوات وسكربتات الطرف الثالث لسكيلز الفيديو (تُجلب عند الـcommit المسمَّر) ومخرجات الفيديو — خارج git
+.sadeed/

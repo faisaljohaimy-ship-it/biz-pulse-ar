@@ -56,3 +56,8 @@ n8n/README.md
 .specify/extensions/assess/
 .specify/extensions/bug/
 .specify/workflows/speckit/
+
+# سكيلز إنتاج الفيديو الثمانية — نسخ حرفية مسمَّرة ببصمة sha256 في
+# scripts/toolchain/video-skills.lock.json؛ أي إعادة تنسيق تكسر التحقق
+# (`node scripts/toolchain/video-skills.mjs verify`). الغلاف SKILL.md فوقها يبقى تحت prettier.
+.claude/skills/video-*/vendor/

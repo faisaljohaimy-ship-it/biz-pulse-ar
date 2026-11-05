@@ -109,3 +109,37 @@
   Windows/macOS (النص مكتوب لهما ولم يُجرَّب).
 - **بيانات التفويض:** `*.data.json` وأسماء المشغّلين/المديرين وملفات الصيانة والبلاغات
   والمشاريع وكل `supabase/**` و`docs/audit/**` وتاريخ git **لا تذهب إلى أي نموذج خارجي**.
+
+## 6. إنتاج الفيديو — السكيلز الثمانية من فيديو «متقن» (٢٠٢٦/١١/٠٥)
+
+أمر المالك: «استخرج السكلز الموجودة في الفديو المرفق وأودعها في GitHub واجعلها نشطة دائمًا واعمل بها دائمًا
+في أي طلب لإنتاج فيديو». المصدر فيديو 4:00 رفعه المالك؛ الأسماء قُرئت من النصّ على الشاشة (إطار كل 3 ث
+ولقطات مكبَّرة لإطار «احفظ أسماء السكيلز»)، **والصوت لم يُفرَّغ**. الاستنساخ أكّد المستودعات الثمانية.
+
+| #   | الغلاف في `.claude/skills/`      | المصدر (commit مسمَّر في `scripts/toolchain/video-skills.lock.json`) | المودَع                                                                                                                                                               | الرخصة | الحكم                                                       |
+| --- | -------------------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | ----------------------------------------------------------- |
+| 01  | `video-youtube-agent`            | `Jakeschincariol/youtube-agent-skill` @ `a2feb21` (٢٠٢٦/٠٩/١٦)       | 11 سكيل md + `hooks.json` + قالب النبرة؛ 6 أدوات Python مستبعَدة                                                                                                      | MIT    | ✅ تعليمات فقط                                              |
+| 02  | `video-claude-youtube`           | `AgriciDaniel/claude-youtube` @ `84c3fa6` (٢٠٢٦/٠٤/١٠)               | الموجِّه + 14 سكيل فرعية + مراجع + قوالب؛ `execution/*.py` مستبعَدة                                                                                                   | MIT    | ✅ بلا مفتاح YouTube/DataForSEO في المستودع                 |
+| 03  | `video-script-writer`            | `mohitagw15856/pm-claude-skills` @ `f7c90bc` (٢٠٢٦/١١/٠٢)            | سكيل `youtube-script-writer` وحده + LICENSE                                                                                                                           | MIT    | ✅ (عمر الـcommit 3 أيام — محتوى md لا شيفرة)               |
+| 04  | `video-content-os`               | `cdeistopened/content-os` @ `16e080f` (٢٠٢٦/٠٢/١٢)                   | فئتا `video` و`writing` (64 ملفًا بعد استبعاد نبرة Pirate Wires بقرار)؛ سكربتات Python مستبعَدة                                                                       | MIT    | ✅ `youtube-scriptwriting` فارغ في الأصل                    |
+| 05  | `video-claude-motion`            | `whaleyxbt/claude-motion` @ `e627941` (٢٠٢٦/١٠/٠٩)                   | 4 سكيلز + AGENTS/README/timeline؛ مشروع Remotion وsfx مستبعَدان                                                                                                       | MIT    | ✅                                                          |
+| 06  | `video-motion-design-code`       | `howseen-ai/claude-motion-design` @ `3d90d34` (٢٠٢٦/١٠/٠٢)           | SKILL.md + README؛ 13 سكربت مستبعَد                                                                                                                                   | MIT    | ✅ الأصل مكتوب لشركة أخرى — الغلاف يفصل المثال عن القاعدة   |
+| 07  | `video-remotion-motion-graphics` | `haidrrrry/claude-remotion-skill` @ `1dcbe5e` (٢٠٢٦/٠٨/١٢)           | SKILL.md + مرجعان + `assets/theme.ts` (قالب معلن)                                                                                                                     | MIT    | ✅                                                          |
+| 08  | `video-remotion-overlay`         | `agamm/video-agent` @ `cc00d28` (٢٠٢٦/٠٧/٢٨)                         | 11 سكيل تحرير (12 في الأصل؛ `grok-video-edit` مستبعَد بقرار) + قالب `remotion/` (معلن) + README؛ `video_agent.py` و`CLAUDE.md` (ذاكرة مشروع تُحمَّل آليًّا) مستبعَدان | MIT    | ✅ `grok-video-edit` يذكر API خارجيًّا — لا يُستعمل بلا إذن |
+
+- **الموجِّه:** `.claude/skills/sadeed-video-production/SKILL.md` — خطّ الإنتاج (فكرة ← هوك/عنوان ← سكريبت ←
+  ذوق ← تنفيذ Remotion أو HTML/seek(t) ← طبقات شفافة ← صوت ← فحص الإطارات) وقواعد سَدِيد التي تعلو.
+- **التفعيل الدائم:** قاعدة في `CLAUDE.md` («إنتاج الفيديو — السكيلز الثمانية») + خطّاف `UserPromptSubmit`
+  في `.claude/settings.json` يشغّل `scripts/toolchain/video-prompt-router.mjs` (يضيف سياقًا؛ لا يحجب).
+- **التحقق:** `node scripts/toolchain/video-skills.mjs verify` (بصمة كل ملف = القفل) · `doctor` (الحالة والأدوات
+  المحلية) · `fetch <id|all>` (الحزمة الكاملة عند الـcommit إلى `.sadeed/video-toolkits/`، خارج git) ·
+  `install-user [--with-hook]` (على جهاز المالك؛ لم يُنفَّذ من هنا).
+- **المراجعة الأمنية للمودَع (٢٠٢٦/١١/٠٥):** سير عمل بثمانية مراجعين ملفًا ملفًا وتحقّق عدائي لكل ملاحظة
+  P1/P2. لا تسريب ولا حقن تعليمات. أُخرج بقرار (`exclude` في القفل): `voice-pirate-wires` ومراجع
+  `pirate-wires-*.md` (content-os) و`grok-video-edit` (video-agent)؛ والباقي تنبيهات في قسم «تنبيهات
+  المراجعة الأمنية» بكل غلاف (أرقام الأمثلة الخيالية، أوامر تثبيت المنبع، `yt-dlp` وحقوق المحتوى، أمثلة
+  إعداد تحمل كلمات مرور، `always_invoke` بلا سلطة، لا رفع لقطات المالك لخدمة خارجية). ونقض الحارس الأول
+  أضاف قاعدة بنيوية: **لا `CLAUDE.md` ولا `settings*.json` ولا `.mcp.json` تحت أي `vendor/`** (يحمّلها
+  Claude Code آليًّا بسلطة المشروع) — `deniedBasenames` في القفل وحارس في الاختبار.
+- **الحدود:** لم يُشغَّل أي سكيل على مهمة حقيقية ولا قِيست جودته؛ الصوت لم يُفرَّغ؛ اكتشاف Claude Code
+  للـSKILL.md المتداخلة في `vendor/` غير مقيس.

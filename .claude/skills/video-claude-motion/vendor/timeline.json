@@ -1,0 +1,46 @@
+{
+  "fps": 60,
+  "duration": 22,
+  "s1": {
+    "spark": 0.15,
+    "line1": 0.4,
+    "line2": 0.9,
+    "bar": 1.5,
+    "sparkDock": 1.75,
+    "typeStart": 1.95,
+    "typeEnd": 2.85,
+    "exit": 3.2,
+    "flipStart": 3.72,
+    "flipEnd": 4.4
+  },
+  "s2": {
+    "drawOn": 4.02,
+    "steps": [5.6, 6.7, 7.8, 8.9],
+    "callouts": [9.45, 9.65, 9.85],
+    "exit": 11.0
+  },
+  "s3": {
+    "rewind": 11.25,
+    "retypeStart": 11.5,
+    "retypeEnd": 12.1,
+    "enter": 11.45,
+    "lowResult": 12.1,
+    "climb": 13.1,
+    "arrive": 14.1,
+    "chips": [13.2, 13.45, 13.7, 13.95],
+    "pops": [14.25, 14.4, 14.55, 14.7],
+    "exit": 16.0
+  },
+  "s4": {
+    "merge": 16.1,
+    "irisIn": 16.4,
+    "irisOut": 16.95,
+    "setup": 17.15,
+    "line1": 17.5,
+    "line2": 17.85,
+    "mini": 18.3,
+    "miniTravel": 18.5,
+    "miniArrive": 19.6,
+    "footer": 18.9
+  }
+}

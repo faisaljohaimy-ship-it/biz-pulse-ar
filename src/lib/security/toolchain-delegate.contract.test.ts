@@ -1895,7 +1895,11 @@ describe("نظافة الملفات المضافة", () => {
     for (const rule of ["Bash(opencode *)", "Bash(opencode)", "Bash(npx opencode-ai *)"]) {
       expect(deny, rule).toContain(rule);
     }
-    expect(allow).toEqual(["Bash(node scripts/toolchain/delegate.mjs doctor)"]);
+    expect(allow).toEqual([
+      "Bash(node scripts/toolchain/delegate.mjs doctor)",
+      "Bash(node scripts/toolchain/video-skills.mjs doctor)",
+      "Bash(node scripts/toolchain/video-skills.mjs verify)",
+    ]);
   });
 
   it("المهارة تذكر الشروط الحاكمة: الاسم، -m، منع البيانات الحقيقية، الرقعة لا تُطبَّق", () => {
