@@ -20,7 +20,10 @@ import {
 } from "@/lib/governance/rate-limit.server";
 import { runThinkingLoop } from "@/lib/sadeed/thinking-loop.server";
 import { revalidateSpeakableText } from "@/lib/sadeed/output/finalize";
-import { extractPublicAskAnswer, sanitizePublicAskMetadata } from "@/lib/sadeed/public-ask-response.server";
+import {
+  extractPublicAskAnswer,
+  sanitizePublicAskMetadata,
+} from "@/lib/sadeed/public-ask-response.server";
 
 const AnchorSchema = z.object({
   kind: z.string().max(40),

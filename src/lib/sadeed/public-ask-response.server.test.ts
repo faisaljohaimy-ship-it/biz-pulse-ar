@@ -21,7 +21,9 @@ describe("public SADEED AI response boundary", () => {
   it("never throws for null, arrays or wrongly typed fields", () => {
     expect(extractPublicAskAnswer("null").ar).toBe("");
     expect(extractPublicAskAnswer("[]").ar).toBe("");
-    const result = extractPublicAskAnswer('{"text_ar":42,"text_en":"Operational","confidence":"0.8"}');
+    const result = extractPublicAskAnswer(
+      '{"text_ar":42,"text_en":"Operational","confidence":"0.8"}',
+    );
     expect(result.ar).toBe("");
     expect(result.en).toBe("Operational");
     expect(result.confidence).toBe(0);
@@ -35,10 +37,7 @@ describe("public SADEED AI response boundary", () => {
         evidence: ["Contact analyst@example.com", "sk-abcdefghijklmnopqrstuvwx", "[DOC:12]"],
       }),
     );
-    expect(sanitizePublicAskMetadata(input).evidence).toEqual([
-      "Contact [بريد محجوب]",
-      "[DOC:12]",
-    ]);
+    expect(sanitizePublicAskMetadata(input).evidence).toEqual(["Contact [بريد محجوب]", "[DOC:12]"]);
   });
 
   it("recursively filters unsafe next_action text and prototype keys", () => {

@@ -41,7 +41,9 @@ export function extractPublicAskAnswer(raw: string): PublicAskAnswer {
   } catch {
     // Malformed JSON must not be displayed as prose. A provider can however
     // return a valid prose answer instead of the requested JSON envelope.
-    return /^[{\[]/.test(candidate) ? empty() : { ...empty(), ar: candidate };
+    return candidate.startsWith("{") || candidate.startsWith("[")
+      ? empty()
+      : { ...empty(), ar: candidate };
   }
   if (typeof parsed === "string") return { ...empty(), ar: parsed.trim() };
   if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return empty();
@@ -57,7 +59,9 @@ export function extractPublicAskAnswer(raw: string): PublicAskAnswer {
     reasoning: textField(fields.reasoning),
     recommendation: textField(fields.recommendation),
     next_action:
-      fields.next_action && typeof fields.next_action === "object" && !Array.isArray(fields.next_action)
+      fields.next_action &&
+      typeof fields.next_action === "object" &&
+      !Array.isArray(fields.next_action)
         ? (fields.next_action as Record<string, unknown>)
         : null,
     confidence:
