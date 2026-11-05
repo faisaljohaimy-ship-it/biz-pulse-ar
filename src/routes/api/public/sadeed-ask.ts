@@ -20,6 +20,7 @@ import {
 } from "@/lib/governance/rate-limit.server";
 import { runThinkingLoop } from "@/lib/sadeed/thinking-loop.server";
 import { revalidateSpeakableText } from "@/lib/sadeed/output/finalize";
+import { extractPublicAskAnswer, sanitizePublicAskMetadata } from "@/lib/sadeed/public-ask-response.server";
 
 const AnchorSchema = z.object({
   kind: z.string().max(40),
@@ -248,42 +249,11 @@ export const Route = createFileRoute("/api/public/sadeed-ask")({
           return result.text;
         }
 
-        function extract(raw: string) {
-          let p: {
-            text_ar?: string;
-            text_en?: string;
-            summary?: string;
-            evidence?: unknown;
-            reasoning?: string;
-            recommendation?: string;
-            next_action?: unknown;
-            confidence?: number;
-          } = {};
-          try {
-            p = JSON.parse(raw.replace(/^```(?:json)?\s*|\s*```$/gi, "").trim());
-          } catch {
-            p = {};
-          }
-          return {
-            ar: (p.text_ar ?? "").trim(),
-            en: (p.text_en ?? "").trim(),
-            summary: typeof p.summary === "string" ? p.summary : "",
-            evidence: Array.isArray(p.evidence)
-              ? p.evidence.filter((x) => typeof x === "string").slice(0, 8)
-              : [],
-            reasoning: typeof p.reasoning === "string" ? p.reasoning : "",
-            recommendation: typeof p.recommendation === "string" ? p.recommendation : "",
-            next_action: p.next_action && typeof p.next_action === "object" ? p.next_action : null,
-            confidence:
-              typeof p.confidence === "number" ? Math.max(0, Math.min(1, p.confidence)) : 0,
-          };
-        }
-
-        let parsedResponse: ReturnType<typeof extract> | null = null;
+        let parsedResponse: ReturnType<typeof extractPublicAskAnswer> | null = null;
         let lastError: unknown;
         for (const runtime of runtimes) {
           try {
-            const candidate = extract(await callModel(runtime, 2400));
+            const candidate = extractPublicAskAnswer(await callModel(runtime, 2400));
             if (candidate.ar || candidate.en) {
               parsedResponse = candidate;
               break;
@@ -316,6 +286,8 @@ export const Route = createFileRoute("/api/public/sadeed-ask")({
           return Response.json(errorPayload(code, upstreamStatus), { status: responseStatus });
         }
 
+        const safeMetadata = sanitizePublicAskMetadata(parsedResponse);
+
         // Output-gateway safe projection: block secret/protected leakage and
         // redact PII from every model-authored string before it leaves.
         const safe = (s?: string): string => {
@@ -329,10 +301,10 @@ export const Route = createFileRoute("/api/public/sadeed-ask")({
           executive: {
             intent: brief.intent,
             summary: safe(parsedResponse.summary),
-            evidence: parsedResponse.evidence,
+            evidence: safeMetadata.evidence,
             reasoning: safe(parsedResponse.reasoning),
             recommendation: safe(parsedResponse.recommendation),
-            next_action: parsedResponse.next_action,
+            next_action: safeMetadata.next_action,
             confidence: parsedResponse.confidence,
             sources: brief.sources,
             plan: brief.plan.map((s) => ({ id: s.id, tool: s.tool, goal: s.goal_en })),
