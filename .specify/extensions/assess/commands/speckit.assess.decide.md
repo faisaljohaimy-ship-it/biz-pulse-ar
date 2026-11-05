@@ -53,14 +53,14 @@ Write `ASSESS_DIR/decision.md`:
 
 ## Scorecard
 
-| Criterion | Rating | Justification |
-|-----------|--------|---------------|
-| Problem validity | strong/adequate/weak/unknown | … |
-| Evidence strength | … | … |
-| Value vs. inaction | … | … |
-| Feasibility / appetite | … | … |
-| Strategic fit | … | … |
-| Risk posture | … | … |
+| Criterion              | Rating                       | Justification |
+| ---------------------- | ---------------------------- | ------------- |
+| Problem validity       | strong/adequate/weak/unknown | …             |
+| Evidence strength      | …                            | …             |
+| Value vs. inaction     | …                            | …             |
+| Feasibility / appetite | …                            | …             |
+| Strategic fit          | …                            | …             |
+| Risk posture           | …                            | …             |
 
 ## Verdict & Rationale
 
@@ -81,6 +81,7 @@ Write `ASSESS_DIR/decision.md`:
 ```
 
 **Report back** with:
+
 - The slug (own line) and the **verdict** stated clearly.
 - The path `.specify/assessments/<ASSESS_SLUG>/decision.md`.
 - The next step, by verdict:
@@ -92,6 +93,6 @@ Write `ASSESS_DIR/decision.md`:
 
 - Never modify source files — read only, and write inside `.specify/assessments/<slug>/`.
 - Never over-claim a `go`: if the evidence is thin or no concept was shaped, the honest verdict is `needs-clarification`, not `go`.
-- Never write a specification here — a `go` only *hands off* to `__SPECKIT_COMMAND_SPECIFY__`; it does not pre-empt it.
+- Never write a specification here — a `go` only _hands off_ to `__SPECKIT_COMMAND_SPECIFY__`; it does not pre-empt it.
 - Never bury a `kill` — state the decisive reason plainly so the decision can be understood and revisited later.
 - Never overwrite an existing `decision.md` without confirmation.

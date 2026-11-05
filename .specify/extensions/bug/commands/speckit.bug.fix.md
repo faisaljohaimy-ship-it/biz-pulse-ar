@@ -42,6 +42,7 @@ Once resolved, set `BUG_SLUG` and `BUG_DIR = .specify/bugs/<BUG_SLUG>`, and brie
 By this point `BUG_SLUG` and `BUG_DIR` have been resolved, so a hook command run in this session can reuse them from the conversation; nothing is passed to it automatically.
 
 **Check for extension hooks (before bug fixing)**:
+
 - Check if `.specify/extensions.yml` exists in the project root.
 - If it exists, read it and look for entries under the `hooks.before_bug_fix` key
 - If the YAML cannot be parsed or is invalid, do not skip silently: tell the user that `.specify/extensions.yml` could not be read (include the parser error) and that no hooks were checked, including any mandatory (`optional: false`) hooks registered there, then continue normally
@@ -109,10 +110,10 @@ By this point `BUG_SLUG` and `BUG_DIR` have been resolved, so a hook command run
 
    ## Changes
 
-   | File | Change | Notes |
-   |------|--------|-------|
-   | `path/to/file.py` | <added / modified / removed> | <short note> |
-   | `path/to/test_file.py` | added test | <short note> |
+   | File                   | Change                       | Notes        |
+   | ---------------------- | ---------------------------- | ------------ |
+   | `path/to/file.py`      | <added / modified / removed> | <short note> |
+   | `path/to/test_file.py` | added test                   | <short note> |
 
    ## Diff Highlights (optional)
 
@@ -143,6 +144,7 @@ By this point `BUG_SLUG` and `BUG_DIR` have been resolved, so a hook command run
 By this point `BUG_SLUG` and `BUG_DIR` have been resolved and the written report is available, so a hook command run in this session can reuse them from the conversation; nothing is passed to it automatically.
 
 Check if `.specify/extensions.yml` exists in the project root.
+
 - If it does not exist, or no hooks are registered under `hooks.after_bug_fix`, skip to the Completion Report.
 - If it exists, read it and look for entries under the `hooks.after_bug_fix` key.
 - If the YAML cannot be parsed or is invalid, do not skip silently: tell the user that `.specify/extensions.yml` could not be read (include the parser error) and that no hooks were checked, including any mandatory (`optional: false`) hooks registered there, then continue to the Completion Report.

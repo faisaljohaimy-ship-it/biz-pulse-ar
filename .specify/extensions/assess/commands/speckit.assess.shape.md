@@ -4,7 +4,7 @@ description: "Shape a concept: solution options, scope, appetite, and trade-offs
 
 # Shape a Concept
 
-Take the defined problem and shape a **concept** at `.specify/assessments/<slug>/concept.md`: the rough solution options, the scope/appetite, and the trade-offs between them. This is where the assessment crosses from problem space into solution space — but only at the *concept* level. Detailed design (architecture, data models, APIs, tasks) stays with `__SPECKIT_COMMAND_SPECIFY__` and the rest of the SDD lifecycle.
+Take the defined problem and shape a **concept** at `.specify/assessments/<slug>/concept.md`: the rough solution options, the scope/appetite, and the trade-offs between them. This is where the assessment crosses from problem space into solution space — but only at the _concept_ level. Detailed design (architecture, data models, APIs, tasks) stays with `__SPECKIT_COMMAND_SPECIFY__` and the rest of the SDD lifecycle.
 
 Shape **outlines options at the boundaries; it does not produce a spec or a plan.** Think Shape Up "pitch," not blueprint.
 
@@ -31,7 +31,7 @@ $ARGUMENTS
    - **Appetite**: a rough size — `small` (days) | `medium` (weeks) | `large` (months) — as a budget, not an estimate.
    - **Trade-offs**: what it wins and what it sacrifices; key risks and unknowns.
    - **Rabbit holes**: the parts most likely to blow up scope, so `__SPECKIT_COMMAND_ASSESS_DECIDE__` sees them.
-2. **Recommend one option** with a short rationale tied to the problem's goals and metrics — or explicitly recommend *not proceeding* if no option clears the bar.
+2. **Recommend one option** with a short rationale tied to the problem's goals and metrics — or explicitly recommend _not proceeding_ if no option clears the bar.
 3. **Bound the concept**: restate what is explicitly out of scope for the recommended option (inherited from non-goals plus anything newly excluded).
 4. **List the assumptions** the recommendation depends on, so they can be validated during specification.
 
@@ -47,15 +47,18 @@ Write `ASSESS_DIR/concept.md`:
 ## Options
 
 ### Option A — <name>
+
 - **Sketch**: <concept-level description>
 - **Appetite**: small | medium | large
 - **Trade-offs**: <wins vs. sacrifices, risks>
 - **Rabbit holes**: <scope-blowout risks>
 
 ### Option B — <name>
+
 ...
 
 ### Option C — <name> (optional)
+
 ...
 
 ## Recommendation

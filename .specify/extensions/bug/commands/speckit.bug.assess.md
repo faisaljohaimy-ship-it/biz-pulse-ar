@@ -75,6 +75,7 @@ Do not attempt to validate the URL by issuing a preflight `HEAD` (or any other) 
 By this point `BUG_SLUG` and `BUG_DIR` have been resolved, so a hook command run in this session can reuse them from the conversation; nothing is passed to it automatically.
 
 **Check for extension hooks (before bug assessment)**:
+
 - Ensure `BUG_DIR` exists (see Prerequisites) before checking hooks.
 - Check if `.specify/extensions.yml` exists in the project root.
 - If it exists, read it and look for entries under the `hooks.before_bug_assess` key
@@ -179,13 +180,16 @@ By this point `BUG_SLUG` and `BUG_DIR` have been resolved, so a hook command run
    **Preferred**: <one or two paragraphs describing the change.>
 
    **Alternatives** (optional):
+
    - <alternative + trade-off>
 
    **Files likely to change**:
+
    - `path/to/file.py`
    - `path/to/test_file.py`
 
    **Tests to add or update**:
+
    - <test description>
 
    ## Risks & Considerations
@@ -207,6 +211,7 @@ Only enter this section after writing `assessment.md` in this run. Early stops t
 By this point `BUG_SLUG` and `BUG_DIR` have been resolved and the written report is available, so a hook command run in this session can reuse them from the conversation; nothing is passed to it automatically.
 
 Check if `.specify/extensions.yml` exists in the project root.
+
 - If it does not exist, or no hooks are registered under `hooks.after_bug_assess`, skip to the Completion Report.
 - If it exists, read it and look for entries under the `hooks.after_bug_assess` key.
 - If the YAML cannot be parsed or is invalid, do not skip silently: tell the user that `.specify/extensions.yml` could not be read (include the parser error) and that no hooks were checked, including any mandatory (`optional: false`) hooks registered there, then continue to the Completion Report.

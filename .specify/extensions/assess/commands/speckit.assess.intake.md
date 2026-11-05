@@ -4,7 +4,7 @@ description: "Capture and normalize a raw idea (text, URL, ticket, or codebase p
 
 # Intake an Idea
 
-Capture a raw idea — however rough — and normalize it into a single **intake note** at `.specify/assessments/<slug>/intake.md`. This is the front door of the assessment pipeline: it records *what the idea is and where it came from* without judging it yet. Later stages (`__SPECKIT_COMMAND_ASSESS_RESEARCH__`, `__SPECKIT_COMMAND_ASSESS_DEFINE__`, `__SPECKIT_COMMAND_ASSESS_SHAPE__`, `__SPECKIT_COMMAND_ASSESS_DECIDE__`) build on it, and only survivors reach `__SPECKIT_COMMAND_SPECIFY__`.
+Capture a raw idea — however rough — and normalize it into a single **intake note** at `.specify/assessments/<slug>/intake.md`. This is the front door of the assessment pipeline: it records _what the idea is and where it came from_ without judging it yet. Later stages (`__SPECKIT_COMMAND_ASSESS_RESEARCH__`, `__SPECKIT_COMMAND_ASSESS_DEFINE__`, `__SPECKIT_COMMAND_ASSESS_SHAPE__`, `__SPECKIT_COMMAND_ASSESS_DECIDE__`) build on it, and only survivors reach `__SPECKIT_COMMAND_SPECIFY__`.
 
 Intake **captures; it does not evaluate or solutionize.** No feasibility verdicts, no design. Just a clean, faithful record of the idea and its origin.
 
@@ -73,7 +73,7 @@ Record in `intake.md`: the **sanitized URL** (strip any `user:password@` userinf
 
 ## Execution
 
-1. **Capture the idea, redacting secrets.** Preserve the original wording (quoted) plus the source (URL, pasted block, or repo path) — but apply the same sanitization as the Source field *inside the quoted text too*: sanitize any credential-bearing URL and redact tokens, passwords, API keys, or cookies. Never persist a secret just because it appeared in the original.
+1. **Capture the idea, redacting secrets.** Preserve the original wording (quoted) plus the source (URL, pasted block, or repo path) — but apply the same sanitization as the Source field _inside the quoted text too_: sanitize any credential-bearing URL and redact tokens, passwords, API keys, or cookies. Never persist a secret just because it appeared in the original.
 2. **Restate it in one or two neutral sentences.** What is being proposed, in plain language, without endorsing or dismissing it.
 3. **Record origin and context.** Who raised it, when, and any triggering event (a complaint, an outage, a sales ask, a strategy shift). Mark unknowns as `[NEEDS CLARIFICATION: …]`.
 4. **Note the idea type** so downstream stages know what to weigh: `new-capability` | `improvement` | `fix` | `exploration` | `cost-saving` | `compliance` | `other`.

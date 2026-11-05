@@ -21,15 +21,15 @@ The three stages communicate through three Markdown files in a single per-bug di
 
 ## Commands
 
-| Command | Description | Output |
-|---------|-------------|--------|
+| Command              | Description                                                     | Output                               |
+| -------------------- | --------------------------------------------------------------- | ------------------------------------ |
 | `speckit.bug.assess` | Triages a bug report (pasted text or URL) against the codebase. | `.specify/bugs/<slug>/assessment.md` |
-| `speckit.bug.fix` | Applies the remediation from the assessment. | `.specify/bugs/<slug>/fix.md` |
-| `speckit.bug.test` | Validates the fix and records the verification report. | `.specify/bugs/<slug>/test.md` |
+| `speckit.bug.fix`    | Applies the remediation from the assessment.                    | `.specify/bugs/<slug>/fix.md`        |
+| `speckit.bug.test`   | Validates the fix and records the verification report.          | `.specify/bugs/<slug>/test.md`       |
 
 ## Slug Conventions
 
-A *slug* is the per-bug directory name under `.specify/bugs/`. It is the only handle the three commands share.
+A _slug_ is the per-bug directory name under `.specify/bugs/`. It is the only handle the three commands share.
 
 - **User-provided**: any shape the user wants, normalized to lowercase kebab-case (e.g. `login-timeout`, `cve-2026-001`, `oauth-redirect-500`). The slug is preserved verbatim after normalization — no timestamps or numbers are appended automatically.
 - **Asked for**: in interactive use, `speckit.bug.assess` asks for a slug when none is supplied, suggesting a kebab-case default derived from the bug summary.
@@ -79,11 +79,11 @@ specify extension enable bug
 
 This extension registers no hooks of its own. The three commands are always invoked explicitly by the user, but expose lifecycle events for other extensions:
 
-| Command | Before event | After event |
-|---------|--------------|-------------|
+| Command              | Before event        | After event        |
+| -------------------- | ------------------- | ------------------ |
 | `speckit.bug.assess` | `before_bug_assess` | `after_bug_assess` |
-| `speckit.bug.fix` | `before_bug_fix` | `after_bug_fix` |
-| `speckit.bug.test` | `before_bug_test` | `after_bug_test` |
+| `speckit.bug.fix`    | `before_bug_fix`    | `after_bug_fix`    |
+| `speckit.bug.test`   | `before_bug_test`   | `after_bug_test`   |
 
 Pre-hooks run after slug resolution and prerequisites, before execution. For assessment, the bug directory already exists before the pre-hook runs. Post-hooks run after `assessment.md`, `fix.md`, or `test.md` is written and before reporting completion. An unintelligible pasted report keeps the existing early stop: no assessment report, post-hooks, or completion report. Before-hooks run before ingestion, so they can already have run when a report is rejected; the prerequisite bug directory is not removed. Hooks are prompts run in the same session; they reuse the resolved `BUG_SLUG` and `BUG_DIR` (and, for post-hooks, the written report) from the conversation, and no variables are injected.
 

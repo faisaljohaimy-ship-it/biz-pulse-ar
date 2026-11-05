@@ -45,6 +45,7 @@ Once resolved, set `BUG_SLUG` and `BUG_DIR = .specify/bugs/<BUG_SLUG>`, and brie
 By this point `BUG_SLUG` and `BUG_DIR` have been resolved, so a hook command run in this session can reuse them from the conversation; nothing is passed to it automatically.
 
 **Check for extension hooks (before bug verification)**:
+
 - Check if `.specify/extensions.yml` exists in the project root.
 - If it exists, read it and look for entries under the `hooks.before_bug_test` key
 - If the YAML cannot be parsed or is invalid, do not skip silently: tell the user that `.specify/extensions.yml` could not be read (include the parser error) and that no hooks were checked, including any mandatory (`optional: false`) hooks registered there, then continue normally
@@ -119,12 +120,12 @@ By this point `BUG_SLUG` and `BUG_DIR` have been resolved, so a hook command run
 
    ## Checks Performed
 
-   | Check | Command / Action | Result | Notes |
-   |-------|------------------|--------|-------|
+   | Check                   | Command / Action          | Result                          | Notes        |
+   | ----------------------- | ------------------------- | ------------------------------- | ------------ |
    | Reproduction (post-fix) | <command or manual steps> | pass / fail / skipped / not-run | <short note> |
-   | New / updated tests | `<command>` | pass / fail | <short note> |
-   | Regression suite | `<command>` | pass / fail / skipped | <short note> |
-   | Lint / type-check | `<command>` | pass / fail / skipped | <short note> |
+   | New / updated tests     | `<command>`               | pass / fail                     | <short note> |
+   | Regression suite        | `<command>`               | pass / fail / skipped           | <short note> |
+   | Lint / type-check       | `<command>`               | pass / fail / skipped           | <short note> |
 
    ## Output Excerpts
 
@@ -149,6 +150,7 @@ By this point `BUG_SLUG` and `BUG_DIR` have been resolved, so a hook command run
 By this point `BUG_SLUG` and `BUG_DIR` have been resolved and the written report is available, so a hook command run in this session can reuse them from the conversation; nothing is passed to it automatically.
 
 Check if `.specify/extensions.yml` exists in the project root.
+
 - If it does not exist, or no hooks are registered under `hooks.after_bug_test`, skip to the Completion Report.
 - If it exists, read it and look for entries under the `hooks.after_bug_test` key.
 - If the YAML cannot be parsed or is invalid, do not skip silently: tell the user that `.specify/extensions.yml` could not be read (include the parser error) and that no hooks were checked, including any mandatory (`optional: false`) hooks registered there, then continue to the Completion Report.
