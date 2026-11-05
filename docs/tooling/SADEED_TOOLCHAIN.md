@@ -23,28 +23,31 @@
 
 ## 1. الجدول المعتمد
 
-| #   | الأداة                     | المصدر                        | النوع     | التفعيل                                                            | مفاتيح/بيئة (أسماء)               | خروج شبكيّ            | حكم التوافق                                     |
-| --- | -------------------------- | ----------------------------- | --------- | ------------------------------------------------------------------ | --------------------------------- | --------------------- | ----------------------------------------------- |
-| 1   | Agent Skills               | `addyosmani/agent-skills`     | مهارات    | `npx skills add addyosmani/agent-skills`                           | —                                 | لا                    | ✅ يُدمَج، مكمّل لـ`tdd-workflow`               |
-| 2   | Context7                   | `upstash/context7`            | MCP       | في `.mcp.json` (`context7`)                                        | `CONTEXT7_API_KEY` (اختياري)      | توثيق فقط             | ✅ يُدمَج                                       |
-| 3   | Graphify                   | `Graphify-Labs/graphify`      | مهارة/CLI | `pip install graphifyy && graphify install`                        | — (تحليل محلّي)                   | وثائق فقط عبر النموذج | ✅ يُدمَج؛ مخرجاته لا تدخل git                  |
-| 4   | 21st.dev Magic             | `@21st-dev/magic`             | MCP       | في `.mcp.json` (`magic`)                                           | `TWENTYFIRST_API_KEY`             | توليد مكوّن           | ✅ يُدمَج تحت هوية سَدِيد                       |
-| 5   | Strix                      | `usestrix/strix`              | CLI/CI    | `pipx install strix-agent` + `security-scan-strix.yml` (بالطلب)    | `STRIX_LLM`, `STRIX_LLM_API_KEY`  | فحص أصل المالك        | ✅ دفاعيّ على أصل المالك فقط، بالطلب            |
-| 6   | REA                        | `morluto/rea` (`rea-agents`)  | CLI/MCP   | `npm i -g rea-agents && rea setup`                                 | —                                 | محلّي                 | ✅ ضمن حقوق المالك                              |
-| 7   | LLM Wiki                   | `nvk/llm-wiki`                | إضافة     | سوقه في الإعدادات؛ `claude plugin install wiki@llm-wiki`           | —                                 | محلّي                 | ✅ يبني فوق مصادر الحقيقة لا يستبدلها           |
-| 8   | Taste + web-design skills  | `Leonxlnx/taste-skill` + حزم  | مهارات    | `npx skills add Leonxlnx/taste-skill`                              | —                                 | لا                    | ✅ هوية سَدِيد تتقدّم (نصّ الدستور)             |
-| 9   | Figma MCP + Playwright MCP | Figma / `@playwright/mcp`     | MCP       | في `.mcp.json` (`figma`, `playwright`)                             | OAuth Figma؛ Playwright بلا مفتاح | تصميم/متصفّح          | ✅ يُدمَج                                       |
-| 10  | Awesome Free LLM APIs      | `mnfst/awesome-free-llm-apis` | قائمة     | مرجع يُقرأ                                                         | —                                 | لا                    | ⚠️ مرجع فقط، لا يُوصَل بالتشغيل (حصرية المزوّد) |
-| 11  | claude-mem                 | `thedotmack/claude-mem`       | إضافة     | سوقه في الإعدادات؛ `/plugin marketplace add thedotmack/claude-mem` | — (محلّي)                         | محلّي                 | ✅ يُفعَّله المطوّر؛ لا يحفظ أسرارًا            |
-| 12  | Agent Reach                | `Panniantong/agent-reach`     | مهارة/CLI | `npx skills add Panniantong/Agent-Reach@agent-reach` (بإذن المالك) | اعتمادات محلّية 600               | ويب/منصّات واسع       | ⚠️ وراء بوابة المالك، لا تفعيل تلقائيّ          |
+| #   | الأداة                        | المصدر                                                                                 | النوع           | التفعيل                                                                  | مفاتيح/بيئة (أسماء)                                                | خروج شبكيّ                                                                                                                                                                                  | حكم التوافق                                                         |
+| --- | ----------------------------- | -------------------------------------------------------------------------------------- | --------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| 1   | Agent Skills                  | `addyosmani/agent-skills`                                                              | مهارات          | `npx skills add addyosmani/agent-skills`                                 | —                                                                  | لا                                                                                                                                                                                          | ✅ يُدمَج، مكمّل لـ`tdd-workflow`                                   |
+| 2   | Context7                      | `upstash/context7`                                                                     | MCP             | في `.mcp.json` (`context7`)                                              | `CONTEXT7_API_KEY` (اختياري)                                       | توثيق فقط                                                                                                                                                                                   | ✅ يُدمَج                                                           |
+| 3   | Graphify                      | `Graphify-Labs/graphify`                                                               | مهارة/CLI       | `pip install graphifyy && graphify install`                              | — (تحليل محلّي)                                                    | وثائق فقط عبر النموذج                                                                                                                                                                       | ✅ يُدمَج؛ مخرجاته لا تدخل git                                      |
+| 4   | 21st.dev Magic                | `@21st-dev/magic`                                                                      | MCP             | في `.mcp.json` (`magic`)                                                 | `TWENTYFIRST_API_KEY`                                              | توليد مكوّن                                                                                                                                                                                 | ✅ يُدمَج تحت هوية سَدِيد                                           |
+| 5   | Strix                         | `usestrix/strix`                                                                       | CLI/CI          | `pipx install strix-agent` + `security-scan-strix.yml` (بالطلب)          | `STRIX_LLM`, `STRIX_LLM_API_KEY`                                   | فحص أصل المالك                                                                                                                                                                              | ✅ دفاعيّ على أصل المالك فقط، بالطلب                                |
+| 6   | REA                           | `morluto/rea` (`rea-agents`)                                                           | CLI/MCP         | `npm i -g rea-agents && rea setup`                                       | —                                                                  | محلّي                                                                                                                                                                                       | ✅ ضمن حقوق المالك                                                  |
+| 7   | LLM Wiki                      | `nvk/llm-wiki`                                                                         | إضافة           | سوقه في الإعدادات؛ `claude plugin install wiki@llm-wiki`                 | —                                                                  | محلّي                                                                                                                                                                                       | ✅ يبني فوق مصادر الحقيقة لا يستبدلها                               |
+| 8   | Taste + web-design skills     | `Leonxlnx/taste-skill` + حزم                                                           | مهارات          | `npx skills add Leonxlnx/taste-skill`                                    | —                                                                  | لا                                                                                                                                                                                          | ✅ هوية سَدِيد تتقدّم (نصّ الدستور)                                 |
+| 9   | Figma MCP + Playwright MCP    | Figma / `@playwright/mcp`                                                              | MCP             | في `.mcp.json` (`figma`, `playwright`)                                   | OAuth Figma؛ Playwright بلا مفتاح                                  | تصميم/متصفّح                                                                                                                                                                                | ✅ يُدمَج                                                           |
+| 10  | Awesome Free LLM APIs         | `mnfst/awesome-free-llm-apis`                                                          | قائمة           | مرجع يُقرأ                                                               | —                                                                  | لا                                                                                                                                                                                          | ⚠️ مرجع فقط، لا يُوصَل بالتشغيل (حصرية المزوّد)                     |
+| 11  | claude-mem                    | `thedotmack/claude-mem`                                                                | إضافة           | سوقه في الإعدادات؛ `/plugin marketplace add thedotmack/claude-mem`       | — (محلّي)                                                          | محلّي                                                                                                                                                                                       | ✅ يُفعَّله المطوّر؛ لا يحفظ أسرارًا                                |
+| 12  | Agent Reach                   | `Panniantong/agent-reach`                                                              | مهارة/CLI       | `npx skills add Panniantong/Agent-Reach@agent-reach` (بإذن المالك)       | اعتمادات محلّية 600                                                | ويب/منصّات واسع                                                                                                                                                                             | ⚠️ وراء بوابة المالك، لا تفعيل تلقائيّ                              |
+| 13  | OpenCode                      | `anomalyco/opencode` (`opencode-ai@1.19.3`)                                            | CLI مفوَّض      | `node scripts/toolchain/delegate.mjs install --apply` (يتحقق من البصمات) | `GROQ_API_KEY` أو `OPENROUTER_API_KEY` (بيئتك فقط) أو Ollama محلّي | install: registry.npmjs.org · run (قِيس على مسار ollama): المزوّد المختار وحده؛ بدون أعلام البوابة كان يستعلم models.opencode.ai ويجلب ~180MB من npm كل إقلاع. المسار السحابي: غير مُتحقَّق | ✅ زمن تطوير فقط، عبر البوابة، مسارات ضيّقة؛ السحابي بـ`--cloud-ok` |
+| 14  | OpenCowork (اسم لخمسة مشاريع) | `@aidotnet/opencowork@1.4.0` (CLI متجمّد) · `OpenCoworkAI/open-cowork` (واجهة) · غيرها | CLI/تطبيق مكتبي | غير مثبَّت — تأكيد المالك للهوية أولًا                                   | —                                                                  | مزوّد النموذج                                                                                                                                                                               | ⚠️ لا تثبيت؛ انظر القسم ٥                                           |
 
 ## 2. ما أُودِع في المستودع فعلًا
 
 - `.mcp.json` — أربعة مخدّمات MCP: `context7`, `magic`, `playwright`, `figma`
   (المفاتيح `${ENV:-}` من البيئة، بلا قيم). REA وAgent Reach خارجها لأنّهما
   يتطلّبان تثبيتًا عامًّا أولًا (موثّقان في مهارتيهما).
-- `.claude/settings.json` — تفعيل `playwright` تلقائيًّا فقط، وتسجيل سوقَي
-  `llm-wiki` و`claude-mem`.
+- `.claude/settings.json` — تفعيل `playwright` تلقائيًّا، وتسجيل سوقَي
+  `llm-wiki` و`claude-mem`، وكتلة `permissions` (أُضيفت ٢٠٢٦/١١/٠٤ للتفويض في القسم ٥):
+  سماحٌ لأمر `doctor` وحده ومنعٌ لاستدعاء `opencode` المباشر — حاجز سرعة لا حدّ أمني.
 - `.claude/skills/sadeed-toolchain/` — الفهرس الحاكم، و`.claude/skills/toolchain-*/`
   — مهارة لكلّ أداة (متى تُستعمل، كيف تُفعَّل، مفاتيحها، وحوكمتها).
 - `.github/workflows/security-scan-strix.yml` — فحص Strix الذاتيّ المأذون،
@@ -70,5 +73,39 @@
 
 أسماء الحزم وأوامر التثبيت من مصادرها المعلنة وقت الكتابة (٢٠٢٦/١٠/١٧)؛ قد تتغيّر
 الإصدارات، فتحقّق من المصدر الرسمي لكلّ أداة قبل الاعتماد في CI. لم يُنفَّذ أيّ أمر
-تثبيت ولا فحص Strix في هذه الدفعة — الملفّات إعداد وتوثيق قابلان للمراجعة، تُفعِّلها
+تثبيت ولا فحص Strix في دفعة ٢٠٢٦/١٠/١٧ (الأدوات ١–١٢)؛ أمّا الأداة ١٣ فقد فُحصت وركِّبت في الحاوية
+المؤقتة لجلسة ٢٠٢٦/١١/٠٤ كما في القسم ٥. وبقية الملفّات هنا إعداد وتوثيق قابلان للمراجعة، تُفعِّلها
 أنت حين تشاء.
+
+## 5. التفويض بلا رصيد Claude — OpenCode، وقرار OpenCowork (٢٠٢٦/١١/٠٤)
+
+أمر المالك: «ابحث عن أداة opencowork وثبّتها… وابحث عن أقوى وأحدث أداة تعمل بلا استهلاك
+رصيد في Claude بمجرد توجيهها من Claude Code وأعطني اسمها».
+
+- **الاسم: OpenCode** (`anomalyco/opencode` بحسب صفحة GitHub وملخّصات البحث؛ حزمة npm
+  `opencode-ai` بلا حقل مستودع؛ MIT). **مسمَّرة في المانيفست** على `1.19.3` بالبصمات في
+  `scripts/toolchain/tools.lock.json`، ومركَّبة فقط في الحاوية السحابية المؤقتة لجلسة ٢٠٢٦/١١/٠٤.
+  اختيرت لأنها الأوسع انتشارًا والمحايدة للمزوّد وفيها تشغيل غير تفاعلي
+  (`opencode run -m <provider/model> --format json --dir <مسار> "<مهمة>"`) — **تفضيل نوعي لا ترتيب
+  جودة مقيس**. بدائلها: Qwen Code وGemini CLI قيل إن مجّانيتهما المستضافة انتهت (٢٠٢٦/٠٤/١٥ و٢٠٢٦/٠٦/١٨)
+  **من ملخّصات بحث ثانوية لم تُقرأ صفحاتها الرسمية**؛ واحتياطي ثانٍ: Codex CLI بوضع `--oss` المحلي (غير مجرَّب).
+- **«بلا رصيد» بصدق:** التنفيذ المفوَّض فقط؛ التنسيق وقراءة الرقعة يستهلكان Claude. وجودة
+  النماذج المجّانية/المحلية **غير مقيسة هنا** ودون Claude على الأرجح.
+- **الباب الوحيد:** `scripts/toolchain/delegate.mjs` (`doctor` · `install` · `run`). قواعد المنع في
+  `.claude/settings.json` حاجز سرعة لا حدّ أمني. تفاصيل الضوابط والتحقق في
+  `.claude/skills/toolchain-opencode/SKILL.md`.
+- **OpenCowork لم يُثبَّت — وصُحّح حكمٌ أوّل كان خاطئًا:** الاسم يشير إلى خمسة مشاريع على الأقل
+  (فحص قراءة فقط ٢٠٢٦/١١/٠٤، تفصيله في المانيفست وفي `.claude/skills/toolchain-opencowork/SKILL.md`):
+  - `OpenCoworkAI/open-cowork` (٣.٣.١، MIT): واجهة رسومية Windows/macOS، الأشهر بالاسم، **بلا CLI ولا MCP**.
+  - `AIDotNet/OpenCoWork`: يملك **CLI فعليًّا** `@aidotnet/opencowork@1.4.0` (٢٠٢٦/٠٩/٠٣) فيه وضع بلا
+    واجهة `cowork -p` (مقروء من الشيفرة، لم يُنفَّذ) **بلا MCP server ولا ACP**؛ متجمّد بعدها، وخَلَفه
+    `AIDotNet/NextCoWork` (٢.٨.٧) تطبيق مكتبي. عامله الأصلي مغلق المصدر، ومفاتيح المزوّد تُخزَّن نصًّا في
+    `~/.open-cowork`، والبيئة كاملةً تُمرَّر إلى العامل، وترخيصه متعارض (MIT على npm، Apache-2.0 في المستودع).
+  - مشاريع أخرى: تطبيقات مكتبية أو حزم `0.0.1` «قريبًا» ليست أدوات عاملة.
+    فلا تثبيت في Claude Code أو GitHub أو النظام، والاختيار بينها قرار المالك.
+- **لا يُنفَّذ بدلًا من المالك** (المواد ٨ و١٩ و٢٤): تثبيت التطبيقات على أجهزته أو في حسابه، وضع المفاتيح
+  في بيئته، وتوسيع المسارات المسموحة للتفويض، وإضافة مزوّد جديد.
+- **لم يُنفَّذ من الأمر:** تثبيت على جهاز المالك، وتغطية «جميع المشاريع» (النطاق هذا المستودع)، وتجربة
+  Windows/macOS (النص مكتوب لهما ولم يُجرَّب).
+- **بيانات التفويض:** `*.data.json` وأسماء المشغّلين/المديرين وملفات الصيانة والبلاغات
+  والمشاريع وكل `supabase/**` و`docs/audit/**` وتاريخ git **لا تذهب إلى أي نموذج خارجي**.

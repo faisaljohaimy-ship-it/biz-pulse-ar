@@ -25,20 +25,22 @@ description: فهرس طبقة أدوات سَدِيد المعتمدة (الإ�
 
 ## الخريطة — متى تستعمل ماذا
 
-| الحاجة                                                | الأداة الخارجية            | المهارة هنا                  | مهارة محلّية تُغطّيها أصلًا                                         |
-| ----------------------------------------------------- | -------------------------- | ---------------------------- | ------------------------------------------------------------------- |
-| دورة تطوير منظّمة (مواصفة→خطة→بناء→اختبار→مراجعة→شحن) | agent-skills               | `toolchain-agent-skills`     | `tdd-workflow`, `coding-standards`                                  |
-| توثيق مكتبة حديث داخل السياق                          | Context7 (MCP)             | `toolchain-context7`         | —                                                                   |
-| خريطة معرفة للكود بدل إعادة القراءة                   | Graphify                   | `toolchain-graphify`         | `codebase-onboarding`, `context-budget`                             |
-| توليد مكوّن واجهة احترافي                             | 21st.dev Magic (MCP)       | `toolchain-magic-ui`         | `nexios-ui-patterns`, `design-system`                               |
-| فحص أمني مأذون لتطبيق المالك نفسه                     | Strix                      | `toolchain-strix`            | `security-scan`, `security-bounty-hunter`, `production-audit`       |
-| فهم تطبيق/ميزة وإعادة بنائها                          | REA                        | `toolchain-rea`              | —                                                                   |
-| ويكي معرفة حيّة من ملفاتك                             | LLM Wiki                   | `toolchain-llm-wiki`         | —                                                                   |
-| ذوق التصميم ومهارات الويب مفتوحة المصدر               | Taste + web-design skills  | `toolchain-taste-design`     | `taste`, `frontend-design-direction`, `make-interfaces-feel-better` |
-| تصميم↔كود↔اختبار متصفّح                               | Figma MCP + Playwright MCP | `toolchain-figma-playwright` | `e2e-testing`, `browser-qa`                                         |
-| مرجع مزوّدات LLM المجّانية                            | Awesome Free LLM APIs      | `toolchain-free-llm-apis`    | — (مرجع فقط، لا يُوصَل بالتشغيل)                                    |
-| ذاكرة عبر جلسات Claude Code                           | claude-mem                 | `toolchain-claude-mem`       | `context-budget`                                                    |
-| وصول الوكيل للويب/المنصّات العامة                     | Agent Reach                | `toolchain-agent-reach`      | `WebSearch`/`WebFetch` المدمجتان                                    |
+| الحاجة                                                | الأداة الخارجية               | المهارة هنا                  | مهارة محلّية تُغطّيها أصلًا                                         |
+| ----------------------------------------------------- | ----------------------------- | ---------------------------- | ------------------------------------------------------------------- |
+| دورة تطوير منظّمة (مواصفة→خطة→بناء→اختبار→مراجعة→شحن) | agent-skills                  | `toolchain-agent-skills`     | `tdd-workflow`, `coding-standards`                                  |
+| توثيق مكتبة حديث داخل السياق                          | Context7 (MCP)                | `toolchain-context7`         | —                                                                   |
+| خريطة معرفة للكود بدل إعادة القراءة                   | Graphify                      | `toolchain-graphify`         | `codebase-onboarding`, `context-budget`                             |
+| توليد مكوّن واجهة احترافي                             | 21st.dev Magic (MCP)          | `toolchain-magic-ui`         | `nexios-ui-patterns`, `design-system`                               |
+| فحص أمني مأذون لتطبيق المالك نفسه                     | Strix                         | `toolchain-strix`            | `security-scan`, `security-bounty-hunter`, `production-audit`       |
+| فهم تطبيق/ميزة وإعادة بنائها                          | REA                           | `toolchain-rea`              | —                                                                   |
+| ويكي معرفة حيّة من ملفاتك                             | LLM Wiki                      | `toolchain-llm-wiki`         | —                                                                   |
+| ذوق التصميم ومهارات الويب مفتوحة المصدر               | Taste + web-design skills     | `toolchain-taste-design`     | `taste`, `frontend-design-direction`, `make-interfaces-feel-better` |
+| تصميم↔كود↔اختبار متصفّح                               | Figma MCP + Playwright MCP    | `toolchain-figma-playwright` | `e2e-testing`, `browser-qa`                                         |
+| مرجع مزوّدات LLM المجّانية                            | Awesome Free LLM APIs         | `toolchain-free-llm-apis`    | — (مرجع فقط، لا يُوصَل بالتشغيل)                                    |
+| ذاكرة عبر جلسات Claude Code                           | claude-mem                    | `toolchain-claude-mem`       | `context-budget`                                                    |
+| وصول الوكيل للويب/المنصّات العامة                     | Agent Reach                   | `toolchain-agent-reach`      | `WebSearch`/`WebFetch` المدمجتان                                    |
+| تفويض عمل نظيف بلا رصيد Claude                        | OpenCode (نموذج مجّاني/محلّي) | `toolchain-opencode`         | — (عبر البوابة `scripts/toolchain/delegate.mjs` حصرًا)              |
+| اسم لخمسة مشاريع (لا تثبيت)                           | OpenCowork                    | `toolchain-opencowork`       | — (غير مثبَّت؛ الاختيار والتجربة بيد المالك)                        |
 
 ## تنبيهان بقرار حوكمة
 
@@ -48,5 +50,10 @@ description: فهرس طبقة أدوات سَدِيد المعتمدة (الإ�
 - **«Agent Reach» وراء بوابة المالك.** يفتح خروجًا واسعًا للويب والمنصّات بكوكيز
   حسابات. لا يُفعَّل تلقائيًّا؛ يُشغَّل بإذن صريح وبحسابات منفصلة، ولا يلمس أسرار
   الإنتاج (تفصيل في مهارته).
+
+- **«OpenCode» تفويض مقيَّد بالبوابة.** لا يُستدعى `opencode` مباشرةً (محجوب في الإعدادات)؛
+  الباب `scripts/toolchain/delegate.mjs` يفرض مسارات ضيّقة وبيئة مقلَّمة ومزوّدًا من قائمة
+  بيضاء، والمخرج رقعة لا تُطبَّق تلقائيًّا. السحابي منه يحتاج `--cloud-ok` ويخرج فيه المقتطف
+  إلى طرف ثالث. **«OpenCowork» غير مثبَّت:** اسم لخمسة مشاريع؛ الواحد ذو الـCLI متجمّد وعامله مغلق ومفاتيحه نصّية، والباقي واجهات مكتبية.
 
 ابدأ من `docs/tooling/SADEED_TOOLCHAIN.md` لخطوات التفعيل والمفاتيح لكل أداة.

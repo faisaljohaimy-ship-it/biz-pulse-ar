@@ -1,0 +1,133 @@
+{
+  "schema": 1,
+  "minAgeDays": 14,
+  "note": "مصدر الحقيقة الوحيد لإصدارات أدوات التفويض وبصماتها. لا latest ولا نطاق إصدارات. الحارس: src/lib/security/toolchain-delegate.contract.test.ts",
+  "tools": [
+    {
+      "id": "opencode",
+      "role": "delegate",
+      "kind": "npm",
+      "source": "npm:opencode-ai",
+      "repository": "github:anomalyco/opencode",
+      "status": "pinned",
+      "version": "1.19.3",
+      "publishedAt": "2026-10-16T12:32:00.280Z",
+      "pinnedAt": "2026-11-04",
+      "integrity": "sha512-wDRcUlMDibaLzecIGvVGUA9naghXVqzCWcUE7N3qagpGiLSUlU4VbixI+bpsErwJp+AAuSO2lhSr/XxJl7XbrQ==",
+      "platformIntegrity": {
+        "opencode-linux-x64": "sha512-wz+kXi7ZkvLW04hEIocW3RoEznALJ3YGnvNlZdXFarYF0v1jyDyAwpPGZkxb4JZDrw4oy48/LDZ8wCFIQDTxhw==",
+        "opencode-linux-x64-baseline": "sha512-FnhCNzuPrjNxjZjfE3J5H5lPjcP6//7kMzaVnRPjvqZzznRQcMoOJhb0ApkyAUtP+6FgvBNNUNI7vy7G+85hcw==",
+        "opencode-linux-x64-musl": "sha512-6wdrvDPyFzGj3iW8QJ9EdLgbmT7oWDQ0+nBV5F9fKsFGIpavCZTWEyQfsiolGT7RFkb7lYdxQeJQnoNSd75weQ==",
+        "opencode-linux-x64-baseline-musl": "sha512-EdRsAv1QFA1z2iC8ZmKKdTItalfb5es3zRJJWNyxHWh/C+KwA4speA3/Qq2rPeKzx4xfjdqsUZq0BhcBj/7Dxg==",
+        "opencode-linux-arm64": "sha512-Y1HIsJNK+zxbtd54TCrEI/G3m/RSALCaKbzAaaxJYF+ZHQE2PFlHmueqWDigQoT1tbiPi/8tPMirxpGgcXEprg==",
+        "opencode-linux-arm64-musl": "sha512-0shzHjgWf9exkIcIO+g9pGqpGmxeeqVxAhcUvLnNmzveXYdveLcQMiXF5jkt/njZwwMuz0WFRsvbbmuPT+F1mw==",
+        "opencode-darwin-x64": "sha512-z9uxw1QZ+0CcweMQnrh8s/VXXr+UhqxwUh+vYEcwicETBOxwNSLFqFFE598s0ComYEoM1bXDul1e83AG7m143A==",
+        "opencode-darwin-x64-baseline": "sha512-YQhL8HrHp4SUIHLR3JKY3uVRvIlhiZPFFK5AZH2avzCQuBG7gBAice2B/DbT0leANzhvY3SocEd+rVM/GcebMw==",
+        "opencode-darwin-arm64": "sha512-NmDF28jD8W7m9a/k4mc3rajEWftDemGecrzBJItzTWwN0Eu5WFSEFBocvmmasUr4nh8ei9Zl1pwRvv66R4dN6A==",
+        "opencode-windows-x64": "sha512-4kw8H0Qfp0t7CyU7+yvbUbilHdUUfkO6y+Nmf5YCe1z9DR301vmO8WdyC7xqyOP4OvCCCE4gGK2cwDEem1iwBg==",
+        "opencode-windows-x64-baseline": "sha512-tmTCxrPbssM9bq8T84l+HJJfgkw/Z5UlTat4K1n+1Ho2kwwoDoIOV5svY5777jqfV05PEZ8585tgNdhcecrJ2w==",
+        "opencode-windows-arm64": "sha512-ejMAoGdzmD62C1LoG6AXfFZ7wdLyvLH+TuQL4wJaFHo1JewOIDqE8K0EX8pqRt0YE8/LbuiK5bdjENsIsCxGyg=="
+      },
+      "license": "MIT",
+      "platforms": ["linux", "darwin", "win32"],
+      "cloud": "unverified",
+      "egress": ["registry.npmjs.org (وقت install فقط)"],
+      "secrets": ["GROQ_API_KEY", "OPENROUTER_API_KEY"],
+      "allowInstallScripts": true,
+      "scriptsReview": "2026-11-04: postinstall.mjs يكشف المنصة محلّيًا (cpuinfo/sysctl/ldd/powershell) ثم يربط ثنائي الحزمة الفرعية الموافقة ويُجري --version؛ احتياطيه npm install --ignore-scripts للحزمة نفسها بالإصدار المعلن. لا شبكة غير npm. تُنزَّل الحزم بـ--ignore-scripts، وتُفحص بصماتها، وبعدها فقط تشغّل البوابة هذا السكربت يدويًّا (لا قبل الفحص).",
+      "minimumFixedVersion": "1.18.33",
+      "minimumFixedReason": "إصلاح MCP OAuth RCE (بلا advisory) وقبله GHSA-632h-h47v-g4x4 (1.18.22)؛ 1.19.3 أحدث منهما وعمره ≥14 يومًا يوم التثبيت.",
+      "dataClass": "dev-only",
+      "taskClasses": ["ui-component", "styles", "docs-tooling"],
+      "readOnlyByDefault": true,
+      "repositoryNote": "حزمة npm بلا حقل repository؛ نسبة المستودع من صفحة GitHub وملخّصات بحث (لم يُقرأ API بسبب 403). الناشر المسجَّل: opencode-ai على npm.",
+      "unverified": [
+        "تشغيل بنموذج حقيقي",
+        "جودة النماذج المجّانية",
+        "شروط بيانات Groq/OpenRouter الرسمية",
+        "حركة شبكة الثنائي",
+        "Windows وmacOS",
+        "وجود مزوّد Claude Agent في السلسلة 2 (ملاحظات إصدار ثانوية لم تُقرأ مصادرها؛ @opencode/cli@2.2.5 موجودة على npm بتاريخ 2026-10-30)",
+        "حركة الشبكة الفعلية على المسار السحابي (groq/openrouter) — قِيس مسار ollama فقط"
+      ],
+      "configTemplate": {
+        "dir": "scripts/toolchain/opencode-config",
+        "lockSha256": "1c63e8fb3832f6fc778089391648a6c4c2666451576a23923b7d921c774b27e5",
+        "why": "OpenCode يثبّت @opencode-ai/plugin وتبعاته (32 حزمة في القفل) من سجلّ npm عند كل إقلاع في HOME جديد (قِيس بـstrace: اتصالات 443 إلى npm و180MB كاش). نثبّتها مرة واحدة بـnpm ci --ignore-scripts من قفل مسمَّر بالبصمات وننسخها إلى HOME كل تشغيل؛ فلا اتصال بالسجلّ وقت التشغيل (قِيس: صفر اتصال غير المزوّد)."
+      },
+      "egressRuntime": "المزوّد المختار وحده (قِيس بـstrace على مسار ollama/loopback مدة 20ث: صفر DNS وصفر 443). السحابي (groq/openrouter): غير مُتحقَّق"
+    },
+    {
+      "id": "opencowork",
+      "role": "workbench",
+      "kind": "ambiguous-name",
+      "status": "not-installed",
+      "version": null,
+      "installBy": "owner",
+      "allowInstallScripts": false,
+      "dataClass": "dev-only",
+      "decision": "2026-11-04: لا تثبيت لأي مشروع يحمل الاسم. الاسم يشير إلى خمسة مشاريع على الأقل. الوحيد بواجهة سطر أوامر (@aidotnet/opencowork@1.4.0) متجمّد منذ 2026-09-03 وسلفُ منتجٍ آخر (NextCoWork)، وعاملُه الأصلي مغلق المصدر ويخزّن مفاتيح المزوّد نصًّا في ~/.open-cowork ويمرّر البيئة كاملةً؛ والباقي تطبيقات مكتبية. الحاجة «أداة يوجّهها Claude Code بلا رصيد Claude» تؤديها OpenCode عبر البوابة. القرار الأول («لا CLI ولا MCP») كان خاطئًا للمشروع AIDotNet وصُحّح بنتيجة فحص الحارس.",
+      "evidence": "فحص ٢٠٢٦/١١/٠٤ بقراءة فقط: npm view وnpm pack --ignore-scripts وقراءة الملفات المستخرجة وraw.githubusercontent.com؛ لم يُثبَّت شيء ولم يُنفَّذ.",
+      "candidates": [
+        {
+          "source": "npm:@aidotnet/opencowork",
+          "repository": "github:AIDotNet/OpenCoWork (مجلد cli)",
+          "reportedVersion": "1.4.0",
+          "publishedAt": "2026-09-03T03:33:00Z",
+          "kind": "cli+embedded-native-worker",
+          "platforms": ["linux", "darwin", "win32"],
+          "headless": "cowork -p <prompt> --output-format json (مقروء من الشيفرة؛ غير موثّق في README؛ لم يُنفَّذ)",
+          "mcpServer": false,
+          "acp": false,
+          "license": "npm: MIT · README المستودع: Apache-2.0 (متعارضان)",
+          "risks": [
+            "عامل أصلي .NET مغلق المصدر بصلاحيات shell وملفات وويب",
+            "مفاتيح المزوّد مخزَّنة نصًّا في ~/.open-cowork",
+            "البيئة كاملةً تُمرَّر إلى العامل",
+            "حزمة 148.5MB (545MB بعد الفك) بثنائيات 6 منصّات وpostinstall",
+            "مشروع متجمّد بعد 1.4.0 وخَلَفه NextCoWork تطبيق مكتبي بلا CLI"
+          ]
+        },
+        {
+          "source": "github:OpenCoworkAI/open-cowork",
+          "reportedVersion": "3.3.1",
+          "kind": "desktop-gui",
+          "platforms": ["win32", "darwin"],
+          "headless": false,
+          "mcpServer": false,
+          "license": "MIT",
+          "note": "الأشهر بالاسم (نحو 2.3k نجمة)؛ واجهة رسومية فقط"
+        },
+        {
+          "source": "github:AIDotNet/NextCoWork",
+          "reportedVersion": "2.8.7",
+          "kind": "desktop-gui",
+          "platforms": ["win32", "darwin", "linux"],
+          "headless": false,
+          "mcpServer": false,
+          "license": "Apache-2.0",
+          "note": "الخط الحالي لنفس مستودع AIDotNet بعد 2026-09-14؛ تطبيق مكتبي"
+        },
+        {
+          "source": "github:LeonGaoHaining/opencowork",
+          "reportedVersion": "0.14.14",
+          "kind": "desktop-gui",
+          "platforms": ["win32", "darwin", "linux"],
+          "license": "Apache-2.0",
+          "note": "ثقة متوسطة (README فقط)"
+        },
+        {
+          "source": "github:opencowork-ai/opencowork",
+          "kind": "placeholder",
+          "note": "الحزم @opencowork/cli وopencowork-cli و@opencowork-ai/cli إصدار 0.0.1 «قريبًا» وليست أدوات عاملة"
+        }
+      ],
+      "unverified": [
+        "تشغيل أي منها",
+        "سلوك العامل الأصلي وعزله",
+        "الترخيص الفعلي لـ@aidotnet/opencowork",
+        "أي مشروع تقصد"
+      ]
+    }
+  ]
+}

@@ -8,5 +8,16 @@
     "claude-mem": {
       "source": { "source": "github", "repo": "thedotmack/claude-mem" }
     }
+  },
+  "permissions": {
+    "allow": ["Bash(node scripts/toolchain/delegate.mjs doctor)"],
+    "deny": [
+      "Bash(opencode)",
+      "Bash(opencode *)",
+      "Bash(npx opencode-ai *)",
+      "Bash(npx @opencode/cli *)",
+      "Bash(npm install -g opencode-ai*)",
+      "Bash(npm i -g opencode-ai*)"
+    ]
   }
 }
