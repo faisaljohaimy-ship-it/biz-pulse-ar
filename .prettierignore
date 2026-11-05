@@ -47,3 +47,12 @@ docs/audit/sadeed-v10-audit-data-*.json
 n8n/workflows/
 n8n/workflows.stub/
 n8n/README.md
+
+# Spec Kit checks the contents of its installed skills and templates on upgrade.
+# Keep team-authored specifications, bug reports, and template overrides formattable.
+.agents/skills/speckit-*/
+.claude/skills/speckit-*/
+.specify/templates/*-template.md
+.specify/extensions/assess/
+.specify/extensions/bug/
+.specify/workflows/speckit/

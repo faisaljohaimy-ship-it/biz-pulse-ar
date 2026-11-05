@@ -120,6 +120,40 @@ describe("readImportFile — xlsx", () => {
     expect(offsets.size, "تغيّر TZ فعلًا أثناء الاختبار").toBeGreaterThan(1);
   });
 
+  it.each([
+    [false, 46326.60416666666],
+    [true, 44864.60416666666],
+  ] as const)(
+    "يعرض الثانية الأقرب لقيم Excel التسلسلية (تقويم 1904 = %s)",
+    async (date1904, serial) => {
+      const wb = XLSX.utils.book_new();
+      wb.Workbook = { WBProps: { date1904 } };
+      const dates = [
+        serial,
+        Math.floor(serial) + 0.99999710648,
+        Math.floor(serial) + 0.49999305556,
+      ];
+      const ws = XLSX.utils.aoa_to_sheet([["وقت"], ...dates.map((n) => [n])]);
+      for (const key of ["A2", "A3", "A4"]) ws[key].z = "yyyy-mm-dd hh:mm:ss";
+      XLSX.utils.book_append_sheet(wb, ws, "Dates");
+      const bytes = new Uint8Array(XLSX.write(wb, { type: "array", bookType: "xlsx" }));
+      expect(firstSheet(await read("dates.xlsx", bytes)).rows).toEqual([
+        ["2026-10-31T14:30"],
+        ["2026-11-01"],
+        ["2026-10-31T11:59:59"],
+      ]);
+    },
+  );
+
+  it("يحافظ على تنسيق الوقت فقط عند التقريب عبر منتصف الليل", async () => {
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet([["وقت"], [0.99999710648]]);
+    ws.A2.z = "hh:mm:ss";
+    XLSX.utils.book_append_sheet(wb, ws, "Time");
+    const bytes = new Uint8Array(XLSX.write(wb, { type: "array", bookType: "xlsx" }));
+    expect(firstSheet(await read("time.xlsx", bytes)).rows).toEqual([["00:00"]]);
+  });
+
   it("الصيغ والنصوص الشبيهة بالصيغ تبقى نصًّا خاملًا ولا تُقيَّم", async () => {
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet([

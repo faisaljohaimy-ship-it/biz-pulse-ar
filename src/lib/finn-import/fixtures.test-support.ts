@@ -261,7 +261,11 @@ export function makeXlsx(
 ): Bytes {
   const wb = XLSX.utils.book_new();
   for (const s of sheets) {
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(s.rows, { cellDates: true }), s.name);
+    XLSX.utils.book_append_sheet(
+      wb,
+      XLSX.utils.aoa_to_sheet(s.rows, { cellDates: true, UTC: true }),
+      s.name,
+    );
   }
   if (sheets.some((s) => s.hidden)) {
     wb.Workbook = { Sheets: sheets.map((s) => ({ Hidden: s.hidden ? 1 : 0 })) };

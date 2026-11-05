@@ -557,15 +557,21 @@ function pad2(n: number): string {
 }
 
 /** `YYYY-MM-DD` (+`THH:mm` إن وُجد وقت)؛ وقتٌ بلا تاريخ (Excel يرسمه 1899) ⇒ `HH:mm`. UTC: تاريخ Excel بلا منطقة. */
-function formatDate(d: Date): string {
-  if (!Number.isFinite(d.getTime())) return "";
+function formatDate(value: Date): string {
+  const millis = value.getTime();
+  if (!Number.isFinite(millis)) return "";
+  // Excel stores fractions of a day. Round at display precision before extracting UTC fields.
+  const d = new Date(Math.round(millis / 1000) * 1000);
   const y = d.getUTCFullYear();
   const h = d.getUTCHours();
   const mi = d.getUTCMinutes();
   const s = d.getUTCSeconds();
   const hasTime = h !== 0 || mi !== 0 || s !== 0;
   const time = `${pad2(h)}:${pad2(mi)}${s !== 0 ? `:${pad2(s)}` : ""}`;
-  if (y < 1900) return hasTime ? time : "";
+  if (value.getUTCFullYear() < 1900) {
+    const roundedToMidnight = d.getUTCDate() !== value.getUTCDate();
+    return hasTime || roundedToMidnight ? time : "";
+  }
   const date = `${String(y).padStart(4, "0")}-${pad2(d.getUTCMonth() + 1)}-${pad2(d.getUTCDate())}`;
   return hasTime ? `${date}T${time}` : date;
 }
