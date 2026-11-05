@@ -7,6 +7,7 @@
  * and every request is logged into the executive audit trail (Article 26).
  */
 import { createFileRoute } from "@tanstack/react-router";
+import { readPublicIncidentBody } from "@/lib/sadeed/public-incident-body.server";
 
 const ALLOWED_KINDS = new Set([
   "unhandled_error",
@@ -84,12 +85,9 @@ export const Route = createFileRoute("/api/public/hooks/sadeed-incident")({
           return new Response("rate limited", { status: 429, headers: { "Retry-After": "60" } });
         }
 
-        let body: IncomingIncident;
-        try {
-          body = (await request.json()) as IncomingIncident;
-        } catch {
-          return new Response("bad json", { status: 400 });
-        }
+        const parsed = await readPublicIncidentBody(request);
+        if (!parsed.ok) return new Response(parsed.message, { status: parsed.status });
+        const body = parsed.value as IncomingIncident;
 
         const kind = String(body.kind ?? "").slice(0, 40);
         if (!ALLOWED_KINDS.has(kind)) return new Response("bad kind", { status: 400 });
