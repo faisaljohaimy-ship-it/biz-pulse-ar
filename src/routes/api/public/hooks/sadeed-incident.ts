@@ -87,7 +87,19 @@ export const Route = createFileRoute("/api/public/hooks/sadeed-incident")({
 
         const parsed = await readPublicIncidentBody(request);
         if (!parsed.ok) return new Response(parsed.message, { status: parsed.status });
-        const body = parsed.value as IncomingIncident;
+        const rawBody = parsed.value;
+        // Nested JSON can shadow toString with a non-function; String(value)
+        // then throws a TypeError and turns an anonymous beacon into HTTP 500.
+        // Legitimate scalar telemetry is unchanged; reject objects/arrays here.
+        if (
+          (["kind", "detail", "url", "device_class"] as const).some((field) => {
+            const value = rawBody[field];
+            return value !== null && typeof value === "object";
+          })
+        ) {
+          return new Response("bad field", { status: 400 });
+        }
+        const body = rawBody as IncomingIncident;
 
         const kind = String(body.kind ?? "").slice(0, 40);
         if (!ALLOWED_KINDS.has(kind)) return new Response("bad kind", { status: 400 });
