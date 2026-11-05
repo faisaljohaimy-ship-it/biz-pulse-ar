@@ -1,6 +1,6 @@
 ---
 name: public-source-research
-description: Use FaceCheck.ID for an explicitly requested self-image exposure check, Robin for defensive dark-web threat research, and Airplanes.live for public aviation or ADS-B questions. Use the relevant source when these topics arise in Arabic or English.
+description: Triage published SADEED dependency security advisories using the project's lockfile and primary sources. Use FaceCheck.ID for an explicitly requested self-image exposure check, Robin for defensive dark-web threat research, and Airplanes.live for public aviation or ADS-B questions. Use the relevant source when these topics arise in Arabic or English.
 ---
 
 # Public source research
@@ -20,3 +20,11 @@ Select the source that answers the user's question. Get the helper path from thi
 **Airplanes.live.** Use `air-area LAT LON RADIUS_NM` for a regional snapshot (up to 250 nautical miles). Report the count of aircraft in the provider response, the radius and provider observation time. If the provider omits a timestamp, distinguish request time from observation time. Use the public map for interactive inspection. Receiver coverage varies; an empty area does not prove the sky is empty. A signal does not identify the passengers.
 
 Match the user's language and provide primary-source links. State whether the result came from the live API, a public page, a local prerequisite check or a test fixture.
+
+## Applying this workflow to SADEED
+
+For a security advisory, start at the repository root. Record `git rev-parse HEAD`, the maintainer’s advisory URL, its affected ranges and its fixed releases. Inspect all matching entries in `package-lock.json`, including nested dependencies. After installation, use `npm ls <package> --all` to identify the framework that actually consumes it.
+
+If Robin is available, use it for public leads and corroborate them with the maintainer. Otherwise use the maintainer directly and record that source. Reproduce suspected behavior locally with inert input before changing the dependency. Rerun the same check against the patched installation. Report repository evidence, preview checks and production verification separately.
+
+For public aviation questions, use a public airport as the reference point and report the provider timestamp. Keep protected facility coordinates and employee images out of external requests. FaceCheck is for the user’s explicitly requested self-image lookup.
