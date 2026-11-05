@@ -7,11 +7,11 @@ description: Use FaceCheck.ID for an explicitly requested self-image exposure ch
 
 Select the source that answers the user's question. Get the helper path from this skill's own directory: `scripts/sources.py`. Run it with Python 3.9+; no third-party packages are required. Use `status` for local prerequisites. It does not test network connectivity.
 
-| Source in the video | Task | Entry point |
-| --- | --- | --- |
-| FaceCheck.ID (around 00:06) | Reverse image exposure check for a user's own photo | [Official search](https://facecheck.id/) · [API](https://facecheck.id/en/Face-Search/API) |
-| Robin (around 00:19) | Find and corroborate public threat-intelligence leads via Tor | [Upstream](https://github.com/apurvsinghgautam/robin) |
-| Airplanes.live (around 00:37) | Inspect publicly received aircraft signals and regional activity | [Map](https://globe.airplanes.live/) · [Coverage and data](https://airplanes.live/faq/) |
+| Source in the video           | Task                                                             | Entry point                                                                               |
+| ----------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| FaceCheck.ID (around 00:06)   | Reverse image exposure check for a user's own photo              | [Official search](https://facecheck.id/) · [API](https://facecheck.id/en/Face-Search/API) |
+| Robin (around 00:19)          | Find and corroborate public threat-intelligence leads via Tor    | [Upstream](https://github.com/apurvsinghgautam/robin)                                     |
+| Airplanes.live (around 00:37) | Inspect publicly received aircraft signals and regional activity | [Map](https://globe.airplanes.live/) · [Coverage and data](https://airplanes.live/faq/)   |
 
 **FaceCheck.** For capabilities or price questions, use the documentation. To verify an existing account, inject `FACECHECK_API_TOKEN` in the execution environment and run `facecheck-info`. Never put the token in chat, a command argument or git. Upload a particular image only when the user explicitly asks to send their own image to FaceCheck. Use `facecheck-own-photo FILE` for a no-credit demo; provider demo results are unsuitable for identification. Use `--paid` only for an explicitly authorized credit-consuming search. Review candidate source URLs rather than asserting a person's identity from similarity. For removal requests, use the official site's removal flow.
 
