@@ -39,6 +39,31 @@ describe("incident route body validation", () => {
     expect(fixture.insert).not.toHaveBeenCalled();
   });
 
+  it.each([
+    ["kind", '{"kind":{"toString":null}}'],
+    ["detail", '{"kind":"offline","detail":{"toString":null}}'],
+    ["url", '{"kind":"offline","url":{"toString":null}}'],
+    ["device_class", '{"kind":"offline","device_class":{"toString":null}}'],
+    ["detail array", '{"kind":"offline","detail":[]}'],
+  ])("rejects non-scalar %s without HTTP 500", async (_field, body) => {
+    const response = await handler({ request: request(body) });
+    expect(response.status).toBe(400);
+    expect(fixture.insert).not.toHaveBeenCalled();
+  });
+
+  it("rejects objects without altering valid scalar telemetry", async () => {
+    const response = await handler({
+      request: request('{"kind":"offline","detail":123,"url":"/health","device_class":"ci"}'),
+    });
+    expect(response.status).toBe(202);
+    expect(fixture.insert).toHaveBeenCalledWith({
+      kind: "offline",
+      detail: "123",
+      url: "/health",
+      device_class: "ci",
+    });
+  });
+
   it("rejects an oversized body without Content-Length", async () => {
     const body = JSON.stringify({ kind: "offline", detail: "x".repeat(5000) });
     expect((await handler({ request: request(body) })).status).toBe(413);
