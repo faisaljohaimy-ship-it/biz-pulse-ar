@@ -26,6 +26,7 @@
  * محادثة ولا هوية مستخدم تتجاوز مفتاح الدلو الذي يمرّره المستدعي أصلًا.
  */
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { trustedClientIp } from "@/lib/sadeed/public-incident-client-ip.server";
 
 export type RateLimitOptions = {
   /**
@@ -304,9 +305,7 @@ export function rateLimitResponse() {
 }
 
 export function clientBucketKey(request: Request, scope: string): string {
-  const ip =
-    request.headers.get("cf-connecting-ip") ||
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    "unknown";
-  return `${scope}:${ip}`;
+  // Vercel does not authenticate a client-supplied CF-Connecting-IP header.
+  // Use the same platform-owned source IP as the hardened public incident sink.
+  return `${scope}:${trustedClientIp(request)}`;
 }

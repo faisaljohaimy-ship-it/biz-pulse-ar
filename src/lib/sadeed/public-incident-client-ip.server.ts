@@ -8,7 +8,8 @@ function firstIp(value: string | null): string | null {
   return value?.split(",", 1)[0]?.trim() || null;
 }
 
-export function clientBucketKey(
+/** Shared, platform-owned client IP. Ignore spoofable CF headers on Vercel. */
+export function trustedClientIp(
   request: Request,
   env: Record<string, string | undefined> = process.env,
 ): string {
@@ -21,5 +22,12 @@ export function clientBucketKey(
       : (firstIp(headers.get("cf-connecting-ip")) ??
         firstIp(headers.get("x-forwarded-for")) ??
         firstIp(headers.get("x-real-ip")));
-  return `aria-incident:${ip ?? "unknown"}`;
+  return ip ?? "unknown";
+}
+
+export function clientBucketKey(
+  request: Request,
+  env: Record<string, string | undefined> = process.env,
+): string {
+  return `aria-incident:${trustedClientIp(request, env)}`;
 }
