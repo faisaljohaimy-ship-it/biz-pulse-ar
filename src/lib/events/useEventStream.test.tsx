@@ -5,6 +5,7 @@ import { useEventStream, type EnterpriseEventRow } from "./useEventStream";
 const fake = vi.hoisted(() => ({
   finishHydration: null as ((value: unknown) => void) | null,
   emitInsert: null as ((payload: { new: unknown }) => void) | null,
+  likeCalls: [] as Array<[string, string]>,
 }));
 
 vi.mock("@/integrations/supabase/client", () => {
@@ -18,7 +19,8 @@ vi.mock("@/integrations/supabase/client", () => {
     limit() {
       return this;
     },
-    like() {
+    like(column: string, pattern: string) {
+      fake.likeCalls.push([column, pattern]);
       return this;
     },
     in() {
@@ -63,6 +65,7 @@ const row = (id: string): EnterpriseEventRow =>
 beforeEach(() => {
   fake.finishHydration = null;
   fake.emitInsert = null;
+  fake.likeCalls = [];
 });
 
 describe("useEventStream initial hydration race", () => {
@@ -211,4 +214,14 @@ describe("useEventStream initial hydration race", () => {
     });
     expect(result.current.events.map((event) => event.id)).toEqual(["new-filter"]);
   });
+
+  it.each([
+    ["incident_", String.raw`incident\_%`],
+    ["risk%", String.raw`risk\%%`],
+    ["ops\\", String.raw`ops\\%`],
+  ])("treats SQL LIKE metacharacters as literal topic-prefix content: %s", async (topicPrefix, pattern) => {
+    renderHook(() => useEventStream({ topicPrefix }));
+    await waitFor(() => expect(fake.likeCalls).toContainEqual(["topic", pattern]));
+  });
+
 });
