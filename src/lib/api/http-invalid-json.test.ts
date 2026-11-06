@@ -69,6 +69,57 @@ describe("httpJson invalid successful upstream payload", () => {
     },
   );
 
+  it.each([429, 503])(
+    "does not retry an explicitly accepted %i response",
+    async (status) => {
+      let calls = 0;
+      globalThis.fetch = (async () => {
+        calls++;
+        return new Response('{"accepted":true}', { status });
+      }) as typeof fetch;
+      await expect(
+        httpJson("https://example.invalid/accepted", {
+          retries: 2,
+          retryBaseMs: 1,
+          acceptStatuses: [status],
+        }),
+      ).resolves.toEqual({ accepted: true });
+      expect(calls).toBe(1);
+    },
+  );
+
+  it("does not allow custom retryOn to override explicitly accepted responses", async () => {
+    let calls = 0;
+    globalThis.fetch = (async () => {
+      calls++;
+      return new Response('{"accepted":true}', { status: 429 });
+    }) as typeof fetch;
+    await expect(
+      httpJson("https://example.invalid/custom", {
+        retries: 2,
+        acceptStatuses: [429],
+        retryOn: () => true,
+      }),
+    ).resolves.toEqual({ accepted: true });
+    expect(calls).toBe(1);
+  });
+
+  it("retains transient retries for statuses not explicitly accepted", async () => {
+    let calls = 0;
+    globalThis.fetch = (async () => {
+      calls++;
+      return new Response('{"ok":true}', { status: calls === 1 ? 503 : 200 });
+    }) as typeof fetch;
+    await expect(
+      httpJson("https://example.invalid/retry", {
+        retries: 2,
+        retryBaseMs: 1,
+        acceptStatuses: [429],
+      }),
+    ).resolves.toEqual({ ok: true });
+    expect(calls).toBe(2);
+  });
+
   it("does not accept an unlisted non-2xx status", async () => {
     globalThis.fetch = (async () =>
       new Response('{"error":"missing"}', { status: 404 })) as typeof fetch;
