@@ -176,6 +176,12 @@ export async function enforceRateLimit(
     noteFailure(now, "timeout", { bucketKey, deadlineMs });
     return { allowed: false, unavailable: true };
   }
+  // Treat malformed RPC envelopes as unavailable, not as an uncaught 500.
+  // A successful check_rate_limit RPC has a strict boolean data contract.
+  if (!outcome || typeof outcome !== "object" || !("data" in outcome)) {
+    noteFailure(now, "invalid_response", { bucketKey, latencyMs: now - startedAt });
+    return { allowed: false, unavailable: true };
+  }
   const { data, error } = outcome;
   if (error) {
     // Production quota gates must fail closed. Token/AI endpoints cannot become
@@ -183,8 +189,14 @@ export async function enforceRateLimit(
     noteFailure(now, "error", { bucketKey, error: error.message, latencyMs: now - startedAt });
     return { allowed: false, unavailable: true };
   }
+  // Boolean("false") and Boolean({}) both evaluate to true. Never grant an AI
+  // quota slot when the database returned a non-boolean payload.
+  if (typeof data !== "boolean") {
+    noteFailure(now, "invalid_response", { bucketKey, latencyMs: now - startedAt });
+    return { allowed: false, unavailable: true };
+  }
   noteSuccess(now);
-  return { allowed: Boolean(data) };
+  return { allowed: data };
 }
 
 // ── الحصّة المحدودة في الذاكرة (أثناء العطل فقط) ─────────────────────────────
