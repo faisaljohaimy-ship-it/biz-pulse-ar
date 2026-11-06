@@ -44,6 +44,7 @@ function assertBudget(label, actual, limit, offenders = []) {
     return;
   }
   console.error(`✗ ${line}`);
+  console.error(`  exceeded by ${actual - limit} bytes`);
   for (const offender of offenders.slice(0, 8)) console.error(`  - ${offender}`);
   process.exitCode = 1;
 }
