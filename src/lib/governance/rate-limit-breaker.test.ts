@@ -173,6 +173,30 @@ describe("الحصّة المحدودة في الذاكرة", () => {
     expect(seventh.retryAfterSeconds).toBeLessThanOrEqual(300);
   });
 
+  it("لا تُعاد حصة يومية نشطة بطلب لاحق يمرر نافذةً أقصر للمفتاح نفسه", () => {
+    expect(degradedAllowance("daily", 2, 86_400, 1_000).allowed).toBe(true);
+    const bypass = degradedAllowance("daily", 2, 1, 2_000);
+    expect(bypass).toMatchObject({ allowed: false, cap: 1, remaining: 0 });
+    expect(bypass.retryAfterSeconds).toBeGreaterThan(86_000);
+    expect(degradedAllowance("daily", 2, 86_400, 86_401_000).allowed).toBe(true);
+  });
+
+  it("لا يزيد سقف مفتاح نشط عند استدعائه لاحقًا بسقف أعلى", () => {
+    expect(degradedAllowance("identity", 2, 60, 1_000).allowed).toBe(true);
+    expect(degradedAllowance("identity", 200, 60, 1_000)).toMatchObject({
+      allowed: false,
+      cap: 1,
+      remaining: 0,
+    });
+  });
+
+  it("تمديد نافذة نشطة لا يسمح لطلب تالٍ أقصر بإعادة تصفيرها", () => {
+    expect(degradedAllowance("extend", 2, 60, 1_000).allowed).toBe(true);
+    expect(degradedAllowance("extend", 2, 300, 2_000).allowed).toBe(false);
+    expect(degradedAllowance("extend", 2, 1, 61_000).allowed).toBe(false);
+    expect(degradedAllowance("extend", 2, 300, 301_000).allowed).toBe(true);
+  });
+
   it("النافذة تتجدّد بعد مدّتها، والسقف لا يقلّ عن واحد", async () => {
     expect(degradedAllowance("x", 1, 60).allowed).toBe(true);
     expect(degradedAllowance("x", 1, 60).allowed).toBe(false);
