@@ -42,18 +42,21 @@ export const SESSION_ERROR_AR =
  * الحال العامّة لكل ما سواه — بما فيه الفارغ والمجهول. لا يُمرَّر نصّ
  * المصدر إلى الشاشة في أي فرع.
  */
-export function userFacingError(error: unknown): string {
+function readableErrorMessage(error: unknown): string {
   const raw =
     error instanceof Error
       ? error.message
       : typeof error === "string"
         ? error
         : ((error as { message?: unknown } | null)?.message ?? "");
-  return SECRET_SHAPED.test(String(raw)) ? SESSION_ERROR_AR : GENERIC_ERROR_AR;
+  return String(raw);
+}
+
+export function userFacingError(error: unknown): string {
+  return SECRET_SHAPED.test(readableErrorMessage(error)) ? SESSION_ERROR_AR : GENERIC_ERROR_AR;
 }
 
 /** هل يشبه هذا الخطأ خطأ جلسة؟ — لعرض «تسجيل الدخول» بدل «إعادة المحاولة». */
 export function isSessionError(error: unknown): boolean {
-  const raw = error instanceof Error ? error.message : String(error ?? "");
-  return SECRET_SHAPED.test(raw);
+  return SECRET_SHAPED.test(readableErrorMessage(error));
 }
