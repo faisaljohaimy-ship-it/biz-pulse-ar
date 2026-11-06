@@ -69,6 +69,45 @@ beforeEach(() => {
 });
 
 describe("useEventStream initial hydration race", () => {
+  it("ignores malformed realtime records without breaking later valid inserts", async () => {
+    const { result } = renderHook(() => useEventStream({ topicPrefix: "incident." }));
+    await waitFor(() => expect(fake.finishHydration).not.toBeNull());
+    await act(async () => {
+      fake.finishHydration?.({ data: [], error: null });
+    });
+
+    expect(() => {
+      act(() => {
+        fake.emitInsert?.({ new: null });
+        fake.emitInsert?.({ new: { id: "broken", severity: "high" } });
+      });
+    }).not.toThrow();
+    expect(result.current.events).toEqual([]);
+
+    act(() => {
+      fake.emitInsert?.({ new: row("healthy") });
+    });
+    expect(result.current.events.map((event) => event.id)).toEqual(["healthy"]);
+  });
+
+  it("does not insert incomplete records when realtime has no active topic filter", async () => {
+    const { result } = renderHook(() => useEventStream());
+    await waitFor(() => expect(fake.finishHydration).not.toBeNull());
+    await act(async () => {
+      fake.finishHydration?.({ data: [], error: null });
+    });
+    act(() => {
+      fake.emitInsert?.({ new: { topic: "incident.created", severity: "high" } });
+      fake.emitInsert?.({ new: { id: "no-severity", topic: "incident.created" } });
+    });
+    expect(result.current.events).toEqual([]);
+
+    act(() => {
+      fake.emitInsert?.({ new: row("valid") });
+    });
+    expect(result.current.events.map((event) => event.id)).toEqual(["valid"]);
+  });
+
   it("shows realtime INSERTs when severity is an empty filter", async () => {
     const { result } = renderHook(() => useEventStream({ severity: [] }));
     await waitFor(() => expect(fake.finishHydration).not.toBeNull());
