@@ -226,5 +226,14 @@ export async function httpJson<T = unknown>(
       details: { body: parsed },
     });
   }
-  return JSON.parse(body) as T;
+  try {
+    return JSON.parse(body) as T;
+  } catch {
+    // A malformed 2xx body is an upstream protocol failure, not a server
+    // programming error. Never surface the untrusted upstream body in errors.
+    throw apiError("upstream_failed", "Invalid JSON from upstream response", {
+      requestId: res.headers.get("request-id") ?? res.headers.get("x-request-id") ?? undefined,
+      details: { upstreamStatus: res.status },
+    });
+  }
 }
