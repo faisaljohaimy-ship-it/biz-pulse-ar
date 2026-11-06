@@ -119,7 +119,7 @@ export function useEventStream(filter: EventFilter = {}) {
     void hydrate();
 
     // Unique topic per hook instance — never share a channel name.
-    const topic = `events:${f.topicPrefix ?? "all"}:${Math.random().toString(36).slice(2, 10)}`;
+    const topic = `events:${f.topicPrefix ?? "all"}:${Math.random()}`;
     let channel: ReturnType<typeof supabase.channel> | null = null;
     try {
       channel = supabase.channel(topic);
@@ -142,11 +142,15 @@ export function useEventStream(filter: EventFilter = {}) {
             return;
           }
           const cur = filterRef.current;
-          if (cur.topicPrefix && !row.topic.startsWith(cur.topicPrefix)) return;
-          if (cur.severity?.length && !cur.severity.includes(row.severity)) return;
-          if (cur.subjectType && row.subject_type !== cur.subjectType) return;
-          if (cur.subjectId && row.subject_id !== cur.subjectId) return;
-          if (cur.correlationId && row.correlation_id !== cur.correlationId) return;
+          if (
+            (cur.topicPrefix && !row.topic.startsWith(cur.topicPrefix)) ||
+            (cur.severity?.length && !cur.severity.includes(row.severity)) ||
+            (cur.subjectType && row.subject_type !== cur.subjectType) ||
+            (cur.subjectId && row.subject_id !== cur.subjectId) ||
+            (cur.correlationId && row.correlation_id !== cur.correlationId)
+          ) {
+            return;
+          }
           if (hydrating) pendingRealtime.unshift(row);
           setEvents((prev) => mergeEventRowsById([row], prev, limit));
         },
