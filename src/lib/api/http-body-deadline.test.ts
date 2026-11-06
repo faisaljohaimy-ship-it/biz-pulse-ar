@@ -9,23 +9,26 @@ afterEach(() => {
 });
 
 describe("httpJson response body deadline", () => {
-  it.each([200, 503])("bounds a stalled upstream %s body and cancels the stream", async (status) => {
-    let cancelled = false;
-    globalThis.fetch = (async () =>
-      new Response(
-        new ReadableStream({
-          cancel() {
-            cancelled = true;
-          },
-        }),
-        { status },
-      )) as typeof fetch;
+  it.each([200, 503])(
+    "bounds a stalled upstream %s body and cancels the stream",
+    async (status) => {
+      let cancelled = false;
+      globalThis.fetch = (async () =>
+        new Response(
+          new ReadableStream({
+            cancel() {
+              cancelled = true;
+            },
+          }),
+          { status },
+        )) as typeof fetch;
 
-    await expect(
-      httpJson("https://example.invalid/slow-body", { retries: 0, timeoutMs: 20 }),
-    ).rejects.toMatchObject({ code: "upstream_timeout" });
-    expect(cancelled).toBe(true);
-  });
+      await expect(
+        httpJson("https://example.invalid/slow-body", { retries: 0, timeoutMs: 20 }),
+      ).rejects.toMatchObject({ code: "upstream_timeout" });
+      expect(cancelled).toBe(true);
+    },
+  );
 
   it("preserves successful JSON parsing", async () => {
     globalThis.fetch = (async () =>
