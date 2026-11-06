@@ -1,5 +1,9 @@
-import { describe, expect, it } from "vitest";
-import { PUBLIC_INCIDENT_MAX_BYTES, readPublicIncidentBody } from "./public-incident-body.server";
+import { describe, expect, it, vi } from "vitest";
+import {
+  PUBLIC_INCIDENT_MAX_BYTES,
+  PUBLIC_INCIDENT_READ_TIMEOUT_MS,
+  readPublicIncidentBody,
+} from "./public-incident-body.server";
 
 const url = "http://localhost/api/public/hooks/sadeed-incident";
 const request = (body: string, headers?: HeadersInit) =>
@@ -107,5 +111,57 @@ describe("public incident bounded JSON parsing", () => {
     const req = request("{}");
     await req.text();
     expect(await readPublicIncidentBody(req)).toMatchObject({ ok: false, status: 400 });
+  });
+
+  it("terminates a stalled anonymous stream and cancels it within the absolute deadline", async () => {
+    vi.useFakeTimers();
+    try {
+      let cancelled = false;
+      const body = new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode('{"kind":'));
+          // No close: a slow client stalls after a partial payload.
+        },
+        cancel() {
+          cancelled = true;
+        },
+      });
+      const req = new Request(url, {
+        method: "POST",
+        body,
+        duplex: "half",
+      } as RequestInit);
+      const pending = readPublicIncidentBody(req);
+      await vi.advanceTimersByTimeAsync(PUBLIC_INCIDENT_READ_TIMEOUT_MS);
+      expect(await pending).toEqual({ ok: false, status: 408, message: "request timeout" });
+      expect(cancelled).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("does not renew the overall deadline when a client trickles more bytes", async () => {
+    vi.useFakeTimers();
+    try {
+      let controller!: ReadableStreamDefaultController<Uint8Array>;
+      const body = new ReadableStream<Uint8Array>({
+        start(c) {
+          controller = c;
+          c.enqueue(new TextEncoder().encode('{"kind":'));
+        },
+      });
+      const req = new Request(url, {
+        method: "POST",
+        body,
+        duplex: "half",
+      } as RequestInit);
+      const pending = readPublicIncidentBody(req);
+      await vi.advanceTimersByTimeAsync(PUBLIC_INCIDENT_READ_TIMEOUT_MS - 1_000);
+      controller.enqueue(new TextEncoder().encode('"offline"'));
+      await vi.advanceTimersByTimeAsync(1_000);
+      expect(await pending).toMatchObject({ ok: false, status: 408 });
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
