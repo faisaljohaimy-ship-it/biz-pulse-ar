@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { mergeEventRowsById } from "./event-rows";
 
 export type EnterpriseEventRow = {
   id: string;
@@ -68,6 +69,8 @@ export function useEventStream(filter: EventFilter = {}) {
 
   useEffect(() => {
     let alive = true;
+    let hydrating = true;
+    const pendingRealtime: EnterpriseEventRow[] = [];
     setLoading(true);
 
     const f = filterRef.current;
@@ -88,10 +91,21 @@ export function useEventStream(filter: EventFilter = {}) {
         const { data, error: err } = await q;
         if (!alive) return;
         if (err) setError(err.message);
-        else setEvents((data ?? []) as unknown as EnterpriseEventRow[]);
+        else {
+          // Realtime may have delivered rows while the snapshot was in flight.
+          // Replacing state with the snapshot would silently lose those INSERTs.
+          setEvents(
+            mergeEventRowsById(
+              pendingRealtime,
+              (data ?? []) as unknown as EnterpriseEventRow[],
+              limit,
+            ),
+          );
+        }
       } catch (e) {
         if (alive) setError(e instanceof Error ? e.message : "load_failed");
       } finally {
+        hydrating = false;
         if (alive) setLoading(false);
       }
     };
@@ -107,6 +121,7 @@ export function useEventStream(filter: EventFilter = {}) {
         "postgres_changes" as any,
         { event: "INSERT", schema: "public", table: "enterprise_events" },
         (payload: { new: unknown }) => {
+          if (!alive) return;
           const row = payload.new as EnterpriseEventRow;
           const cur = filterRef.current;
           if (cur.topicPrefix && !row.topic.startsWith(cur.topicPrefix)) return;
@@ -114,7 +129,8 @@ export function useEventStream(filter: EventFilter = {}) {
           if (cur.subjectType && row.subject_type !== cur.subjectType) return;
           if (cur.subjectId && row.subject_id !== cur.subjectId) return;
           if (cur.correlationId && row.correlation_id !== cur.correlationId) return;
-          setEvents((prev) => [row, ...prev].slice(0, limit));
+          if (hydrating) pendingRealtime.unshift(row);
+          setEvents((prev) => mergeEventRowsById([row], prev, limit));
         },
       );
       channel.subscribe();
