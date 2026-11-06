@@ -129,7 +129,7 @@ export function useEventStream(filter: EventFilter = {}) {
           const row = payload.new as EnterpriseEventRow;
           const cur = filterRef.current;
           if (cur.topicPrefix && !row.topic.startsWith(cur.topicPrefix)) return;
-          if (cur.severity && !cur.severity.includes(row.severity)) return;
+          if (cur.severity?.length && !cur.severity.includes(row.severity)) return;
           if (cur.subjectType && row.subject_type !== cur.subjectType) return;
           if (cur.subjectId && row.subject_id !== cur.subjectId) return;
           if (cur.correlationId && row.correlation_id !== cur.correlationId) return;
