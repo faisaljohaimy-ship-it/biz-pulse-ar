@@ -2,6 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { mergeEventRowsById } from "./event-rows";
 
+// Treat prefix characters literally. SQL LIKE uses '_' and '%' as wildcards,
+// unlike the realtime startsWith predicate, so unescaped input widens snapshots.
+const escapeLikePrefix = (value: string) => value.replace(/[\\%_]/g, "\\import { mergeEventRowsById } from "./event-rows";");
+
 export type EnterpriseEventRow = {
   id: string;
   topic: string;
@@ -89,7 +93,7 @@ export function useEventStream(filter: EventFilter = {}) {
           )
           .order("occurred_at", { ascending: false })
           .limit(limit);
-        if (f.topicPrefix) q = q.like("topic", `${f.topicPrefix}%`);
+        if (f.topicPrefix) q = q.like("topic", `${escapeLikePrefix(f.topicPrefix)}%`);
         if (f.severity?.length) q = q.in("severity", f.severity);
         if (f.subjectType) q = q.eq("subject_type", f.subjectType);
         if (f.subjectId) q = q.eq("subject_id", f.subjectId);
