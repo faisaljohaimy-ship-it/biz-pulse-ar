@@ -2,12 +2,12 @@ import { readdir, stat } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { extname, join, relative } from "node:path";
 
-// The Nitro/Cloudflare preset emits the public bundle to dist/client; older
-// builds used .output/public. Accept whichever the current build produced.
-const CANDIDATES = [
-  join(process.cwd(), "dist", "client"),
-  join(process.cwd(), ".output", "public"),
-];
+// Preserve the local/CI search order; a Vercel build uses its own static output.
+// An explicit target must never fall back to stale artifacts from another build.
+const vercelOutput = join(process.cwd(), ".vercel", "output", "static");
+const CANDIDATES = process.env.VERCEL
+  ? [vercelOutput]
+  : [join(process.cwd(), "dist", "client"), join(process.cwd(), ".output", "public"), vercelOutput];
 const ROOT = CANDIDATES.find((candidate) => existsSync(candidate)) ?? CANDIDATES[0];
 const MiB = 1024 * 1024;
 
@@ -53,7 +53,7 @@ try {
   files = await walk(ROOT);
 } catch (error) {
   console.error(
-    "Performance budget requires a completed production build (dist/client or .output/public).",
+    "Performance budget requires a completed production build (dist/client, .output/public or .vercel/output/static).",
   );
   console.error(error instanceof Error ? error.message : String(error));
   process.exit(1);
