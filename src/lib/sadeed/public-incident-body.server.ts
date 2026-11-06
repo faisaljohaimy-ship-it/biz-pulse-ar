@@ -4,7 +4,8 @@ export const PUBLIC_INCIDENT_MAX_BYTES = 4096;
 export const PUBLIC_INCIDENT_READ_TIMEOUT_MS = 8_000;
 
 type IncidentBodyResult =
-  { ok: true; value: Record<string, unknown> } | { ok: false; status: 400 | 408 | 413; message: string };
+  | { ok: true; value: Record<string, unknown> }
+  | { ok: false; status: 400 | 408 | 413; message: string };
 
 const READ_DEADLINE = Symbol("public-incident-read-deadline");
 
