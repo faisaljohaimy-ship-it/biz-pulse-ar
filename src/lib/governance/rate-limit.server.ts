@@ -64,6 +64,8 @@ export type BreakerSnapshot = {
 
 const breaker = {
   consecutiveFailures: 0,
+  // Incremented for every observed failure so stale success cannot reset recovery state.
+  failureGeneration: 0,
   openedAt: null as number | null,
   probing: false,
   lastFailureAt: null as number | null,
@@ -91,6 +93,7 @@ function noteFailure(now: number, reason: string, detail: Record<string, unknown
     breaker.consecutiveFailures = 0;
   }
   breaker.consecutiveFailures += 1;
+  breaker.failureGeneration += 1;
   breaker.lastFailureAt = now;
   breaker.probing = false;
   const wasOpen = breaker.openedAt !== null;
@@ -112,7 +115,10 @@ function noteFailure(now: number, reason: string, detail: Record<string, unknown
   }
 }
 
-function noteSuccess(now: number): void {
+function noteSuccess(now: number, startedFailureGeneration: number): void {
+  // A check started before a newer failure cannot demonstrate recovery or
+  // close a breaker opened by that later failure.
+  if (breaker.failureGeneration !== startedFailureGeneration) return;
   const recovered = breaker.openedAt !== null || breaker.consecutiveFailures > 0;
   breaker.consecutiveFailures = 0;
   breaker.openedAt = null;
@@ -150,6 +156,7 @@ export async function enforceRateLimit(
     // لا انتظار: المخزن معروفٌ أنه معطّل حتى موعد الفحص التالي.
     return { allowed: false, unavailable: true };
   }
+  const startedFailureGeneration = breaker.failureGeneration;
   let timer: ReturnType<typeof setTimeout> | undefined;
   // The lazy admin-client getter can throw synchronously if no server
   // credentials exist. Convert that to a rejected probe (fail closed), never
@@ -196,7 +203,7 @@ export async function enforceRateLimit(
     noteFailure(now, "invalid_response", { latencyMs: now - startedAt });
     return { allowed: false, unavailable: true };
   }
-  noteSuccess(now);
+  noteSuccess(now, startedFailureGeneration);
   return { allowed: data };
 }
 
@@ -296,6 +303,7 @@ export function gateDegradedMode(
 /** للاختبارات وحدها: يعيد القاطع والدلاء إلى الصفر. */
 export function resetRateLimitStateForTests(): void {
   breaker.consecutiveFailures = 0;
+  breaker.failureGeneration = 0;
   breaker.openedAt = null;
   breaker.probing = false;
   breaker.lastFailureAt = null;
