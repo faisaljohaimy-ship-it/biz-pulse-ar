@@ -129,15 +129,26 @@ export function useEventStream(filter: EventFilter = {}) {
         { event: "INSERT", schema: "public", table: "enterprise_events" },
         (payload: { new: unknown }) => {
           if (!alive) return;
-          const row = payload.new as EnterpriseEventRow;
+          // Realtime is best-effort: an incomplete/invalid payload must not
+          // crash the subscription or poison the rendered event list.
+          const row = payload.new as Partial<EnterpriseEventRow> | null;
+          if (
+            !row ||
+            typeof row !== "object" ||
+            typeof row.id !== "string" ||
+            !row.id ||
+            typeof row.topic !== "string" ||
+            typeof row.severity !== "string"
+          ) return;
+          const event = row as EnterpriseEventRow;
           const cur = filterRef.current;
           if (cur.topicPrefix && !row.topic.startsWith(cur.topicPrefix)) return;
           if (cur.severity?.length && !cur.severity.includes(row.severity)) return;
           if (cur.subjectType && row.subject_type !== cur.subjectType) return;
           if (cur.subjectId && row.subject_id !== cur.subjectId) return;
           if (cur.correlationId && row.correlation_id !== cur.correlationId) return;
-          if (hydrating) pendingRealtime.unshift(row);
-          setEvents((prev) => mergeEventRowsById([row], prev, limit));
+          if (hydrating) pendingRealtime.unshift(event);
+          setEvents((prev) => mergeEventRowsById([event], prev, limit));
         },
       );
       channel.subscribe();
