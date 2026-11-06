@@ -139,7 +139,9 @@ export function useEventStream(filter: EventFilter = {}) {
             !row.id ||
             typeof row.topic !== "string" ||
             typeof row.severity !== "string"
-          ) return;
+          ) {
+            return;
+          }
           const event = row as EnterpriseEventRow;
           const cur = filterRef.current;
           if (cur.topicPrefix && !row.topic.startsWith(cur.topicPrefix)) return;
