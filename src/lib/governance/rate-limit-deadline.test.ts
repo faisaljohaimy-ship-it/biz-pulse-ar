@@ -41,7 +41,6 @@ describe("enforceRateLimit — المهلة", () => {
     expect(settled).toEqual({ allowed: false, unavailable: true });
   });
 
-
   it.each(["timeout", "rpc_error"] as const)(
     "failure logs redact identity and backend error details (%s)",
     async (failure) => {
