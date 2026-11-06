@@ -8,6 +8,7 @@
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { readPublicIncidentBody } from "@/lib/sadeed/public-incident-body.server";
+import { clientBucketKey } from "@/lib/sadeed/public-incident-client-ip.server";
 
 const ALLOWED_KINDS = new Set([
   "unhandled_error",
@@ -30,18 +31,6 @@ interface IncomingIncident {
   device_class?: string;
   viewport?: { w?: number; h?: number };
   ts?: number;
-}
-
-function clientBucketKey(request: Request): string {
-  // Prefer Cloudflare's trusted cf-connecting-ip. On Workers, X-Forwarded-For is
-  // attacker-controlled, so relying on it lets a client rotate the header into a
-  // fresh bucket every request and defeat the cap. cf-connecting-ip cannot be
-  // spoofed by the client; fall back to XFF/x-real-ip only off-Cloudflare.
-  const cf = request.headers.get("cf-connecting-ip")?.trim();
-  const fwd = request.headers.get("x-forwarded-for") ?? "";
-  const ip =
-    cf || fwd.split(",")[0]?.trim() || request.headers.get("x-real-ip")?.trim() || "unknown";
-  return `aria-incident:${ip}`;
 }
 
 export const Route = createFileRoute("/api/public/hooks/sadeed-incident")({
