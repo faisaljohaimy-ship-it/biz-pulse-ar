@@ -31,7 +31,7 @@ const DEFAULT_ORG = "00000000-0000-0000-0000-000000000001";
 export async function logSadeedAction(entry: SadeedActionLogEntry): Promise<void> {
   try {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    await supabaseAdmin.from("finn_actions_log").insert({
+    const result = await supabaseAdmin.from("finn_actions_log").insert({
       org_id: entry.orgId ?? DEFAULT_ORG,
       user_id: entry.userId ?? null,
       actor: entry.actor ?? "aria",
@@ -45,9 +45,12 @@ export async function logSadeedAction(entry: SadeedActionLogEntry): Promise<void
       status: entry.status ?? "ok",
       latency_ms: entry.latencyMs ?? null,
     });
-  } catch (err) {
+    // Supabase returns { error } on many failed writes instead of rejecting.
+    // Never expose backend messages, tokens or audit payloads to runtime logs.
+    if (result?.error !== null) console.error("[aria-audit] failed to persist action");
+  } catch {
     // Audit failures must never break the action itself — log and swallow.
-    console.error("[aria-audit] failed to persist action", err);
+    console.error("[aria-audit] failed to persist action");
   }
 }
 

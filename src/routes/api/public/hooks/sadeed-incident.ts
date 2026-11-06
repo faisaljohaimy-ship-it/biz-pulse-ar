@@ -99,18 +99,24 @@ export const Route = createFileRoute("/api/public/hooks/sadeed-incident")({
           ? String(body.device_class)
           : "desktop";
 
+        // PostgREST often reports write failures in { error } without throwing.
+        // A 202 means the beacon was handled, not necessarily persisted.
+        // Never claim a successful write in the executive audit if it failed.
+        let persisted = false;
         try {
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-          await supabaseAdmin.from("finn_public_incidents").insert({
+          const result = await supabaseAdmin.from("finn_public_incidents").insert({
             kind,
             detail: detail.slice(0, 500),
             device_class: device,
             url,
           });
-        } catch (err) {
-          // Beacon is fire-and-forget; never surface a 500 to the client when
-          // the sink is misconfigured (missing service role, RLS drift, etc.).
-          console.error("[aria-incident] sink insert failed", err);
+          persisted = result?.error === null;
+          if (!persisted) console.error("[aria-incident] sink insert failed");
+        } catch {
+          // Anonymous telemetry is best effort; don't convert DB errors into 500.
+          // Avoid logging provider error objects (which may contain sensitive data).
+          console.error("[aria-incident] sink insert failed");
         }
 
         void logSadeedAction({
@@ -119,7 +125,7 @@ export const Route = createFileRoute("/api/public/hooks/sadeed-incident")({
           surface: "api/public/hooks/aria-incident",
           route: url,
           articleRefs: ["Article 19", "Article 21", "Article 26"],
-          status: "ok",
+          status: persisted ? "ok" : "warn",
           input: { kind, device_class: device },
           latencyMs: Date.now() - startedAt,
         });
