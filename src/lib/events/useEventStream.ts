@@ -131,10 +131,9 @@ export function useEventStream(filter: EventFilter = {}) {
           if (!alive) return;
           // Realtime is best-effort: an incomplete/invalid payload must not
           // crash the subscription or poison the rendered event list.
-          const row = payload.new as Partial<EnterpriseEventRow> | null;
+          const row = payload.new as EnterpriseEventRow | null;
           if (
             !row ||
-            typeof row !== "object" ||
             typeof row.id !== "string" ||
             !row.id ||
             typeof row.topic !== "string" ||
@@ -142,15 +141,14 @@ export function useEventStream(filter: EventFilter = {}) {
           ) {
             return;
           }
-          const event = row as EnterpriseEventRow;
           const cur = filterRef.current;
           if (cur.topicPrefix && !row.topic.startsWith(cur.topicPrefix)) return;
           if (cur.severity?.length && !cur.severity.includes(row.severity)) return;
           if (cur.subjectType && row.subject_type !== cur.subjectType) return;
           if (cur.subjectId && row.subject_id !== cur.subjectId) return;
           if (cur.correlationId && row.correlation_id !== cur.correlationId) return;
-          if (hydrating) pendingRealtime.unshift(event);
-          setEvents((prev) => mergeEventRowsById([event], prev, limit));
+          if (hydrating) pendingRealtime.unshift(row);
+          setEvents((prev) => mergeEventRowsById([row], prev, limit));
         },
       );
       channel.subscribe();
