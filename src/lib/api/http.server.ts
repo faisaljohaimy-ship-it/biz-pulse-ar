@@ -142,6 +142,53 @@ export async function httpFetch(input: string | URL, init: HttpOptions = {}): Pr
   });
 }
 
+/**
+ * A fetch can resolve its headers while the upstream holds the body open forever.
+ * Bound JSON/error body consumption as well as the initial request; cancel the
+ * response reader on timeout or caller abandonment to stop stalled streams.
+ */
+async function readResponseTextWithin(
+  response: Response,
+  timeoutMs: number,
+  signal?: AbortSignal | null,
+): Promise<string> {
+  if (signal?.aborted) {
+    throw apiError("upstream_timeout", "Caller aborted while reading upstream response body");
+  }
+  if (!response.body) return "";
+
+  const reader = response.body.getReader();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let onAbort: (() => void) | undefined;
+  const interrupted = new Promise<never>((_, reject) => {
+    const stop = (message: string) => {
+      reject(apiError("upstream_timeout", message));
+      // Reject promptly; cancellation also unblocks an outstanding reader.read().
+      void reader.cancel().catch(() => {});
+    };
+    onAbort = () => stop("Caller aborted while reading upstream response body");
+    signal?.addEventListener("abort", onAbort, { once: true });
+    timer = setTimeout(() => stop("Timed out reading upstream response body"), timeoutMs);
+  });
+
+  const consume = (async () => {
+    const decoder = new TextDecoder();
+    let text = "";
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) return text + decoder.decode();
+      text += decoder.decode(value, { stream: true });
+    }
+  })();
+
+  try {
+    return await Promise.race([consume, interrupted]);
+  } finally {
+    clearTimeout(timer);
+    if (onAbort) signal?.removeEventListener("abort", onAbort);
+  }
+}
+
 /** Convenience: fetch + JSON parse with structured upstream errors. */
 export async function httpJson<T = unknown>(
   input: string | URL,
@@ -150,8 +197,8 @@ export async function httpJson<T = unknown>(
   const { acceptStatuses, ...rest } = init;
   const res = await httpFetch(input, rest);
   const ok = acceptStatuses ? acceptStatuses.includes(res.status) : res.ok;
+  const body = await readResponseTextWithin(res, rest.timeoutMs ?? DEFAULT_TIMEOUT_MS, rest.signal);
   if (!ok) {
-    const body = await res.text().catch(() => "");
     let parsed: unknown;
     try {
       parsed = body ? JSON.parse(body) : undefined;
@@ -176,5 +223,5 @@ export async function httpJson<T = unknown>(
       details: { body: parsed },
     });
   }
-  return (await res.json()) as T;
+  return JSON.parse(body) as T;
 }
