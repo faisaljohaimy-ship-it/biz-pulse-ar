@@ -41,6 +41,50 @@ describe("enforceRateLimit — المهلة", () => {
     expect(settled).toEqual({ allowed: false, unavailable: true });
   });
 
+
+  it.each(["timeout", "rpc_error"] as const)(
+    "failure logs redact identity and backend error details (%s)",
+    async (failure) => {
+      const privateKey = "ai-daily-id:finn:test-date:synthetic-private-identity";
+      const privateDbMessage = "synthetic sensitive database response for private identity";
+      if (failure === "timeout") {
+        rpc.impl = () => new Promise(() => {});
+        const pending = enforceRateLimit(privateKey, 10, 60, { deadlineMs: 500 });
+        await vi.advanceTimersByTimeAsync(500);
+        await expect(pending).resolves.toEqual({ allowed: false, unavailable: true });
+      } else {
+        rpc.impl = async () => ({
+          data: null,
+          error: { message: privateDbMessage },
+        });
+        await expect(enforceRateLimit(privateKey, 10, 60)).resolves.toEqual({
+          allowed: false,
+          unavailable: true,
+        });
+      }
+      const output = JSON.stringify(vi.mocked(console.error).mock.calls);
+      expect(output).toContain("rate_limit.check_failed");
+      expect(output).not.toContain(privateKey);
+      expect(output).not.toContain(privateDbMessage);
+    },
+  );
+
+  it("opening the breaker never exposes the caller or database response in logs", async () => {
+    const privateKey = "ai-daily-id:chat:test-date:synthetic-private-identity";
+    const privateDbMessage = "synthetic sensitive database response";
+    rpc.impl = async () => ({ data: null, error: { message: privateDbMessage } });
+    for (let i = 0; i < 5; i += 1) {
+      await expect(enforceRateLimit(privateKey, 10, 60)).resolves.toEqual({
+        allowed: false,
+        unavailable: true,
+      });
+    }
+    const output = JSON.stringify(vi.mocked(console.error).mock.calls);
+    expect(output).toContain("rate_limit.breaker.opened");
+    expect(output).not.toContain(privateKey);
+    expect(output).not.toContain(privateDbMessage);
+  });
+
   it("بلا خيار ⇐ المهلة الافتراضية 2000 مللي ثانية — لا نداء بلا حدّ", async () => {
     rpc.impl = () => new Promise(() => {});
     let settled: unknown = "pending";
