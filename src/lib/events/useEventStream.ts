@@ -119,7 +119,7 @@ export function useEventStream(filter: EventFilter = {}) {
     void hydrate();
 
     // Unique topic per hook instance — never share a channel name.
-    const topic = `events:${f.topicPrefix ?? "all"}:${Math.random().toString(36).slice(2, 10)}`;
+    const topic = `events:${Math.random()}`;
     let channel: ReturnType<typeof supabase.channel> | null = null;
     try {
       channel = supabase.channel(topic);
@@ -129,13 +129,28 @@ export function useEventStream(filter: EventFilter = {}) {
         { event: "INSERT", schema: "public", table: "enterprise_events" },
         (payload: { new: unknown }) => {
           if (!alive) return;
-          const row = payload.new as EnterpriseEventRow;
+          // Realtime is best-effort: an incomplete/invalid payload must not
+          // crash the subscription or poison the rendered event list.
+          const row = payload.new as EnterpriseEventRow | null;
+          if (
+            !row ||
+            typeof row.id !== "string" ||
+            !row.id ||
+            typeof row.topic !== "string" ||
+            typeof row.severity !== "string"
+          ) {
+            return;
+          }
           const cur = filterRef.current;
-          if (cur.topicPrefix && !row.topic.startsWith(cur.topicPrefix)) return;
-          if (cur.severity?.length && !cur.severity.includes(row.severity)) return;
-          if (cur.subjectType && row.subject_type !== cur.subjectType) return;
-          if (cur.subjectId && row.subject_id !== cur.subjectId) return;
-          if (cur.correlationId && row.correlation_id !== cur.correlationId) return;
+          if (
+            (cur.topicPrefix && !row.topic.startsWith(cur.topicPrefix)) ||
+            (cur.severity?.length && !cur.severity.includes(row.severity)) ||
+            (cur.subjectType && row.subject_type !== cur.subjectType) ||
+            (cur.subjectId && row.subject_id !== cur.subjectId) ||
+            (cur.correlationId && row.correlation_id !== cur.correlationId)
+          ) {
+            return;
+          }
           if (hydrating) pendingRealtime.unshift(row);
           setEvents((prev) => mergeEventRowsById([row], prev, limit));
         },
@@ -143,7 +158,7 @@ export function useEventStream(filter: EventFilter = {}) {
       channel.subscribe();
     } catch (err) {
       // Realtime is best-effort; page continues to function with hydrated data.
-      console.warn("[useEventStream] realtime unavailable", err);
+      console.warn("event realtime", err);
     }
 
     return () => {
