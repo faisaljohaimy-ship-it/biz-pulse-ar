@@ -104,9 +104,12 @@ describe("useEventStream initial hydration race", () => {
     });
     expect(result.current.events.map((event) => event.id)).toEqual(["prior-filter"]);
 
+    const previousHydration = fake.finishHydration;
     rerender({ topicPrefix: "risk." });
     expect(result.current.loading).toBe(true);
     expect(result.current.events).toEqual([]);
+    // The mocked PostgREST thenable registers its next resolver in a microtask.
+    await waitFor(() => expect(fake.finishHydration).not.toBe(previousHydration));
 
     await act(async () => {
       fake.finishHydration?.({
@@ -128,9 +131,11 @@ describe("useEventStream initial hydration race", () => {
     });
     expect(result.current.error).toBe("temporary_failure");
 
+    const previousHydration = fake.finishHydration;
     rerender({ topicPrefix: "risk." });
     expect(result.current.loading).toBe(true);
     expect(result.current.error).toBeNull();
+    await waitFor(() => expect(fake.finishHydration).not.toBe(previousHydration));
 
     await act(async () => {
       fake.finishHydration?.({ data: [], error: null });
