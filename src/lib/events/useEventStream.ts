@@ -95,7 +95,11 @@ export function useEventStream(filter: EventFilter = {}) {
           // Realtime may have delivered rows while the snapshot was in flight.
           // Replacing state with the snapshot would silently lose those INSERTs.
           setEvents(
-            mergeEventRowsById(pendingRealtime, (data ?? []) as unknown as EnterpriseEventRow[], limit),
+            mergeEventRowsById(
+              pendingRealtime,
+              (data ?? []) as unknown as EnterpriseEventRow[],
+              limit,
+            ),
           );
         }
       } catch (e) {
