@@ -57,15 +57,17 @@ export function useEventStream(filter: EventFilter = {}) {
   filterRef.current = filter;
 
   // Primitive dep key — stable across renders unless inputs actually change.
-  const severityKey = filter.severity ? [...filter.severity].sort().join(",") : "";
-  const depKey = [
+  // JSON serialization preserves field boundaries and severity item boundaries.
+  // A delimiter-joined key collides for e.g. topic="a|b"/subject="c"
+  // and topic="a"/subject="b|c", skipping the required RLS-scoped refresh.
+  const depKey = JSON.stringify([
     filter.topicPrefix ?? "",
     filter.subjectType ?? "",
     filter.subjectId ?? "",
     filter.correlationId ?? "",
-    severityKey,
-    String(limit),
-  ].join("|");
+    filter.severity ? [...filter.severity].sort() : null,
+    limit,
+  ]);
 
   useEffect(() => {
     let alive = true;

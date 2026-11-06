@@ -169,4 +169,46 @@ describe("useEventStream initial hydration race", () => {
     expect(result.current.error).toBeNull();
     expect(result.current.loading).toBe(false);
   });
+
+  it("resubscribes when distinct filters collide under the legacy pipe delimiter", async () => {
+    const { result, rerender } = renderHook(
+      ({ topicPrefix, subjectType }) => useEventStream({ topicPrefix, subjectType }),
+      { initialProps: { topicPrefix: "incident|risk", subjectType: "zone" } },
+    );
+    await waitFor(() => expect(fake.finishHydration).not.toBeNull());
+    await act(async () => {
+      fake.finishHydration?.({ data: [row("old-filter")], error: null });
+    });
+    expect(result.current.events.map((event) => event.id)).toEqual(["old-filter"]);
+
+    const previousHydration = fake.finishHydration;
+    rerender({ topicPrefix: "incident", subjectType: "risk|zone" });
+    expect(result.current.loading).toBe(true);
+    expect(result.current.events).toEqual([]);
+    await waitFor(() => expect(fake.finishHydration).not.toBe(previousHydration));
+    await act(async () => {
+      fake.finishHydration?.({ data: [row("new-filter")], error: null });
+    });
+    expect(result.current.events.map((event) => event.id)).toEqual(["new-filter"]);
+  });
+
+  it("resubscribes when a comma inside a severity is not two severities", async () => {
+    const { result, rerender } = renderHook(({ severity }) => useEventStream({ severity }), {
+      initialProps: { severity: ["critical,high"] },
+    });
+    await waitFor(() => expect(fake.finishHydration).not.toBeNull());
+    await act(async () => {
+      fake.finishHydration?.({ data: [row("old-filter")], error: null });
+    });
+    const previousHydration = fake.finishHydration;
+
+    rerender({ severity: ["critical", "high"] });
+    expect(result.current.loading).toBe(true);
+    expect(result.current.events).toEqual([]);
+    await waitFor(() => expect(fake.finishHydration).not.toBe(previousHydration));
+    await act(async () => {
+      fake.finishHydration?.({ data: [row("new-filter")], error: null });
+    });
+    expect(result.current.events.map((event) => event.id)).toEqual(["new-filter"]);
+  });
 });
