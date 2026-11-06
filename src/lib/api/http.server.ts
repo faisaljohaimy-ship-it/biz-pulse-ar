@@ -198,7 +198,15 @@ export async function httpJson<T = unknown>(
   init: HttpOptions & { acceptStatuses?: number[] } = {},
 ): Promise<T> {
   const { acceptStatuses, ...rest } = init;
-  const res = await httpFetch(input, rest);
+  // A status explicitly accepted by the caller must not be retried as a transient
+  // failure (notably 429/503), even when retryOn is custom. Keep retries for
+  // unaccepted statuses unchanged.
+  const res = await httpFetch(input, {
+    ...rest,
+    retryOn: (status) =>
+      !(acceptStatuses?.includes(status) ?? false) &&
+      (rest.retryOn?.(status) ?? defaultRetryOn(status)),
+  });
   // Extra accepted statuses must not reject ordinary successful 2xx responses.
   const ok = res.ok || (acceptStatuses?.includes(res.status) ?? false);
   const body = await readResponseTextWithin(res, rest.timeoutMs ?? DEFAULT_TIMEOUT_MS, rest.signal);
