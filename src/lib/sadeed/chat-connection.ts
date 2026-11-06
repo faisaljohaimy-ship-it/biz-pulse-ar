@@ -13,9 +13,10 @@ export type ChatConnection = "ready" | "limited" | "local";
 
 /** جسم `/api/chat/health` ⇐ حال الشارة. يرمي على جسمٍ مشوَّه أو `ok` غير صادق (يُقرأ «تعذّر التحقق»). */
 export function connectionFromHealth(body: unknown): ChatConnection {
-  if (!body || typeof body !== "object") throw new Error("chat health: malformed");
-  const j = body as { ok?: unknown; key_present?: unknown; provider?: unknown; gate?: unknown };
-  if (j.ok !== true) throw new Error("chat health: not ok");
+  const j = body as
+    | { ok?: unknown; key_present?: unknown; provider?: unknown; gate?: unknown }
+    | null;
+  if (!j || typeof j !== "object" || j.ok !== true) throw new Error("chat health: invalid");
   // An explicit missing key wins over a descriptive provider label. Legacy
   // health bodies may omit key_present and supply only a provider name.
   const configured =
