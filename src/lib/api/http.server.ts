@@ -109,6 +109,9 @@ export async function httpFetch(input: string | URL, init: HttpOptions = {}): Pr
         // A longer Retry-After cannot fit this call's configured request budget:
         // return the original response so the caller handles the 429/5xx.
         if (retryAfter !== null && retryAfter > timeoutMs) return res;
+        // A retried response is discarded. Cancel its body so streaming 5xx/429
+        // responses cannot retain upstream connections across attempts.
+        void res.body?.cancel().catch(() => {});
         const backoff = retryAfter ?? retryBaseMs * Math.pow(2, attempt) + Math.random() * 100;
         await delay(backoff, outer).catch(() => {
           throw abandoned();
