@@ -119,7 +119,7 @@ export function useEventStream(filter: EventFilter = {}) {
     void hydrate();
 
     // Unique topic per hook instance — never share a channel name.
-    const topic = `events:${f.topicPrefix ?? "all"}:${Math.random()}`;
+    const topic = `events:${Math.random()}`;
     let channel: ReturnType<typeof supabase.channel> | null = null;
     try {
       channel = supabase.channel(topic);
@@ -158,7 +158,7 @@ export function useEventStream(filter: EventFilter = {}) {
       channel.subscribe();
     } catch (err) {
       // Realtime is best-effort; page continues to function with hydrated data.
-      console.warn("[useEventStream] realtime unavailable", err);
+      console.warn("event realtime", err);
     }
 
     return () => {
