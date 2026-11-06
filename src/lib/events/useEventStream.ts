@@ -71,6 +71,10 @@ export function useEventStream(filter: EventFilter = {}) {
     let alive = true;
     let hydrating = true;
     const pendingRealtime: EnterpriseEventRow[] = [];
+    // A new filter must not display the previous filter's events or error while
+    // the new RLS-scoped snapshot is loading.
+    setEvents([]);
+    setError(null);
     setLoading(true);
 
     const f = filterRef.current;
