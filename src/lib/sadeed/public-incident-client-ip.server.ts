@@ -15,11 +15,11 @@ export function clientBucketKey(
   const headers = request.headers;
   const ip =
     env.VERCEL === "1"
-      ? firstIp(headers.get("x-vercel-forwarded-for")) ??
+      ? (firstIp(headers.get("x-vercel-forwarded-for")) ??
         firstIp(headers.get("x-forwarded-for")) ??
-        firstIp(headers.get("x-real-ip"))
-      : firstIp(headers.get("cf-connecting-ip")) ??
+        firstIp(headers.get("x-real-ip")))
+      : (firstIp(headers.get("cf-connecting-ip")) ??
         firstIp(headers.get("x-forwarded-for")) ??
-        firstIp(headers.get("x-real-ip"));
+        firstIp(headers.get("x-real-ip")));
   return `aria-incident:${ip ?? "unknown"}`;
 }
