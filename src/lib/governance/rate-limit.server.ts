@@ -190,8 +190,8 @@ export async function enforceRateLimit(
 
 /** نصف السقف الأصلي: أضيق مما يمنحه المخزن، أوسع من صفر. */
 export const DEGRADED_FRACTION = 0.5;
-/** سقف مفاتيح الدلاء في الذاكرة — رشّ المفاتيح لا يُفرغ ذاكرة المعزول. */
-export const DEGRADED_MAX_KEYS = 2_000;
+/** Bounded active-key capacity: 2,500 chat identities + global daily bucket + headroom. */
+export const DEGRADED_MAX_KEYS = 3_000;
 
 type DegradedBucket = { windowStart: number; count: number; windowMs: number };
 const degradedBuckets = new Map<string, DegradedBucket>();
