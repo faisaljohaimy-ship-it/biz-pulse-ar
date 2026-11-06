@@ -103,6 +103,12 @@ export async function httpFetch(input: string | URL, init: HttpOptions = {}): Pr
     try {
       const res = await fetch(input, { ...rest, signal: controller.signal });
       clearTimeout(timer);
+      // An upstream can resolve its headers just as the caller cancels.
+      // Never return that orphaned response or retain its unread stream.
+      if (outer?.aborted) {
+        void res.body?.cancel().catch(() => {});
+        throw abandoned();
+      }
       if (!res.ok && retryOn(res.status) && attempt < retries) {
         const retryAfter = parseRetryAfter(res.headers.get("retry-after"));
         // Do not park an SSR worker for hours on an upstream-controlled header.
