@@ -57,6 +57,14 @@ const KNOWN_CODES: Readonly<Record<string, string>> = Object.freeze({
   daily_identity_cap: "تجاوزت حصّتك اليومية — تعود الحصّة بعد منتصف الليل.",
 });
 
+// Inherited Object.prototype names (e.g. "toString", "__proto__") are not
+// error codes. A truthy inherited function/object must never escape to the UI.
+function knownCodeMessage(code: unknown): string | null {
+  if (typeof code !== "string") return null;
+  const key = code.trim();
+  return Object.prototype.hasOwnProperty.call(KNOWN_CODES, key) ? KNOWN_CODES[key] : null;
+}
+
 const AUTH_SHAPED = /authenticat|unauthor|token|jwt|bearer|api[\s_-]?key/i;
 const HAS_ARABIC = /[؀-ۿ]/;
 
@@ -76,11 +84,10 @@ export function chatErrorText(raw: string | null | undefined): string {
     const parsed = JSON.parse(text) as { error?: unknown; message_ar?: unknown; code?: unknown };
     const fromServer = safeArabic(parsed?.message_ar);
     if (fromServer) return fromServer;
-    if (typeof parsed?.code === "string" && KNOWN_CODES[parsed.code.trim()]) {
-      return KNOWN_CODES[parsed.code.trim()];
-    }
+    const byCode = knownCodeMessage(parsed?.code);
+    if (byCode) return byCode;
     if (typeof parsed?.error === "string") {
-      const known = KNOWN_CODES[parsed.error.trim()];
+      const known = knownCodeMessage(parsed.error);
       if (known) return known;
       return safeArabic(parsed.error) ?? CHAT_CONNECTION_ERROR_AR;
     }
@@ -88,7 +95,7 @@ export function chatErrorText(raw: string | null | undefined): string {
   } catch {
     /* ليس JSON */
   }
-  const known = KNOWN_CODES[text];
+  const known = knownCodeMessage(text);
   if (known) return known;
   return safeArabic(text) ?? CHAT_CONNECTION_ERROR_AR;
 }
