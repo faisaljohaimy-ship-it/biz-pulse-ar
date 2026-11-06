@@ -52,7 +52,10 @@ jobs:
         id: install
         run: npm ci --no-audit --no-fund
       - name: Unit tests
-        run: npm test
+        # The hourly 2-vCPU runner hit two unrelated 5s test deadlines
+        # while CPU-heavy mutation suites competed (run 42180020012).
+        # Cap concurrent Vitest workers, not test timeouts or coverage.
+        run: npm test -- --maxWorkers=2
       - name: Production dependency audit
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run check:audit
