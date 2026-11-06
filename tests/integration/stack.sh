@@ -27,7 +27,7 @@
 # ============================================================================
 set -euo pipefail
 
-HERE="$(cd "$(dirname "$0")" && pwd)"
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$HERE/../.." && pwd)"
 
 PG_PORT="${INTEGRATION_PG_PORT:-55432}"
@@ -95,6 +95,23 @@ wait_for_port() {
     sleep 0.5
   done
   die "$what did not open port $port in time"
+}
+
+# The socket opening is not proof that PostgREST has loaded its schema cache.
+# A freshly booted gateway may transiently return PGRST002. Accept only the
+# exact fixture result; fail closed on any other non-startup response.
+wait_for_fixture_smoke() {
+  local anon_jwt="$1" service_jwt="$2" attempt probe
+  for attempt in $(seq 1 30); do
+    probe="$(curl -sS -H "apikey: $anon_jwt" -H "Authorization: Bearer $service_jwt" \
+      "http://127.0.0.1:${GW_PORT}/rest/v1/sec_incidents?select=ref&ref=like.INT-*&order=ref" 2>/dev/null || true)"
+    case "$probe" in
+      *INT-A-1*INT-B-2*) return 0 ;;
+      "" | *'"code":"PGRST002"'*) if [ "$attempt" -lt 30 ]; then sleep 0.5; fi ;;
+      *) die "fixture smoke returned an unexpected gateway response" ;;
+    esac
+  done
+  die "fixture smoke did not become ready after 30 startup probes"
 }
 
 cmd_status() {
@@ -211,14 +228,9 @@ EOF
   ANON_JWT="$(node "$HERE/harness/mint-jwt.mjs" --secret-file "$SECRET_FILE" --role anon)"
   SERVICE_JWT="$(node "$HERE/harness/mint-jwt.mjs" --secret-file "$SECRET_FILE" --role service_role)"
 
-  # Smoke: anon must see nothing in a protected table; service_role must see fixtures.
-  local probe
-  probe="$(curl -sS -H "apikey: $ANON_JWT" -H "Authorization: Bearer $SERVICE_JWT" \
-    "http://127.0.0.1:${GW_PORT}/rest/v1/sec_incidents?select=ref&ref=like.INT-*&order=ref")"
-  case "$probe" in
-    *INT-A-1*INT-B-2*) ;;
-    *) die "smoke probe through the gateway did not return the fixtures: $probe" ;;
-  esac
+  # Smoke: service role must see both seeded fixtures. Wait for PostgREST
+  # schema-cache readiness without relaxing fixture or auth assertions.
+  wait_for_fixture_smoke "$ANON_JWT" "$SERVICE_JWT"
 
   umask 077
   cat > "$ENV_FILE" <<EOF
@@ -239,9 +251,13 @@ EOF
   log "✓ up — env written to $ENV_FILE"
 }
 
+# Allow the smoke function to be exercised in an isolated shell regression
+# without starting Postgres or downloading PostgREST.
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
 case "${1:-}" in
-  up) cmd_up ;;
-  down) cmd_down ;;
-  status) cmd_status ;;
-  *) echo "usage: $0 up|down|status" >&2; exit 2 ;;
-esac
+    up) cmd_up ;;
+    down) cmd_down ;;
+    status) cmd_status ;;
+    *) echo "usage: $0 up|down|status" >&2; exit 2 ;;
+  esac
+fi
