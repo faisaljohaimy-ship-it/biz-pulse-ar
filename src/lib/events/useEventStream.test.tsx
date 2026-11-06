@@ -92,4 +92,55 @@ describe("useEventStream initial hydration race", () => {
     });
     expect(result.current.events.map((event) => event.id)).toEqual(["same", "old"]);
   });
+
+  it("removes previous-filter rows during the next filter hydration", async () => {
+    const { result, rerender } = renderHook(
+      ({ topicPrefix }) => useEventStream({ topicPrefix, limit: 3 }),
+      { initialProps: { topicPrefix: "incident." } },
+    );
+    await waitFor(() => expect(fake.finishHydration).not.toBeNull());
+    await act(async () => {
+      fake.finishHydration?.({ data: [row("prior-filter")], error: null });
+    });
+    expect(result.current.events.map((event) => event.id)).toEqual(["prior-filter"]);
+
+    const previousHydration = fake.finishHydration;
+    rerender({ topicPrefix: "risk." });
+    expect(result.current.loading).toBe(true);
+    expect(result.current.events).toEqual([]);
+    // The mocked PostgREST thenable registers its next resolver in a microtask.
+    await waitFor(() => expect(fake.finishHydration).not.toBe(previousHydration));
+
+    await act(async () => {
+      fake.finishHydration?.({
+        data: [{ ...row("new-filter"), topic: "risk.created" }],
+        error: null,
+      });
+    });
+    expect(result.current.events.map((event) => event.id)).toEqual(["new-filter"]);
+    expect(result.current.loading).toBe(false);
+  });
+
+  it("clears a previous hydration error when a changed filter starts loading", async () => {
+    const { result, rerender } = renderHook(({ topicPrefix }) => useEventStream({ topicPrefix }), {
+      initialProps: { topicPrefix: "incident." },
+    });
+    await waitFor(() => expect(fake.finishHydration).not.toBeNull());
+    await act(async () => {
+      fake.finishHydration?.({ data: null, error: { message: "temporary_failure" } });
+    });
+    expect(result.current.error).toBe("temporary_failure");
+
+    const previousHydration = fake.finishHydration;
+    rerender({ topicPrefix: "risk." });
+    expect(result.current.loading).toBe(true);
+    expect(result.current.error).toBeNull();
+    await waitFor(() => expect(fake.finishHydration).not.toBe(previousHydration));
+
+    await act(async () => {
+      fake.finishHydration?.({ data: [], error: null });
+    });
+    expect(result.current.error).toBeNull();
+    expect(result.current.loading).toBe(false);
+  });
 });
