@@ -105,6 +105,10 @@ export async function httpFetch(input: string | URL, init: HttpOptions = {}): Pr
       clearTimeout(timer);
       if (!res.ok && retryOn(res.status) && attempt < retries) {
         const retryAfter = parseRetryAfter(res.headers.get("retry-after"));
+        // Do not park an SSR worker for hours on an upstream-controlled header.
+        // A longer Retry-After cannot fit this call's configured request budget:
+        // return the original response so the caller handles the 429/5xx.
+        if (retryAfter !== null && retryAfter > timeoutMs) return res;
         const backoff = retryAfter ?? retryBaseMs * Math.pow(2, attempt) + Math.random() * 100;
         await delay(backoff, outer).catch(() => {
           throw abandoned();
