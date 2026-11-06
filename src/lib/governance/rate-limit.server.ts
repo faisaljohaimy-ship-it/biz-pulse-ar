@@ -190,10 +190,10 @@ export async function enforceRateLimit(
 
 /** نصف السقف الأصلي: أضيق مما يمنحه المخزن، أوسع من صفر. */
 export const DEGRADED_FRACTION = 0.5;
-/** سقف مفاتيح الدلاء في الذاكرة — رشّ المفاتيح لا يُفرغ ذاكرة المعزول. */
-export const DEGRADED_MAX_KEYS = 2_000;
+/** Bounded active-key capacity: 2,500 chat identities + global daily bucket + headroom. */
+export const DEGRADED_MAX_KEYS = 3_000;
 
-type DegradedBucket = { windowStart: number; count: number };
+type DegradedBucket = { windowStart: number; count: number; windowMs: number };
 const degradedBuckets = new Map<string, DegradedBucket>();
 
 export type DegradedAllowance = {
@@ -204,9 +204,9 @@ export type DegradedAllowance = {
 };
 
 /**
- * يعدّ الطلب على دلوٍ في الذاكرة بنصف السقف الأصلي. لكل معزولٍ عدّاده —
- * فالحدّ الفعليّ عبر المعزولات = السقف × عددها؛ وهذا مقبولٌ كحدٍّ أثناء العطل،
- * لا كتحقّقٍ من حصّة. لا يُستدعى إلا حين يعيد `enforceRateLimit` «غير متاح».
+ * Fail closed for a new bucket when all slots are in active quota windows.
+ * An attacker must not reset an exhausted bucket by spraying different keys.
+ * Reclaim only expired windows, including non-leading entries with shorter TTLs.
  */
 export function degradedAllowance(
   bucketKey: string,
@@ -217,16 +217,37 @@ export function degradedAllowance(
   const cap = Math.max(1, Math.floor(maxRequests * DEGRADED_FRACTION));
   const windowMs = Math.max(1, windowSeconds) * 1000;
   let bucket = degradedBuckets.get(bucketKey);
-  if (!bucket || now - bucket.windowStart >= windowMs) bucket = { windowStart: now, count: 0 };
-  bucket.count += 1;
-  // ترتيب «الأقدم استعمالًا أوّلًا»: الحذف ثم الإدراج يضع المفتاح في الذيل.
-  degradedBuckets.delete(bucketKey);
-  degradedBuckets.set(bucketKey, bucket);
-  while (degradedBuckets.size > DEGRADED_MAX_KEYS) {
-    const oldest = degradedBuckets.keys().next().value;
-    if (oldest === undefined) break;
-    degradedBuckets.delete(oldest);
+  if (bucket && now - bucket.windowStart >= windowMs) {
+    degradedBuckets.delete(bucketKey);
+    bucket = undefined;
   }
+
+  if (!bucket) {
+    if (degradedBuckets.size >= DEGRADED_MAX_KEYS) {
+      for (const [key, entry] of degradedBuckets) {
+        if (now - entry.windowStart >= entry.windowMs) degradedBuckets.delete(key);
+      }
+    }
+    if (degradedBuckets.size >= DEGRADED_MAX_KEYS) {
+      let nextSlotMs = Number.POSITIVE_INFINITY;
+      for (const entry of degradedBuckets.values()) {
+        nextSlotMs = Math.min(nextSlotMs, entry.windowStart + entry.windowMs - now);
+      }
+      return {
+        allowed: false,
+        cap,
+        remaining: 0,
+        retryAfterSeconds: Math.max(1, Math.ceil(nextSlotMs / 1000)),
+      };
+    }
+    bucket = { windowStart: now, count: 0, windowMs };
+    degradedBuckets.set(bucketKey, bucket);
+  } else {
+    // Preserve the existing caller-defined window semantics for a reused key.
+    bucket.windowMs = windowMs;
+  }
+
+  bucket.count += 1;
   return {
     allowed: bucket.count <= cap,
     cap,
