@@ -14,26 +14,31 @@ export const INCIDENT_FALLBACK_MAX_BUCKETS = 2_000;
 
 type IncidentBucket = { startedAt: number; count: number };
 
+// Insertion order follows the start of each quota window, not last use.
+// Never evict a LIVE window when an attacker sprays distinct IP buckets;
+// evicting it resets that client's 60/60 allowance and bypasses throttling.
 const buckets = new Map<string, IncidentBucket>();
 
 export function allowIncidentDuringStorageOutage(bucketKey: string, now = Date.now()): boolean {
   const previous = buckets.get(bucketKey);
-  const current =
-    !previous || now - previous.startedAt >= INCIDENT_FALLBACK_WINDOW_MS
-      ? { startedAt: now, count: 0 }
-      : previous;
-
-  current.count += 1;
-  buckets.delete(bucketKey);
-  buckets.set(bucketKey, current);
-
-  while (buckets.size > INCIDENT_FALLBACK_MAX_BUCKETS) {
-    const oldest = buckets.keys().next().value;
-    if (oldest === undefined) break;
-    buckets.delete(oldest);
+  if (previous && now - previous.startedAt < INCIDENT_FALLBACK_WINDOW_MS) {
+    previous.count += 1;
+    return previous.count <= INCIDENT_FALLBACK_MAX_REQUESTS;
   }
 
-  return current.count <= INCIDENT_FALLBACK_MAX_REQUESTS;
+  // An expired window may be replaced; a live one must not be evicted.
+  // If all 2,000 slots are occupied by live windows, deny NEW clients until
+  // a slot expires, preserving existing clients' quotas (fail closed).
+  if (previous) buckets.delete(bucketKey);
+  while (buckets.size >= INCIDENT_FALLBACK_MAX_BUCKETS) {
+    const oldest = buckets.entries().next().value as [string, IncidentBucket] | undefined;
+    if (!oldest) break;
+    if (now - oldest[1].startedAt < INCIDENT_FALLBACK_WINDOW_MS) return false;
+    buckets.delete(oldest[0]);
+  }
+
+  buckets.set(bucketKey, { startedAt: now, count: 1 });
+  return true;
 }
 
 /** Unit tests only: reset the process-local counter state. */
