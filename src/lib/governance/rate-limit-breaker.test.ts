@@ -6,13 +6,22 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const rpc = vi.hoisted(() => ({ mode: "ok" as "ok" | "hang" | "error", calls: 0 }));
+const rpc = vi.hoisted(() => ({
+  mode: "ok" as "ok" | "hang" | "error" | "deferred",
+  calls: 0,
+  resolveDeferred: null as null | ((result: { data: boolean; error: null }) => void),
+}));
 
 vi.mock("@/integrations/supabase/client.server", () => ({
   supabaseAdmin: {
     rpc: () => {
       rpc.calls += 1;
       if (rpc.mode === "hang") return new Promise(() => {});
+      if (rpc.mode === "deferred") {
+        return new Promise<{ data: boolean; error: null }>((resolve) => {
+          rpc.resolveDeferred = resolve;
+        });
+      }
       if (rpc.mode === "error") return Promise.resolve({ data: null, error: { message: "boom" } });
       return Promise.resolve({ data: true, error: null });
     },
@@ -37,6 +46,7 @@ beforeEach(() => {
   resetRateLimitStateForTests();
   rpc.mode = "ok";
   rpc.calls = 0;
+  rpc.resolveDeferred = null;
   vi.spyOn(console, "error").mockImplementation(() => {});
   vi.spyOn(console, "warn").mockImplementation(() => {});
 });
@@ -147,6 +157,35 @@ describe("القاطع", () => {
     });
     expect(rpc.calls).toBe(BREAKER_FAILURE_THRESHOLD + 1);
   });
+
+  it.each([true, false])(
+    "stale RPC success (%s) must not close the breaker opened by newer failures",
+    async (decision) => {
+      rpc.mode = "deferred";
+      const stale = enforceRateLimit("earlier-check", 10, 60);
+      await vi.advanceTimersByTimeAsync(0);
+      expect(rpc.resolveDeferred).toBeTypeOf("function");
+      rpc.mode = "error";
+      for (let i = 0; i < BREAKER_FAILURE_THRESHOLD; i++) {
+        expect(await settle(enforceRateLimit("later-check", 10, 60), 0)).toEqual({
+          allowed: false,
+          unavailable: true,
+        });
+      }
+      expect(rateLimitStorageState().state).toBe("open");
+      rpc.resolveDeferred?.({ data: decision, error: null });
+      // Respect the valid DB decision for this request but do not erase
+      // more recent failures that opened the circuit.
+      expect(await settle(stale, 0)).toEqual({ allowed: decision });
+      expect(rateLimitStorageState().state).toBe("open");
+      const calls = rpc.calls;
+      expect(await settle(enforceRateLimit("next-check", 10, 60), 0)).toEqual({
+        allowed: false,
+        unavailable: true,
+      });
+      expect(rpc.calls).toBe(calls);
+    },
+  );
 
   it("لقطة الحالة أعدادٌ وطوابع لا غير", () => {
     expect(rateLimitStorageState()).toEqual({
