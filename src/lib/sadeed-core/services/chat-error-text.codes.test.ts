@@ -38,6 +38,15 @@ describe("رموز البوّابة الجديدة (VIBE 5.1) تصل جملًا 
     );
   });
 
+  it.each(["toString", "constructor", "__proto__", "hasOwnProperty", "valueOf"])(
+    "inherited Object.prototype name %s cannot become a non-string chat error",
+    (code) => {
+      expect(chatErrorText(code)).toBe(CHAT_CONNECTION_ERROR_AR);
+      expect(chatErrorText(JSON.stringify({ code }))).toBe(CHAT_CONNECTION_ERROR_AR);
+      expect(chatErrorText(JSON.stringify({ error: code }))).toBe(CHAT_CONNECTION_ERROR_AR);
+    },
+  );
+
   it("سقوف اليوم بلا message_ar ⇐ جملةٌ عربية لا رمز", () => {
     for (const code of ["daily_global_cap", "daily_identity_cap"]) {
       const shown = chatErrorText(JSON.stringify({ error: code }));
