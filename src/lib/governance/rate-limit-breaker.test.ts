@@ -180,11 +180,35 @@ describe("الحصّة المحدودة في الذاكرة", () => {
     expect(degradedAllowance("x", 1, 60).allowed).toBe(true);
   });
 
-  it("المفاتيح محدودة العدد: الأقدم يُطرد فلا تنمو الذاكرة برشّ المفاتيح", () => {
-    expect(degradedAllowance("first", 2, 60).allowed).toBe(true);
-    for (let i = 0; i < DEGRADED_MAX_KEYS + 5; i++) degradedAllowance(`spray-${i}`, 2, 60);
-    // لو بقي «first» لكان هذا نداءه الثاني فوق سقف 1 ⇐ مرفوض؛ طُرد ⇐ يبدأ من جديد.
-    expect(degradedAllowance("first", 2, 60).allowed).toBe(true);
+  it("الرشّ بمفاتيح جديدة لا يطرد حصة مفتاح نشط ولا يعيد تصفيرها", () => {
+    expect(degradedAllowance("first", 2, 60, 1_000).allowed).toBe(true);
+    for (let i = 0; i < DEGRADED_MAX_KEYS + 5; i++) {
+      degradedAllowance(`spray-${i}`, 2, 60, 1_000);
+    }
+    expect(degradedAllowance("first", 2, 60, 1_000).allowed).toBe(false);
+    const excess = degradedAllowance("brand-new", 2, 60, 1_000);
+    expect(excess).toMatchObject({ allowed: false, cap: 1, remaining: 0 });
+    expect(excess.retryAfterSeconds).toBe(60);
+  });
+
+  it("تتحرر السعة بعد انتهاء النوافذ دون طرد الحصص اليومية النشطة", () => {
+    expect(degradedAllowance("long", 2, 300, 1_000).allowed).toBe(true);
+    for (let i = 1; i < DEGRADED_MAX_KEYS; i++) {
+      expect(degradedAllowance(`short-${i}`, 2, 60, 1_000).allowed).toBe(true);
+    }
+    expect(degradedAllowance("new", 2, 60, 60_999).allowed).toBe(false);
+    expect(degradedAllowance("new", 2, 60, 61_000).allowed).toBe(true);
+    expect(degradedAllowance("long", 2, 300, 61_000).allowed).toBe(false);
+    expect(degradedAllowance("long", 2, 300, 301_000).allowed).toBe(true);
+  });
+
+  it("يعيد Retry-After حتى أقرب خانة منتهية بدل مدة جديدة وهمية", () => {
+    expect(degradedAllowance("first", 2, 60, 1_000).allowed).toBe(true);
+    for (let i = 1; i < DEGRADED_MAX_KEYS; i++) {
+      degradedAllowance(`long-${i}`, 2, 300, 1_000);
+    }
+    const full = degradedAllowance("new", 2, 300, 60_500);
+    expect(full).toMatchObject({ allowed: false, remaining: 0, retryAfterSeconds: 1 });
   });
 
   it("سياسة التدهور من البيئة: الافتراض closed (قرار فوترةٍ للمالك)، و«bounded» وحدها تفتح", () => {
