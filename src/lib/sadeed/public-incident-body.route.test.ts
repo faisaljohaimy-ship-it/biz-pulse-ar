@@ -90,4 +90,66 @@ describe("incident route body validation", () => {
     expect(req.bodyUsed).toBe(false);
     expect(fixture.insert).not.toHaveBeenCalled();
   });
+
+  it("marks a resolved database write error as an audit warning without exposing details", async () => {
+    const secret = "synthetic-private-db-error-from-test";
+    const errorLog = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      fixture.insert.mockResolvedValue({ error: { message: secret } });
+      const response = await handler({
+        request: request('{"kind":"offline","detail":"test"}'),
+      });
+      expect(response.status).toBe(202);
+      expect(fixture.audit).toHaveBeenCalledWith(
+        expect.objectContaining({ action: "public.aria-incident.received", status: "warn" }),
+      );
+      expect(JSON.stringify(errorLog.mock.calls)).toContain("sink insert failed");
+      expect(JSON.stringify(errorLog.mock.calls)).not.toContain(secret);
+    } finally {
+      errorLog.mockRestore();
+    }
+  });
+
+  it("keeps the beacon nonfatal when the database throws, but audits a warning", async () => {
+    const secret = "synthetic-private-db-exception-from-test";
+    const errorLog = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      fixture.insert.mockRejectedValue(new Error(secret));
+      const response = await handler({
+        request: request('{"kind":"offline","detail":"test"}'),
+      });
+      expect(response.status).toBe(202);
+      expect(fixture.audit).toHaveBeenCalledWith(
+        expect.objectContaining({ action: "public.aria-incident.received", status: "warn" }),
+      );
+      expect(JSON.stringify(errorLog.mock.calls)).not.toContain(secret);
+    } finally {
+      errorLog.mockRestore();
+    }
+  });
+
+  it("does not report successful persistence without an acknowledged insert result", async () => {
+    const errorLog = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      fixture.insert.mockResolvedValue(undefined);
+      const response = await handler({
+        request: request('{"kind":"offline","detail":"test"}'),
+      });
+      expect(response.status).toBe(202);
+      expect(fixture.audit).toHaveBeenCalledWith(expect.objectContaining({ status: "warn" }));
+    } finally {
+      errorLog.mockRestore();
+    }
+  });
+
+  it("keeps successful persistence marked as ok in the executive audit", async () => {
+    const response = await handler({
+      request: request('{"kind":"offline","detail":"test"}'),
+    });
+    expect(response.status).toBe(202);
+    expect(fixture.audit).toHaveBeenCalledWith(
+      expect.objectContaining({ action: "public.aria-incident.received", status: "ok" }),
+    );
+  });
+
 });
