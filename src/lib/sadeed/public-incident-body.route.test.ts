@@ -151,5 +151,4 @@ describe("incident route body validation", () => {
       expect.objectContaining({ action: "public.aria-incident.received", status: "ok" }),
     );
   });
-
 });
