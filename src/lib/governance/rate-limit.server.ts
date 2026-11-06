@@ -194,7 +194,7 @@ export const DEGRADED_FRACTION = 0.5;
 /** Bounded active-key capacity: 2,500 chat identities + global daily bucket + headroom. */
 export const DEGRADED_MAX_KEYS = 3_000;
 
-type DegradedBucket = { windowStart: number; count: number; windowMs: number };
+type DegradedBucket = { windowStart: number; count: number; windowMs: number; cap: number };
 const degradedBuckets = new Map<string, DegradedBucket>();
 
 export type DegradedAllowance = {
@@ -218,7 +218,7 @@ export function degradedAllowance(
   const cap = Math.max(1, Math.floor(maxRequests * DEGRADED_FRACTION));
   const windowMs = Math.max(1, windowSeconds) * 1000;
   let bucket = degradedBuckets.get(bucketKey);
-  if (bucket && now - bucket.windowStart >= windowMs) {
+  if (bucket && now - bucket.windowStart >= bucket.windowMs) {
     degradedBuckets.delete(bucketKey);
     bucket = undefined;
   }
@@ -241,19 +241,22 @@ export function degradedAllowance(
         retryAfterSeconds: Math.max(1, Math.ceil(nextSlotMs / 1000)),
       };
     }
-    bucket = { windowStart: now, count: 0, windowMs };
+    bucket = { windowStart: now, count: 0, windowMs, cap };
     degradedBuckets.set(bucketKey, bucket);
   } else {
-    // Preserve the existing caller-defined window semantics for a reused key.
-    bucket.windowMs = windowMs;
+    // An active quota key may be reused with different arguments. Never allow a
+    // shorter requested window or a higher requested cap to reset/relax it.
+    // Only the more restrictive parameters can apply until the old window ends.
+    bucket.windowMs = Math.max(bucket.windowMs, windowMs);
+    bucket.cap = Math.min(bucket.cap, cap);
   }
 
   bucket.count += 1;
   return {
-    allowed: bucket.count <= cap,
-    cap,
-    remaining: Math.max(0, cap - bucket.count),
-    retryAfterSeconds: Math.max(1, Math.ceil((bucket.windowStart + windowMs - now) / 1000)),
+    allowed: bucket.count <= bucket.cap,
+    cap: bucket.cap,
+    remaining: Math.max(0, bucket.cap - bucket.count),
+    retryAfterSeconds: Math.max(1, Math.ceil((bucket.windowStart + bucket.windowMs - now) / 1000)),
   };
 }
 
