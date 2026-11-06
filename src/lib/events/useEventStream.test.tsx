@@ -1,0 +1,95 @@
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { useEventStream, type EnterpriseEventRow } from "./useEventStream";
+
+const fake = vi.hoisted(() => ({
+  finishHydration: null as ((value: unknown) => void) | null,
+  emitInsert: null as ((payload: { new: unknown }) => void) | null,
+}));
+
+vi.mock("@/integrations/supabase/client", () => {
+  const query = {
+    select() {
+      return this;
+    },
+    order() {
+      return this;
+    },
+    limit() {
+      return this;
+    },
+    like() {
+      return this;
+    },
+    in() {
+      return this;
+    },
+    eq() {
+      return this;
+    },
+    then(resolve: (value: unknown) => unknown, reject?: (reason: unknown) => unknown) {
+      return new Promise<unknown>((finish) => {
+        fake.finishHydration = finish;
+      }).then(resolve, reject);
+    },
+  };
+  return {
+    supabase: {
+      from: () => query,
+      channel: () => ({
+        on(_kind: unknown, _options: unknown, callback: (payload: { new: unknown }) => void) {
+          fake.emitInsert = callback;
+          return this;
+        },
+        subscribe() {
+          return this;
+        },
+      }),
+      removeChannel: () => Promise.resolve(),
+    },
+  };
+});
+
+const row = (id: string): EnterpriseEventRow =>
+  ({
+    id,
+    topic: "incident.created",
+    severity: "high",
+    subject_type: null,
+    subject_id: null,
+    correlation_id: null,
+  }) as EnterpriseEventRow;
+
+beforeEach(() => {
+  fake.finishHydration = null;
+  fake.emitInsert = null;
+});
+
+describe("useEventStream initial hydration race", () => {
+  it("preserves an INSERT delivered while the initial snapshot is pending", async () => {
+    const { result } = renderHook(() => useEventStream({ limit: 3 }));
+    await waitFor(() => expect(fake.finishHydration).not.toBeNull());
+    act(() => {
+      fake.emitInsert?.({ new: row("live") });
+    });
+    expect(result.current.events.map((event) => event.id)).toEqual(["live"]);
+
+    await act(async () => {
+      fake.finishHydration?.({ data: [row("old")], error: null });
+    });
+    expect(result.current.events.map((event) => event.id)).toEqual(["live", "old"]);
+    expect(result.current.loading).toBe(false);
+  });
+
+  it("keeps the realtime version once when the same event is in hydration", async () => {
+    const { result } = renderHook(() => useEventStream({ limit: 2 }));
+    await waitFor(() => expect(fake.finishHydration).not.toBeNull());
+    act(() => {
+      fake.emitInsert?.({ new: row("same") });
+    });
+    await act(async () => {
+      fake.finishHydration?.({ data: [row("same"), row("old")], error: null });
+    });
+    expect(result.current.events.map((event) => event.id)).toEqual(["same", "old"]);
+  });
+});
