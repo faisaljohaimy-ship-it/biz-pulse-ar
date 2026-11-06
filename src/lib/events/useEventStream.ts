@@ -89,7 +89,8 @@ export function useEventStream(filter: EventFilter = {}) {
           )
           .order("occurred_at", { ascending: false })
           .limit(limit);
-        if (f.topicPrefix) q = q.like("topic", `${f.topicPrefix}%`);
+        // Keep SQL LIKE wildcards literal in the prefix; only trailing % matches descendants.
+        if (f.topicPrefix) q = q.like("topic", `${f.topicPrefix.replace(/[\\%_]/g, "\\$&")}%`);
         if (f.severity?.length) q = q.in("severity", f.severity);
         if (f.subjectType) q = q.eq("subject_type", f.subjectType);
         if (f.subjectId) q = q.eq("subject_id", f.subjectId);
