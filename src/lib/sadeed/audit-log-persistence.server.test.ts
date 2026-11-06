@@ -24,20 +24,20 @@ describe("executive audit write acknowledgement", () => {
     }
   });
 
-  it.each([
-    { error: { message: "synthetic-private-db-result" } },
-    undefined,
-  ])("detects non-throwing write failures without exposing provider details", async (result) => {
-    const errorLog = vi.spyOn(console, "error").mockImplementation(() => {});
-    try {
-      fixture.insert.mockResolvedValue(result);
-      await expect(logSadeedAction({ action: "audit.test" })).resolves.toBeUndefined();
-      expect(JSON.stringify(errorLog.mock.calls)).toContain("failed to persist action");
-      expect(JSON.stringify(errorLog.mock.calls)).not.toContain("synthetic-private-db-result");
-    } finally {
-      errorLog.mockRestore();
-    }
-  });
+  it.each([{ error: { message: "synthetic-private-db-result" } }, undefined])(
+    "detects non-throwing write failures without exposing provider details",
+    async (result) => {
+      const errorLog = vi.spyOn(console, "error").mockImplementation(() => {});
+      try {
+        fixture.insert.mockResolvedValue(result);
+        await expect(logSadeedAction({ action: "audit.test" })).resolves.toBeUndefined();
+        expect(JSON.stringify(errorLog.mock.calls)).toContain("failed to persist action");
+        expect(JSON.stringify(errorLog.mock.calls)).not.toContain("synthetic-private-db-result");
+      } finally {
+        errorLog.mockRestore();
+      }
+    },
+  );
 
   it("redacts exceptions while preserving nonfatal audit behavior", async () => {
     const errorLog = vi.spyOn(console, "error").mockImplementation(() => {});
