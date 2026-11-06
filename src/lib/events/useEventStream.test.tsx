@@ -66,6 +66,32 @@ beforeEach(() => {
 });
 
 describe("useEventStream initial hydration race", () => {
+  it("shows realtime INSERTs when severity is an empty filter", async () => {
+    const { result } = renderHook(() => useEventStream({ severity: [] }));
+    await waitFor(() => expect(fake.finishHydration).not.toBeNull());
+    await act(async () => {
+      fake.finishHydration?.({ data: [row("snapshot")], error: null });
+    });
+
+    act(() => {
+      fake.emitInsert?.({ new: row("live") });
+    });
+    expect(result.current.events.map((event) => event.id)).toEqual(["live", "snapshot"]);
+  });
+
+  it("still excludes realtime INSERTs outside a non-empty severity filter", async () => {
+    const { result } = renderHook(() => useEventStream({ severity: ["critical"] }));
+    await waitFor(() => expect(fake.finishHydration).not.toBeNull());
+    await act(async () => {
+      fake.finishHydration?.({ data: [], error: null });
+    });
+
+    act(() => {
+      fake.emitInsert?.({ new: row("high-severity") });
+    });
+    expect(result.current.events).toEqual([]);
+  });
+
   it("preserves an INSERT delivered while the initial snapshot is pending", async () => {
     const { result } = renderHook(() => useEventStream({ limit: 3 }));
     await waitFor(() => expect(fake.finishHydration).not.toBeNull());
