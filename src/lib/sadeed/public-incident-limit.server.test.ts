@@ -31,12 +31,37 @@ describe("public incident fallback when the shared quota store is unavailable", 
     ).toBe(true);
   });
 
-  it("caps memory under a spray of distinct IP bucket keys", () => {
-    for (let i = 0; i < INCIDENT_FALLBACK_MAX_BUCKETS + 1; i += 1) {
+  it("fails closed on new keys at capacity without resetting live bucket quotas", () => {
+    for (let i = 0; i < INCIDENT_FALLBACK_MAX_BUCKETS; i += 1) {
       expect(allowIncidentDuringStorageOutage(`incident:key-${i}`, 1_000)).toBe(true);
     }
-    // Oldest bucket was evicted: it starts a new window rather than keeping
-    // unbounded state for every attacker-controlled key.
-    expect(allowIncidentDuringStorageOutage("incident:key-0", 1_000)).toBe(true);
+    expect(allowIncidentDuringStorageOutage("incident:new", 1_000)).toBe(false);
+    for (let i = 1; i < INCIDENT_FALLBACK_MAX_REQUESTS; i += 1) {
+      expect(allowIncidentDuringStorageOutage("incident:key-0", 1_000)).toBe(true);
+    }
+    expect(allowIncidentDuringStorageOutage("incident:key-0", 1_000)).toBe(false);
+  });
+
+  it("cannot reset an exhausted quota by spraying thousands of distinct bucket keys", () => {
+    for (let i = 0; i < INCIDENT_FALLBACK_MAX_REQUESTS; i += 1) {
+      expect(allowIncidentDuringStorageOutage("incident:target", 1_000)).toBe(true);
+    }
+    for (let i = 0; i < INCIDENT_FALLBACK_MAX_BUCKETS + 100; i += 1) {
+      allowIncidentDuringStorageOutage(`incident:churn-${i}`, 1_000);
+    }
+    expect(allowIncidentDuringStorageOutage("incident:target", 1_000)).toBe(false);
+  });
+
+  it("reclaims expired quota windows before admitting new clients", () => {
+    for (let i = 0; i < INCIDENT_FALLBACK_MAX_BUCKETS; i += 1) {
+      expect(allowIncidentDuringStorageOutage(`incident:key-${i}`, 1_000)).toBe(true);
+    }
+    expect(allowIncidentDuringStorageOutage("incident:new", 1_000)).toBe(false);
+    expect(
+      allowIncidentDuringStorageOutage("incident:new", 1_000 + INCIDENT_FALLBACK_WINDOW_MS),
+    ).toBe(true);
+    expect(
+      allowIncidentDuringStorageOutage("incident:key-0", 1_000 + INCIDENT_FALLBACK_WINDOW_MS),
+    ).toBe(true);
   });
 });
