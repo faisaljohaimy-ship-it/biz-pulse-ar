@@ -1,30 +1,76 @@
-// @lovable.dev/vite-tanstack-config already includes the following — do NOT add them manually
-// or the app will break with duplicate plugins:
-//   - tanstackStart, viteReact, tailwindcss, tsConfigPaths, nitro (build-only using cloudflare as a default target),
-//     componentTagger (dev-only), VITE_* env injection, @ path alias, React/TanStack dedupe,
-//     error logger plugins, and sandbox detection (port/host/strictPort).
-// You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
-import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+// SADEED owns its build pipeline. No hosted editor or Lovable build wrapper
+// is required. Runtime MCP routes remain compatible during the staged detach.
+import { defineConfig, loadEnv } from "vite";
+import tailwindcss from "@tailwindcss/vite";
+import tsConfigPaths from "vite-tsconfig-paths";
+import { tanstackStart } from "@tanstack/react-start/plugin/vite";
+import { nitro } from "nitro/vite";
+import react from "@vitejs/plugin-react";
 import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/tanstack/vite";
 
-export default defineConfig({
-  tanstackStart: {
-    // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
-    // nitro/vite builds from this
-    server: { entry: "server" },
-  },
-  // Nitro deploy target. The wrapper defaults to Cloudflare and, inside the
-  // Lovable sandbox, force-pins `cloudflare-module` regardless of what we set
-  // here — so this only takes effect on real (non-sandbox) builds. On Vercel
-  // (VERCEL=1 is injected into the build env) we switch nitro to its `vercel`
-  // preset so it emits Build Output API v3 (`.vercel/output`) and the SSR +
-  // /api routes actually run as serverless functions. Without this the pages
-  // render blank and the chatbot returns "could not complete". The GitHub
-  // Actions → Cloudflare path (no VERCEL env) keeps the Cloudflare default,
-  // so no existing deploy target is disturbed.
-  ...(process.env.VERCEL ? { nitro: { preset: "vercel" } } : {}),
-  vite: {
-    plugins: [mcpPlugin()],
+export default defineConfig(({ command, mode }) => {
+  // Only public VITE_ values are eligible for client replacement. Preserve
+  // the original explicit Supabase fallbacks below; never expose server keys.
+  const publicEnv = loadEnv(mode, process.cwd(), "VITE_");
+  const envDefine = Object.fromEntries(
+    Object.entries(publicEnv).map(([key, value]) => [
+      `import.meta.env.${key}`,
+      JSON.stringify(value),
+    ]),
+  );
+
+  return {
+    ...(command === "build" && mode === "development"
+      ? {
+          environments: {
+            client: { define: { "process.env.NODE_ENV": JSON.stringify("development") } },
+          },
+          esbuild: { keepNames: true },
+        }
+      : {}),
+    css: { transformer: "lightningcss" },
+    resolve: {
+      alias: { "@": `${process.cwd()}/src` },
+      dedupe: [
+        "react",
+        "react-dom",
+        "react/jsx-runtime",
+        "react/jsx-dev-runtime",
+        "@tanstack/react-query",
+        "@tanstack/query-core",
+      ],
+    },
+    optimizeDeps: {
+      include: [
+        "react",
+        "react-dom",
+        "react-dom/client",
+        "react/jsx-runtime",
+        "react/jsx-dev-runtime",
+      ],
+    },
+    server: { host: "::", port: 8080 },
+    plugins: [
+      tailwindcss(),
+      tsConfigPaths({ projects: ["./tsconfig.json"] }),
+      tanstackStart({
+        server: { entry: "server" },
+        importProtection: {
+          behavior: "error",
+          client: { files: ["**/server/**"], specifiers: ["server-only"] },
+        },
+      }),
+      ...(command === "build"
+        ? [
+            nitro({
+              defaultPreset: "cloudflare-module",
+              ...(process.env.VERCEL ? { preset: "vercel" } : {}),
+            }),
+          ]
+        : []),
+      react(),
+      mcpPlugin(),
+    ],
     // Publishable (public) Supabase config baked in as a LAST-RESORT fallback.
     // The published build was shipping without VITE_SUPABASE_* injected, so the
     // browser client fell back to the "unconfigured" host and every auth/data
@@ -33,6 +79,7 @@ export default defineConfig({
     // They name the independent production project (cnaevysaoimzusnvpazr), not
     // the frozen Lovable Cloud copy — see docs/operations/LOVABLE_DETACH_2026-11-03.md.
     define: {
+      ...envDefine,
       "import.meta.env.VITE_SUPABASE_URL": JSON.stringify(
         process.env.VITE_SUPABASE_URL ||
           process.env.SUPABASE_URL ||
@@ -115,5 +162,5 @@ export default defineConfig({
         },
       },
     },
-  },
+  };
 });
