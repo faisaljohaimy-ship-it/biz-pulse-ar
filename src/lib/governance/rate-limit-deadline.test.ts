@@ -70,6 +70,33 @@ describe("enforceRateLimit — المهلة", () => {
     });
   });
 
+  it("a valid false RPC decision remains an ordinary quota denial", async () => {
+    rpc.impl = async () => ({ data: false, error: null });
+    await expect(enforceRateLimit("chat:normal-deny", 10, 60)).resolves.toEqual({ allowed: false });
+  });
+
+  it.each(["false", "true", 1, 0, {}, [], null, undefined])(
+    "non-boolean RPC result %s must fail closed, never become an allowed request",
+    async (data) => {
+      rpc.impl = async () => ({ data, error: null });
+      await expect(enforceRateLimit("chat:malformed-response", 10, 60)).resolves.toEqual({
+        allowed: false,
+        unavailable: true,
+      });
+    },
+  );
+
+  it.each([null, undefined, "unexpected", 123])(
+    "malformed RPC envelope %s returns unavailable instead of throwing",
+    async (envelope) => {
+      rpc.impl = async () => envelope;
+      await expect(enforceRateLimit("chat:invalid-envelope", 10, 60)).resolves.toEqual({
+        allowed: false,
+        unavailable: true,
+      });
+    },
+  );
+
   it("خطأ القاعدة ما زال يفشل مغلقًا", async () => {
     rpc.impl = async () => ({ data: null, error: { message: "boom" } });
     await expect(enforceRateLimit("k", 10, 60, { deadlineMs: 1_500 })).resolves.toEqual({
