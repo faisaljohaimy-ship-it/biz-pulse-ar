@@ -151,4 +151,27 @@ describe("incident route body validation", () => {
       expect.objectContaining({ action: "public.aria-incident.received", status: "ok" }),
     );
   });
+
+  it("records the real Sadeed incident route in the accepted-beacon audit", async () => {
+    const response = await handler({ request: request('{"kind":"offline","detail":"test"}') });
+    expect(response.status).toBe(202);
+    expect(fixture.audit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "public.aria-incident.received",
+        surface: "api/public/hooks/sadeed-incident",
+      }),
+    );
+  });
+
+  it("records the real Sadeed incident route in the throttled-beacon audit", async () => {
+    fixture.quota.mockResolvedValue({ allowed: false });
+    const response = await handler({ request: request('{"kind":"offline","detail":"test"}') });
+    expect(response.status).toBe(429);
+    expect(fixture.audit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: "public.aria-incident.throttled",
+        surface: "api/public/hooks/sadeed-incident",
+      }),
+    );
+  });
 });
