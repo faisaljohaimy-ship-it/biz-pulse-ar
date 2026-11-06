@@ -211,5 +211,4 @@ describe("useEventStream initial hydration race", () => {
     });
     expect(result.current.events.map((event) => event.id)).toEqual(["new-filter"]);
   });
-
 });
