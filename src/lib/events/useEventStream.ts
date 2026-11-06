@@ -4,7 +4,7 @@ import { mergeEventRowsById } from "./event-rows";
 
 // Treat prefix characters literally. SQL LIKE uses '_' and '%' as wildcards,
 // unlike the realtime startsWith predicate, so unescaped input widens snapshots.
-const escapeLikePrefix = (value: string) => value.replace(/[\\%_]/g, "\\import { mergeEventRowsById } from "./event-rows";");
+const escapeLikePrefix = (value: string) => value.replace(/[\\%_]/g, "\\$&");
 
 export type EnterpriseEventRow = {
   id: string;
