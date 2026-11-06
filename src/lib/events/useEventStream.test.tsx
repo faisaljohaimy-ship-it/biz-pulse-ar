@@ -193,10 +193,9 @@ describe("useEventStream initial hydration race", () => {
   });
 
   it("resubscribes when a comma inside a severity is not two severities", async () => {
-    const { result, rerender } = renderHook(
-      ({ severity }) => useEventStream({ severity }),
-      { initialProps: { severity: ["critical,high"] } },
-    );
+    const { result, rerender } = renderHook(({ severity }) => useEventStream({ severity }), {
+      initialProps: { severity: ["critical,high"] },
+    });
     await waitFor(() => expect(fake.finishHydration).not.toBeNull());
     await act(async () => {
       fake.finishHydration?.({ data: [row("old-filter")], error: null });
