@@ -41,6 +41,28 @@ describe("منع التكرار", () => {
     expect(acquireRequest("k", REQUEST_INFLIGHT_TTL_MS)).not.toBeNull();
   });
 
+  it("لا يطرد بصمات طلبات حيّة عند رشّ 5000 مفتاح مختلف", () => {
+    const release = acquireRequest("first", 1_000);
+    expect(release).not.toBeNull();
+    for (let i = 0; i < 4_999; i += 1) {
+      expect(acquireRequest(`spray-${i}`, 1_000)).not.toBeNull();
+    }
+    // Capacity must fail closed; the original in-flight request still deduplicates.
+    expect(acquireRequest("new", 1_000)).toBeNull();
+    expect(acquireRequest("first", 1_000)).toBeNull();
+    release!();
+    expect(acquireRequest("new", 1_000)).not.toBeNull();
+  });
+
+  it("يستردّ الخانات بعد انقضاء TTL دون حذف طلب حيّ", () => {
+    for (let i = 0; i < 5_000; i += 1) {
+      expect(acquireRequest(`k-${i}`, 1_000)).not.toBeNull();
+    }
+    expect(acquireRequest("fresh", 1_000 + REQUEST_INFLIGHT_TTL_MS - 1)).toBeNull();
+    expect(acquireRequest("fresh", 1_000 + REQUEST_INFLIGHT_TTL_MS)).not.toBeNull();
+    expect(acquireRequest("k-0", 1_000 + REQUEST_INFLIGHT_TTL_MS)).not.toBeNull();
+  });
+
   it("التحرير لا يمسح حجزًا أحدث بالمفتاح نفسه", () => {
     const stale = acquireRequest("k", 0)!;
     const fresh = acquireRequest("k", REQUEST_INFLIGHT_TTL_MS)!;

@@ -31,14 +31,12 @@ export function fingerprint(...parts: Array<string | null | undefined>): string 
 const inflightRequests = new Map<string, number>();
 
 function purgeStaleRequests(now: number): void {
-  if (inflightRequests.size <= INFLIGHT_MAX_KEYS) return;
+  if (inflightRequests.size < INFLIGHT_MAX_KEYS) return;
+  // Entries are ordered by reservation time. Reclaim expired entries only:
+  // evicting a LIVE fingerprint during a key spray disables deduplication.
   for (const [key, startedAt] of inflightRequests) {
-    if (now - startedAt >= REQUEST_INFLIGHT_TTL_MS) inflightRequests.delete(key);
-  }
-  while (inflightRequests.size > INFLIGHT_MAX_KEYS) {
-    const oldest = inflightRequests.keys().next().value;
-    if (oldest === undefined) break;
-    inflightRequests.delete(oldest);
+    if (now - startedAt < REQUEST_INFLIGHT_TTL_MS) break;
+    inflightRequests.delete(key);
   }
 }
 
@@ -48,9 +46,14 @@ function purgeStaleRequests(now: number): void {
  */
 export function acquireRequest(key: string, now = Date.now()): (() => void) | null {
   const startedAt = inflightRequests.get(key);
-  if (startedAt !== undefined && now - startedAt < REQUEST_INFLIGHT_TTL_MS) return null;
-  inflightRequests.set(key, now);
+  if (startedAt !== undefined) {
+    if (now - startedAt < REQUEST_INFLIGHT_TTL_MS) return null;
+    inflightRequests.delete(key);
+  }
   purgeStaleRequests(now);
+  // At capacity, deny a new request rather than dropping any active guard.
+  if (inflightRequests.size >= INFLIGHT_MAX_KEYS) return null;
+  inflightRequests.set(key, now);
   return () => {
     if (inflightRequests.get(key) === now) inflightRequests.delete(key);
   };
