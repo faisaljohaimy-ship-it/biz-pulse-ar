@@ -59,6 +59,29 @@ describe("httpJson invalid successful upstream payload", () => {
     });
   });
 
+  it.each([200, 201])(
+    "preserves successful %i JSON even when extra accepted statuses are set",
+    async (status) => {
+      globalThis.fetch = (async () =>
+        new Response('{"ok":true}', { status })) as typeof fetch;
+      await expect(
+        httpJson("https://example.invalid/success", { retries: 0, acceptStatuses: [409] }),
+      ).resolves.toEqual({ ok: true });
+    },
+  );
+
+  it("does not accept an unlisted non-2xx status", async () => {
+    globalThis.fetch = (async () =>
+      new Response('{"error":"missing"}', { status: 404 })) as typeof fetch;
+    await expect(
+      httpJson("https://example.invalid/missing", { retries: 0, acceptStatuses: [409] }),
+    ).rejects.toMatchObject({
+      name: "ApiError",
+      code: "not_found",
+      status: 404,
+    });
+  });
+
   it("preserves correctly formatted successful JSON", async () => {
     globalThis.fetch = (async () =>
       new Response('{"ok":true,"count":3}', { status: 200 })) as typeof fetch;
