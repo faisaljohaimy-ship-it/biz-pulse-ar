@@ -819,8 +819,14 @@ describe("⑨ النصّ المكتوب بنيويًّا: لا يتسرّب جس
       expect(ms, `${text.slice(0, 24)} ⇒ ${ms.toFixed(0)}ms`).toBeLessThan(250);
       expect(typed.length).toBeLessThanOrEqual(TYPED_QUESTION_MAX_CHARS);
     }
-    // مزروع: القديمة بطيئة على أولها (مقياسٌ نسبيّ لا مطلق، فلا يعتمد على سرعة الآلة).
-    const text = hostile[0];
+  });
+
+  it("يقارن المسح الخطّي بالتربيعي بعينة محدودة كي لا يستهلك المعيار القديم مهلة CI", () => {
+    // يحتفظ الاختبار السابق بكل الحالات العدائية حتى 200 ألف حرف وبسقف 250ms؛
+    // هنا نقيّد *النسخة القديمة فقط* إلى 12 ألف حرف، لأن قياسها على 200 ألف
+    // يعيد تنفيذ خوارزمية تربيعية ~3.4s محليًا ويتجاوز مهلة Vitest 5s على CI.
+    // النسبة تكشف التراجع إلى المسح التربيعي دون إطالة الاختبار عمدًا.
+    const text = "<attachment ".repeat(1_000);
     const t1 = performance.now();
     legacyTyped(text);
     const legacyMs = performance.now() - t1;
