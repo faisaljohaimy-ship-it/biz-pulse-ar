@@ -119,10 +119,9 @@ describe("useEventStream initial hydration race", () => {
   });
 
   it("clears a previous hydration error when a changed filter starts loading", async () => {
-    const { result, rerender } = renderHook(
-      ({ topicPrefix }) => useEventStream({ topicPrefix }),
-      { initialProps: { topicPrefix: "incident." } },
-    );
+    const { result, rerender } = renderHook(({ topicPrefix }) => useEventStream({ topicPrefix }), {
+      initialProps: { topicPrefix: "incident." },
+    });
     await waitFor(() => expect(fake.finishHydration).not.toBeNull());
     await act(async () => {
       fake.finishHydration?.({ data: null, error: { message: "temporary_failure" } });
