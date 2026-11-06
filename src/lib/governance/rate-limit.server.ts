@@ -84,6 +84,7 @@ function breakerShouldSkip(now: number): boolean {
   return false;
 }
 
+/** Never write quota bucket keys (IP/user identity) or backend error payloads to logs. */
 function noteFailure(now: number, reason: string, detail: Record<string, unknown>): void {
   if (breaker.lastFailureAt !== null && now - breaker.lastFailureAt > BREAKER_FAILURE_WINDOW_MS) {
     // انقطعت السلسلة: الفشل السابق أقدم من نافذة الستّين ثانية.
@@ -173,26 +174,26 @@ export async function enforceRateLimit(
   ]).finally(() => clearTimeout(timer));
   const now = Date.now();
   if (outcome === DEADLINE) {
-    noteFailure(now, "timeout", { bucketKey, deadlineMs });
+    noteFailure(now, "timeout", { deadlineMs, latencyMs: now - startedAt });
     return { allowed: false, unavailable: true };
   }
   // Treat malformed RPC envelopes as unavailable, not as an uncaught 500.
   // A successful check_rate_limit RPC has a strict boolean data contract.
   if (!outcome || typeof outcome !== "object" || !("data" in outcome)) {
-    noteFailure(now, "invalid_response", { bucketKey, latencyMs: now - startedAt });
+    noteFailure(now, "invalid_response", { latencyMs: now - startedAt });
     return { allowed: false, unavailable: true };
   }
   const { data, error } = outcome;
   if (error) {
     // Production quota gates must fail closed. Token/AI endpoints cannot become
     // unlimited if the rate-limit backing function is unavailable.
-    noteFailure(now, "error", { bucketKey, error: error.message, latencyMs: now - startedAt });
+    noteFailure(now, "error", { latencyMs: now - startedAt });
     return { allowed: false, unavailable: true };
   }
   // Boolean("false") and Boolean({}) both evaluate to true. Never grant an AI
   // quota slot when the database returned a non-boolean payload.
   if (typeof data !== "boolean") {
-    noteFailure(now, "invalid_response", { bucketKey, latencyMs: now - startedAt });
+    noteFailure(now, "invalid_response", { latencyMs: now - startedAt });
     return { allowed: false, unavailable: true };
   }
   noteSuccess(now);
