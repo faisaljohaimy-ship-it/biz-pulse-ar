@@ -219,9 +219,11 @@ describe("useEventStream initial hydration race", () => {
     ["incident_", String.raw`incident\_%`],
     ["risk%", String.raw`risk\%%`],
     ["ops\\", String.raw`ops\\%`],
-  ])("treats SQL LIKE metacharacters as literal topic-prefix content: %s", async (topicPrefix, pattern) => {
-    renderHook(() => useEventStream({ topicPrefix }));
-    await waitFor(() => expect(fake.likeCalls).toContainEqual(["topic", pattern]));
-  });
-
+  ])(
+    "treats SQL LIKE metacharacters as literal topic-prefix content: %s",
+    async (topicPrefix, pattern) => {
+      renderHook(() => useEventStream({ topicPrefix }));
+      await waitFor(() => expect(fake.likeCalls).toContainEqual(["topic", pattern]));
+    },
+  );
 });
