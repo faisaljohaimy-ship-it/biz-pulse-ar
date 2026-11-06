@@ -19,6 +19,31 @@ describe("connectionFromHealth — الشارة تقرأ البوّابة لا �
     );
   });
 
+  it("treats explicit key_present=false as authoritative even with a selected provider label", () => {
+    expect(
+      connectionFromHealth({
+        ok: true,
+        key_present: false,
+        provider: "google-gemini",
+        gate: "verified",
+      }),
+    ).toBe("local");
+    expect(
+      connectionFromHealth({
+        ok: true,
+        key_present: false,
+        provider: "google-gemini",
+        gate: "closed",
+      }),
+    ).toBe("local");
+  });
+
+  it("does not interpret whitespace-only legacy provider labels as a configured model", () => {
+    expect(connectionFromHealth({ ok: true, provider: "  " })).toBe("local");
+    expect(connectionFromHealth({ ok: true, provider: "google-gemini" })).toBe("ready");
+    expect(connectionFromHealth({ ok: true, key_present: true, provider: null })).toBe("ready");
+  });
+
   it("خادمٌ أقدم بلا حقل البوّابة يُقرأ كما كان", () => {
     expect(connectionFromHealth({ ok: true, key_present: true })).toBe("ready");
   });
