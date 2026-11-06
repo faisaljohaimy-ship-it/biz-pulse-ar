@@ -35,6 +35,31 @@ afterEach(() => {
 });
 
 describe("إشارة المستدعي تهجر النداء ولا تعيده", () => {
+  it("rejects late headers after cancellation and releases the unread body", async () => {
+    const outer = new AbortController();
+    let cancelled = false;
+    let calls = 0;
+    const body = new ReadableStream<Uint8Array>({
+      cancel() {
+        cancelled = true;
+      },
+    });
+    globalThis.fetch = (async () => {
+      calls++;
+      outer.abort();
+      return new Response(body, { status: 200 });
+    }) as typeof fetch;
+
+    await expect(
+      httpFetch("https://example.invalid/late-headers", {
+        signal: outer.signal,
+        retries: 2,
+      }),
+    ).rejects.toMatchObject({ code: "upstream_timeout" });
+    expect(calls).toBe(1);
+    expect(cancelled).toBe(true);
+  });
+
   it("إلغاءٌ أثناء محاولة معلّقة ⇐ رفضٌ فوري ومحاولة واحدة لا ثلاث", async () => {
     net.hang = true;
     const outer = new AbortController();
