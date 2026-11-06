@@ -199,7 +199,8 @@ export async function httpJson<T = unknown>(
 ): Promise<T> {
   const { acceptStatuses, ...rest } = init;
   const res = await httpFetch(input, rest);
-  const ok = acceptStatuses ? acceptStatuses.includes(res.status) : res.ok;
+  // Extra accepted statuses must not reject ordinary successful 2xx responses.
+  const ok = res.ok || (acceptStatuses?.includes(res.status) ?? false);
   const body = await readResponseTextWithin(res, rest.timeoutMs ?? DEFAULT_TIMEOUT_MS, rest.signal);
   if (!ok) {
     let parsed: unknown;
