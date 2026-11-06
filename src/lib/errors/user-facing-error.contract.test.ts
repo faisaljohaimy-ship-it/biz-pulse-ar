@@ -72,6 +72,15 @@ describe("لا تصل عبارة مصادقة إلى الشاشة", () => {
     expect(isSessionError(new Error("JWT expired"))).toBe(true);
     expect(isSessionError(new Error("network unreachable"))).toBe(false);
   });
+
+  it("كائن خطأ المصادقة يوجّه إلى تسجيل الدخول كما تعرضه رسالة الواجهة", () => {
+    const sessionError = { message: "Unauthorized: No authorization header provided", status: 401 };
+    expect(userFacingError(sessionError)).toBe(SESSION_ERROR_AR);
+    expect(isSessionError(sessionError)).toBe(true);
+    expect(isSessionError({ message: "network unreachable" })).toBe(false);
+    expect(isSessionError({ message: 42 })).toBe(false);
+    expect(isSessionError(null)).toBe(false);
+  });
 });
 
 describe("الحدود تمرّ بالمرشِّح فعلًا", () => {
