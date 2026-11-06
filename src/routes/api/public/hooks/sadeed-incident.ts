@@ -65,7 +65,7 @@ export const Route = createFileRoute("/api/public/hooks/sadeed-incident")({
           void logSadeedAction({
             action: "public.aria-incident.throttled",
             actor: "public-webhook",
-            surface: "api/public/hooks/aria-incident",
+            surface: "api/public/hooks/sadeed-incident",
             articleRefs: ["Article 26"],
             status: "warn",
             input: { bucket },
@@ -122,7 +122,7 @@ export const Route = createFileRoute("/api/public/hooks/sadeed-incident")({
         void logSadeedAction({
           action: "public.aria-incident.received",
           actor: "public-webhook",
-          surface: "api/public/hooks/aria-incident",
+          surface: "api/public/hooks/sadeed-incident",
           route: url,
           articleRefs: ["Article 19", "Article 21", "Article 26"],
           status: persisted ? "ok" : "warn",
