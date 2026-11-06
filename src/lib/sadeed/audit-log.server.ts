@@ -52,8 +52,12 @@ export async function logSadeedAction(entry: SadeedActionLogEntry): Promise<void
 }
 
 /**
- * Rate-limit helper backed by public.check_rate_limit(bucket, limit, window_seconds).
- * Returns true if the caller is allowed, false if throttled.
+ * Legacy rate-limit compatibility helper.
+ *
+ * Use the shared server-side limiter rather than duplicating its database RPC.
+ * The legacy implementation returned true when the quota store failed or
+ * returned malformed data, allowing unmetered requests. Shared enforcement
+ * provides the bounded deadline/circuit breaker and fails closed instead.
  */
 export async function checkRateLimit(
   bucketKey: string,
@@ -61,19 +65,12 @@ export async function checkRateLimit(
   windowSeconds: number,
 ): Promise<boolean> {
   try {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data, error } = await supabaseAdmin.rpc("check_rate_limit", {
-      _bucket_key: bucketKey,
-      _max_requests: maxRequests,
-      _window_seconds: windowSeconds,
-    });
-    if (error) {
-      console.error("[rate-limit] rpc failed", error);
-      return true; // fail-open — never brick the endpoint on infra failure
-    }
-    return data !== false;
-  } catch (err) {
-    console.error("[rate-limit] unexpected", err);
-    return true;
+    const { enforceRateLimit } = await import("@/lib/governance/rate-limit.server");
+    const result = await enforceRateLimit(bucketKey, maxRequests, windowSeconds);
+    return result.allowed === true && result.unavailable !== true;
+  } catch {
+    // Avoid writing potentially sensitive quota keys or backend exceptions.
+    console.error("[rate-limit] legacy check unavailable");
+    return false;
   }
 }
