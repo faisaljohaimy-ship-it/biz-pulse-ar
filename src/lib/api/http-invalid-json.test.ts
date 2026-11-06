@@ -62,8 +62,7 @@ describe("httpJson invalid successful upstream payload", () => {
   it.each([200, 201])(
     "preserves successful %i JSON even when extra accepted statuses are set",
     async (status) => {
-      globalThis.fetch = (async () =>
-        new Response('{"ok":true}', { status })) as typeof fetch;
+      globalThis.fetch = (async () => new Response('{"ok":true}', { status })) as typeof fetch;
       await expect(
         httpJson("https://example.invalid/success", { retries: 0, acceptStatuses: [409] }),
       ).resolves.toEqual({ ok: true });
