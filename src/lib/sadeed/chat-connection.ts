@@ -16,13 +16,10 @@ export function connectionFromHealth(body: unknown): ChatConnection {
   if (!body || typeof body !== "object") throw new Error("chat health: malformed");
   const j = body as { ok?: unknown; key_present?: unknown; provider?: unknown; gate?: unknown };
   if (j.ok !== true) throw new Error("chat health: not ok");
-  // A current server's explicit key_present=false is authoritative; never
-  // infer readiness from a provider label that may describe a selected vendor.
-  // Fall back to the provider label only for legacy servers without this flag.
+  // An explicit missing key wins over a descriptive provider label. Legacy
+  // health bodies may omit key_present and supply only a provider name.
   const configured =
-    typeof j.key_present === "boolean"
-      ? j.key_present
-      : typeof j.provider === "string" && j.provider.trim().length > 0;
-  if (!configured) return "local";
-  return j.gate === "closed" ? "limited" : "ready";
+    j.key_present === true ||
+    (j.key_present !== false && typeof j.provider === "string" && !!j.provider.trim());
+  return !configured ? "local" : j.gate === "closed" ? "limited" : "ready";
 }
