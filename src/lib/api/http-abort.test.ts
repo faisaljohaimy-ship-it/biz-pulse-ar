@@ -105,22 +105,25 @@ describe("upstream Retry-After wait budget", () => {
   it.each([
     { status: 429, retryAfter: "86400" },
     { status: 503, retryAfter: new Date(Date.now() + 3_600_000).toUTCString() },
-  ])("returns $status promptly instead of sleeping past the timeout budget", async ({ status, retryAfter }) => {
-    let calls = 0;
-    globalThis.fetch = (async () => {
-      calls += 1;
-      return new Response("busy", { status, headers: { "Retry-After": retryAfter } });
-    }) as typeof fetch;
+  ])(
+    "returns $status promptly instead of sleeping past the timeout budget",
+    async ({ status, retryAfter }) => {
+      let calls = 0;
+      globalThis.fetch = (async () => {
+        calls += 1;
+        return new Response("busy", { status, headers: { "Retry-After": retryAfter } });
+      }) as typeof fetch;
 
-    const response = await httpFetch("https://example.invalid/upstream", {
-      retries: 2,
-      timeoutMs: 100,
-      retryBaseMs: 0,
-    });
+      const response = await httpFetch("https://example.invalid/upstream", {
+        retries: 2,
+        timeoutMs: 100,
+        retryBaseMs: 0,
+      });
 
-    expect(response.status).toBe(status);
-    expect(calls).toBe(1);
-  });
+      expect(response.status).toBe(status);
+      expect(calls).toBe(1);
+    },
+  );
 
   it("still retries a short Retry-After and returns a recovered response", async () => {
     let calls = 0;
