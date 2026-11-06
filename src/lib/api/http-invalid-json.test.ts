@@ -38,7 +38,9 @@ describe("httpJson invalid successful upstream payload", () => {
   it("maps an empty successful 204 body to an upstream failure", async () => {
     globalThis.fetch = (async () => new Response(null, { status: 204 })) as typeof fetch;
 
-    await expect(httpJson("https://example.invalid/no-content", { retries: 0 })).rejects.toMatchObject({
+    await expect(
+      httpJson("https://example.invalid/no-content", { retries: 0 }),
+    ).rejects.toMatchObject({
       code: "upstream_failed",
       status: 502,
       details: { upstreamStatus: 204 },
@@ -50,7 +52,11 @@ describe("httpJson invalid successful upstream payload", () => {
 
     await expect(
       httpJson("https://example.invalid/accepted", { retries: 0, acceptStatuses: [409] }),
-    ).rejects.toMatchObject({ code: "upstream_failed", status: 502, details: { upstreamStatus: 409 } });
+    ).rejects.toMatchObject({
+      code: "upstream_failed",
+      status: 502,
+      details: { upstreamStatus: 409 },
+    });
   });
 
   it("preserves correctly formatted successful JSON", async () => {
