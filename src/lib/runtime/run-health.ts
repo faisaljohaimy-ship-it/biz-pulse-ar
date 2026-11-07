@@ -19,6 +19,9 @@ export function recentExecutionHealth(
   staleAfterMin: number,
 ): RunHealth {
   if (minutesAgo === null || !Number.isFinite(minutesAgo) || minutesAgo < 0) return "unknown";
-  if (FAILED_RUN_STATES.has(lastStatus?.trim().toLowerCase() ?? "")) return "warning";
+  const status = lastStatus?.trim().toLowerCase();
+  if (!status) return "unknown";
+  if (FAILED_RUN_STATES.has(status)) return "warning";
+  if (!Number.isFinite(staleAfterMin) || staleAfterMin <= 0) return "unknown";
   return minutesAgo < staleAfterMin ? "healthy" : "warning";
 }
