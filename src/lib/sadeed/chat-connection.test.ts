@@ -53,7 +53,7 @@ describe("connectionFromHealth — الشارة تقرأ البوّابة لا �
       expect(
         () => connectionFromHealth({ ok: true, key_present: true, gate }),
         String(gate),
-      ).toThrow("chat health: unknown gate");
+      ).toThrow("invalid gate");
     }
     // Missing gate from older servers is still valid for compatibility.
     expect(connectionFromHealth({ ok: true, key_present: true })).toBe("ready");

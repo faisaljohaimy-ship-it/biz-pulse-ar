@@ -31,7 +31,7 @@ export function connectionFromHealth(body: unknown): ChatConnection {
   // An unknown or malformed value indicates a changed/broken health contract,
   // not proof that the model can answer. Legacy responses omit gate entirely.
   if (j.gate !== undefined && j.gate !== "verified" && j.gate !== "degraded") {
-    throw new Error("chat health: unknown gate");
+    throw Error("invalid gate");
   }
   return "ready";
 }
