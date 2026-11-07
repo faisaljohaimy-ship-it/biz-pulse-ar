@@ -18,8 +18,18 @@ type IncidentBucket = { startedAt: number; count: number };
 // Never evict a LIVE window when an attacker sprays distinct IP buckets;
 // evicting it resets that client's 60/60 allowance and bypasses throttling.
 const buckets = new Map<string, IncidentBucket>();
+let lastObservedNow: number | undefined;
 
 export function allowIncidentDuringStorageOutage(bucketKey: string, now = Date.now()): boolean {
+  // A host clock rollback must not leave exhausted buckets blocked until the
+  // old wall-clock time returns. Rebase ALL windows by the same delta to keep
+  // their ages, counts and oldest-first eviction order intact (fail closed).
+  if (lastObservedNow !== undefined && now < lastObservedNow) {
+    const delta = lastObservedNow - now;
+    for (const bucket of buckets.values()) bucket.startedAt -= delta;
+  }
+  lastObservedNow = now;
+
   const previous = buckets.get(bucketKey);
   if (previous && now - previous.startedAt < INCIDENT_FALLBACK_WINDOW_MS) {
     previous.count += 1;
@@ -44,4 +54,5 @@ export function allowIncidentDuringStorageOutage(bucketKey: string, now = Date.n
 /** Unit tests only: reset the process-local counter state. */
 export function resetIncidentOutageBucketsForTests(): void {
   buckets.clear();
+  lastObservedNow = undefined;
 }
