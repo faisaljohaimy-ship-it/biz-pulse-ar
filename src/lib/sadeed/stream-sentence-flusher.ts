@@ -95,9 +95,7 @@ export function createSentenceFlusher(opts: SentenceFlusherOptions) {
         sentences: sentenceCount,
         firstTokenAt,
         latencyToFirstSentence:
-          firstTokenAt !== null && sentenceCount > 0
-            ? performance.now() - firstTokenAt
-            : null,
+          firstTokenAt !== null && sentenceCount > 0 ? performance.now() - firstTokenAt : null,
       };
     },
   };
