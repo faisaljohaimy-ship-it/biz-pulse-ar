@@ -125,7 +125,7 @@ const RAW_GUARDS: PropertyDescriptorMap = {
   toString: {
     enumerable: false,
     value(): string {
-      return "[MeasuredPercent — لا يُعرض خامًا؛ استُدعِ formatPercent]";
+      return "[MeasuredPercent: use formatPercent]";
     },
   },
 };
@@ -146,7 +146,11 @@ export function measuredPercent(value: number): MeasuredPercent {
 export function isMeasuredPercent(v: unknown): v is MeasuredPercent {
   if (typeof v !== "object" || v === null) return false;
   const o = v as { __brand?: unknown; value?: unknown };
-  return o.__brand === "MeasuredPercent" && Number.isFinite(o.value);
+  // Finite but out-of-range wire data is not a valid measurement.
+  // Reject it rather than showing impossible KPI percentages.
+  // The inclusive range also rejects NaN and infinities.
+  const value = o.value;
+  return o.__brand === "MeasuredPercent" && typeof value === "number" && value >= 0 && value <= 100;
 }
 
 /** يبني نسبةً من نسبةٍ ٠..١ (‏`3/4` ⇒ ٧٥). */
