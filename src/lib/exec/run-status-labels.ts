@@ -91,9 +91,7 @@ export const RUN_STATUS_LABELS: Record<RunStatusKey, RunStatusMeta> = {
 export const RUN_STATUS_KEYS = Object.keys(RUN_STATUS_LABELS) as RunStatusKey[];
 
 export function isKnownRunStatus(status: unknown): status is RunStatusKey {
-  return (
-    typeof status === "string" && Object.prototype.hasOwnProperty.call(RUN_STATUS_LABELS, status)
-  );
+  return typeof status === "string" && RUN_STATUS_KEYS.includes(status as RunStatusKey);
 }
 
 /** الحالة المجهولة لا تُلبَس لباس حالةٍ معروفة: نغمةٌ محايدة ونصٌّ يقول إنها غير معروفة. */
