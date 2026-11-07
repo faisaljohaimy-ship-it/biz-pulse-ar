@@ -66,6 +66,36 @@ describe("authenticated request session lifecycle", () => {
     expect(http).not.toHaveBeenCalled();
   });
 
+  it("drops stale authorization from a Request when the current session is guest", async () => {
+    const request = new Request("https://example.invalid/chat", {
+      headers: { Authorization: "Bearer stale-user-token", "x-test": "kept" },
+    });
+    await authenticatedFetch(request);
+    const headers = new Headers((http.mock.calls[0][1] as RequestInit).headers);
+    expect(headers.has("Authorization")).toBe(false);
+    expect(headers.get("x-test")).toBe("kept");
+  });
+
+  it("never forwards caller authorization instead of the active session token", async () => {
+    await authenticatedFetch("/api/chat", {
+      headers: { Authorization: "Bearer stale-user-token" },
+    });
+    expect(
+      new Headers((http.mock.calls[0][1] as RequestInit).headers).has("Authorization"),
+    ).toBe(false);
+
+    auth.getSession.mockResolvedValueOnce({
+      data: { session: { access_token: "current-session-token" } },
+      error: null,
+    });
+    await authenticatedFetch("/api/chat", {
+      headers: { Authorization: "Bearer stale-user-token" },
+    });
+    expect(
+      new Headers((http.mock.calls[1][1] as RequestInit).headers).get("Authorization"),
+    ).toBe("Bearer current-session-token");
+  });
+
   it("preserves valid guest access and Request headers", async () => {
     const request = new Request("https://example.invalid/chat", { headers: { "x-test": "kept" } });
     await authenticatedFetch(request);

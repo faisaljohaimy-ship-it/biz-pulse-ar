@@ -50,6 +50,10 @@ export async function authenticatedFetch(input: RequestInfo | URL, init: Request
   if (error) throw new Error("Authentication session unavailable.");
   const token = data.session?.access_token;
   const headers = new Headers(init.headers ?? request?.headers);
+  // Never forward a bearer token inherited from a Request or caller headers
+  // after a real guest lookup. A token from an earlier login belongs to a
+  // different security context, even when the current SDK session is null.
+  headers.delete("Authorization");
   if (token) headers.set("Authorization", `Bearer ${token}`);
   return fetch(input, { ...init, headers, signal });
 }
