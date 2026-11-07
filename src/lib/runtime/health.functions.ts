@@ -5,6 +5,7 @@
 
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { recentExecutionHealth } from "./run-health";
 
 export type HealthStatus = "healthy" | "warning" | "offline" | "blocked" | "unknown";
 
@@ -82,11 +83,7 @@ export const getRuntimeHealth = createServerFn({ method: "GET" })
       status:
         wfCount === 0
           ? "blocked"
-          : lastWfMin == null
-            ? "unknown"
-            : lastWfMin < STALE_MIN
-              ? "healthy"
-              : "warning",
+          : recentExecutionHealth(lastWfMin, lastWfRun?.status, STALE_MIN),
       evidence: {
         workflows_enabled: wfCount,
         last_run_minutes_ago: lastWfMin,
@@ -107,7 +104,7 @@ export const getRuntimeHealth = createServerFn({ method: "GET" })
     subs.push({
       id: "agent_runtime",
       label: "Agent Runtime",
-      status: lastAgentMin == null ? "unknown" : lastAgentMin < STALE_MIN ? "healthy" : "warning",
+      status: recentExecutionHealth(lastAgentMin, lastAgent?.status, STALE_MIN),
       evidence: {
         last_run_minutes_ago: lastAgentMin,
         last_run_status: lastAgent?.status ?? null,
@@ -126,7 +123,7 @@ export const getRuntimeHealth = createServerFn({ method: "GET" })
     subs.push({
       id: "tool_runtime",
       label: "Tool Runtime",
-      status: lastToolMin == null ? "unknown" : lastToolMin < STALE_MIN ? "healthy" : "warning",
+      status: recentExecutionHealth(lastToolMin, lastTool?.status, STALE_MIN),
       evidence: {
         last_execution_minutes_ago: lastToolMin,
         last_status: lastTool?.status ?? null,
