@@ -73,5 +73,6 @@ export const REGION_ACCENT_HEX: Record<RegionId, string> = {
 };
 
 export function getRegion(id: RegionId): Region {
-  return REGIONS.find((r) => r.id === id) ?? REGIONS[1];
+  // An invalid/stale persisted value must follow the declared region default.
+  return REGIONS.find((r) => r.id === id) ?? REGIONS.find((r) => r.id === DEFAULT_REGION_ID)!;
 }
