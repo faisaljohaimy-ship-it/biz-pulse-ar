@@ -26,6 +26,24 @@ describe("Article 22 — scope lock", () => {
     expect(isInScope("من هو رئيس الوزراء؟")).toBe(false);
   });
 
+  it("rejects an explicit off-domain question even after a short English greeting", () => {
+    // Formerly isGreeting() accepted any <=4-word string starting with hi/hey/hello,
+    // bypassing the explicit off-domain list and reaching the model.
+    for (const question of [
+      "hello football",
+      "hey weather",
+      "hi soccer",
+      "hello tell me a joke",
+      "hello bitcoin",
+    ]) {
+      expect(isInScope(question), question).toBe(false);
+    }
+    // True salutations remain in scope.
+    for (const greeting of ["hello", "hi", "hey", "مرحبا", "صباح الخير"]) {
+      expect(isInScope(greeting), greeting).toBe(true);
+    }
+  });
+
   it("always admits the industrial-security domain, the platform, and greetings", () => {
     expect(isInScope("كم عدد توجيهات الهيئة؟")).toBe(true);
     expect(isInScope("ما حالة الامتثال لتوجيه SEC-18؟")).toBe(true);
