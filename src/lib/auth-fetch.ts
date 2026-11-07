@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 export const AUTH_SESSION_DEADLINE_MS = 10_000;
 
 function aborted() {
-  return new DOMException("The request was aborted.", "AbortError");
+  return new DOMException("Aborted", "AbortError");
 }
 
 async function readSession(signal?: AbortSignal | null) {
@@ -15,7 +15,7 @@ async function readSession(signal?: AbortSignal | null) {
     onAbort = () => reject(aborted());
     signal?.addEventListener("abort", onAbort, { once: true });
     timer = setTimeout(
-      () => reject(new DOMException("Session lookup timed out.", "TimeoutError")),
+      () => reject(new DOMException("Timed out", "TimeoutError")),
       AUTH_SESSION_DEADLINE_MS,
     );
   });
@@ -50,6 +50,10 @@ export async function authenticatedFetch(input: RequestInfo | URL, init: Request
   if (error) throw new Error("Authentication session unavailable.");
   const token = data.session?.access_token;
   const headers = new Headers(init.headers ?? request?.headers);
+  // Never forward a bearer token inherited from a Request or caller headers
+  // after a real guest lookup. A token from an earlier login belongs to a
+  // different security context, even when the current SDK session is null.
+  headers.delete("Authorization");
   if (token) headers.set("Authorization", `Bearer ${token}`);
   return fetch(input, { ...init, headers, signal });
 }
