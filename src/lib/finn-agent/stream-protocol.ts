@@ -68,7 +68,10 @@ export function createFinnEventParser() {
   };
   return {
     push(chunk: string): FinnStreamEvent[] {
-      buffer += chunk.replace(/\r\n/g, "\n");
+      // A CRLF pair may cross the boundary between two network chunks.
+      // Normalize the accumulated fragment so the event is delivered immediately.
+      buffer += chunk;
+      buffer = buffer.replace(/\r\n/g, "\n");
       return drain(false);
     },
     /** ما بقي في الذاكرة عند نهاية الجسم (حدثٌ أخير بلا فاصلٍ ختاميّ). */
