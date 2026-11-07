@@ -44,8 +44,9 @@ export function extractSadeedAdaptivePreferences(input: string): SadeedAdaptiveP
   ) {
     add("response_length", "detailed");
   } else if (
-    /(?:باختصار|مختصر(?:ة|اً|ا)?|موجز(?:ة|اً|ا)?|ردود قصيرة|concise|brief|short replies)/i.test(
+    hasAffirmativeMention(
       text,
+      /(?:باختصار|مختصر(?:ة|اً|ا)?|موجز(?:ة|اً|ا)?|ردود قصيرة|concise|brief|short replies)/gi,
     )
   ) {
     add("response_length", "concise");
