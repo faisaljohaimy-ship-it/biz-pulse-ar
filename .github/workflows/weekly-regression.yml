@@ -76,7 +76,7 @@ jobs:
       SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
       E2E_TEST_EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
       E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
-      PLAYWRIGHT_BASE_URL: http://localhost:8080
+      PLAYWRIGHT_BASE_URL: http://127.0.0.1:4173
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0; Node 24 action runtime
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0; Node 24 action runtime
@@ -88,17 +88,50 @@ jobs:
       # WebKit لمشروع الجوال (playwright.config.ts): بدونه يسقط المشروع كلّه فشلَ تركيبٍ لا منتج.
       - name: Install Playwright chromium + webkit
         run: npx playwright install --with-deps chromium webkit
-      - name: Start dev server
+      # Keep all desktop Chromium + mobile WebKit assertions. A cold Vite dev server
+      # returned 5xx for SSR health routes in scheduled run 41293103670;
+      # use the built server already proven by the focused Lottie E2E workflow.
+      - name: Build local SSR app
+        run: npm run build
+      - name: Start built app locally
         run: |
-          npm run dev -- --host 127.0.0.1 --port 8080 --strictPort > /tmp/dev.log 2>&1 &
-          echo $! > /tmp/dev.pid
+          npx wrangler dev --config .output/server/wrangler.json --compatibility-date 2026-08-06 --port 4173 --local > /tmp/sadeed-weekly-ssr.log 2>&1 &
+          echo $! > /tmp/sadeed-weekly-ssr.pid
           for i in $(seq 1 60); do
-            if curl -sf http://localhost:8080 > /dev/null; then
-              echo "dev server up"; exit 0
+            if curl -fsS --max-time 5 http://127.0.0.1:4173/ > /dev/null; then
+              for path in /api/chat/health /blueprint; do
+                curl -fsS --max-time 10 "http://127.0.0.1:4173${path}" > /dev/null || {
+                  echo "Built route is unhealthy: ${path}"
+                  tail -n 120 /tmp/sadeed-weekly-ssr.log
+                  exit 1
+                }
+              done
+              # No service-role key is passed to this test worker. Its rate
+              # limiter must fail CLOSED (503) and must never report fake
+              # success. Assert the detailed status, not merely any 2xx.
+              health_status=$(curl -sS --max-time 10 -o /tmp/sadeed-weekly-health.json -w '%{http_code}' http://127.0.0.1:4173/api/public/health)
+              HEALTH_STATUS="$health_status" node --input-type=module -e '
+                import fs from "node:fs";
+                const body = JSON.parse(fs.readFileSync("/tmp/sadeed-weekly-health.json", "utf8"));
+                const http = process.env.HEALTH_STATUS;
+                const healthy = http === "200" && ["ok", "degraded"].includes(body.status);
+                const closed = http === "503" && body.status === "down" &&
+                  body.subsystems?.rate_limit_storage?.status === "down" &&
+                  body.subsystems?.db?.status !== "down";
+                if (!healthy && !closed) {
+                  console.error("Unexpected public health contract", http, body.status);
+                  process.exit(1);
+                }
+                console.log(closed ? "Local rate-limit guard FAILED CLOSED" : "Local health responded");
+              '
+              echo "Built SSR app and E2E routes ready"
+              exit 0
             fi
             sleep 2
           done
-          echo "dev server failed to start"; tail -n 200 /tmp/dev.log; exit 1
+          echo "Built SSR app failed to start"
+          tail -n 120 /tmp/sadeed-weekly-ssr.log
+          exit 1
       - name: Run every E2E spec on both projects
         run: npx playwright test
       - name: Upload Playwright report
@@ -109,10 +142,10 @@ jobs:
           path: playwright-report/
           retention-days: 14
           if-no-files-found: ignore
-      - name: Stop dev server
+      - name: Stop built app
         if: always()
         run: |
-          if [ -f /tmp/dev.pid ]; then kill "$(cat /tmp/dev.pid)" 2>/dev/null || true; fi
+          if [ -f /tmp/sadeed-weekly-ssr.pid ]; then kill "$(cat /tmp/sadeed-weekly-ssr.pid)" 2>/dev/null || true; fi
 
   ui-floors:
     name: UI floors on production — light and dark

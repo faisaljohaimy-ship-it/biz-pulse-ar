@@ -11,15 +11,32 @@ test.describe("ARIA — no audio autoplay", () => {
     // Give any auto-mount code a chance to run.
     await page.waitForTimeout(2_500);
 
-    const playingCount = await page.evaluate(() => {
+    const { playingCount, activeMedia } = await page.evaluate(() => {
       const audios = Array.from(document.querySelectorAll("audio"));
       const videos = Array.from(document.querySelectorAll("video"));
-      // A silent, muted video is fine (background loop). A playing audio is not.
-      const playingAudio = audios.filter((a) => !a.paused).length;
-      const playingUnmutedVideo = videos.filter((v) => !v.paused && !v.muted).length;
-      return playingAudio + playingUnmutedVideo;
+      // Preserve both original predicates. Attribute the unexpected media on
+      // failure so a legitimate film is not confused with SADEED/ARIA TTS.
+      const active = [
+        ...audios.filter((a) => !a.paused),
+        ...videos.filter((v) => !v.paused && !v.muted),
+      ];
+      return {
+        playingCount: active.length,
+        activeMedia: active.map((media) => ({
+          tag: media.tagName.toLowerCase(),
+          id: media.id || null,
+          label: media.getAttribute("aria-label"),
+          muted: media.muted,
+          volume: media.volume,
+          autoplay: media.autoplay,
+          parentTag: media.parentElement?.tagName.toLowerCase() ?? null,
+        })),
+      };
     });
 
-    expect(playingCount, "no audio should be playing before a user gesture").toBe(0);
+    expect(
+      playingCount,
+      `no audio should be playing before a user gesture; active media: ${JSON.stringify(activeMedia)}`,
+    ).toBe(0);
   });
 });
