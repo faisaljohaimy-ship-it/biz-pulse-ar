@@ -199,10 +199,15 @@ export type InstantCountStatus =
   "in_progress" | "completed" | "cancelled" | "open" | "closed" | "preventive" | "corrective";
 
 /**
- * الحالة التي يسمّيها السؤال العربي لكيانٍ بعينه — أوّل حالةٍ تطابق تفوز، بترتيب الفحص
- * المعتمد لكل كيان، و`null` يعني الإجمالي.
+ * Distinguish a single supported status from absent or ambiguous status filters.
+ * Returning undefined routes incompatible / multiple status requests to the
+ * full answer path rather than silently reporting one status (or the total).
+ * null still means the user requested the unfiltered total.
  */
-function arabicStatus(entity: InstantCountEntity, tokens: string[]): InstantCountStatus | null {
+function arabicStatus(
+  entity: InstantCountEntity,
+  tokens: string[],
+): InstantCountStatus | null | undefined {
   const checks: ReadonlyArray<readonly [InstantCountStatus, readonly string[]]> =
     entity === "project"
       ? [
@@ -223,7 +228,12 @@ function arabicStatus(entity: InstantCountEntity, tokens: string[]): InstantCoun
             ["open", ["مفتوح", "مفتوحه", "المفتوحه"]],
             ["closed", ["مغلق", "مغلقه", "المغلقه"]],
           ];
-  return checks.find(([, words]) => contains(tokens, words))?.[0] ?? null;
+  const specified = tokens.filter((token) => norm(VOCAB.status).includes(token));
+  if (!specified.length) return null;
+  const matches = checks.filter(([, words]) => contains(tokens, words));
+  if (matches.length !== 1) return undefined;
+  const supported = new Set(norm(matches[0][1]));
+  return specified.every((token) => supported.has(token)) ? matches[0][0] : undefined;
 }
 
 /**
@@ -418,15 +428,21 @@ export function matchInstantDataAnswer(question: string): InstantDataAnswer | nu
 
   if (!COUNT_INTENT.test(` ${normalized} `)) return null;
   if (contains(tokens, VOCAB.project) && isPureCountQuestion(tokens, VOCAB.project)) {
-    const answer = renderInstantCount("project", arabicStatus("project", tokens), "ar");
+    const status = arabicStatus("project", tokens);
+    if (status === undefined) return null;
+    const answer = renderInstantCount("project", status, "ar");
     return { answer, source: "projects-count" };
   }
   if (contains(tokens, VOCAB.incident) && isPureCountQuestion(tokens, VOCAB.incident)) {
-    const answer = renderInstantCount("incident", arabicStatus("incident", tokens), "ar");
+    const status = arabicStatus("incident", tokens);
+    if (status === undefined) return null;
+    const answer = renderInstantCount("incident", status, "ar");
     return { answer, source: "incidents-count" };
   }
   if (contains(tokens, VOCAB.maintenance) && isPureCountQuestion(tokens, VOCAB.maintenance)) {
-    const answer = renderInstantCount("maintenance", arabicStatus("maintenance", tokens), "ar");
+    const status = arabicStatus("maintenance", tokens);
+    if (status === undefined) return null;
+    const answer = renderInstantCount("maintenance", status, "ar");
     return { answer, source: "maintenance-count" };
   }
   return null;
