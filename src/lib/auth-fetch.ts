@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 export const AUTH_SESSION_DEADLINE_MS = 10_000;
 
 function aborted() {
-  return new DOMException("The request was aborted.", "AbortError");
+  return new DOMException("Aborted", "AbortError");
 }
 
 async function readSession(signal?: AbortSignal | null) {
@@ -15,7 +15,7 @@ async function readSession(signal?: AbortSignal | null) {
     onAbort = () => reject(aborted());
     signal?.addEventListener("abort", onAbort, { once: true });
     timer = setTimeout(
-      () => reject(new DOMException("Session lookup timed out.", "TimeoutError")),
+      () => reject(new DOMException("Timed out", "TimeoutError")),
       AUTH_SESSION_DEADLINE_MS,
     );
   });
