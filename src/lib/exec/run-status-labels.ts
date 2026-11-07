@@ -205,10 +205,12 @@ export function toolFailureCount(auditJson: unknown): number | null {
   if (!isRecord(auditJson)) return null;
   const v = auditJson.toolFailures;
   if (isRecord(v) && typeof v.count !== "number") {
-    const failed = typeof v.failed === "number" ? v.failed : 0;
-    const rejected = typeof v.rejected === "number" ? v.rejected : 0;
-    if (typeof v.failed !== "number" && typeof v.rejected !== "number") return null;
-    return Math.max(0, Math.floor(failed + rejected));
+    // Validate each component before combining; a malformed/negative value
+    // must never hide the other valid failure count or display NaN/Infinity.
+    const failed = typeof v.failed === "number" ? asCount(v.failed) : null;
+    const rejected = typeof v.rejected === "number" ? asCount(v.rejected) : null;
+    if (failed === null && rejected === null) return null;
+    return (failed ?? 0) + (rejected ?? 0);
   }
   return asCount(v);
 }
