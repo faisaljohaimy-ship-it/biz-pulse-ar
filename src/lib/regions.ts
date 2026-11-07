@@ -73,5 +73,6 @@ export const REGION_ACCENT_HEX: Record<RegionId, string> = {
 };
 
 export function getRegion(id: RegionId): Region {
-  return REGIONS.find((r) => r.id === id) ?? REGIONS[1];
+  // Default region is first; the regression test guards this invariant.
+  return REGIONS.find((r) => r.id === id) ?? REGIONS[0];
 }
