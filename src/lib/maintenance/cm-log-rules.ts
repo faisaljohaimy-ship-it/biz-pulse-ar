@@ -164,10 +164,28 @@ export function stageFromEvidence(status: OrderStatus, note: string | null | und
 // ── التنظيف ────────────────────────────────────────────────────────────────
 const IPV4 = /\b(?:\d{1,3}\.){3}\d{1,3}\b/g;
 const MAC = /\b(?:[0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}\b/g;
+// IPv6 can appear bare, bracketed (URLs), or with a link-local zone suffix.
+// Require a token boundary; the URL parser validates complete addresses so
+// MACs, time stamps and partially formed IPv6-like strings are not masked.
+const IPV6_CANDIDATE =
+  /(^|[^\w.])(\[[0-9a-f:.]+(?:%[a-z0-9_.-]+)?\]|[0-9a-f:.]+(?:%[a-z0-9_.-]+)?)(?=$|[^\w.])/gi;
 
 /** قرار المالك: عناوين الشبكة لا تدخل النظام — تُحجب عند الاستيراد. */
 export function maskNetworkIds(text: string): string {
-  return text.replace(IPV4, "[عنوان IP محجوب]").replace(MAC, "[عنوان MAC محجوب]");
+  const withoutIpv6 = text.replace(IPV6_CANDIDATE, (match, prefix: string, token: string) => {
+    const bracketed = token.startsWith("[") && token.endsWith("]");
+    const suffix = bracketed ? "" : (token.match(/\.+$/)?.[0] ?? "");
+    const raw = bracketed ? token.slice(1, -1) : token.slice(0, token.length - suffix.length);
+    const address = raw.replace(/%[a-z0-9_.-]+$/i, "");
+    if (!address.includes(":")) return match;
+    try {
+      new URL(`http://[${address}]/`);
+      return `${prefix}[عنوان IP محجوب]${suffix}`;
+    } catch {
+      return match;
+    }
+  });
+  return withoutIpv6.replace(IPV4, "[عنوان IP محجوب]").replace(MAC, "[عنوان MAC محجوب]");
 }
 
 export function cleanText(v: unknown): string | null {
