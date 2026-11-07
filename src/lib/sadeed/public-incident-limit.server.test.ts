@@ -52,6 +52,37 @@ describe("public incident fallback when the shared quota store is unavailable", 
     expect(allowIncidentDuringStorageOutage("incident:target", 1_000)).toBe(false);
   });
 
+  it("recovers exhausted fallback quotas one full window after a clock rollback", () => {
+    const beforeRollback = 86_400_000;
+    const afterRollback = 1_000;
+    for (let i = 0; i < INCIDENT_FALLBACK_MAX_REQUESTS; i += 1) {
+      expect(allowIncidentDuringStorageOutage("incident:clock", beforeRollback)).toBe(true);
+    }
+    expect(allowIncidentDuringStorageOutage("incident:clock", afterRollback)).toBe(false);
+    expect(
+      allowIncidentDuringStorageOutage(
+        "incident:clock",
+        afterRollback + INCIDENT_FALLBACK_WINDOW_MS - 1,
+      ),
+    ).toBe(false);
+    expect(
+      allowIncidentDuringStorageOutage("incident:clock", afterRollback + INCIDENT_FALLBACK_WINDOW_MS),
+    ).toBe(true);
+  });
+
+  it("preserves bounded oldest-first eviction after a clock rollback", () => {
+    const beforeRollback = 86_400_000;
+    const afterRollback = 1_000;
+    for (let i = 0; i < INCIDENT_FALLBACK_MAX_BUCKETS; i += 1) {
+      expect(allowIncidentDuringStorageOutage(`incident:key-${i}`, beforeRollback)).toBe(true);
+    }
+    expect(allowIncidentDuringStorageOutage("incident:key-999", afterRollback)).toBe(true);
+    expect(allowIncidentDuringStorageOutage("incident:new", afterRollback)).toBe(false);
+    expect(
+      allowIncidentDuringStorageOutage("incident:new", afterRollback + INCIDENT_FALLBACK_WINDOW_MS),
+    ).toBe(true);
+  });
+
   it("reclaims expired quota windows before admitting new clients", () => {
     for (let i = 0; i < INCIDENT_FALLBACK_MAX_BUCKETS; i += 1) {
       expect(allowIncidentDuringStorageOutage(`incident:key-${i}`, 1_000)).toBe(true);
