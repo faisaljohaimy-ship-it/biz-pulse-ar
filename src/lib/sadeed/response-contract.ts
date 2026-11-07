@@ -212,22 +212,16 @@ function offDomainTerm(term: string): RegExp {
 }
 const OUT_OF_SCOPE_RE = OUT_OF_SCOPE.map(offDomainTerm);
 
-/** A short bare opener ("مرحبا", "أهلا", "hi") is a greeting, never off-topic. */
-function isGreeting(t: string): boolean {
-  return (
-    /^(مرحبا|اهلا|أهلا|السلام|هلا|hi|hello|hey|صباح|مساء)\b/.test(t) && t.split(/\s+/).length <= 4
-  );
-}
-
 /**
  * Scope decision. High-precision on OUT: only a clear off-domain signal with
  * no in-domain signal is blocked — ambiguous text passes to the model, whose
- * system prompt also enforces scope (Article 22). Greetings always pass.
+ * system prompt also enforces scope (Article 22). Bare greetings pass naturally.
  */
 export function isInScope(message: string): boolean {
   const t = normalize(message);
   if (!t) return true;
-  if (isGreeting(t)) return true;
+  // A pure greeting has no off-domain terms and passes naturally. A greeting
+  // prefix must not override an explicit off-domain request (e.g. "hi football").
   const inHit = IN_SCOPE.some((k) => t.includes(normalize(k)));
   if (inHit) return true;
   const outHit = OUT_OF_SCOPE_RE.some((re) => re.test(t));
