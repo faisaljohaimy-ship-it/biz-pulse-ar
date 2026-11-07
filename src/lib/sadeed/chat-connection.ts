@@ -25,5 +25,13 @@ export function connectionFromHealth(body: unknown): ChatConnection {
   const configured =
     j.key_present === true ||
     (j.key_present !== false && typeof j.provider === "string" && !!j.provider.trim());
-  return !configured ? "local" : j.gate === "closed" ? "limited" : "ready";
+  if (!configured) return "local";
+  if (j.gate === "closed") return "limited";
+  // Only the known, provider-reachable gate states may show "connected".
+  // An unknown or malformed value indicates a changed/broken health contract,
+  // not proof that the model can answer. Legacy responses omit gate entirely.
+  if (j.gate !== undefined && j.gate !== "verified" && j.gate !== "degraded") {
+    throw new Error("chat health: unknown gate");
+  }
+  return "ready";
 }
