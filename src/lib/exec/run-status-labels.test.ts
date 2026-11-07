@@ -161,6 +161,15 @@ describe("UI-2 — الحالة المشتقّة من audit_json", () => {
     expect(excludedToolCount({})).toBeNull();
     expect(toolFailureCount({ toolFailures: [{}] })).toBe(1);
   });
+  it("does not let invalid/negative failure components mask the other count", () => {
+    expect(toolFailureCount({ toolFailures: { failed: -4, rejected: 3 } })).toBe(3);
+    expect(toolFailureCount({ toolFailures: { failed: Number.NaN, rejected: 2 } })).toBe(2);
+    expect(toolFailureCount({ toolFailures: { failed: Number.POSITIVE_INFINITY, rejected: 2 } })).toBe(2);
+    expect(toolFailureCount({ toolFailures: { failed: 2, rejected: -5 } })).toBe(2);
+    expect(toolFailureCount({ toolFailures: { failed: -1, rejected: -2 } })).toBeNull();
+    expect(toolFailureCount({ toolFailures: { failed: 1.9, rejected: 2.9 } })).toBe(3);
+  });
+
 });
 
 describe("UI-1 — عدد الخطوات رقمٌ صحيح أو «—»", () => {
