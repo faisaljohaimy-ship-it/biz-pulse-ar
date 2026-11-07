@@ -103,8 +103,24 @@ export async function httpFetch(input: string | URL, init: HttpOptions = {}): Pr
     // إشارة المستدعي تُطلق مؤقّت المحاولة نفسه — دمجٌ يدوي لا يعتمد على `AbortSignal.any`.
     const onOuterAbort = () => controller.abort();
     outer?.addEventListener("abort", onOuterAbort, { once: true });
+    // Some fetch implementations ignore AbortSignal (or resolve headers after
+    // cancellation). Race the attempt against its abort to enforce a real
+    // deadline, and dispose of any late response body.
+    const abortError = () => Object.assign(new Error("aborted"), { name: "AbortError" });
+    let onAttemptAbort: (() => void) | undefined;
+    const attemptAborted = new Promise<never>((_, reject) => {
+      onAttemptAbort = () => reject(abortError());
+      controller.signal.addEventListener("abort", onAttemptAbort, { once: true });
+    });
     try {
-      const res = await fetch(input, { ...rest, signal: controller.signal });
+      const request = fetch(input, { ...rest, signal: controller.signal }).then((response) => {
+        if (controller.signal.aborted) {
+          void response.body?.cancel().catch(() => {});
+          throw abortError();
+        }
+        return response;
+      });
+      const res = await Promise.race([request, attemptAborted]);
       clearTimeout(timer);
       // An upstream can resolve its headers just as the caller cancels.
       // Never return that orphaned response or retain its unread stream.
@@ -145,6 +161,7 @@ export async function httpFetch(input: string | URL, init: HttpOptions = {}): Pr
         continue;
       }
     } finally {
+      if (onAttemptAbort) controller.signal.removeEventListener("abort", onAttemptAbort);
       outer?.removeEventListener("abort", onOuterAbort);
     }
   }
