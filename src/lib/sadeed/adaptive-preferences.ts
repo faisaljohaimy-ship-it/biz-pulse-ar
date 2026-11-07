@@ -9,6 +9,20 @@ const DURABLE_AR =
 const DURABLE_EN =
   /(?:always|from now on|in every reply|make your (?:answers|replies)|keep your (?:answers|replies)|i prefer)/i;
 
+/** Keep negated language mentions from becoming the opposite durable preference. */
+const NEGATED_LANGUAGE_CONTEXT =
+  /(?:\b(?:never|avoid|without|not|don't|do\s+not)\b|(?:لا|بدون|تجنب))(?:\s+[^\s,.،؛;:!?؟]+){0,4}\s*$/i;
+const ENGLISH_LANGUAGE_MENTION = /(?:بالإنجليزية|باللغة الإنجليزية|ردودك إنجليزي|in english)/gi;
+const ARABIC_LANGUAGE_MENTION = /(?:بالعربية|باللغة العربية|ردودك عربي|بالعربي|in arabic)/gi;
+
+function hasAffirmativeLanguageMention(text: string, mentions: RegExp): boolean {
+  return [...text.matchAll(mentions)].some((match) => {
+    const index = match.index ?? 0;
+    const context = text.slice(Math.max(0, index - 80), index);
+    return !NEGATED_LANGUAGE_CONTEXT.test(context);
+  });
+}
+
 /**
  * Learn only an explicit, durable presentation preference. The result is a
  * fixed enum: user text, recipients, credentials, permissions and action
@@ -36,9 +50,9 @@ export function extractSadeedAdaptivePreferences(input: string): SadeedAdaptiveP
     add("response_length", "concise");
   }
 
-  if (/(?:بالإنجليزية|باللغة الإنجليزية|ردودك إنجليزي|in english)/i.test(text)) {
+  if (hasAffirmativeLanguageMention(text, ENGLISH_LANGUAGE_MENTION)) {
     add("response_language", "en");
-  } else if (/(?:بالعربية|باللغة العربية|ردودك عربي|بالعربي|in arabic)/i.test(text)) {
+  } else if (hasAffirmativeLanguageMention(text, ARABIC_LANGUAGE_MENTION)) {
     add("response_language", "ar");
   }
 
