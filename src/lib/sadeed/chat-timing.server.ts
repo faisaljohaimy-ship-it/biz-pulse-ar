@@ -111,7 +111,7 @@ type Clock = () => number;
 const round = (ms: number): number => Math.max(0, Math.round(ms));
 
 const finiteOrNull = (value: unknown): number | null =>
-  typeof value === "number" && Number.isFinite(value) ? value : null;
+  typeof value === "number" && Number.isSafeInteger(value) && value >= 0 ? value : null;
 
 const stringOrNull = (value: unknown): string | null =>
   typeof value === "string" && value ? value : null;
