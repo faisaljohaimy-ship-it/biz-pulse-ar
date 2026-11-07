@@ -22,7 +22,9 @@ describe("run status keys must be owned by the status map", () => {
   it("retains recognition and labels for every declared status", () => {
     for (const status of Object.keys(RUN_STATUS_LABELS)) {
       expect(isKnownRunStatus(status)).toBe(true);
-      expect(runStatusMeta(status)).toBe(RUN_STATUS_LABELS[status as keyof typeof RUN_STATUS_LABELS]);
+      expect(runStatusMeta(status)).toBe(
+        RUN_STATUS_LABELS[status as keyof typeof RUN_STATUS_LABELS],
+      );
     }
   });
 });
