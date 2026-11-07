@@ -93,6 +93,11 @@ describe("سقف التزامن", () => {
     expect(maxInflightModelCalls({ SADEED_CHAT_MAX_INFLIGHT: "0" })).toBe(1);
     expect(maxInflightModelCalls({ SADEED_CHAT_MAX_INFLIGHT: "500" })).toBe(64);
     expect(maxInflightModelCalls({ SADEED_CHAT_MAX_INFLIGHT: "abc" })).toBe(8);
+    expect(maxInflightModelCalls({ SADEED_CHAT_MAX_INFLIGHT: "2e2" })).toBe(8);
+    expect(maxInflightModelCalls({ SADEED_CHAT_MAX_INFLIGHT: "3junk" })).toBe(8);
+    expect(maxInflightModelCalls({ SADEED_CHAT_MAX_INFLIGHT: "8.9" })).toBe(8);
+    expect(maxInflightModelCalls({ SADEED_CHAT_MAX_INFLIGHT: "-2" })).toBe(8);
+    expect(maxInflightModelCalls({ SADEED_CHAT_MAX_INFLIGHT: " 3 " })).toBe(3);
   });
 
   it("فوق السقف ⇐ لا خانة؛ والتحرير يعيدها", () => {
