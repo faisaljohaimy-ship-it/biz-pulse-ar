@@ -32,11 +32,13 @@ const inflightRequests = new Map<string, number>();
 
 function purgeStaleRequests(now: number): void {
   if (inflightRequests.size < INFLIGHT_MAX_KEYS) return;
-  // Entries are ordered by reservation time. Reclaim expired entries only:
-  // evicting a LIVE fingerprint during a key spray disables deduplication.
+  // The wall clock can jump backwards, so insertion order does not imply
+  // timestamp order. Scan all entries at capacity; delete expired keys only.
+  // Never evict a live fingerprint during a key spray.
   for (const [key, startedAt] of inflightRequests) {
-    if (now - startedAt < REQUEST_INFLIGHT_TTL_MS) break;
-    inflightRequests.delete(key);
+    if (now - startedAt >= REQUEST_INFLIGHT_TTL_MS) {
+      inflightRequests.delete(key);
+    }
   }
 }
 
