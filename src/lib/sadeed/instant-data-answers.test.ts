@@ -147,6 +147,32 @@ describe("لقطةٌ بتاريخها، والملغاة ملغاة (DEF-18، ٢
   });
 });
 
+describe("avoid misleading instant counts for incompatible or multiple statuses", () => {
+  it.each([
+    "كم عدد البلاغات المفتوحة و المغلقة؟",
+    "كم عدد المشاريع المكتملة و الملغاة؟",
+    "كم عدد أوامر الصيانة الوقائية و التصحيحية؟",
+    "كم عدد أوامر الصيانة المفتوحة و الملغاة؟",
+  ])("does not return only the first requested status: %s", (question) => {
+    expect(matchInstantDataAnswer(question)).toBeNull();
+  });
+
+  it.each([
+    "كم عدد المشاريع المفتوحة؟",
+    "كم عدد البلاغات المكتملة؟",
+    "كم عدد أوامر الصيانة الجارية و الوقائية؟",
+  ])("does not substitute the total or a partial count for an unsupported status: %s", (question) => {
+    expect(matchInstantDataAnswer(question)).toBeNull();
+  });
+
+  it("keeps a single valid status and compatible status synonyms on the fast path", () => {
+    expect(matchInstantDataAnswer("كم عدد البلاغات المفتوحة؟")?.source).toBe("incidents-count");
+    expect(matchInstantDataAnswer("كم عدد المشاريع المكتملة؟")?.source).toBe("projects-count");
+    expect(matchInstantDataAnswer("كم عدد أوامر الصيانة المفتوحة و الجارية؟")?.source).toBe("maintenance-count");
+    expect(matchInstantDataAnswer("كم عدد المشاريع؟")?.source).toBe("projects-count");
+  });
+});
+
 describe("الدقة قبل الشمول — ما ليس عدًّا صرفًا يسقط للنموذج", () => {
   it("السؤال التحليلي لا يُختطف", () => {
     expect(matchInstantDataAnswer("لماذا تأخرت المشاريع هذا العام؟")).toBeNull();
