@@ -10,6 +10,7 @@ describe("getRegion", () => {
 
   it("falls back to the declared default when a persisted region is unrecognized", () => {
     const expected = REGIONS.find((r) => r.id === DEFAULT_REGION_ID);
+    expect(REGIONS[0].id).toBe(DEFAULT_REGION_ID);
     expect(expected).toBeDefined();
     expect(getRegion("unknown" as RegionId)).toBe(expected);
     expect(getRegion("" as RegionId)).toBe(expected);
