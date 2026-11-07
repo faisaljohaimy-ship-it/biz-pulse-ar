@@ -100,6 +100,16 @@ describe("التنظيف", () => {
     expect(toIsoDate(new Date("2025-04-01T00:00:00Z"))).toBe("2025-04-01");
     expect(toIsoDate("not a date")).toBeNull();
   });
+
+  it("يرفض تواريخ غير موجودة في التقويم مع إبقاء السنة الكبيسة صحيحة", () => {
+    expect(toIsoDate("2024-02-29")).toBe("2024-02-29");
+    expect(toIsoDate("2025-02-29")).toBeNull();
+    expect(toIsoDate("2026-02-30")).toBeNull();
+    expect(toIsoDate("2026-13-01")).toBeNull();
+    expect(toIsoDate("2026-00-10")).toBeNull();
+    expect(toIsoDate("2026-04-31T08:00:00Z")).toBeNull();
+    expect(toIsoDate("2026-04-30T08:00:00Z")).toBe("2026-04-30");
+  });
 });
 
 describe("صفّ ⇐ أمر عمل", () => {
