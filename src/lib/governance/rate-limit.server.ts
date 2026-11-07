@@ -73,7 +73,11 @@ const breaker = {
 };
 
 function breakerIsOpen(now: number): boolean {
-  return breaker.openedAt !== null && now - breaker.openedAt < BREAKER_OPEN_MS;
+  // A backward wall-clock adjustment must not extend a 30s open window indefinitely.
+  // Permit the ordinary single half-open probe; failures still fail closed.
+  if (breaker.openedAt === null) return false;
+  const elapsed = now - breaker.openedAt;
+  return elapsed >= 0 && elapsed < BREAKER_OPEN_MS;
 }
 
 /** هل نتخطّى نداء المخزن الآن؟ (مفتوح، أو نصف مفتوح وفحصٌ آخر جارٍ). */

@@ -140,6 +140,21 @@ describe("القاطع", () => {
     expect(rpc.calls).toBe(BREAKER_FAILURE_THRESHOLD + 2);
   });
 
+  it("a backward clock adjustment does not pin an open breaker until wall time catches up", async () => {
+    const callsAtOpen = await openBreaker();
+    vi.setSystemTime(Date.now() - 120_000);
+    // The open-window timestamp is now in the future. One recovery probe is
+    // safe; old logic reported 'open' until the clock caught up.
+    expect(rateLimitStorageState().state).toBe("half-open");
+    rpc.mode = "ok";
+    const probe = enforceRateLimit("clock-rollback-probe", 10, 60);
+    const bystander = enforceRateLimit("clock-rollback-bystander", 10, 60);
+    expect(await settle(bystander, 0)).toEqual({ allowed: false, unavailable: true });
+    expect(await settle(probe, 0)).toEqual({ allowed: true });
+    expect(rpc.calls).toBe(callsAtOpen + 1);
+    expect(rateLimitStorageState().state).toBe("closed");
+  });
+
   it("فشل الفحص يعيد الفتح مدّةً كاملة", async () => {
     await openBreaker();
     await vi.advanceTimersByTimeAsync(BREAKER_OPEN_MS);
