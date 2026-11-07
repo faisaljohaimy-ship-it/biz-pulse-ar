@@ -81,9 +81,7 @@ export const getRuntimeHealth = createServerFn({ method: "GET" })
       id: "workflow_engine",
       label: "Workflow Engine",
       status:
-        wfCount === 0
-          ? "blocked"
-          : recentExecutionHealth(lastWfMin, lastWfRun?.status, STALE_MIN),
+        wfCount === 0 ? "blocked" : recentExecutionHealth(lastWfMin, lastWfRun?.status, STALE_MIN),
       evidence: {
         workflows_enabled: wfCount,
         last_run_minutes_ago: lastWfMin,
