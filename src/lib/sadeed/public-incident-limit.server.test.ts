@@ -66,7 +66,10 @@ describe("public incident fallback when the shared quota store is unavailable", 
       ),
     ).toBe(false);
     expect(
-      allowIncidentDuringStorageOutage("incident:clock", afterRollback + INCIDENT_FALLBACK_WINDOW_MS),
+      allowIncidentDuringStorageOutage(
+        "incident:clock",
+        afterRollback + INCIDENT_FALLBACK_WINDOW_MS,
+      ),
     ).toBe(true);
   });
 
