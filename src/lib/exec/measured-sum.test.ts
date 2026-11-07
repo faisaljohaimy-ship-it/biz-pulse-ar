@@ -27,6 +27,14 @@ describe("sumMeasured — الصفر قياسٌ والغياب ليس صفرًا
     expect(sumMeasured([null, 5])).toBe(5);
   });
 
+  it("does not present arithmetic overflow as a valid measurement", () => {
+    // Individual samples are finite, but their combined total is not.
+    expect(sumMeasured([Number.MAX_VALUE, Number.MAX_VALUE])).toBeNull();
+    expect(sumMeasured([1e308, 1e308, -1e308])).toBeNull();
+    // A real, finite cancellation is still an observed zero.
+    expect(sumMeasured([Number.MAX_VALUE, -Number.MAX_VALUE])).toBe(0);
+  });
+
   it("لا يعدّ NaN ولا اللانهاية قياسًا", () => {
     // قيمة غير منتهية تُفسد المجموع كلّه بصمت لو مرّت.
     expect(sumMeasured([Number.NaN])).toBeNull();

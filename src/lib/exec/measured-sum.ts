@@ -19,7 +19,10 @@ export function sumMeasured(values: ReadonlyArray<number | null | undefined>): n
   let sawMeasurement = false;
   for (const v of values) {
     if (typeof v !== "number" || !Number.isFinite(v)) continue;
-    total += v;
+    // Finite inputs can still overflow when combined; never report Infinity as measured.
+    const next = total + v;
+    if (!Number.isFinite(next)) return null;
+    total = next;
     sawMeasurement = true;
   }
   return sawMeasurement ? total : null;
