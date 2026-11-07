@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { afterEach, describe, expect, it } from "vitest";
-import { httpJson } from "./http.server";
+import { MAX_HTTP_JSON_BODY_BYTES, httpJson } from "./http.server";
 
 const originalFetch = globalThis.fetch;
 
@@ -29,6 +29,52 @@ describe("httpJson response body deadline", () => {
       expect(cancelled).toBe(true);
     },
   );
+
+  it("rejects a declared oversized upstream body and cancels its stream", async () => {
+    let cancelled = false;
+    globalThis.fetch = (async () =>
+      new Response(
+        new ReadableStream({
+          cancel() {
+            cancelled = true;
+          },
+        }),
+        {
+          status: 200,
+          headers: { "content-length": String(MAX_HTTP_JSON_BODY_BYTES + 1) },
+        },
+      )) as typeof fetch;
+
+    await expect(
+      httpJson("https://example.invalid/oversized-header", { retries: 0 }),
+    ).rejects.toMatchObject({ code: "upstream_failed", status: 502 });
+    expect(cancelled).toBe(true);
+  });
+
+  it("bounds actual streamed bytes even without a Content-Length header", async () => {
+    let cancelled = false;
+    let pulls = 0;
+    const chunk = new Uint8Array(1024 * 1024);
+    globalThis.fetch = (async () =>
+      new Response(
+        new ReadableStream({
+          pull(controller) {
+            pulls += 1;
+            controller.enqueue(chunk);
+          },
+          cancel() {
+            cancelled = true;
+          },
+        }),
+        { status: 200 },
+      )) as typeof fetch;
+
+    await expect(
+      httpJson("https://example.invalid/oversized-stream", { retries: 0 }),
+    ).rejects.toMatchObject({ code: "upstream_failed", status: 502 });
+    expect(cancelled).toBe(true);
+    expect(pulls).toBeLessThanOrEqual(MAX_HTTP_JSON_BODY_BYTES / chunk.byteLength + 2);
+  });
 
   it("preserves successful JSON parsing", async () => {
     globalThis.fetch = (async () =>

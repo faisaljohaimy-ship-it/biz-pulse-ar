@@ -37,6 +37,9 @@ const DEFAULT_TIMEOUT_MS = 15_000;
 const DEFAULT_RETRIES = 2;
 const DEFAULT_BASE_MS = 300;
 
+/** Hard cap for buffered upstream JSON/error bodies (the streaming fetch API is unaffected). */
+export const MAX_HTTP_JSON_BODY_BYTES = 8 * 1024 * 1024;
+
 function defaultRetryOn(status: number): boolean {
   return status === 408 || status === 429 || (status >= 500 && status <= 599);
 }
@@ -167,6 +170,13 @@ async function readResponseTextWithin(
   if (!response.body) return "";
 
   const reader = response.body.getReader();
+  // Content-Length is advisory: reject an obviously oversized body early, but
+  // always enforce the cap on actual streamed bytes as well.
+  const declaredLength = Number(response.headers.get("content-length"));
+  if (Number.isFinite(declaredLength) && declaredLength > MAX_HTTP_JSON_BODY_BYTES) {
+    void reader.cancel().catch(() => {});
+    throw apiError("upstream_failed", "Upstream JSON response exceeds size limit");
+  }
   let timer: ReturnType<typeof setTimeout> | undefined;
   let onAbort: (() => void) | undefined;
   const interrupted = new Promise<never>((_, reject) => {
@@ -183,9 +193,15 @@ async function readResponseTextWithin(
   const consume = (async () => {
     const decoder = new TextDecoder();
     let text = "";
+    let receivedBytes = 0;
     for (;;) {
       const { done, value } = await reader.read();
       if (done) return text + decoder.decode();
+      receivedBytes += value.byteLength;
+      if (receivedBytes > MAX_HTTP_JSON_BODY_BYTES) {
+        void reader.cancel().catch(() => {});
+        throw apiError("upstream_failed", "Upstream JSON response exceeds size limit");
+      }
       text += decoder.decode(value, { stream: true });
     }
   })();
