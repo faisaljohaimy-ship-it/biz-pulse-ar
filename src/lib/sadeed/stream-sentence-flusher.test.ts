@@ -15,8 +15,10 @@ describe("SADEED streaming voice first-sentence latency", () => {
     clock = 450;
     flusher.finish();
 
-    expect(onSentence).toHaveBeenCalledExactlyOnceWith("مرحبا", 0);
-    expect(onLatencyBreach).toHaveBeenCalledExactlyOnceWith("first_sentence_slow", 350);
+    expect(onSentence).toHaveBeenCalledTimes(1);
+    expect(onSentence).toHaveBeenCalledWith("مرحبا", 0);
+    expect(onLatencyBreach).toHaveBeenCalledTimes(1);
+    expect(onLatencyBreach).toHaveBeenCalledWith("first_sentence_slow", 350);
     expect(flusher.stats().latencyToFirstSentence).toBe(350);
     flusher.finish();
     expect(onLatencyBreach).toHaveBeenCalledTimes(1);
@@ -33,8 +35,10 @@ describe("SADEED streaming voice first-sentence latency", () => {
     clock = 400;
     flusher.pushToken(". Next");
 
-    expect(onSentence).toHaveBeenCalledExactlyOnceWith("First.", 0);
-    expect(onLatencyBreach).toHaveBeenCalledExactlyOnceWith("first_sentence_slow", 400);
+    expect(onSentence).toHaveBeenCalledTimes(1);
+    expect(onSentence).toHaveBeenCalledWith("First.", 0);
+    expect(onLatencyBreach).toHaveBeenCalledTimes(1);
+    expect(onLatencyBreach).toHaveBeenCalledWith("first_sentence_slow", 400);
     expect(flusher.stats().latencyToFirstSentence).toBe(400);
     flusher.finish();
     expect(onSentence).toHaveBeenLastCalledWith("Next", 1);
@@ -52,7 +56,8 @@ describe("SADEED streaming voice first-sentence latency", () => {
     clock = 90;
     flusher.finish();
 
-    expect(onSentence).toHaveBeenCalledExactlyOnceWith("Ready", 0);
+    expect(onSentence).toHaveBeenCalledTimes(1);
+    expect(onSentence).toHaveBeenCalledWith("Ready", 0);
     expect(onLatencyBreach).not.toHaveBeenCalled();
   });
 });
