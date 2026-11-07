@@ -42,6 +42,21 @@ export function createSentenceFlusher(opts: SentenceFlusherOptions) {
   let sentenceCount = 0;
   let breachReported = false;
 
+  // All first-sentence delivery paths must share the same latency check:
+  // punctuation, soft flush, and the final fragment on stream close.
+  function emitSentence(sentence: string) {
+    if (!sentence) return;
+    const index = sentenceCount++;
+    if (index === 0 && firstTokenAt !== null) {
+      const latency = performance.now() - firstTokenAt;
+      if (latency > budget && !breachReported) {
+        breachReported = true;
+        opts.onLatencyBreach?.("first_sentence_slow", latency);
+      }
+    }
+    opts.onSentence(sentence, index);
+  }
+
   function drain() {
     // Repeatedly split at sentence terminators.
     while (true) {
@@ -50,17 +65,7 @@ export function createSentenceFlusher(opts: SentenceFlusherOptions) {
       const cut = match.index + match[1].length;
       const sentence = buffer.slice(0, cut).trim();
       buffer = buffer.slice(cut).replace(/^\s+/, "");
-      if (sentence) {
-        sentenceCount += 1;
-        if (sentenceCount === 1 && firstTokenAt) {
-          const latency = performance.now() - firstTokenAt;
-          if (latency > budget && !breachReported) {
-            breachReported = true;
-            opts.onLatencyBreach?.("first_sentence_slow", latency);
-          }
-        }
-        opts.onSentence(sentence, sentenceCount - 1);
-      }
+      emitSentence(sentence);
     }
 
     // Soft flush: if no terminator arrived and the buffer already carries a
@@ -69,15 +74,7 @@ export function createSentenceFlusher(opts: SentenceFlusherOptions) {
     if (sentenceCount === 0 && buffer.length >= softFlush && /\s$/.test(buffer)) {
       const sentence = buffer.trim();
       buffer = "";
-      sentenceCount += 1;
-      if (firstTokenAt) {
-        const latency = performance.now() - firstTokenAt;
-        if (latency > budget && !breachReported) {
-          breachReported = true;
-          opts.onLatencyBreach?.("first_sentence_slow", latency);
-        }
-      }
-      opts.onSentence(sentence, 0);
+      emitSentence(sentence);
     }
   }
 
@@ -91,17 +88,14 @@ export function createSentenceFlusher(opts: SentenceFlusherOptions) {
     finish() {
       const remainder = buffer.trim();
       buffer = "";
-      if (remainder) {
-        sentenceCount += 1;
-        opts.onSentence(remainder, sentenceCount - 1);
-      }
+      emitSentence(remainder);
     },
     stats() {
       return {
         sentences: sentenceCount,
         firstTokenAt,
         latencyToFirstSentence:
-          firstTokenAt && sentenceCount > 0 ? performance.now() - firstTokenAt : null,
+          firstTokenAt !== null && sentenceCount > 0 ? performance.now() - firstTokenAt : null,
       };
     },
   };
