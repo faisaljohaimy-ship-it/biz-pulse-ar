@@ -58,6 +58,27 @@ describe("SADEED adaptive preferences", () => {
     ]);
   });
 
+  it("does not memorize a forbidden bullet format as a positive preference", () => {
+    expect(extractSadeedAdaptivePreferences("From now on, never use bullet points.")).toEqual([]);
+    expect(extractSadeedAdaptivePreferences("اجعل ردودك بدون نقاط مختصرة.")).toEqual([]);
+    expect(extractSadeedAdaptivePreferences("From now on, never use brief replies.")).toEqual([]);
+    expect(extractSadeedAdaptivePreferences("Always keep your replies concise.")).toEqual([
+      { key: "response_length", value: "concise", confidence: 0.95 },
+    ]);
+    expect(
+      extractSadeedAdaptivePreferences("Always answer in English but avoid bullet points."),
+    ).toEqual([{ key: "response_language", value: "en", confidence: 0.95 }]);
+  });
+
+  it("still honors affirmative bullet requests alongside unrelated exclusions", () => {
+    expect(extractSadeedAdaptivePreferences("From now on, use bullet points.")).toEqual([
+      { key: "response_format", value: "bullets", confidence: 0.95 },
+    ]);
+    expect(
+      extractSadeedAdaptivePreferences("Always respond with no tables, but use bullet points."),
+    ).toEqual([{ key: "response_format", value: "no_tables", confidence: 0.95 }]);
+  });
+
   it("maps only approved enum pairs into prompt hints", () => {
     expect(sadeedPreferencePromptLine("response_length", "concise")).toContain("concise");
     expect(sadeedPreferencePromptLine("recipient", "someone@example.com")).toBe(null);

@@ -14,8 +14,9 @@ const NEGATED_LANGUAGE_CONTEXT =
   /(?:\b(?:never|avoid|without|not|don't|do\s+not)\b|(?:لا|بدون|تجنب))(?:\s+[^\s,.،؛;:!?؟]+){0,4}\s*$/i;
 const ENGLISH_LANGUAGE_MENTION = /(?:بالإنجليزية|باللغة الإنجليزية|ردودك إنجليزي|in english)/gi;
 const ARABIC_LANGUAGE_MENTION = /(?:بالعربية|باللغة العربية|ردودك عربي|بالعربي|in arabic)/gi;
+const BULLET_FORMAT_MENTION = /(?:على شكل نقاط|بنقاط|نقاط مختصرة|bullet points|bullets)/gi;
 
-function hasAffirmativeLanguageMention(text: string, mentions: RegExp): boolean {
+function hasAffirmativeMention(text: string, mentions: RegExp): boolean {
   return [...text.matchAll(mentions)].some((match) => {
     const index = match.index ?? 0;
     const context = text.slice(Math.max(0, index - 80), index);
@@ -43,22 +44,23 @@ export function extractSadeedAdaptivePreferences(input: string): SadeedAdaptiveP
   ) {
     add("response_length", "detailed");
   } else if (
-    /(?:باختصار|مختصر(?:ة|اً|ا)?|موجز(?:ة|اً|ا)?|ردود قصيرة|concise|brief|short replies)/i.test(
+    hasAffirmativeMention(
       text,
+      /(?:باختصار|مختصر(?:ة|اً|ا)?|موجز(?:ة|اً|ا)?|ردود قصيرة|concise|brief|short replies)/gi,
     )
   ) {
     add("response_length", "concise");
   }
 
-  if (hasAffirmativeLanguageMention(text, ENGLISH_LANGUAGE_MENTION)) {
+  if (hasAffirmativeMention(text, ENGLISH_LANGUAGE_MENTION)) {
     add("response_language", "en");
-  } else if (hasAffirmativeLanguageMention(text, ARABIC_LANGUAGE_MENTION)) {
+  } else if (hasAffirmativeMention(text, ARABIC_LANGUAGE_MENTION)) {
     add("response_language", "ar");
   }
 
   if (/(?:بدون جداول|لا تستخدم الجداول|no tables)/i.test(text)) {
     add("response_format", "no_tables");
-  } else if (/(?:على شكل نقاط|بنقاط|نقاط مختصرة|bullet points|bullets)/i.test(text)) {
+  } else if (hasAffirmativeMention(text, BULLET_FORMAT_MENTION)) {
     add("response_format", "bullets");
   }
 
