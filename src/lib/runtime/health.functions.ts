@@ -5,6 +5,7 @@
 
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { eventConsumerHealth } from "./event-consumer-health";
 import { recentExecutionHealth } from "./run-health";
 
 export type HealthStatus = "healthy" | "warning" | "offline" | "blocked" | "unknown";
@@ -158,7 +159,7 @@ export const getRuntimeHealth = createServerFn({ method: "GET" })
     });
 
     // Pending event backlog
-    const { count: pendingEv } = await supabaseAdmin
+    const { count: pendingEv, error: pendingEvError } = await supabaseAdmin
       .from("enterprise_events")
       .select("id", { count: "exact", head: true })
       .eq("org_id", orgId)
@@ -166,8 +167,9 @@ export const getRuntimeHealth = createServerFn({ method: "GET" })
     subs.push({
       id: "event_consumer",
       label: "Event Consumer",
-      status: (pendingEv ?? 0) > 100 ? "warning" : (pendingEv ?? 0) >= 0 ? "healthy" : "unknown",
-      evidence: { pending_backlog: pendingEv ?? 0 },
+      status: eventConsumerHealth(pendingEv, Boolean(pendingEvError)),
+      evidence: { pending_backlog: pendingEv },
+      reason: pendingEvError ? "Event backlog count unavailable." : undefined,
     });
 
     // Audit Trail
