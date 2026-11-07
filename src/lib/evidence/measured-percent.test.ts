@@ -52,7 +52,7 @@ describe("① نسبةٌ مقيسة", () => {
     expect(() => measuredPercent(Number.POSITIVE_INFINITY)).toThrow(/غير محدودة/);
   });
   it("rejects forged percentages outside the 0–100 wire contract", () => {
-    for (const value of [-1, 100.01, 101, 999]) {
+    for (const value of [-1, 100.01, 101, 999, Number.NaN, Number.POSITIVE_INFINITY]) {
       const corrupted = { __brand: "MeasuredPercent", value } as unknown as MeasuredPercent;
       expect(isMeasuredPercent(corrupted)).toBe(false);
       expect(() => percentValue(corrupted)).toThrow(/ليست نسبةً مقيسة/);
