@@ -37,21 +37,19 @@ describe("SADEED adaptive preferences", () => {
   });
 
   it("does not store a forbidden language as a durable preference", () => {
-    expect(
-      extractSadeedAdaptivePreferences("Always answer in Arabic, never in English."),
-    ).toEqual([{ key: "response_language", value: "ar", confidence: 0.95 }]);
-    expect(
-      extractSadeedAdaptivePreferences("اجعل ردودك بالعربية، لا ترد بالإنجليزية."),
-    ).toEqual([{ key: "response_language", value: "ar", confidence: 0.95 }]);
-    expect(
-      extractSadeedAdaptivePreferences("From now on, never reply in English."),
-    ).toEqual([]);
+    expect(extractSadeedAdaptivePreferences("Always answer in Arabic, never in English.")).toEqual([
+      { key: "response_language", value: "ar", confidence: 0.95 },
+    ]);
+    expect(extractSadeedAdaptivePreferences("اجعل ردودك بالعربية، لا ترد بالإنجليزية.")).toEqual([
+      { key: "response_language", value: "ar", confidence: 0.95 },
+    ]);
+    expect(extractSadeedAdaptivePreferences("From now on, never reply in English.")).toEqual([]);
   });
 
   it("retains affirmative English and ignores a negated Arabic mention", () => {
-    expect(
-      extractSadeedAdaptivePreferences("Always answer in English, never in Arabic."),
-    ).toEqual([{ key: "response_language", value: "en", confidence: 0.95 }]);
+    expect(extractSadeedAdaptivePreferences("Always answer in English, never in Arabic.")).toEqual([
+      { key: "response_language", value: "en", confidence: 0.95 },
+    ]);
     expect(
       extractSadeedAdaptivePreferences("From now on, keep your replies detailed and in English."),
     ).toEqual([
