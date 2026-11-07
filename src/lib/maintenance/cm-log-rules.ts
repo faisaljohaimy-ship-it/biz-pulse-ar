@@ -196,10 +196,15 @@ export function normalizeSapWo(v: unknown): string | null {
   return s && /^\d{6,}$/.test(s) ? s : null;
 }
 
+// Excel exports may use grouped thousands, but stripping arbitrary commas first
+// turns empty punctuation into zero and malformed amounts into fabricated costs.
+const DECIMAL_CELL = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i;
+const GROUPED_DECIMAL_CELL = /^[+-]?\d{1,3}(?:,\d{3})+(?:\.\d*)?(?:e[+-]?\d+)?$/i;
+
 export function toNumber(v: unknown): number | null {
   if (typeof v === "number" && Number.isFinite(v)) return v;
   const s = cleanText(v);
-  if (!s) return null;
+  if (!s || (!DECIMAL_CELL.test(s) && !GROUPED_DECIMAL_CELL.test(s))) return null;
   const n = Number(s.replace(/,/g, ""));
   return Number.isFinite(n) ? n : null;
 }
