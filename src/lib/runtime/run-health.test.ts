@@ -27,4 +27,22 @@ describe("runtime execution health", () => {
   it("normalizes failure status casing and whitespace", () => {
     expect(recentExecutionHealth(0, " FAILED ", 24 * 60)).toBe("warning");
   });
+
+  it.each([null, undefined, "", "   "])(
+    "does not infer healthy from a missing execution status (%s)",
+    (status) => {
+      expect(recentExecutionHealth(2, status, 24 * 60)).toBe("unknown");
+    },
+  );
+
+  it.each([Number.NaN, Number.POSITIVE_INFINITY, 0, -1])(
+    "does not infer healthy with an invalid freshness limit (%s)",
+    (staleAfterMin) => {
+      expect(recentExecutionHealth(2, "succeeded", staleAfterMin)).toBe("unknown");
+    },
+  );
+
+  it("keeps an explicit failure as warning despite an invalid freshness limit", () => {
+    expect(recentExecutionHealth(2, "failed", Number.NaN)).toBe("warning");
+  });
 });
