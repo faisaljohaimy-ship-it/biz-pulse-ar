@@ -66,7 +66,11 @@ const modelSlots = new Map<symbol, number>();
 export function maxInflightModelCalls(
   env: Record<string, string | undefined> = process.env,
 ): number {
-  const raw = Number.parseInt((env.SADEED_CHAT_MAX_INFLIGHT ?? "").trim(), 10);
+  const text = (env.SADEED_CHAT_MAX_INFLIGHT ?? "").trim();
+  // parseInt silently accepts malformed values like "2e2" or "3junk",
+  // unexpectedly reducing live chat capacity rather than using the default.
+  if (!/^\d+$/.test(text)) return CHAT_MAX_INFLIGHT_DEFAULT;
+  const raw = Number(text);
   if (!Number.isFinite(raw)) return CHAT_MAX_INFLIGHT_DEFAULT;
   return Math.min(64, Math.max(1, raw));
 }
