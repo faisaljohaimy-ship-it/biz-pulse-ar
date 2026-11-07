@@ -50,26 +50,23 @@ export type RunStatusMeta = {
   live: boolean;
 };
 
+// These two states intentionally share identical user-facing metadata.
+const APPROVAL_META: RunStatusMeta = {
+  ar: "بانتظار الاعتماد",
+  en: "Awaiting approval",
+  tone: "warning",
+  shape: "triangle",
+  live: false,
+};
+
 export const RUN_STATUS_LABELS: Record<RunStatusKey, RunStatusMeta> = {
   queued: { ar: "في الطابور", en: "Queued", tone: "neutral", shape: "none", live: true },
   running: { ar: "قيد التشغيل", en: "Running", tone: "info", shape: "none", live: true },
   succeeded: { ar: "نجح", en: "Succeeded", tone: "success", shape: "circle", live: false },
   failed: { ar: "فشل", en: "Failed", tone: "danger", shape: "octagon", live: false },
   cancelled: { ar: "أُلغي", en: "Cancelled", tone: "muted", shape: "none", live: false },
-  pending_approval: {
-    ar: "بانتظار الاعتماد",
-    en: "Awaiting approval",
-    tone: "warning",
-    shape: "triangle",
-    live: false,
-  },
-  waiting_approval: {
-    ar: "بانتظار الاعتماد",
-    en: "Awaiting approval",
-    tone: "warning",
-    shape: "triangle",
-    live: false,
-  },
+  pending_approval: APPROVAL_META,
+  waiting_approval: APPROVAL_META,
   rejected: { ar: "رُفض", en: "Rejected", tone: "muted", shape: "none", live: false },
   expired: {
     ar: "انقضت المهلة دون قرار",
