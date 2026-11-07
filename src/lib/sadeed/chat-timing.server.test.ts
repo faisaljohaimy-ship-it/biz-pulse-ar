@@ -370,3 +370,35 @@ describe("الغلاف withChatTurnTrace", () => {
     expect(await res.text()).toBe("still fine");
   });
 });
+
+describe("invalid token counts", () => {
+  it("does not report negative, fractional, or unsafe usage as valid measurements", () => {
+    expect(
+      readUsage({
+        inputTokens: -1,
+        outputTokens: 0.5,
+        outputTokenDetails: { reasoningTokens: -2 },
+        inputTokenDetails: { cacheReadTokens: 1.4 },
+      }),
+    ).toBeNull();
+    expect(readUsage({ inputTokens: Number.MAX_SAFE_INTEGER + 1 })).toBeNull();
+  });
+
+  it("keeps zero counts and uses valid legacy fields when nested details are invalid", () => {
+    expect(
+      readUsage({
+        inputTokens: 0,
+        outputTokens: 22,
+        outputTokenDetails: { reasoningTokens: -1 },
+        reasoningTokens: 9,
+        inputTokenDetails: { cacheReadTokens: -3 },
+        cachedInputTokens: 4,
+      }),
+    ).toEqual({
+      inputTokens: 0,
+      outputTokens: 22,
+      reasoningTokens: 9,
+      cachedInputTokens: 4,
+    });
+  });
+});
