@@ -80,9 +80,8 @@ describe("authenticated request session lifecycle", () => {
     await authenticatedFetch("/api/chat", {
       headers: { Authorization: "Bearer stale-user-token" },
     });
-    expect(
-      new Headers((http.mock.calls[0][1] as RequestInit).headers).has("Authorization"),
-    ).toBe(false);
+    const guestHeaders = new Headers((http.mock.calls[0][1] as RequestInit).headers);
+    expect(guestHeaders.has("Authorization")).toBe(false);
 
     auth.getSession.mockResolvedValueOnce({
       data: { session: { access_token: "current-session-token" } },
@@ -91,9 +90,8 @@ describe("authenticated request session lifecycle", () => {
     await authenticatedFetch("/api/chat", {
       headers: { Authorization: "Bearer stale-user-token" },
     });
-    expect(
-      new Headers((http.mock.calls[1][1] as RequestInit).headers).get("Authorization"),
-    ).toBe("Bearer current-session-token");
+    const activeHeaders = new Headers((http.mock.calls[1][1] as RequestInit).headers);
+    expect(activeHeaders.get("Authorization")).toBe("Bearer current-session-token");
   });
 
   it("preserves valid guest access and Request headers", async () => {
