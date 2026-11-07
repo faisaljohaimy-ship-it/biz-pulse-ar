@@ -219,6 +219,15 @@ describe("بروتوكول البثّ", () => {
       { type: "delta", text: "x" },
     ]);
   });
+
+  it("CRLF split between network chunks emits events before stream closure", () => {
+    const parser = createFinnEventParser();
+    const wire = events.map(encodeFinnEvent).join("").replace(/\n/g, "\r\n");
+    const received: FinnStreamEvent[] = [];
+    for (const char of wire) received.push(...parser.push(char));
+    expect(received).toEqual(events);
+    expect(parser.flush()).toEqual([]);
+  });
 });
 
 describe("حدث الأداة في بروتوكول البثّ (٢٠٢٦/١٠/٢٤)", () => {
