@@ -63,6 +63,19 @@ describe("منع التكرار", () => {
     expect(acquireRequest("k-0", 1_000 + REQUEST_INFLIGHT_TTL_MS)).not.toBeNull();
   });
 
+  it("يستردّ الحجوزات المنتهية بعد رجوع ساعة النظام دون إسقاط الحجز الحيّ", () => {
+    // The first request was reserved before a backward wall-clock adjustment.
+    const release = acquireRequest("first", 100_000);
+    expect(release).not.toBeNull();
+    for (let i = 0; i < 4_999; i += 1) {
+      expect(acquireRequest(`later-${i}`, 50_000)).not.toBeNull();
+    }
+    // The later 4,999 reservations have expired, although the first has not.
+    expect(acquireRequest("fresh", 75_000)).not.toBeNull();
+    expect(acquireRequest("first", 75_000)).toBeNull();
+    release!();
+  });
+
   it("التحرير لا يمسح حجزًا أحدث بالمفتاح نفسه", () => {
     const stale = acquireRequest("k", 0)!;
     const fresh = acquireRequest("k", REQUEST_INFLIGHT_TTL_MS)!;
