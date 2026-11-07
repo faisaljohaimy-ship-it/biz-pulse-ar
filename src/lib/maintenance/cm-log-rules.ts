@@ -212,7 +212,15 @@ export function toIsoDate(v: unknown): string | null {
     return new Date(Math.round((v - 25569) * 86400000)).toISOString().slice(0, 10);
   }
   const s = cleanText(v);
-  if (s && /^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+  if (s && /^\d{4}-\d{2}-\d{2}/.test(s)) {
+    const day = s.slice(0, 10);
+    // Excel exports may contain impossible calendar days. Date parsing can
+    // silently roll e.g. February 30 into March, so require exact round-trip.
+    const parsed = new Date(`${day}T00:00:00.000Z`);
+    return !Number.isNaN(parsed.valueOf()) && parsed.toISOString().slice(0, 10) === day
+      ? day
+      : null;
+  }
   return null;
 }
 
