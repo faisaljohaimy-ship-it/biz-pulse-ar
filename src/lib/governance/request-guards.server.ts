@@ -74,8 +74,14 @@ export function maxInflightModelCalls(
 export function inflightModelCalls(now = Date.now()): number {
   let live = 0;
   for (const [token, startedAt] of modelSlots) {
-    if (now - startedAt >= MODEL_SLOT_TTL_MS) modelSlots.delete(token);
-    else live += 1;
+    if (now - startedAt >= MODEL_SLOT_TTL_MS) {
+      modelSlots.delete(token);
+    } else {
+      // A backward wall-clock adjustment must not release an active slot,
+      // but abandoned slots must still expire within one TTL of that adjustment.
+      if (now < startedAt) modelSlots.set(token, now);
+      live += 1;
+    }
   }
   return live;
 }

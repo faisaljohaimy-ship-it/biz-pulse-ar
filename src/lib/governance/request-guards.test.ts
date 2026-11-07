@@ -112,4 +112,23 @@ describe("سقف التزامن", () => {
     expect(acquireModelSlot(MODEL_SLOT_TTL_MS - 1, env)).toBeNull();
     expect(acquireModelSlot(MODEL_SLOT_TTL_MS, env)).not.toBeNull();
   });
+
+  it("يحافظ على السقف ثم يستردّ خانة النموذج بعد رجوع ساعة الخادم", () => {
+    const env = { SADEED_CHAT_MAX_INFLIGHT: "1" };
+    const original = acquireModelSlot(100_000, env);
+    expect(original).not.toBeNull();
+
+    // The clock steps back while the original model request is still active.
+    expect(inflightModelCalls(50_000)).toBe(1);
+    expect(acquireModelSlot(50_000, env)).toBeNull();
+    expect(inflightModelCalls(50_000 + MODEL_SLOT_TTL_MS - 1)).toBe(1);
+
+    // A forgotten slot expires after the full TTL measured from the rollback.
+    const replacement = acquireModelSlot(50_000 + MODEL_SLOT_TTL_MS, env);
+    expect(replacement).not.toBeNull();
+    original!();
+    // A delayed release for the old slot must not delete the new reservation.
+    expect(inflightModelCalls(50_000 + MODEL_SLOT_TTL_MS)).toBe(1);
+    replacement!();
+  });
 });
