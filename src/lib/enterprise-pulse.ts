@@ -441,14 +441,11 @@ export function formatRelativeTime(date: Date, locale: "ar" | "en"): string {
   if (diff < 5) return locale === "ar" ? "الآن" : "just now";
 
   const future = offsetMs < 0;
-  const count =
-    diff < 60
-      ? diff
-      : diff < 3600
-        ? Math.floor(diff / 60)
-        : Math.floor(diff / 3600);
-  const unitAr = diff < 60 ? "ثانية" : diff < 3600 ? "دقيقة" : "ساعة";
-  const unitEn = diff < 60 ? "s" : diff < 3600 ? "m" : "h";
+  const minutes = Math.floor(diff / 60);
+  const hours = Math.floor(minutes / 60);
+  const count = hours || minutes || diff;
+  const unitAr = hours ? "ساعة" : minutes ? "دقيقة" : "ثانية";
+  const unitEn = hours ? "h" : minutes ? "m" : "s";
   if (locale === "ar") {
     return `${future ? "بعد" : "قبل"} ${count} ${unitAr}`;
   }
