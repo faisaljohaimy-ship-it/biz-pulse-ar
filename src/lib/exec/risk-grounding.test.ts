@@ -45,6 +45,11 @@ describe("① استخراج الأرقام — بالعربية كما بالل
     expect(numbersIn("۲٫۳")).toEqual([2.3]);
   });
 
+  it("يحفظ إشارة السالب اللاتينية والرياضية للأعداد الصحيحة والعشرية", () => {
+    expect(numbersIn("انخفاض -3 بلاغات و−٤ أعطال")).toEqual([-3, -4]);
+    expect(numbersIn("z=−٢٫٣٤")).toEqual([-2.34]);
+  });
+
   it("ولا يعثر على رقمٍ في نصٍّ بلا أرقام", () => {
     expect(numbersIn("ضغط متصاعد في الموقع")).toEqual([]);
   });
@@ -96,6 +101,14 @@ describe("③ الحكم — الصياغة تمرّ والوقائع العدد
       ungrounded: [99.9],
     });
     expect(judgeNarration(["٩٩ بلاغًا منها ٩ حرجة"], withParts, 24).accepted).toBe(true);
+  });
+
+  it("يرفض عدّات سالبة مختلقة ولو طابقت مقاديرها العدّات المرصودة", () => {
+    expect(judgeNarration(["-٣ بلاغات حرجة و−٤ في 24 ساعة"], signal, 24)).toEqual({
+      accepted: false,
+      ungrounded: [-3, -4],
+    });
+    expect(judgeNarration(["z=−٢٫٣٤"], { ...signal, z: -2.34 }, 24).accepted).toBe(true);
   });
 
   it("ويُرفض النصّ الفارغ — بندُ خطرٍ بلا سبب أسوأ من بطاقةٍ حتميّة", () => {
