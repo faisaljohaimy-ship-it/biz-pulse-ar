@@ -178,20 +178,13 @@ const isRecord = (v: unknown): v is Record<string, unknown> =>
   typeof v === "object" && v !== null && !Array.isArray(v);
 
 const asCount = (v: unknown): number | null => {
-  // Audit counts must be representable integers; oversized finite values
-  // are no more trustworthy than NaN/Infinity and can corrupt totals.
-  if (typeof v === "number" && Number.isFinite(v) && v >= 0 && v <= Number.MAX_SAFE_INTEGER)
-    return Math.floor(v);
   if (Array.isArray(v)) return v.length;
-  if (
-    isRecord(v) &&
-    typeof v.count === "number" &&
-    Number.isFinite(v.count) &&
-    v.count >= 0 &&
-    v.count <= Number.MAX_SAFE_INTEGER
-  )
-    return Math.floor(v.count);
-  return null;
+  // Accept both numeric and {count} shapes. Invalid/unsafe values are absent,
+  // not zero: combining huge finite counts must not yield Infinity.
+  const raw = isRecord(v) ? v.count : v;
+  if (typeof raw !== "number" || raw < 0) return null;
+  const count = Math.floor(raw);
+  return Number.isSafeInteger(count) ? count : null;
 };
 
 /**
