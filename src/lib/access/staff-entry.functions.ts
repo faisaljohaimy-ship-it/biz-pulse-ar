@@ -23,11 +23,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import {
-  normalizeStaffNumber,
-  validateEntry,
-  type StaffEntry,
-} from "./staff-entry";
+import { normalizeStaffNumber, validateEntry, type StaffEntry } from "./staff-entry";
 
 const recordSchema = z.object({
   staff_number: z.string().min(1).max(64),
