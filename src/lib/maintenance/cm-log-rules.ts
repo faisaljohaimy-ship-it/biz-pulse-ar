@@ -151,7 +151,8 @@ const WORKING_NOW =
 // A negative maintenance note ("not working properly now") is not evidence
 // that the repair has reached the 90% testing stage. Inspect each matched
 // phrase, including "not yet", so a later positive statement still counts.
-const NEGATED_COMPLETION_PREFIX = /\b(?:not|never|isn['’]?t|wasn['’]?t|aren['’]?t|no longer)(?:\s+yet)?\s*$/i;
+const NEGATED_COMPLETION_PREFIX =
+  /\b(?:not|never|isn['’]?t|wasn['’]?t|aren['’]?t|no longer)(?:\s+yet)?\s*$/i;
 
 function hasPositiveWorkingEvidence(note: string): boolean {
   for (const match of note.matchAll(WORKING_NOW)) {
