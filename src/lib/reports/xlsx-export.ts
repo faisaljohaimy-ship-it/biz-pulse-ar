@@ -81,7 +81,7 @@ function sanitizeSheetName(raw: string): string {
   const cleaned = raw
     .replace(/[[\]:*?/\\]/g, " ")
     // C0/C1 controls can survive whitespace normalization and corrupt worksheet XML.
-    .replace(/[\u0000-\u001f\u007f-\u009f]/g, " ")
+    .replace(/\p{Cc}/gu, " ")
     .replace(/\s+/g, " ")
     .replace(/^'+|'+$/g, "")
     .trim();
