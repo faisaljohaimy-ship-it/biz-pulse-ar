@@ -31,4 +31,16 @@ describe("urgent-summary critical-task ordering", () => {
     expect(compareUrgentTasks(first, second)).toBe(0);
     expect(compareUrgentTasks(second, first)).toBe(0);
   });
+
+  it("rejects calendar overflow while keeping valid UTC and offset timestamps", () => {
+    const future = { priority: "عاجل", due_at: "2026-11-08T09:00:00+03:00" };
+    const earlier = { priority: "عاجل", due_at: "2026-11-08T05:00:00Z" };
+    const overflow = { priority: "عاجل", due_at: "2026-02-30" };
+    expect([future, overflow, earlier].sort(compareUrgentTasks)).toEqual([
+      earlier,
+      future,
+      overflow,
+    ]);
+  });
+
 });
