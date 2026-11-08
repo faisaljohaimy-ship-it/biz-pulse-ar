@@ -87,24 +87,26 @@ function sanitizeSheetName(raw: string): string {
 }
 
 function makeNameAllocator(): (raw: string) => string {
+  // Excel compares sheet names case-insensitively. Preserve display casing
+  // while reserving folded keys, including names shortened to 31 characters.
   const taken = new Set<string>();
+  const reserve = (name: string): boolean => {
+    const key = name.toLowerCase();
+    if (taken.has(key)) return false;
+    taken.add(key);
+    return true;
+  };
   return (raw: string) => {
     const base = sanitizeSheetName(raw);
-    if (!taken.has(base)) {
-      taken.add(base);
-      return base;
-    }
+    if (reserve(base)) return base;
     for (let n = 2; n < 1000; n++) {
       const suffix = `~${n}`;
       const candidate = `${base.slice(0, 31 - suffix.length)}${suffix}`;
-      if (!taken.has(candidate)) {
-        taken.add(candidate);
-        return candidate;
-      }
+      if (reserve(candidate)) return candidate;
     }
     /* عمليًّا لا يُبلَغ: ٩٩٨ ورقة بالاسم نفسه. */
     const fallback = `ورقة ${taken.size + 1}`;
-    taken.add(fallback);
+    reserve(fallback);
     return fallback;
   };
 }

@@ -225,6 +225,61 @@ describe("بنية المصنّف", () => {
     }
   });
 
+  it("reserves Excel sheet names case-insensitively across sections and chart sheets", async () => {
+    const original = doc();
+    const report: ReportDocument = {
+      ...original,
+      sections: [
+        {
+          id: "risk-1",
+          title: "Risk",
+          blocks: [
+            {
+              kind: "chart",
+              title: "Alerts",
+              chartType: "bar",
+              categories: ["Today"],
+              series: [{ name: "Incidents", values: [1] }],
+            },
+          ],
+        },
+        {
+          id: "risk-2",
+          title: "risk",
+          blocks: [
+            {
+              kind: "chart",
+              title: "alerts",
+              chartType: "bar",
+              categories: ["Today"],
+              series: [{ name: "Incidents", values: [2] }],
+            },
+          ],
+        },
+        { id: "risk-3", title: "RISK", blocks: [] },
+        { id: "about", title: "عن هذا التقرير", blocks: [] },
+        { id: "long-upper", title: "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789", blocks: [] },
+        { id: "long-lower", title: "abcdefghijklmnopqrstuvwxyz123456789", blocks: [] },
+      ],
+    };
+    const names = planReportWorkbook(report).map((plan) => plan.name);
+    expect(names.slice(0, 5)).toEqual([
+      "عن هذا التقرير",
+      "Risk",
+      "risk~2",
+      "RISK~3",
+      "عن هذا التقرير~2",
+    ]);
+    expect(names).toContain("بيانات · Alerts");
+    expect(names).toContain("بيانات · alerts~2");
+    expect(names.every((name) => name.length <= 31)).toBe(true);
+    expect(new Set(names.map((name) => name.toLowerCase())).size).toBe(names.length);
+
+    const XLSX = await import("xlsx");
+    const actual = XLSX.read(await buildReportXlsx(report), { type: "array" });
+    expect(actual.SheetNames).toEqual(names);
+  });
+
   it("عروض الأعمدة تتّسع للعربية — أعرض من عدّ المحارف المجرّد", () => {
     const plans = planReportWorkbook(doc());
     const kpi = sheet(plans, "المؤشرات التنفيذية")!;
