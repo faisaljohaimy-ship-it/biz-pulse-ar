@@ -82,12 +82,9 @@ function splitLongParagraph(part: string, max: number): string[] {
     if (cut <= 0) {
       // UTF-16 slicing through a surrogate pair would send a replacement
       // character to the embedding provider instead of the original emoji.
-      const high = rest.charCodeAt(max - 1);
-      const low = rest.charCodeAt(max);
-      const splitsPair = high >= 0xd800 && high <= 0xdbff && low >= 0xdc00 && low <= 0xdfff;
-      const safeCut = splitsPair ? (max > 1 ? max - 1 : max + 1) : max;
-      pieces.push(rest.slice(0, safeCut));
-      rest = rest.slice(safeCut);
+      const end = rest.codePointAt(max - 1)! > 0xffff ? (max > 1 ? max - 1 : 2) : max;
+      pieces.push(rest.slice(0, end));
+      rest = rest.slice(end);
     } else {
       pieces.push(rest.slice(0, cut).trimEnd());
       rest = rest.slice(cut + 1).trimStart();
@@ -130,15 +127,10 @@ export function chunkText(input: string, options: ChunkOptions = {}): string[] {
         // The overlap is duplicate context only. If it starts on the low
         // surrogate of an emoji, skip that code unit rather than introducing
         // a broken Unicode character into the next chunk.
-        let tailStart = Math.max(0, buffer.length - overlap);
-        const first = buffer.charCodeAt(tailStart);
-        const previous = buffer.charCodeAt(tailStart - 1);
-        if (
-          tailStart > 0 &&
-          first >= 0xdc00 && first <= 0xdfff &&
-          previous >= 0xd800 && previous <= 0xdbff
-        ) tailStart += 1;
-        const tail = buffer.slice(tailStart);
+        const start = Math.max(0, buffer.length - overlap);
+        const tail = buffer.slice(
+          start + Number(start > 0 && buffer.codePointAt(start - 1)! > 0xffff),
+        );
         buffer = `${tail}\n\n${part}`;
       } else {
         buffer = buffer ? `${buffer}\n\n${part}` : part;
