@@ -42,5 +42,4 @@ describe("urgent-summary critical-task ordering", () => {
       overflow,
     ]);
   });
-
 });
