@@ -156,9 +156,7 @@ describe("due date calendar validation", () => {
   it("accepts a real leap day and keeps the original end-of-local-day payload contract", () => {
     const draft = { ...base, due_at: "2024-02-29" };
     expect(validateWorkOrderDraft(draft)).toBeNull();
-    expect(buildWorkOrderPayload(draft).due_at).toBe(
-      new Date("2024-02-29T23:59:59").toISOString(),
-    );
+    expect(buildWorkOrderPayload(draft).due_at).toBe(new Date("2024-02-29T23:59:59").toISOString());
   });
 
   it("preserves an empty optional date and ordinary month-end dates", () => {
