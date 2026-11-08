@@ -83,7 +83,9 @@ function sanitizeSheetName(raw: string): string {
     .replace(/\s+/g, " ")
     .replace(/^'+|'+$/g, "")
     .trim();
-  return cleaned.slice(0, 31).trim() || "ورقة";
+  // Cutting to Excel’s 31-character limit may expose an internal trailing apostrophe.
+  const truncated = cleaned.slice(0, 31).trim();
+  return truncated.replace(/^\'+|\'+$/g, "").trim() || "ورقة";
 }
 
 function makeNameAllocator(): (raw: string) => string {
