@@ -82,7 +82,7 @@ function splitLongParagraph(part: string, max: number): string[] {
     if (cut <= 0) {
       // UTF-16 slicing through a surrogate pair would send a replacement
       // character to the embedding provider instead of the original emoji.
-      const end = rest.codePointAt(max - 1)! > 0xffff ? max - 1 || 2 : max;
+      const end = max - Number(rest.codePointAt(max - 1)! > 0xffff) || 2;
       pieces.push(rest.slice(0, end));
       rest = rest.slice(end);
     } else {
@@ -91,7 +91,7 @@ function splitLongParagraph(part: string, max: number): string[] {
     }
   }
   if (rest) pieces.push(rest);
-  return pieces.filter(Boolean);
+  return pieces;
 }
 
 export type ChunkOptions = {
@@ -127,7 +127,7 @@ export function chunkText(input: string, options: ChunkOptions = {}): string[] {
         // The overlap is duplicate context only. If it starts on the low
         // surrogate of an emoji, skip that code unit rather than introducing
         // a broken Unicode character into the next chunk.
-        const tail = buffer.slice(-overlap).replace(/^[\uDC00-\uDFFF]/, "");
+        const tail = buffer.slice(-overlap).replace(/^\p{Cs}/u, "");
         buffer = `${tail}\n\n${part}`;
       } else {
         buffer = buffer ? `${buffer}\n\n${part}` : part;
