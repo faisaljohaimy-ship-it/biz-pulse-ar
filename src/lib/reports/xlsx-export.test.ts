@@ -225,6 +225,30 @@ describe("بنية المصنّف", () => {
     }
   });
 
+  it("never exposes a trailing apostrophe when Excel truncates long section names", async () => {
+    const original = doc();
+    const report: ReportDocument = {
+      ...original,
+      sections: [
+        { id: "truncated", title: "A".repeat(30) + "'details", blocks: [] },
+        { id: "duplicate", title: "A".repeat(30), blocks: [] },
+        { id: "quoted", title: "'" + "B".repeat(30) + "'details", blocks: [] },
+        { id: "internal", title: "Operations' West", blocks: [] },
+      ],
+    };
+
+    const names = planReportWorkbook(report).map((plan) => plan.name);
+    expect(names[1]).toBe("A".repeat(30));
+    expect(names[2]).toBe("A".repeat(29) + "~2");
+    expect(names[3]).toBe("B".repeat(30));
+    expect(names[4]).toBe("Operations' West");
+    expect(names.every((name) => name.length <= 31 && !/^'|'$/.test(name))).toBe(true);
+
+    const XLSX = await import("xlsx");
+    const actual = XLSX.read(await buildReportXlsx(report), { type: "array" });
+    expect(actual.SheetNames).toEqual(names);
+  });
+
   it("reserves Excel sheet names case-insensitively across sections and chart sheets", async () => {
     const original = doc();
     const report: ReportDocument = {
