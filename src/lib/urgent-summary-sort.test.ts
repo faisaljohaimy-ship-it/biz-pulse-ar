@@ -9,11 +9,12 @@ describe("urgent-summary critical-task ordering", () => {
       { id: "later", priority: "عاجل جدًا", due_at: "2026-11-08T09:00:00Z" },
       { id: "earlier", priority: "عاجل جدًا", due_at: "2026-11-08T06:00:00Z" },
     ];
-    expect(rows.sort(compareUrgentTasks).slice(0, 3).map((r) => r.id)).toEqual([
-      "earlier",
-      "later",
-      "invalid",
-    ]);
+    expect(
+      rows
+        .sort(compareUrgentTasks)
+        .slice(0, 3)
+        .map((r) => r.id),
+    ).toEqual(["earlier", "later", "invalid"]);
   });
 
   it("does not discard priority ordering when the highest-priority due date is invalid", () => {
@@ -21,10 +22,7 @@ describe("urgent-summary critical-task ordering", () => {
       { id: "standard", priority: "عاجل", due_at: "2026-11-01T00:00:00Z" },
       { id: "critical", priority: "عاجل جدًا", due_at: "invalid" },
     ];
-    expect(rows.sort(compareUrgentTasks).map((r) => r.id)).toEqual([
-      "critical",
-      "standard",
-    ]);
+    expect(rows.sort(compareUrgentTasks).map((r) => r.id)).toEqual(["critical", "standard"]);
   });
 
   it("returns a finite comparator value for two missing or invalid dates", () => {
