@@ -42,6 +42,7 @@ describe("urgent-summary critical-task ordering", () => {
       overflow,
     ]);
   });
+
   it("treats offset-free ISO deadlines as UTC on non-UTC devices", () => {
     const previousTz = process.env.TZ;
     try {
@@ -60,5 +61,4 @@ describe("urgent-summary critical-task ordering", () => {
       else process.env.TZ = previousTz;
     }
   });
-
 });
