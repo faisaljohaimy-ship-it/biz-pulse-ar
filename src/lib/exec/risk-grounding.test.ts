@@ -188,6 +188,14 @@ describe("⑥ المطابقة بالهويّة — لا بالترتيب", () =
     expect(namesOtherSite(["ضغط متصاعد"], own, others)).toBe(false);
   });
 
+  it("يرفض ذكر موقعٍ آخر مع أسطر أو فراغات متعددة بين أجزاء اسمه", () => {
+    const own = ["محطة الرياض", "Riyadh Plant"];
+    const others = ["محطة الرياض", "Riyadh Plant", "محطة جدة", "Jeddah Plant"];
+    expect(namesOtherSite(["بلاغ في محطة\\n  جدة"], own, others)).toBe(true);
+    expect(namesOtherSite(["Incidents at Jeddah   Plant"], own, others)).toBe(true);
+    expect(namesOtherSite(["ضغط في محطة\\nالرياض"], own, others)).toBe(false);
+  });
+
   it("والاسم المشترك بين موقعين لا يُعدّ ذكرًا لغيره", () => {
     // موقعٌ اسمه يطابق اسم آخر حرفًا ليس «موقعًا آخر».
     expect(namesOtherSite(["Riyadh Plant"], ["Riyadh Plant"], ["Riyadh Plant"])).toBe(false);
