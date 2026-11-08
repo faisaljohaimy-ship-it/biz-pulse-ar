@@ -276,9 +276,7 @@ describe("normalizePublishedAt", () => {
     expect(normalizePublishedAt("2026-04-31T12:00:00Z", NOW)).toBeNull();
     expect(normalizePublishedAt("2026-10-30junk", NOW)).toBeNull();
     expect(normalizePublishedAt("2024-02-29", NOW)).toBe("2024-02-29T00:00:00.000Z");
-    expect(normalizePublishedAt("2026-09-01T03:00:00+03:00", NOW)).toBe(
-      "2026-09-01T00:00:00.000Z",
-    );
+    expect(normalizePublishedAt("2026-09-01T03:00:00+03:00", NOW)).toBe("2026-09-01T00:00:00.000Z");
   });
 });
 
