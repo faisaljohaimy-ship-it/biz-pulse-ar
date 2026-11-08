@@ -179,9 +179,7 @@ describe("UI-2 — الحالة المشتقّة من audit_json", () => {
         toolFailures: { failed: Number.MAX_VALUE, rejected: Number.MAX_VALUE },
       }),
     ).toBeNull();
-    expect(
-      toolFailureCount({ toolFailures: { failed: Number.MAX_VALUE, rejected: 2 } }),
-    ).toBe(2);
+    expect(toolFailureCount({ toolFailures: { failed: Number.MAX_VALUE, rejected: 2 } })).toBe(2);
     expect(
       toolFailureCount({ toolFailures: { failed: Number.MAX_SAFE_INTEGER, rejected: 1 } }),
     ).toBeNull();
