@@ -82,7 +82,7 @@ function splitLongParagraph(part: string, max: number): string[] {
     if (cut <= 0) {
       // UTF-16 slicing through a surrogate pair would send a replacement
       // character to the embedding provider instead of the original emoji.
-      const end = rest.codePointAt(max - 1)! > 0xffff ? (max > 1 ? max - 1 : 2) : max;
+      const end = rest.codePointAt(max - 1)! > 0xffff ? max - 1 || 2 : max;
       pieces.push(rest.slice(0, end));
       rest = rest.slice(end);
     } else {
@@ -127,10 +127,7 @@ export function chunkText(input: string, options: ChunkOptions = {}): string[] {
         // The overlap is duplicate context only. If it starts on the low
         // surrogate of an emoji, skip that code unit rather than introducing
         // a broken Unicode character into the next chunk.
-        const start = Math.max(0, buffer.length - overlap);
-        const tail = buffer.slice(
-          start + Number(start > 0 && buffer.codePointAt(start - 1)! > 0xffff),
-        );
+        const tail = buffer.slice(-overlap).replace(/^[\uDC00-\uDFFF]/, "");
         buffer = `${tail}\n\n${part}`;
       } else {
         buffer = buffer ? `${buffer}\n\n${part}` : part;
