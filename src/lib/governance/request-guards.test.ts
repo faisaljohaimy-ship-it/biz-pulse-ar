@@ -21,9 +21,8 @@ describe("البصمة", () => {
     expect(fingerprint("ip:2", "t1", "ما الحالة؟")).not.toBe(a);
     expect(fingerprint("ip:1", "t2", "ما الحالة؟")).not.toBe(a);
     expect(fingerprint("ip:1", "t1", "ما الحالة")).not.toBe(a);
-    expect(fingerprint("ip:1", null, "")).toMatch(/^[0-9a-f]{8}$/);
+    expect(fingerprint("ip:1", null, "")).toMatch(/^[0-9a-f]{32}$/);
   });
-});
 
   it("distinguishes two different chat questions that collided under 32-bit FNV", () => {
     // Reproduced with the previous implementation for the SAME identity/thread:
@@ -42,6 +41,7 @@ describe("البصمة", () => {
   it("encodes parts unambiguously even when question fields contain separators", () => {
     expect(fingerprint("a\u0000b", "c")).not.toBe(fingerprint("a", "b\u0000c"));
   });
+});
 
 describe("منع التكرار", () => {
   it("الطلب نفسه وهو جارٍ يُرفض، وبعد التحرير يمرّ", () => {
