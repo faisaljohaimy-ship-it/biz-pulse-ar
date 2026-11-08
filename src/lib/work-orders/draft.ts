@@ -37,16 +37,18 @@ const FAULT_KEYS: ReadonlySet<string> = new Set(FAULT_TYPES.map((f) => f.key));
 
 /** Do not let Date normalize impossible dates (such as February 31) into another day. */
 function isCalendarDate(date: string): boolean {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return false;
-  const parsed = new Date(`${date}T12:00:00.000Z`);
-  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === date;
+  return (
+    !date ||
+    (/^\d{4}-\d\d-\d\d$/.test(date) &&
+      new Date(`${date}T12:00Z`).toJSON()?.startsWith(date) === true)
+  );
 }
 
 /** أوّل خطأٍ عربيّ، أو `null` إن صحّت المسوّدة. */
 export function validateWorkOrderDraft(draft: WorkOrderDraft): string | null {
   if (draft.title_ar.trim().length < 3) return ERR_TITLE_REQUIRED;
   if (!FAULT_KEYS.has(draft.fault_type)) return ERR_FAULT_TYPE_REQUIRED;
-  if (draft.due_at && !isCalendarDate(draft.due_at)) return ERR_DUE_DATE_INVALID;
+  if (!isCalendarDate(draft.due_at)) return ERR_DUE_DATE_INVALID;
   if (draft.decision === "return" && draft.notes.trim().length < RETURN_REASON_MIN) {
     return ERR_RETURN_REASON_REQUIRED;
   }
@@ -83,7 +85,7 @@ export type WorkOrderPayload = {
  * لحظة إنشائه (سلوك محفوظ من ٢٠٢٦/٠٨/٢٠).
  */
 export function buildWorkOrderPayload(draft: WorkOrderDraft): WorkOrderPayload {
-  if (draft.due_at && !isCalendarDate(draft.due_at)) {
+  if (!isCalendarDate(draft.due_at)) {
     throw new RangeError(ERR_DUE_DATE_INVALID);
   }
   return {
