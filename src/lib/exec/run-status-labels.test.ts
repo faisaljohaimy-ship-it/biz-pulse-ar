@@ -171,6 +171,24 @@ describe("UI-2 — الحالة المشتقّة من audit_json", () => {
     expect(toolFailureCount({ toolFailures: { failed: -1, rejected: -2 } })).toBeNull();
     expect(toolFailureCount({ toolFailures: { failed: 1.9, rejected: 2.9 } })).toBe(3);
   });
+  it("never reports overflowed or unrepresentable audit counters as measured failures", () => {
+    // The previous finite-only guard accepted each MAX_VALUE operand, then
+    // added both to Infinity and rendered an invented failure count.
+    expect(
+      toolFailureCount({
+        toolFailures: { failed: Number.MAX_VALUE, rejected: Number.MAX_VALUE },
+      }),
+    ).toBeNull();
+    expect(
+      toolFailureCount({ toolFailures: { failed: Number.MAX_VALUE, rejected: 2 } }),
+    ).toBe(2);
+    expect(
+      toolFailureCount({ toolFailures: { failed: Number.MAX_SAFE_INTEGER, rejected: 1 } }),
+    ).toBeNull();
+    expect(toolFailureCount({ toolFailures: { count: Number.MAX_VALUE } })).toBeNull();
+    expect(pendingApprovalCount({ pendingApprovals: { count: Number.MAX_VALUE } })).toBe(0);
+    expect(toolFailureCount({ toolFailures: { failed: 2, rejected: 1 } })).toBe(3);
+  });
 });
 
 describe("UI-1 — عدد الخطوات رقمٌ صحيح أو «—»", () => {
