@@ -80,6 +80,8 @@ const CHART_TYPE_AR: Record<ChartBlock["chartType"], string> = {
 function sanitizeSheetName(raw: string): string {
   const cleaned = raw
     .replace(/[[\]:*?/\\]/g, " ")
+    // C0/C1 controls can survive whitespace normalization and corrupt worksheet XML.
+    .replace(/\p{Cc}/gu, " ")
     .replace(/\s+/g, " ")
     .replace(/^'+|'+$/g, "")
     .trim();
