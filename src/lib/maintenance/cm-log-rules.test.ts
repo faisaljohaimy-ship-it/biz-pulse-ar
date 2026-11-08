@@ -82,6 +82,9 @@ describe("نفي الإصلاح لا يرفع إنجاز الصيانة إلى �
     ["sensor P3 never working properly now", "diagnosed"],
     ["gate B2 isn't now working", "diagnosed"],
     ["gate B2 no longer working properly now", "diagnosed"],
+    ["camera C1 not yet working properly now", "diagnosed"],
+    ["gate B2 isn't yet now working", "diagnosed"],
+    ["reader R1 not yet working properly now; other unit now working properly", "testing"],
     ["speaker S1 reconfigured, now working properly", "testing"],
     ["reader R1 not working properly now; another unit now working properly", "testing"],
   ] as const)("%s ⇒ %s", (note, expected) => {
