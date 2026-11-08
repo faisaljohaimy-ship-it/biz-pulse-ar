@@ -17,13 +17,31 @@ describe("البصمة", () => {
   it("مستقرّة للمدخل نفسه ومختلفة لأيّ اختلاف", () => {
     const a = fingerprint("ip:1", "t1", "ما الحالة؟");
     expect(a).toBe(fingerprint("ip:1", "t1", "ما الحالة؟"));
-    expect(a).toMatch(/^[0-9a-f]{8}$/);
+    expect(a).toMatch(/^[0-9a-f]{32}$/);
     expect(fingerprint("ip:2", "t1", "ما الحالة؟")).not.toBe(a);
     expect(fingerprint("ip:1", "t2", "ما الحالة؟")).not.toBe(a);
     expect(fingerprint("ip:1", "t1", "ما الحالة")).not.toBe(a);
     expect(fingerprint("ip:1", null, "")).toMatch(/^[0-9a-f]{8}$/);
   });
 });
+
+  it("distinguishes two different chat questions that collided under 32-bit FNV", () => {
+    // Reproduced with the previous implementation for the SAME identity/thread:
+    // both questions hashed to 8a1a1137, so one was falsely rejected as a duplicate.
+    const first = fingerprint("guest", "thread", "risk: ntl2zk s1puf3");
+    const second = fingerprint("guest", "thread", "risk: h229s6 170crx");
+    expect(first).not.toBe(second);
+    const releaseFirst = acquireRequest(first, 1_000);
+    expect(releaseFirst).not.toBeNull();
+    const releaseSecond = acquireRequest(second, 1_000);
+    expect(releaseSecond).not.toBeNull();
+    releaseFirst!();
+    releaseSecond!();
+  });
+
+  it("encodes parts unambiguously even when question fields contain separators", () => {
+    expect(fingerprint("a\u0000b", "c")).not.toBe(fingerprint("a", "b\u0000c"));
+  });
 
 describe("منع التكرار", () => {
   it("الطلب نفسه وهو جارٍ يُرفض، وبعد التحرير يمرّ", () => {
