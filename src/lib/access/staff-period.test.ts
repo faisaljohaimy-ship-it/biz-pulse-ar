@@ -79,6 +79,18 @@ describe("التنقّل بين الدورات", () => {
 });
 
 describe("قراءة المفاتيح", () => {
+  it("تردّ مفاتيح السنوات التي كانت تُسقط طلب قراءة السجل بـRangeError", () => {
+    for (const bad of ["0000-H1", "0001-H1", "0999-H2", "9999-H2"]) {
+      expect(() => parsePeriodKey(bad), bad).not.toThrow();
+      expect(parsePeriodKey(bad), bad).toBeNull();
+    }
+  });
+
+  it("وتبقي حدود التاريخ الصالحة كما كانت", () => {
+    expect(parsePeriodKey("1000-H1")?.startIso).toBe("0999-12-31T21:00:00.000Z");
+    expect(parsePeriodKey("9999-H1")?.endIso).toBe("9999-06-30T21:00:00.000Z");
+  });
+
   it("تقرأ المفتاح الصحيح", () => {
     expect(parsePeriodKey("2026-H2")?.half).toBe(2);
     expect(parsePeriodKey(" 2026-H1 ")?.year).toBe(2026);
