@@ -235,8 +235,14 @@ export function toIsoDate(v: unknown): string | null {
     return new Date(Math.round((v - 25569) * 86400000)).toISOString().slice(0, 10);
   }
   const s = cleanText(v);
-  if (s && /^\d{4}-\d{2}-\d{2}/.test(s)) {
-    const day = s.slice(0, 10);
+  // Accept real calendar dates and well-formed Excel/ISO timestamps only.
+  // A date prefix followed by corrupt clock text must not become a measured day.
+  const dateCell =
+    /^(\d{4}-\d{2}-\d{2})(?:(?:T| )(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z|[+-](?:[01]\d|2[0-3]):[0-5]\d)?)?$/i.exec(
+      s ?? "",
+    );
+  if (dateCell) {
+    const day = dateCell[1];
     // Excel exports may contain impossible calendar days. Date parsing can
     // silently roll e.g. February 30 into March, so require exact round-trip.
     const parsed = new Date(`${day}T00:00:00.000Z`);
