@@ -6,6 +6,7 @@
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
+import { compareUrgentTasks } from "@/lib/urgent-summary-sort";
 import type { Database } from "@/integrations/supabase/types";
 import { requireBearerUser } from "@/lib/sadeed/require-bearer.server";
 import {
@@ -79,16 +80,9 @@ export const Route = createFileRoute("/api/urgent-summary")({
           }
         }
 
-        const rank = (p: string) => (p === "عاجل جدًا" ? 0 : p === "عاجل" ? 1 : 2);
         const critical = rows
           .filter((t) => t.status !== "مغلق")
-          .sort((a, b) => {
-            const r = rank(a.priority) - rank(b.priority);
-            if (r !== 0) return r;
-            const at = a.due_at ? new Date(a.due_at).getTime() : Infinity;
-            const bt = b.due_at ? new Date(b.due_at).getTime() : Infinity;
-            return at - bt;
-          })
+          .sort(compareUrgentTasks)
           .slice(0, 3);
 
         return Response.json({
