@@ -21,12 +21,9 @@ describe("runtime execution health", () => {
     },
   );
 
-  it.each(["rejected", "rolled_back"])(
-    "reports %s as degraded rather than healthy",
-    (status) => {
-      expect(recentExecutionHealth(2, status, 24 * 60)).toBe("warning");
-    },
-  );
+  it.each(["rejected", "rolled_back"])("reports %s as degraded rather than healthy", (status) => {
+    expect(recentExecutionHealth(2, status, 24 * 60)).toBe("warning");
+  });
 
   it("does not mask stale queued work as healthy or change existing success handling", () => {
     expect(recentExecutionHealth(24 * 60, "queued", 24 * 60)).toBe("warning");
