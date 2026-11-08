@@ -238,7 +238,7 @@ describe("بنية المصنّف", () => {
 
     const names = planReportWorkbook(report).map((plan) => plan.name);
     expect(names.slice(1)).toEqual(["Safety Audit West", "Ops Shift", "ورقة"]);
-    expect(names.every((name) => !/[\u0000-\u001f\u007f-\u009f]/.test(name))).toBe(true);
+    expect(names.every((name) => !/\p{Cc}/u.test(name))).toBe(true);
 
     const XLSX = await import("xlsx");
     const actual = XLSX.read(await buildReportXlsx(report), { type: "array" });
