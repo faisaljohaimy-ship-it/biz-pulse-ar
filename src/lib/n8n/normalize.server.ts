@@ -109,6 +109,9 @@ export function normalizeResearchResults(
   nowMs: number,
   accept?: (u: SafeUrl) => boolean,
 ): WebResult[] {
+  // The loop appends before checking the cap. Reject invalid budgets up front so
+  // max=0 cannot emit one result and NaN/Infinity cannot bypass the cap.
+  if (!Number.isSafeInteger(max) || max <= 0) return [];
   const seen = new Set<string>();
   const out: WebResult[] = [];
   for (const r of raw) {
