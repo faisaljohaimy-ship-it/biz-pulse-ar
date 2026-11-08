@@ -47,10 +47,6 @@ export interface AccessPeriod {
   readonly half: 1 | 2;
 }
 
-function halfOfMonth(month0: number): 1 | 2 {
-  return month0 < 6 ? 1 : 2;
-}
-
 /**
  * تقويم الرياض للحظةٍ ما — السنة والشهر كما يراهما من في الرياض.
  *
@@ -70,7 +66,7 @@ function riyadhParts(at: Date): { year: number; month0: number } {
 /** الدورة التي تقع فيها اللحظة المعطاة. */
 export function periodOf(at: Date): AccessPeriod {
   const { year, month0 } = riyadhParts(at);
-  return buildPeriod(year, halfOfMonth(month0));
+  return buildPeriod(year, month0 < 6 ? 1 : 2);
 }
 
 /** الدورة الجارية الآن. */
@@ -100,16 +96,11 @@ export function buildPeriod(year: number, half: 1 | 2): AccessPeriod {
 
 /** يقرأ مفتاحًا نصيًّا، أو `null` إن لم يكن مفتاح دورة صالحًا. */
 export function parsePeriodKey(key: string): AccessPeriod | null {
-  const m = /^(\d{4})-H([12])$/.exec(key.trim());
+  // Reject unrepresentable years: numeric 0000..0999 lose their ISO padding,
+  // and 9999-H2 ends in year 10000. Return null, never a RangeError.
+  const m = /^(?!0|9999-H2)(\d{4})-H([12])$/.exec(key.trim());
   if (!m) return null;
-  const year = Number(m[1]);
-  const half = Number(m[2]) as 1 | 2;
-  // The Date parser expects a four-digit year; 0000..0999 become unpadded
-  // when converted to a number, while 9999-H2 ends in year 10000.
-  // Reject these inputs here instead of throwing from toISOString() in a
-  // user-supplied period query.
-  if (year < 1000 || (year === 9999 && half === 2)) return null;
-  return buildPeriod(year, half);
+  return buildPeriod(Number(m[1]), Number(m[2]) as 1 | 2);
 }
 
 /** الدورة السابقة لدورةٍ ما. */
@@ -135,5 +126,5 @@ export function recentPeriods(count: number, now: Date = new Date()): AccessPeri
 
 /** هل انتهت الدورة؟ (‏الجارية لم تنتهِ بعد) */
 export function isClosed(p: AccessPeriod, now: Date = new Date()): boolean {
-  return now.getTime() >= new Date(p.endIso).getTime();
+  return now.getTime() >= Date.parse(p.endIso);
 }
