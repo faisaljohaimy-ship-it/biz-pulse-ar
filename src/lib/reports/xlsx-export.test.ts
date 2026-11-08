@@ -230,15 +230,15 @@ describe("بنية المصنّف", () => {
     const report: ReportDocument = {
       ...original,
       sections: [
-        { id: "nul", title: "Safety\\u0000Audit\\u001fWest", blocks: [] },
-        { id: "del", title: "Ops\\u007f\\u0085Shift", blocks: [] },
-        { id: "empty", title: "\\u0000\\u0001", blocks: [] },
+        { id: "nul", title: "Safety\u0000Audit\u001fWest", blocks: [] },
+        { id: "del", title: "Ops\u007f\u0085Shift", blocks: [] },
+        { id: "empty", title: "\u0000\u0001", blocks: [] },
       ],
     };
 
     const names = planReportWorkbook(report).map((plan) => plan.name);
     expect(names.slice(1)).toEqual(["Safety Audit West", "Ops Shift", "ورقة"]);
-    expect(names.every((name) => !/[\\u0000-\\u001f\\u007f-\\u009f]/.test(name))).toBe(true);
+    expect(names.every((name) => !/[\u0000-\u001f\u007f-\u009f]/.test(name))).toBe(true);
 
     const XLSX = await import("xlsx");
     const actual = XLSX.read(await buildReportXlsx(report), { type: "array" });
