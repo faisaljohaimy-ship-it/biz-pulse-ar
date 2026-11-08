@@ -82,6 +82,33 @@ describe("② الاشتقاق حتميّ من العدّات", () => {
   });
 });
 
+describe("رفض الثقة المبنية على عدادات غير صالحة", () => {
+  it("يفشل بأمان مع القيم السالبة والكسرية وغير المنتهية وغير الآمنة", () => {
+    const invalidSignals: BriefingSignal[] = [
+      { ...many, openIncidents: -1 },
+      { ...many, activePatrols: 0.5 },
+      { ...many, highRiskPermits: Number.POSITIVE_INFINITY },
+      { ...many, criticalIncidents: Number.NaN },
+      { ...many, openIncidents: Number.MAX_SAFE_INTEGER },
+    ];
+    for (const signal of invalidSignals) {
+      const confidence = briefingConfidence(signal, AT);
+      expect(isMeasured(confidence)).toBe(false);
+      if (!isMeasured(confidence)) {
+        expect(confidence.reason).toMatch(/عدادات تشغيلية غير صالحة/);
+      }
+      expect(() => briefingEvidence(signal, AT)).toThrow(/عدادات تشغيلية غير صالحة/);
+    }
+  });
+
+  it("يبقي الصفر والعدّات الصحيحة على سلوكهما السابق", () => {
+    expect(briefingConfidence(none, AT).measured).toBe(false);
+    expect(briefingEvidence(many, AT).value).toBe(14);
+    const valid = briefingConfidence(few, AT);
+    expect(isMeasured(valid) && valid.value).toBe("estimated");
+  });
+});
+
 describe("③ الدليل مُسنَد ويجتاز حارس FR-19", () => {
   it("دليلٌ صالح", () => {
     expect(hasEvidence(briefingEvidence(many, AT))).toBe(true);
