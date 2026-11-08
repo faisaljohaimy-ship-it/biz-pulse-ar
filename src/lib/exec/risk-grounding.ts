@@ -78,8 +78,8 @@ function normalizeDigits(text: string): string {
 /** كل رقمٍ مكتوب في النصّ — صحيحًا كان أو عشريًّا. */
 export function numbersIn(text: string): readonly number[] {
   const out: number[] = [];
-  for (const m of normalizeDigits(text).matchAll(/\d+(?:[.,]\d+)?/g)) {
-    const n = Number(m[0].replace(",", "."));
+  for (const m of normalizeDigits(text).matchAll(/\d+(?:[.,٫]\d+)?/g)) {
+    const n = Number(m[0].replace(/[,٫]/, "."));
     if (Number.isFinite(n)) out.push(n);
   }
   return out;
