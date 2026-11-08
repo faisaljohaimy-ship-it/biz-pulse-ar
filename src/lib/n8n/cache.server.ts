@@ -46,7 +46,7 @@ export interface CacheKeyInput {
   readonly codes: readonly string[];
 }
 
-const canon = (xs: readonly string[], upper: boolean): string =>
+const canon = (xs: readonly string[], upper: boolean): string[] =>
   Array.from(
     new Set(
       xs
@@ -55,21 +55,20 @@ const canon = (xs: readonly string[], upper: boolean): string =>
         .filter((x) => x.length > 0),
     ),
   )
-    .sort()
-    .join("\u0001");
+    .sort();
 
-/** مفتاح الموجز المعياري. نصٌّ واحد ثابت الصياغة؛ لا يُسجَّل. */
+/** مفتاح الموجز المعياري: JSON tuple يمنع تصادم القوائم والحقول عبر محارف الفصل. لا يُسجَّل. */
 export function cacheKeyOf(input: CacheKeyInput): string {
-  return [
-    "v1",
+  return JSON.stringify([
+    "v2",
     input.surface,
     input.mode,
     input.freshness,
     input.lang,
-    String(input.maxResults),
+    input.maxResults,
     canon(input.terms, false),
     canon(input.codes, true),
-  ].join("\u0002");
+  ]);
 }
 
 export type CacheLookup<T> =
