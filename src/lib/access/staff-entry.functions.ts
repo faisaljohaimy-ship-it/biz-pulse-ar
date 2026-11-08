@@ -26,7 +26,6 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import {
   normalizeStaffNumber,
   validateEntry,
-  STAFF_NUMBER_MAX,
   type StaffEntry,
 } from "./staff-entry";
 
@@ -45,7 +44,7 @@ export const recordStaffEntry = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => recordSchema.parse(d))
   .handler(async ({ data }): Promise<{ stored: boolean; entered_at: string }> => {
     const entered_at = new Date().toISOString();
-    const staff_number = normalizeStaffNumber(data.staff_number).slice(0, STAFF_NUMBER_MAX);
+    const staff_number = normalizeStaffNumber(data.staff_number);
     // ── تحقّقٌ على الخادم أيضًا، وبنفس القاعدة ────────────────────────────
     // اللوحة تعطّل الزرّ، والتعطيل **ليس منعًا**: من ينادي الدالّة مباشرةً
     // لا يمرّ باللوحة أصلًا. فالشرط هنا هو الحاجز، وهو نفسه الذي تقرؤه
