@@ -225,6 +225,26 @@ describe("بنية المصنّف", () => {
     }
   });
 
+  it("removes XML-forbidden C0/C1 controls from workbook sheet names", async () => {
+    const original = doc();
+    const report: ReportDocument = {
+      ...original,
+      sections: [
+        { id: "nul", title: "Safety\\u0000Audit\\u001fWest", blocks: [] },
+        { id: "del", title: "Ops\\u007f\\u0085Shift", blocks: [] },
+        { id: "empty", title: "\\u0000\\u0001", blocks: [] },
+      ],
+    };
+
+    const names = planReportWorkbook(report).map((plan) => plan.name);
+    expect(names.slice(1)).toEqual(["Safety Audit West", "Ops Shift", "ورقة"]);
+    expect(names.every((name) => !/[\\u0000-\\u001f\\u007f-\\u009f]/.test(name))).toBe(true);
+
+    const XLSX = await import("xlsx");
+    const actual = XLSX.read(await buildReportXlsx(report), { type: "array" });
+    expect(actual.SheetNames).toEqual(names);
+  });
+
   it("never exposes a trailing apostrophe when Excel truncates long section names", async () => {
     const original = doc();
     const report: ReportDocument = {
