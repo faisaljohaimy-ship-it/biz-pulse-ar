@@ -434,11 +434,12 @@ export function useEnterprisePulse(): EnterprisePulse {
 
 export function formatRelativeTime(date: Date, locale: "ar" | "en"): string {
   const offsetMs = Date.now() - date.getTime();
-  if (!Number.isFinite(offsetMs)) {
-    return locale === "ar" ? "وقت غير معروف" : "unknown time";
+  const ar = locale === "ar";
+  if (Number.isNaN(offsetMs)) {
+    return ar ? "غير معروف" : "unknown";
   }
   const diff = Math.floor(Math.abs(offsetMs) / 1000);
-  if (diff < 5) return locale === "ar" ? "الآن" : "just now";
+  if (diff < 5) return ar ? "الآن" : "just now";
 
   const future = offsetMs < 0;
   const minutes = Math.floor(diff / 60);
@@ -446,8 +447,8 @@ export function formatRelativeTime(date: Date, locale: "ar" | "en"): string {
   const count = hours || minutes || diff;
   const unitAr = hours ? "ساعة" : minutes ? "دقيقة" : "ثانية";
   const unitEn = hours ? "h" : minutes ? "m" : "s";
-  if (locale === "ar") {
+  if (ar) {
     return `${future ? "بعد" : "قبل"} ${count} ${unitAr}`;
   }
-  return future ? `in ${count}${unitEn}` : `${count}${unitEn} ago`;
+  return `${future ? "in " : ""}${count}${unitEn}${future ? "" : " ago"}`;
 }

@@ -32,7 +32,7 @@ describe("enterprise pulse relative-time formatting", () => {
   });
 
   it("does not produce NaN or false freshness for invalid dates", () => {
-    expect(formatRelativeTime(new Date("invalid"), "en")).toBe("unknown time");
-    expect(formatRelativeTime(new Date("invalid"), "ar")).toBe("وقت غير معروف");
+    expect(formatRelativeTime(new Date("invalid"), "en")).toBe("unknown");
+    expect(formatRelativeTime(new Date("invalid"), "ar")).toBe("غير معروف");
   });
 });
