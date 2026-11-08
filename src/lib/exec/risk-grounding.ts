@@ -78,8 +78,10 @@ function normalizeDigits(text: string): string {
 /** كل رقمٍ مكتوب في النصّ — صحيحًا كان أو عشريًّا. */
 export function numbersIn(text: string): readonly number[] {
   const out: number[] = [];
-  for (const m of normalizeDigits(text).matchAll(/\d+(?:[.,٫]\d+)?/g)) {
-    const n = Number(m[0].replace(/[,٫]/, "."));
+  // A negative value must not inherit the grounding of its positive magnitude.
+  // Accept both ASCII minus and the mathematical minus used in Arabic reports.
+  for (const m of normalizeDigits(text).matchAll(/[-−]?\d+(?:[.,٫]\d+)?/g)) {
+    const n = Number(m[0].replace("−", "-").replace(/[,٫]/, "."));
     if (Number.isFinite(n)) out.push(n);
   }
   return out;
