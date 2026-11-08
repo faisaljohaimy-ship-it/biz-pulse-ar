@@ -147,14 +147,27 @@ export function classifyHoldReason(note: string | null | undefined): HoldReason 
 }
 
 const WORKING_NOW =
-  /now working properly|working properly now|is now working|now (it'?s )?working|already prepai?re/i;
+  /now working properly|working properly now|is now working|now (it'?s )?working|already prepai?re/gi;
+// A negative maintenance note ("not working properly now") is not evidence
+// that the repair has reached the 90% testing stage. Inspect each matched
+// phrase, so a later positive statement in the same note can still count.
+const NEGATED_COMPLETION_PREFIX = /\b(?:not|never|isn['’]?t|wasn['’]?t|aren['’]?t|no longer)\s*$/i;
+
+function hasPositiveWorkingEvidence(note: string): boolean {
+  for (const match of note.matchAll(WORKING_NOW)) {
+    const index = match.index ?? 0;
+    const prefix = note.slice(Math.max(0, index - 32), index);
+    if (!NEGATED_COMPLETION_PREFIX.test(prefix)) return true;
+  }
+  return false;
+}
 
 /** المرحلة من دليل الملف وحده (انظر رأس الوحدة). */
 export function stageFromEvidence(status: OrderStatus, note: string | null | undefined): Stage {
   if (status === "completed") return "closed";
   const n = (note ?? "").trim();
   if (n.length < 3) return "registered";
-  if (WORKING_NOW.test(n)) return "testing";
+  if (hasPositiveWorkingEvidence(n)) return "testing";
   const reason = classifyHoldReason(n);
   if (reason === "spare_parts" || reason === "approval") return "awaiting_parts";
   if (reason === "troubleshooting") return "on_site";

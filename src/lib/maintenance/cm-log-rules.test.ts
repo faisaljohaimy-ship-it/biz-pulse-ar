@@ -75,6 +75,20 @@ describe("المرحلة من الدليل — لا أعلى من دليلها",
   });
 });
 
+describe("نفي الإصلاح لا يرفع إنجاز الصيانة إلى مرحلة الاختبار", () => {
+  it.each([
+    ["camera C1 not working properly now", "diagnosed"],
+    ["gate B2 is not now working", "diagnosed"],
+    ["sensor P3 never working properly now", "diagnosed"],
+    ["gate B2 isn't now working", "diagnosed"],
+    ["gate B2 no longer working properly now", "diagnosed"],
+    ["speaker S1 reconfigured, now working properly", "testing"],
+    ["reader R1 not working properly now; another unit now working properly", "testing"],
+  ] as const)("%s ⇒ %s", (note, expected) => {
+    expect(stageFromEvidence("open", note)).toBe(expected);
+  });
+});
+
 describe("التنظيف", () => {
   it("عناوين IP وMAC تُحجب", () => {
     const out = maskNetworkIds("cam C1; IP: 203.0.113.7 mac 02:00:5E:10:20:30 ok");
