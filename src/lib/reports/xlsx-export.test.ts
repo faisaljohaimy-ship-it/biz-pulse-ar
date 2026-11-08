@@ -324,6 +324,31 @@ describe("بنية المصنّف", () => {
     expect(actual.SheetNames).toEqual(names);
   });
 
+  it("writes Arabic-Indic and Persian numeric table values as actual XLSX numbers", async () => {
+    expect(toSheetCell("١٢٫٥", true)).toBe(12.5);
+    expect(toSheetCell("۱۲٫۵", true)).toBe(12.5);
+    expect(toSheetCell("−٣٫٥", true)).toBe(-3.5);
+    expect(toSheetCell("١٢٫٥", false)).toBe("١٢٫٥");
+    expect(toSheetCell("١٢٫٥%", true)).toBe("١٢٫٥%");
+    expect(toSheetCell("١٬٢٣٤", true)).toBe("١٬٢٣٤");
+
+    const report = doc();
+    const block = report.sections[1].blocks.find((item) => item.kind === "table");
+    if (!block || block.kind !== "table") throw new Error("expected incidents table");
+    block.rows[0].count = "١٢";
+    block.rows[0].sla = "۹۸٫۵";
+
+    const planned = planReportWorkbook(report).find((plan) => plan.name.startsWith("البلاغات"))!;
+    const row = planned.rows.findIndex((cells) => cells[0] === "حرجة") + 1;
+    expect(planned.rows[row - 1]).toEqual(["حرجة", 12, 98.5]);
+
+    const XLSX = await import("xlsx");
+    const wb = XLSX.read(await buildReportXlsx(report), { type: "array" });
+    const ws = wb.Sheets[planned.name];
+    expect(ws[`B${row}`]).toMatchObject({ t: "n", v: 12 });
+    expect(ws[`C${row}`]).toMatchObject({ t: "n", v: 98.5 });
+  });
+
   it("عروض الأعمدة تتّسع للعربية — أعرض من عدّ المحارف المجرّد", () => {
     const plans = planReportWorkbook(doc());
     const kpi = sheet(plans, "المؤشرات التنفيذية")!;

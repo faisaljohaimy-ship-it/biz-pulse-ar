@@ -119,6 +119,17 @@ function makeNameAllocator(): (raw: string) => string {
 
 const NUMERIC_TEXT = /^-?\d+(?:[.,]\d+)?$/;
 
+/** Preserve measured Arabic/Persian numerals as Excel numbers in declared numeric columns. */
+function normalizeLocalizedNumeric(text: string): string {
+  return text
+    .replace(/[٠-٩۰-۹]/g, (digit) => {
+      const code = digit.charCodeAt(0);
+      return String(code >= 0x06f0 ? code - 0x06f0 : code - 0x0660);
+    })
+    .replace(/٫/g, ".")
+    .replace(/^−/, "-");
+}
+
 /**
  * تحويل قيمة التقرير إلى خليّة.
  *
@@ -135,9 +146,12 @@ export function toSheetCell(value: ReportCellValue, numeric = false): SheetCell 
   if (text === "") return UNMEASURED_AR;
   /* عمود أُعلن رقميًّا: يُكتب رقمًا كي تعمل عليه دوال Excel، لا نصًّا
      يبدو رقمًا ويُفشل كل `SUM`. والتحويل يقع على المطابقة التامّة وحدها. */
-  if (numeric && NUMERIC_TEXT.test(text)) {
-    const parsed = Number(text.replace(",", "."));
-    if (Number.isFinite(parsed)) return parsed;
+  if (numeric) {
+    const normalized = normalizeLocalizedNumeric(text);
+    if (NUMERIC_TEXT.test(normalized)) {
+      const parsed = Number(normalized.replace(",", "."));
+      if (Number.isFinite(parsed)) return parsed;
+    }
   }
   return text;
 }
