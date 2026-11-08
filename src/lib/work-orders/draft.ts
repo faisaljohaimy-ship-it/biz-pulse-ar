@@ -56,7 +56,11 @@ export function validateWorkOrderDraft(draft: WorkOrderDraft): string | null {
 
 /** تسمية زرّ الإنشاء تتبع القرار — وضوحٌ تنفيذيّ قبل الضغط لا بعده. */
 export function createButtonLabel(decision: ApprovalChoice): string {
-  return decision === "approve" ? "إنشاء واعتماد" : decision === "return" ? "إنشاء وإرجاع" : "إنشاء";
+  return decision === "approve"
+    ? "إنشاء واعتماد"
+    : decision === "return"
+      ? "إنشاء وإرجاع"
+      : "إنشاء";
 }
 
 export type WorkOrderPayload = {
