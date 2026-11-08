@@ -37,7 +37,7 @@ describe("makkah-clock — the single time source (SADEED constitution Art. 2)",
     ];
     for (const instant of instants) {
       const moment = buildMakkahMoment(instant);
-      expect(moment.iso).toMatch(/\\.\\d{3}\\+03:00$/);
+      expect(moment.iso).toMatch(/\.\d{3}\+03:00$/);
       expect(Date.parse(moment.iso)).toBe(moment.epochMs);
     }
     expect(buildMakkahMoment(FIXED).iso).toBe("2026-07-23T14:07:33+03:00");
