@@ -31,10 +31,7 @@ describe("makkah-clock — the single time source (SADEED constitution Art. 2)",
   });
 
   it("preserves milliseconds in the ISO time source without changing whole-second output", () => {
-    const instants = [
-      new Date("2026-11-08T11:27:45.789Z"),
-      new Date("2026-11-08T20:59:59.001Z"),
-    ];
+    const instants = [new Date("2026-11-08T11:27:45.789Z"), new Date("2026-11-08T20:59:59.001Z")];
     for (const instant of instants) {
       const moment = buildMakkahMoment(instant);
       expect(moment.iso).toMatch(/\.\d{3}\+03:00$/);
