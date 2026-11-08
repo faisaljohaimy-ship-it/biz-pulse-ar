@@ -435,9 +435,7 @@ export function useEnterprisePulse(): EnterprisePulse {
 export function formatRelativeTime(date: Date, locale: "ar" | "en"): string {
   const offsetMs = Date.now() - date.getTime();
   const ar = locale === "ar";
-  if (Number.isNaN(offsetMs)) {
-    return ar ? "غير معروف" : "unknown";
-  }
+  if (Number.isNaN(offsetMs)) return "—";
   const diff = Math.floor(Math.abs(offsetMs) / 1000);
   if (diff < 5) return ar ? "الآن" : "just now";
 
