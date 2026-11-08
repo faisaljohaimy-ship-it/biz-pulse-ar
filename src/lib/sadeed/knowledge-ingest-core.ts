@@ -73,8 +73,7 @@ function splitLongParagraph(part: string, max: number): string[] {
   while (rest.length > max) {
     let cut = -1;
     for (let i = max; i >= Math.floor(max / 2); i -= 1) {
-      const ch = rest.charCodeAt(i);
-      if (ch === 32 || ch === 10 || ch === 9) {
+      if (" \n\t".includes(rest[i])) {
         cut = i;
         break;
       }
@@ -82,7 +81,7 @@ function splitLongParagraph(part: string, max: number): string[] {
     if (cut <= 0) {
       // UTF-16 slicing through a surrogate pair would send a replacement
       // character to the embedding provider instead of the original emoji.
-      const end = max - Number(rest.codePointAt(max - 1)! > 0xffff) || 2;
+      const end = max - +(rest.codePointAt(max - 1)! > 0xffff) || 2;
       pieces.push(rest.slice(0, end));
       rest = rest.slice(end);
     } else {
