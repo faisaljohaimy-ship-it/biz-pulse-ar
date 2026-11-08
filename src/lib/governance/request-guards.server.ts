@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 /**
  * حارسا الطلب في الذاكرة — لكل معزول (isolate) — لمسار `/api/chat` (VIBE 5.1).
  *
@@ -17,15 +19,15 @@ export const MODEL_SLOT_TTL_MS = 90_000;
 export const CHAT_MAX_INFLIGHT_DEFAULT = 8;
 const INFLIGHT_MAX_KEYS = 5_000;
 
-/** FNV-1a 32-bit — بصمةٌ قصيرة ومستقرّة، لا تشفيرية ولا يلزمها أن تكون. */
+/**
+ * Fingerprint a structured request tuple with a collision-resistant digest.
+ * A 32-bit FNV key could collide for two different in-flight messages, and
+ * delimiter-joined fields were ambiguous when input contained that delimiter.
+ * Hash only: no identity, thread or question text is stored in the guard.
+ */
 export function fingerprint(...parts: Array<string | null | undefined>): string {
-  let hash = 0x811c9dc5;
-  const text = parts.map((p) => p ?? "").join("\u0000");
-  for (let i = 0; i < text.length; i++) {
-    hash ^= text.charCodeAt(i);
-    hash = Math.imul(hash, 0x01000193) >>> 0;
-  }
-  return hash.toString(16).padStart(8, "0");
+  const encoded = JSON.stringify(parts.map((p) => p ?? ""));
+  return createHash("sha256").update(encoded).digest("hex").slice(0, 32);
 }
 
 const inflightRequests = new Map<string, number>();
