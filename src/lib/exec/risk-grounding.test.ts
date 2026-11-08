@@ -40,6 +40,11 @@ describe("① استخراج الأرقام — بالعربية كما بالل
     expect(numbersIn("z=2.34")).toEqual([2.34]);
   });
 
+  it("يقرأ الفاصل العشري العربي كعدد واحد بدل تمرير جزأيه", () => {
+    expect(numbersIn("٩٩٫٩٪")).toEqual([99.9]);
+    expect(numbersIn("۲٫۳")).toEqual([2.3]);
+  });
+
   it("ولا يعثر على رقمٍ في نصٍّ بلا أرقام", () => {
     expect(numbersIn("ضغط متصاعد في الموقع")).toEqual([]);
   });
@@ -82,6 +87,15 @@ describe("③ الحكم — الصياغة تمرّ والوقائع العدد
     const v = judgeNarration(["ازدحام متوقع", "تزامن 34 مقاولًا مع حرارة 43 درجة."], signal, 24);
     expect(v.accepted).toBe(false);
     expect(v.ungrounded).toEqual(expect.arrayContaining([34, 43]));
+  });
+
+  it("يرفض عددًا عشريًّا غير مسند حتى إن طابق جزآه عدّات صحيحة", () => {
+    const withParts = { ...signal, total7d: 99, critical7d: 9 };
+    expect(judgeNarration(["التغطية ٩٩٫٩٪"], withParts, 24)).toEqual({
+      accepted: false,
+      ungrounded: [99.9],
+    });
+    expect(judgeNarration(["٩٩ بلاغًا منها ٩ حرجة"], withParts, 24).accepted).toBe(true);
   });
 
   it("ويُرفض النصّ الفارغ — بندُ خطرٍ بلا سبب أسوأ من بطاقةٍ حتميّة", () => {
