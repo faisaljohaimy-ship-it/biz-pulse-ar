@@ -42,4 +42,23 @@ describe("urgent-summary critical-task ordering", () => {
       overflow,
     ]);
   });
+  it("treats offset-free ISO deadlines as UTC on non-UTC devices", () => {
+    const previousTz = process.env.TZ;
+    try {
+      process.env.TZ = "Asia/Riyadh";
+      const explicit = { priority: "عاجل", due_at: "2026-11-08T09:00:00Z" };
+      const noOffset = { priority: "عاجل", due_at: "2026-11-08T09:00:00" };
+      const spaceSeparated = { priority: "عاجل", due_at: "2026-11-08 09:00:00" };
+      const earlier = { priority: "عاجل", due_at: "2026-11-08T08:00:00Z" };
+
+      expect(compareUrgentTasks(noOffset, explicit)).toBe(0);
+      expect(compareUrgentTasks(spaceSeparated, explicit)).toBe(0);
+      expect(compareUrgentTasks(earlier, noOffset)).toBeLessThan(0);
+      expect(compareUrgentTasks(earlier, spaceSeparated)).toBeLessThan(0);
+    } finally {
+      if (previousTz === undefined) delete process.env.TZ;
+      else process.env.TZ = previousTz;
+    }
+  });
+
 });
