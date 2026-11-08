@@ -117,6 +117,19 @@ describe("④ إسنادٌ لا مصادقة — وهذا ما لا يجوز أ�
     expect(FN).toMatch(/listStaffEntries[\s\S]{0,200}requireSupabaseAuth/);
   });
 
+  it("لا يقصّ الخادم رقمًا أطول فيُنسب دخولٌ إلى رقمٍ آخر", () => {
+    const directInput = normalizeStaffNumber("١٢٣٤٥٦٧");
+    expect(directInput).toBe("1234567");
+    expect(validateStaffNumber(directInput)).toBe(ERR_STAFF_LENGTH);
+    expect(validateStaffNumber(normalizeStaffNumber("١٢٣٤٥٦"))).toBeNull();
+
+    // This is the actual server handler, not merely the client-side validator.
+    // Truncating before validation incorrectly accepts the prefix of 7 digits.
+    const FN = read("src/lib/access/staff-entry.functions.ts");
+    expect(FN).toContain("const staff_number = normalizeStaffNumber(data.staff_number);");
+    expect(FN).not.toMatch(/normalizeStaffNumber\(data\.staff_number\)\.slice\(/);
+  });
+
   it("والتحقّق يُعاد على الخادم — تحقّق الواجهة يُلتَفّ عليه", () => {
     expect(FN).toMatch(/validateEntry\(\{ staffNumber: staff_number/);
   });
