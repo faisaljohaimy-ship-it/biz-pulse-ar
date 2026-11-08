@@ -141,15 +141,15 @@ describe("المفتاح: الموجز المعياري", () => {
   });
 
   it("محارف الفصل داخل الموجز لا تصادم مفاتيح قوائم أو حقول مختلفة", () => {
-    // كان join("\\u0001") يساوي كلمة مفردة بكلمتين؛ وjoin("\\u0002") يخلط الحقول.
+    // كان join("\u0001") يساوي كلمة مفردة بكلمتين؛ وjoin("\u0002") يخلط الحقول.
     expect(cacheKeyOf({ ...base, terms: ["a", "b"] })).not.toBe(
-      cacheKeyOf({ ...base, terms: ["a\\u0001b"] }),
+      cacheKeyOf({ ...base, terms: ["a\u0001b"] }),
     );
     expect(cacheKeyOf({ ...base, codes: ["C", "D"] })).not.toBe(
-      cacheKeyOf({ ...base, codes: ["C\\u0001D"] }),
+      cacheKeyOf({ ...base, codes: ["C\u0001D"] }),
     );
-    expect(cacheKeyOf({ ...base, terms: ["1\\u00022"], codes: ["3"] })).not.toBe(
-      cacheKeyOf({ ...base, terms: ["1"], codes: ["2\\u00023"] }),
+    expect(cacheKeyOf({ ...base, terms: ["1\u00022"], codes: ["3"] })).not.toBe(
+      cacheKeyOf({ ...base, terms: ["1"], codes: ["2\u00023"] }),
     );
   });
 

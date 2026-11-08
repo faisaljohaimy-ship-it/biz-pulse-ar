@@ -54,8 +54,7 @@ const canon = (xs: readonly string[], upper: boolean): string[] =>
         .map((x) => (upper ? x.toUpperCase() : x.toLowerCase()))
         .filter((x) => x.length > 0),
     ),
-  )
-    .sort();
+  ).sort();
 
 /** مفتاح الموجز المعياري: JSON tuple يمنع تصادم القوائم والحقول عبر محارف الفصل. لا يُسجَّل. */
 export function cacheKeyOf(input: CacheKeyInput): string {
