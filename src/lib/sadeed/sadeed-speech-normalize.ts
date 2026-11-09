@@ -450,11 +450,7 @@ export function chunkSpeechText(speech: string, maxChars = 4000): string[] {
   const merged: string[] = [];
   for (const seg of out) {
     const previous = merged[merged.length - 1];
-    if (
-      previous !== undefined &&
-      seg.length < 8 &&
-      previous.length + 1 + seg.length <= maxChars
-    ) {
+    if (previous !== undefined && seg.length < 8 && previous.length + 1 + seg.length <= maxChars) {
       merged[merged.length - 1] = `${previous} ${seg}`;
     } else {
       merged.push(seg);
