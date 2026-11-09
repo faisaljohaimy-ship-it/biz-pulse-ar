@@ -59,7 +59,17 @@ function ringPush(entry: DiagEntry) {
   }
   try {
     const raw = window.localStorage.getItem(BUF_KEY);
-    const arr: DiagEntry[] = raw ? JSON.parse(raw) : [];
+    // A stale/corrupt localStorage value must not permanently disable
+    // diagnostic persistence after a reload or failed storage migration.
+    let arr: DiagEntry[] = [];
+    if (raw) {
+      try {
+        const stored: unknown = JSON.parse(raw);
+        if (Array.isArray(stored)) arr = stored;
+      } catch {
+        // Keep the current event and replace only this malformed ring buffer.
+      }
+    }
     arr.push(entry);
     if (arr.length > MAX_PERSIST) arr.splice(0, arr.length - MAX_PERSIST);
     window.localStorage.setItem(BUF_KEY, JSON.stringify(arr));
