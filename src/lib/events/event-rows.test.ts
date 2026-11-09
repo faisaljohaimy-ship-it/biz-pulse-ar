@@ -31,4 +31,26 @@ describe("event stream hydration and realtime reconciliation", () => {
   it("does not emit a row when the caller's limit is zero", () => {
     expect(mergeEventRowsById([incoming], prior, 0)).toEqual([]);
   });
+
+  it("does not read stale hydration rows when the realtime cap is already filled", () => {
+    // The previous implementation spread the entire older snapshot first,
+    // even when the visible result had already reached its one-row limit.
+    const unusedSnapshot = new Proxy([{ id: "never-needed" }], {
+      get(target, property, receiver) {
+        if (property === Symbol.iterator) throw new Error("stale snapshot was consumed");
+        return Reflect.get(target, property, receiver);
+      },
+    });
+    expect(mergeEventRowsById([incoming], unusedSnapshot, 1)).toEqual([incoming]);
+  });
+
+  it("stops reading realtime rows after the cap without cloning the entire list", () => {
+    const live = new Proxy([incoming, { id: "never-needed" }], {
+      get(target, property, receiver) {
+        if (property === "1") throw new Error("event tail was consumed");
+        return Reflect.get(target, property, receiver);
+      },
+    });
+    expect(mergeEventRowsById(live, prior, 1)).toEqual([incoming]);
+  });
 });

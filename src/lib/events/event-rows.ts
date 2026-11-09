@@ -14,11 +14,15 @@ export function mergeEventRowsById<T extends { readonly id: string }>(
   if (limit <= 0) return [];
   const seen = new Set<string>();
   const merged: T[] = [];
-  for (const row of [...newer, ...older]) {
-    if (seen.has(row.id)) continue;
-    seen.add(row.id);
-    merged.push(row);
-    if (merged.length >= limit) break;
+  // Consume lazily: spreading both snapshots up-front may allocate thousands
+  // of rows (or fail on an unused snapshot) even when the visible cap is one.
+  for (const source of [newer, older]) {
+    for (const row of source) {
+      if (seen.has(row.id)) continue;
+      seen.add(row.id);
+      merged.push(row);
+      if (merged.length >= limit) return merged;
+    }
   }
   return merged;
 }
