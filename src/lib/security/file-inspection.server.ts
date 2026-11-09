@@ -183,6 +183,7 @@ function inspectZip(bytes: Uint8Array): ZipSummary {
       name.startsWith("/") ||
       /^[a-z]:\//i.test(name) ||
       pathSegments.includes("..") ||
+      lower.includes("../") ||
       lower.includes("\0")
     ) {
       throw new FileInspectionError(
