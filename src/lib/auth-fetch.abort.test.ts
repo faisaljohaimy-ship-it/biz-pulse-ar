@@ -94,6 +94,50 @@ describe("authenticated request session lifecycle", () => {
     expect(activeHeaders.get("Authorization")).toBe("Bearer current-session-token");
   });
 
+  it("never forwards an active session bearer to an outside origin", async () => {
+    auth.getSession.mockResolvedValue({
+      data: { session: { access_token: "current-session-token" } },
+      error: null,
+    });
+    vi.stubGlobal("window", { location: { origin: "https://app.example" } });
+
+    await authenticatedFetch(
+      new Request("https://outside.example/collect", {
+        headers: { Authorization: "Bearer inherited-token" },
+      }),
+    );
+    await authenticatedFetch("//outside.example/collect");
+    await authenticatedFetch("/\\outside.example/collect");
+
+    expect(http).toHaveBeenCalledTimes(3);
+    for (const [, options] of http.mock.calls) {
+      expect(new Headers((options as RequestInit).headers).has("authorization")).toBe(false);
+    }
+  });
+
+  it("allows the active bearer for an absolute URL on the same application origin", async () => {
+    auth.getSession.mockResolvedValue({
+      data: { session: { access_token: "current-session-token" } },
+      error: null,
+    });
+    vi.stubGlobal("window", { location: { origin: "https://app.example" } });
+    await authenticatedFetch("https://app.example/api/chat");
+    expect(new Headers((http.mock.calls[0][1] as RequestInit).headers).get("authorization")).toBe(
+      "Bearer current-session-token",
+    );
+  });
+
+  it("does not trust absolute URLs without a known application origin", async () => {
+    auth.getSession.mockResolvedValue({
+      data: { session: { access_token: "current-session-token" } },
+      error: null,
+    });
+    await authenticatedFetch("https://outside.example/collect");
+    expect(new Headers((http.mock.calls[0][1] as RequestInit).headers).has("authorization")).toBe(
+      false,
+    );
+  });
+
   it("preserves valid guest access and Request headers", async () => {
     const request = new Request("https://example.invalid/chat", { headers: { "x-test": "kept" } });
     await authenticatedFetch(request);
