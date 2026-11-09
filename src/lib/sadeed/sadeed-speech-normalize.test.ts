@@ -139,6 +139,17 @@ describe("chunkSpeechText — safe segmentation", () => {
     expect(chunks.some((c) => c.includes(idPhrase))).toBe(true);
   });
 
+  it("does not exceed the default TTS limit by joining a short trailing sentence", () => {
+    const full = `${"ا".repeat(3999)}.`;
+    const chunks = chunkSpeechText(`${full} ب`);
+    expect(chunks).toEqual([full, "ب"]);
+    expect(chunks.every((chunk) => chunk.length <= 4000)).toBe(true);
+  });
+
+  it("still coalesces short fragments when the previous chunk has space", () => {
+    expect(chunkSpeechText("abc def. z", 7)).toEqual(["abc", "def. z"]);
+  });
+
   it("returns [] for empty speech", () => {
     expect(chunkSpeechText("   ")).toEqual([]);
   });
