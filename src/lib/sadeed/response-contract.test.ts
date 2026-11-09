@@ -104,13 +104,13 @@ describe("Article 22 — scope lock", () => {
     expect(isInScope("ما حالة توجيه SEC-18؟")).toBe(true);
     // The broad ASCII word-boundary attempt broke regulatory web-research
     // contract tests by rejecting `sec` in security and `patrol` in patrols.
-    expect(
-      isInScope("latest news on the Saudi personal data protection law amendments for security patrols"),
-    ).toBe(true);
-    expect(isInScope("latest news National Cybersecurity Authority controls")).toBe(true);
-    expect(
-      isInScope("news about Zakat, Tax and Customs Authority e-invoicing phase for security patrols"),
-    ).toBe(true);
+    for (const q of [
+      "latest news on the Saudi personal data protection law amendments for security patrols",
+      "latest news National Cybersecurity Authority controls",
+      "news about Zakat, Tax and Customs Authority e-invoicing phase for security patrols",
+    ]) {
+      expect(isInScope(q), q).toBe(true);
+    }
   });
 
   it("lets ambiguous text through to the model (high-precision blocking)", () => {
