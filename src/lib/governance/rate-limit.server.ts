@@ -173,9 +173,11 @@ export async function enforceRateLimit(
         _window_seconds: windowSeconds,
       }),
     )
-    .catch((thrown: unknown) => ({
+    .catch(() => ({
+      // Never coerce an opaque rejection: even String(thrown) can throw.
+      // The error payload is not used; any truthy value fails the gate closed.
       data: null,
-      error: { message: thrown instanceof Error ? thrown.message : String(thrown) },
+      error: true,
     }));
   const outcome = await Promise.race([
     call,
