@@ -84,7 +84,8 @@ export function isFresh(e: Evidence, maxAgeMs = 5 * 60_000): boolean {
   const ageMs = Date.now() - t;
   // A future timestamp previously produced a negative age, so even evidence
   // years ahead was mistakenly treated as fresh by the status-badge gate.
-  return Number.isFinite(ageMs) && ageMs >= 0 && ageMs <= maxAgeMs;
+  // NaN from an invalid date fails both comparisons naturally.
+  return ageMs >= 0 && ageMs <= maxAgeMs;
 }
 
 /**
