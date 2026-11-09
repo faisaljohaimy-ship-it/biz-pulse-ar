@@ -178,7 +178,13 @@ function inspectZip(bytes: Uint8Array): ZipSummary {
 
     const name = ascii(bytes, offset + 46, offset + 46 + nameLength).replace(/\\/g, "/");
     const lower = name.toLowerCase();
-    if (name.startsWith("/") || lower.includes("../") || lower.includes("\0")) {
+    const pathSegments = name.split("/");
+    if (
+      name.startsWith("/") ||
+      /^[a-z]:\//i.test(name) ||
+      pathSegments.includes("..") ||
+      lower.includes("\0")
+    ) {
       throw new FileInspectionError(
         "archive_traversal",
         "Unsafe Office archive paths are blocked.",
