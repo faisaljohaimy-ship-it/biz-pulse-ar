@@ -47,15 +47,25 @@ export async function authenticatedFetch(input: RequestInfo | URL, init: Request
   // after a real guest lookup. A token from an earlier login belongs to a
   // different security context, even when the current SDK session is null.
   headers.delete("Authorization");
-  // Accept local app paths or an absolute URL whose origin matches this browser.
+  // Compare the resolved URL, not the raw prefix: WHATWG URL parsing strips
+  // tab/newline characters, turning a raw network path into an off-origin URL.
   const target =
     typeof input === "string" ? input : ((input as Request).url ?? (input as URL).href);
-  if (
-    token &&
-    (/^\/(?![/\\])/.test(target) ||
-      (typeof location !== "undefined" &&
-        new URL(target, location.href).origin === location.origin))
-  ) {
+  let sameOrigin = false;
+  if (token && typeof target === "string") {
+    if (typeof location !== "undefined") {
+      try {
+        sameOrigin = new URL(target, location.href).origin === location.origin;
+      } catch {
+        // Invalid URLs must not receive application credentials.
+        sameOrigin = false;
+      }
+    } else {
+      // Without a trustworthy base, allow only unambiguous root-relative paths.
+      sameOrigin = /^\/(?![/\\])/.test(target) && !/[\t\n\r\\]/.test(target);
+    }
+  }
+  if (token && sameOrigin) {
     headers.set("Authorization", `Bearer ${token}`);
   }
   return fetch(input, { ...init, headers, signal });
