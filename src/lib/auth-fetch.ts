@@ -12,8 +12,7 @@ function aborted() {
  * In SSR/tests without a trustworthy origin, only root-relative paths qualify.
  */
 function isSameOriginApplicationRequest(input: RequestInfo | URL): boolean {
-  const target =
-    typeof Request !== "undefined" && input instanceof Request ? input.url : String(input);
+  const target = typeof input === "string" ? input : "url" in input ? input.url : input.href;
   const origin = typeof window !== "undefined" ? window.location?.origin : undefined;
   if (!origin || origin === "null") return target === "/" || /^\/[^/\\]/.test(target);
   try {
