@@ -111,7 +111,26 @@ describe("authenticated request session lifecycle", () => {
     await authenticatedFetch("//outside.example/collect");
     await authenticatedFetch("/\\outside.example/collect");
 
-    expect(http).toHaveBeenCalledTimes(4);
+    // URL parsing strips these characters, producing //outside.example.
+    await authenticatedFetch("/\t/outside.example/collect");
+    await authenticatedFetch("/\n/outside.example/collect");
+    await authenticatedFetch("/\r/outside.example/collect");
+
+    expect(http).toHaveBeenCalledTimes(7);
+    for (const [, options] of http.mock.calls) {
+      expect(new Headers((options as RequestInit).headers).has("authorization")).toBe(false);
+    }
+  });
+
+  it("does not trust control-character network paths without a browser origin", async () => {
+    auth.getSession.mockResolvedValue({
+      data: { session: { access_token: "current-session-token" } },
+      error: null,
+    });
+    await authenticatedFetch("/\t/outside.example/collect");
+    await authenticatedFetch("/\n/outside.example/collect");
+    await authenticatedFetch("/\r/outside.example/collect");
+    expect(http).toHaveBeenCalledTimes(3);
     for (const [, options] of http.mock.calls) {
       expect(new Headers((options as RequestInit).headers).has("authorization")).toBe(false);
     }
