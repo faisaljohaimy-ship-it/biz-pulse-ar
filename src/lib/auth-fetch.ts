@@ -16,7 +16,8 @@ async function readSession(signal?: AbortSignal | null): Promise<SessionLookup> 
     const finish = (error?: Error, value?: SessionLookup) => {
       clearTimeout(timer);
       signal?.removeEventListener("abort", onAbort);
-      error ? reject(error) : resolve(value!);
+      if (error) reject(error);
+      else resolve(value!);
     };
     const onAbort = () => finish(aborted());
     const timer = setTimeout(
@@ -25,18 +26,10 @@ async function readSession(signal?: AbortSignal | null): Promise<SessionLookup> 
     );
     signal?.addEventListener("abort", onAbort, { once: true });
     // Supabase has no abort option: settle promptly without making a late request.
-    Promise.resolve()
-      .then(() => {
-        if (signal?.aborted) throw aborted();
-        return supabase.auth.getSession();
-      })
-      .then(
-        (value) => finish(undefined, value),
-        () =>
-          finish(
-            signal?.aborted ? aborted() : new Error(AUTH_UNAVAILABLE),
-          ),
-      );
+    (async () => supabase.auth.getSession())().then(
+      (value) => finish(undefined, value),
+      () => finish(signal?.aborted ? aborted() : new Error(AUTH_UNAVAILABLE)),
+    );
   });
 }
 
@@ -55,7 +48,8 @@ export async function authenticatedFetch(input: RequestInfo | URL, init: Request
   // different security context, even when the current SDK session is null.
   headers.delete("Authorization");
   // Accept local app paths or an absolute URL whose origin matches this browser.
-  const target = typeof input === "string" ? input : (input as Request).url ?? (input as URL).href;
+  const target =
+    typeof input === "string" ? input : ((input as Request).url ?? (input as URL).href);
   if (
     token &&
     (/^\/(?![/\\])/.test(target) ||
