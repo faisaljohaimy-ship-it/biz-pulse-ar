@@ -99,7 +99,7 @@ describe("authenticated request session lifecycle", () => {
       data: { session: { access_token: "current-session-token" } },
       error: null,
     });
-    vi.stubGlobal("window", { location: { origin: "https://app.example" } });
+    vi.stubGlobal("location", { origin: "https://app.example", href: "https://app.example/" });
 
     await authenticatedFetch(
       new Request("https://outside.example/collect", {
@@ -122,7 +122,7 @@ describe("authenticated request session lifecycle", () => {
       data: { session: { access_token: "current-session-token" } },
       error: null,
     });
-    vi.stubGlobal("window", { location: { origin: "https://app.example" } });
+    vi.stubGlobal("location", { origin: "https://app.example", href: "https://app.example/" });
     await authenticatedFetch("https://app.example/api/chat");
     expect(new Headers((http.mock.calls[0][1] as RequestInit).headers).get("authorization")).toBe(
       "Bearer current-session-token",
