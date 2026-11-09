@@ -239,6 +239,18 @@ export function degradedAllowance(
   windowSeconds: number,
   now = Date.now(),
 ): DegradedAllowance {
+  // Invalid or imprecise bounds must never become unlimited in degraded mode.
+  // Reject before creating or mutating a bucket; keep normal limits unchanged.
+  if (
+    !Number.isSafeInteger(maxRequests) ||
+    maxRequests < 1 ||
+    !Number.isSafeInteger(windowSeconds) ||
+    windowSeconds < 1 ||
+    !Number.isSafeInteger(windowSeconds * 1_000) ||
+    !Number.isSafeInteger(now)
+  ) {
+    return { allowed: false, cap: 0, remaining: 0, retryAfterSeconds: 60 };
+  }
   const cap = Math.max(1, Math.floor(maxRequests * DEGRADED_FRACTION));
   const windowMs = Math.max(1, windowSeconds) * 1000;
   let bucket = degradedBuckets.get(bucketKey);
