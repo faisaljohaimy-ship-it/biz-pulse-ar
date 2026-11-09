@@ -150,7 +150,11 @@ export function toSheetCell(value: ReportCellValue, numeric = false): SheetCell 
     const normalized = normalizeLocalizedNumeric(text);
     if (NUMERIC_TEXT.test(normalized)) {
       const parsed = Number(normalized.replace(",", "."));
-      if (Number.isFinite(parsed)) return parsed;
+      // Excel and JavaScript cannot represent integers beyond this precision.
+      // Preserve the exact source text instead of silently changing a measured value.
+      if (Number.isFinite(parsed) && (!Number.isInteger(parsed) || Number.isSafeInteger(parsed))) {
+        return parsed;
+      }
     }
   }
   return text;

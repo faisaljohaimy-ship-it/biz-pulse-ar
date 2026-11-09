@@ -117,6 +117,16 @@ describe("المادة ٢٧ — «لم يُقَس» في الجدول: لا صف
     expect(toSheetCell("   ")).toBe(UNMEASURED_AR);
   });
 
+  it("preserves exact large numeric text instead of rounding measured spreadsheet values", () => {
+    const tooLarge = "9007199254740993";
+    expect(toSheetCell(tooLarge, true)).toBe(tooLarge);
+    const arabicIndic = "٩٠٠٧١٩٩٢٥٤٧٤٠٩٩٣";
+    expect(toSheetCell(arabicIndic, true)).toBe(arabicIndic);
+    expect(toSheetCell("-9007199254740993", true)).toBe("-9007199254740993");
+    expect(toSheetCell("9007199254740991", true)).toBe(9007199254740991);
+    expect(toSheetCell("123.5", true)).toBe(123.5);
+  });
+
   it("الصفر المقيس يبقى صفرًا رقميًّا — الغياب وحده يُبدَّل", () => {
     // الاتجاه المعاكس للحارس: لو بدّلنا الصفر أيضًا لضاع قياسٌ حقيقي.
     expect(toSheetCell(0)).toBe(0);
