@@ -28,15 +28,18 @@ export function fingerprint(...parts: Array<string | null | undefined>): string 
   return hash.toString(16).padStart(8, "0");
 }
 
-const inflightRequests = new Map<string, number>();
+const inflightRequests = new Map<string, { startedAt: number }>();
 
 function purgeStaleRequests(now: number): void {
   if (inflightRequests.size < INFLIGHT_MAX_KEYS) return;
   // The wall clock can jump backwards, so insertion order does not imply
   // timestamp order. Scan all entries at capacity; delete expired keys only.
   // Never evict a live fingerprint during a key spray.
-  for (const [key, startedAt] of inflightRequests) {
-    if (now - startedAt >= REQUEST_INFLIGHT_TTL_MS) {
+  for (const [key, lease] of inflightRequests) {
+    if (now < lease.startedAt) {
+      // Preserve live guards, but let abandoned ones expire after a clock rollback.
+      lease.startedAt = now;
+    } else if (now - lease.startedAt >= REQUEST_INFLIGHT_TTL_MS) {
       inflightRequests.delete(key);
     }
   }
@@ -47,17 +50,21 @@ function purgeStaleRequests(now: number): void {
  * (أحدث من `REQUEST_INFLIGHT_TTL_MS`).
  */
 export function acquireRequest(key: string, now = Date.now()): (() => void) | null {
-  const startedAt = inflightRequests.get(key);
-  if (startedAt !== undefined) {
-    if (now - startedAt < REQUEST_INFLIGHT_TTL_MS) return null;
+  const active = inflightRequests.get(key);
+  if (active) {
+    // Rebase rather than extending a live guard by the entire clock jump.
+    if (now < active.startedAt) active.startedAt = now;
+    if (now - active.startedAt < REQUEST_INFLIGHT_TTL_MS) return null;
     inflightRequests.delete(key);
   }
   purgeStaleRequests(now);
   // At capacity, deny a new request rather than dropping any active guard.
   if (inflightRequests.size >= INFLIGHT_MAX_KEYS) return null;
-  inflightRequests.set(key, now);
+  const lease = { startedAt: now };
+  inflightRequests.set(key, lease);
   return () => {
-    if (inflightRequests.get(key) === now) inflightRequests.delete(key);
+    // Identity is stable even if startedAt was rebased after a clock jump.
+    if (inflightRequests.get(key) === lease) inflightRequests.delete(key);
   };
 }
 
