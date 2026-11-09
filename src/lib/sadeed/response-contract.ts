@@ -194,12 +194,13 @@ const OUT_OF_SCOPE = [
 
 const normalize = (s: string) => s.toLowerCase().replace(/[أإآ]/g, "ا").replace(/\s+/g, " ").trim();
 
-/** Match standalone ASCII domain terms as words, not inside unrelated words
- * (e.g. `gate` in `aggregate` or `risk` in `brisk`). Keep Arabic
- * stems and SEC-/SAF- prefixes on their existing matching path. */
+/** Only ambiguous short tokens need a right word boundary: `gate` inside
+ * `aggregate` and `risk` inside `brisk`/`risky` are unrelated.
+ * Keep the original substring matching for all other signals: notably `sec`
+ * in `security` and `patrol` in `patrols`, required by regulatory queries. */
 const IN_SCOPE_MATCHERS = IN_SCOPE.map((term) => {
   const key = normalize(term);
-  return /^[a-z]+$/.test(key) ? new RegExp(`\\b${key}\\b`) : key;
+  return key === "gate" || key === "risk" ? new RegExp(`\\b${key}\\b`) : key;
 });
 
 /**
