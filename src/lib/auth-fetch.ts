@@ -7,22 +7,6 @@ function aborted() {
   return new DOMException("Aborted", "AbortError");
 }
 
-/**
- * Browser session tokens are only valid for SADEED's own API origin.
- * In SSR/tests without a trustworthy origin, only root-relative paths qualify.
- */
-function isSameOriginApplicationRequest(input: RequestInfo | URL): boolean {
-  const target = typeof input === "string" ? input : "url" in input ? input.url : input.href;
-  const origin = typeof window !== "undefined" ? window.location?.origin : undefined;
-  if (!origin || origin === "null") return target === "/" || /^\/[^/\\]/.test(target);
-  try {
-    const url = new URL(target, origin);
-    return (url.protocol === "https:" || url.protocol === "http:") && url.origin === origin;
-  } catch {
-    return false;
-  }
-}
-
 async function readSession(signal?: AbortSignal | null) {
   if (signal?.aborted) throw aborted();
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -70,7 +54,14 @@ export async function authenticatedFetch(input: RequestInfo | URL, init: Request
   // after a real guest lookup. A token from an earlier login belongs to a
   // different security context, even when the current SDK session is null.
   headers.delete("Authorization");
-  if (token && isSameOriginApplicationRequest(input)) {
+  // Accept local app paths or an absolute URL whose origin matches this browser.
+  const target = typeof input === "string" ? input : "url" in input ? input.url : input.href;
+  if (
+    token &&
+    (/^\/(?![/\\])/.test(target) ||
+      (typeof location !== "undefined" &&
+        new URL(target, location.href).origin === location.origin))
+  ) {
     headers.set("Authorization", `Bearer ${token}`);
   }
   return fetch(input, { ...init, headers, signal });
