@@ -47,26 +47,22 @@ export async function authenticatedFetch(input: RequestInfo | URL, init: Request
   // after a real guest lookup. A token from an earlier login belongs to a
   // different security context, even when the current SDK session is null.
   headers.delete("Authorization");
-  // Compare the resolved URL, not the raw prefix: WHATWG URL parsing strips
-  // tab/newline characters, turning a raw network path into an off-origin URL.
-  const target =
-    typeof input === "string" ? input : ((input as Request).url ?? (input as URL).href);
-  let sameOrigin = false;
-  if (token && typeof target === "string") {
-    if (typeof location !== "undefined") {
-      try {
-        sameOrigin = new URL(target, location.href).origin === location.origin;
-      } catch {
-        // Invalid URLs must not receive application credentials.
-        sameOrigin = false;
+  // Resolve URLs before attaching credentials: tabs and newlines can turn
+  // apparently local paths into cross-origin network-path references.
+  if (token) {
+    const target =
+      typeof input === "string" ? input : ((input as Request).url ?? (input as URL).href);
+    try {
+      if (
+        typeof location === "undefined"
+          ? /^\/(?![/\\\t\n\r])/.test(target)
+          : new URL(target, location.href).origin === location.origin
+      ) {
+        headers.set("Authorization", `Bearer ${token}`);
       }
-    } else {
-      // Without a trustworthy base, allow only unambiguous root-relative paths.
-      sameOrigin = /^\/(?![/\\])/.test(target) && !/[\t\n\r\\]/.test(target);
+    } catch {
+      // Malformed URLs are untrusted; fetch retains its native error behavior.
     }
-  }
-  if (token && sameOrigin) {
-    headers.set("Authorization", `Bearer ${token}`);
   }
   return fetch(input, { ...init, headers, signal });
 }
