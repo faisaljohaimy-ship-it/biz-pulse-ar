@@ -31,7 +31,7 @@ export interface SentenceFlusherOptions {
 }
 
 // Sentence terminators: . ! ? ؟ ۔ 。 ！ ？ newline
-const SENTENCE_TERMINATOR = /([.!?؟۔。！？]|\n)\s/;
+const SENTENCE_TERMINATOR = /([.!?؟۔。！？](?=\s)|\n)/;
 
 export function createSentenceFlusher(opts: SentenceFlusherOptions) {
   const budget = opts.firstSentenceBudgetMs ?? 250;
