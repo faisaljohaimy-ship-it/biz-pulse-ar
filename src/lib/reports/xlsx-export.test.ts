@@ -127,6 +127,27 @@ describe("المادة ٢٧ — «لم يُقَس» في الجدول: لا صف
     expect(toSheetCell("123.5", true)).toBe(123.5);
   });
 
+  it("preserves fractional measurement precision in XLSX", async () => {
+    const precise = "0.1234567890123456789";
+    const roundedToInteger = "1.0000000000000001";
+    const arabic = "٠٫١٢٣٤٥٦٧٨٩٠١٢٣٤٥٦٧";
+    expect(toSheetCell(precise, true)).toBe(precise);
+    expect(toSheetCell(roundedToInteger, true)).toBe(roundedToInteger);
+    expect(toSheetCell(arabic, true)).toBe(arabic);
+    expect(toSheetCell("12.25", true)).toBe(12.25);
+    expect(toSheetCell("0.00000125", true)).toBe(0.00000125);
+
+    const report = doc();
+    const block = report.sections[1].blocks.find((item) => item.kind === "table");
+    if (!block || block.kind !== "table") throw new Error("expected incidents table");
+    block.rows[0].sla = precise;
+    const planned = planReportWorkbook(report).find((plan) => plan.name.startsWith("البلاغات"))!;
+    const row = planned.rows.findIndex((cells) => cells[0] === "حرجة") + 1;
+    const XLSX = await import("xlsx");
+    const wb = XLSX.read(await buildReportXlsx(report), { type: "array" });
+    expect(wb.Sheets[planned.name][`C${row}`]).toMatchObject({ t: "s", v: precise });
+  });
+
   it("الصفر المقيس يبقى صفرًا رقميًّا — الغياب وحده يُبدَّل", () => {
     // الاتجاه المعاكس للحارس: لو بدّلنا الصفر أيضًا لضاع قياسٌ حقيقي.
     expect(toSheetCell(0)).toBe(0);
