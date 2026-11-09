@@ -413,9 +413,10 @@ export function escapeForSSML(text: string): string {
 
 /**
  * Split already-normalized speech into TTS segments on sentence boundaries,
- * never exceeding maxChars and never cutting a word. Because normalization ran
- * first, numbers/dates/ids/units are already whole WORDS — a split can only
- * fall on a sentence terminator or a space, never mid-token.
+ * never exceeding maxChars. Because normalization ran first, protected
+ * numbers/dates/ids/units are expanded to words before splitting. Preserve
+ * word boundaries unless one unbroken token itself exceeds the provider limit;
+ * then split at Unicode code-point boundaries rather than emit an oversized chunk.
  */
 export function chunkSpeechText(speech: string, maxChars = 4000): string[] {
   const text = speech.trim();
@@ -435,6 +436,21 @@ export function chunkSpeechText(speech: string, maxChars = 4000): string[] {
     if (sentence.length > maxChars) {
       flush();
       for (const word of sentence.split(/\s+/)) {
+        // A single unbroken token can exceed the provider's hard size limit.
+        // Split only that exceptional case, preserving Unicode code points.
+        if (word.length > maxChars) {
+          flush();
+          let part = "";
+          for (const codePoint of word) {
+            if (part && part.length + codePoint.length > maxChars) {
+              out.push(part);
+              part = "";
+            }
+            part += codePoint;
+          }
+          if (part) out.push(part);
+          continue;
+        }
         if ((buf + " " + word).trim().length > maxChars) flush();
         buf = buf ? `${buf} ${word}` : word;
       }
