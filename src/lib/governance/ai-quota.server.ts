@@ -110,7 +110,7 @@ export function aiDisabledResponse(surface: AiSurface): Response | null {
 /** سقفٌ من البيئة إن وُجد، وإلا الافتراض المكتوب. */
 function cap(envVar: string, fallback: number): number {
   const raw = Number.parseInt(process.env[envVar] ?? "", 10);
-  return Number.isFinite(raw) && raw > 0 ? raw : fallback;
+  return Number.isSafeInteger(raw) && raw > 0 ? raw : fallback;
 }
 
 /**
