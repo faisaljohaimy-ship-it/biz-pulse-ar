@@ -15,6 +15,7 @@
  * قراءة عرض: `optionalSupabaseAuth` (سياسات RLS تقرّر ما يُرى؛ الزائر لا يُرفض).
  */
 import { createServerFn } from "@tanstack/react-start";
+import { withProjectsSummaryTimeout } from "@/lib/projects/projects-summary-timeout";
 import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-middleware";
 import {
   PROJECTS_SUMMARY_COLUMNS,
@@ -23,22 +24,11 @@ import {
   type ProjectsSummary,
 } from "@/lib/projects/projects-summary";
 
-const TIMEOUT_MS = 4_000;
-
-function withTimeout<T>(p: PromiseLike<T>): Promise<T> {
-  return Promise.race([
-    Promise.resolve(p),
-    new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error("projects-summary-timeout")), TIMEOUT_MS),
-    ),
-  ]);
-}
-
 export const getProjectsSummary = createServerFn({ method: "GET" })
   .middleware([optionalSupabaseAuth])
   .handler(async ({ context }): Promise<ProjectsSummary> => {
     try {
-      const res = await withTimeout(
+      const res = await withProjectsSummaryTimeout(
         context.supabase.from("sec_projects").select(PROJECTS_SUMMARY_COLUMNS),
       );
       if (res.error) throw new Error(res.error.message);
