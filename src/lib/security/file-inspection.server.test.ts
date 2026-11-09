@@ -136,7 +136,7 @@ describe("SADEED attachment structural inspection", () => {
   });
 
   it("blocks terminal parent paths and Windows-rooted Office ZIP entries", () => {
-    for (const unsafePath of ["word/..", "C:/word/document.xml", "C:\\word\\document.xml"]) {
+    for (const unsafePath of ["word/..", "C:/word/document.xml", "C:\\word\\document.xml", "word/report../evil.xml"]) {
       expectBlocked(
         () =>
           inspectSadeedAttachment({
