@@ -13,9 +13,9 @@ describe("projects-summary bounded database reads", () => {
   });
 
   it("releases its timer immediately when a read fails", async () => {
-    await expect(withProjectsSummaryTimeout(Promise.reject(new Error("db unavailable")))).rejects.toThrow(
-      "db unavailable",
-    );
+    await expect(
+      withProjectsSummaryTimeout(Promise.reject(new Error("db unavailable"))),
+    ).rejects.toThrow("db unavailable");
     expect(vi.getTimerCount()).toBe(0);
   });
 
