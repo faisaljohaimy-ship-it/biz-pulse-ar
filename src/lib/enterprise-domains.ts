@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { userFacingError } from "@/lib/errors/user-facing-error";
-import { withShowcaseDeadline } from "@/lib/showcase-query-deadline";
 
 // ============================================================
 // Types
@@ -180,15 +179,21 @@ function makeHooks<T extends AnyRow, Insert extends Record<string, unknown>>(
         // «بيانات لا تفرغ»: an unreachable database must resolve to an
         // empty list within 4s so page-level reference fallbacks engage —
         // never an infinite skeleton. Live rows win on the next refetch.
+        let deadlineTimer: ReturnType<typeof setTimeout> | undefined;
         try {
-          const { data, error } = await withShowcaseDeadline(
+          const { data, error } = await Promise.race([
             tbl().select("*").order(orderCol, { ascending }),
-          );
+            new Promise<never>((_, reject) => {
+              deadlineTimer = setTimeout(() => reject(new Error("showcase-timeout")), 4_000);
+            }),
+          ]);
           if (error) throw error;
           return (data ?? []) as T[];
         } catch (error) {
           console.error(`[showcase] ${table} list unavailable — serving empty set:`, error);
           return [] as T[];
+        } finally {
+          clearTimeout(deadlineTimer);
         }
       },
       staleTime: 15_000,
