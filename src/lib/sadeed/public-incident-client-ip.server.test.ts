@@ -28,6 +28,24 @@ describe("public incident source-IP quotas", () => {
     expect(clientBucketKey(b, { VERCEL: "1" })).toBe("aria-incident:unknown");
   });
 
+  it("rejects X-Real-IP bucket rotation without platform-owned Vercel headers", () => {
+    const a = request({
+      "x-real-ip": "192.0.2.71",
+      "cf-connecting-ip": "192.0.2.91",
+    });
+    const b = request({
+      "x-real-ip": "192.0.2.72",
+      "cf-connecting-ip": "192.0.2.92",
+    });
+    expect(clientBucketKey(a, { VERCEL: "1" })).toBe("aria-incident:unknown");
+    expect(clientBucketKey(b, { VERCEL: "1" })).toBe("aria-incident:unknown");
+    const trusted = request({
+      "x-vercel-forwarded-for": "203.0.113.30",
+      "x-real-ip": "192.0.2.73",
+    });
+    expect(clientBucketKey(trusted, { VERCEL: "1" })).toBe("aria-incident:203.0.113.30");
+  });
+
   it("retains Cloudflare trusted CF header over XFF on Workers", () => {
     const req = request({
       "cf-connecting-ip": "198.51.100.7",
