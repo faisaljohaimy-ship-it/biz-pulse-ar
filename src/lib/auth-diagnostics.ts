@@ -58,17 +58,12 @@ function ringPush(entry: DiagEntry) {
     window.__nxAuthLog.splice(0, window.__nxAuthLog.length - MAX_MEM);
   }
   try {
-    const raw = window.localStorage.getItem(BUF_KEY);
-    // A stale/corrupt localStorage value must not permanently disable
-    // diagnostic persistence after a reload or failed storage migration.
     let arr: DiagEntry[] = [];
-    if (raw) {
-      try {
-        const stored: unknown = JSON.parse(raw);
-        if (Array.isArray(stored)) arr = stored;
-      } catch {
-        // Keep the current event and replace only this malformed ring buffer.
-      }
+    try {
+      const saved: unknown = JSON.parse(window.localStorage.getItem(BUF_KEY) ?? "[]");
+      if (Array.isArray(saved)) arr = saved;
+    } catch {
+      // Corrupt storage must not prevent new auth diagnostic events.
     }
     arr.push(entry);
     if (arr.length > MAX_PERSIST) arr.splice(0, arr.length - MAX_PERSIST);
