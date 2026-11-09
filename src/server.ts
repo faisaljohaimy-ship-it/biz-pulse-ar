@@ -20,13 +20,27 @@ async function getServerEntry(): Promise<ServerEntry> {
 
 // h3 swallows in-handler throws into a normal 500 Response with body
 // {"unhandled":true,"message":"HTTPError"} — try/catch alone never fires for those.
-async function normalizeCatastrophicSsrResponse(response: Response): Promise<Response> {
+export async function normalizeCatastrophicSsrResponse(response: Response): Promise<Response> {
   if (response.status < 500) return response;
   const contentType = response.headers.get("content-type") ?? "";
   if (!contentType.includes("application/json")) return response;
 
   const body = await response.clone().text();
-  if (!body.includes('"unhandled":true') || !body.includes('"message":"HTTPError"')) {
+  // h3's JSON key order/whitespace may change without changing the error.
+  // Check the payload, not an exact minified string representation.
+  let payload: unknown;
+  try {
+    payload = JSON.parse(body);
+  } catch {
+    return response;
+  }
+  if (
+    !payload ||
+    typeof payload !== "object" ||
+    Array.isArray(payload) ||
+    (payload as { unhandled?: unknown }).unhandled !== true ||
+    (payload as { message?: unknown }).message !== "HTTPError"
+  ) {
     return response;
   }
 
