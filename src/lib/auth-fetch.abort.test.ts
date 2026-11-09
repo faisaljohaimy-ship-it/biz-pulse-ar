@@ -106,10 +106,12 @@ describe("authenticated request session lifecycle", () => {
         headers: { Authorization: "Bearer inherited-token" },
       }),
     );
+    // A Request created in another JS realm need not pass instanceof Request.
+    await authenticatedFetch({ url: "https://outside.example/collect" } as Request);
     await authenticatedFetch("//outside.example/collect");
     await authenticatedFetch("/\\outside.example/collect");
 
-    expect(http).toHaveBeenCalledTimes(3);
+    expect(http).toHaveBeenCalledTimes(4);
     for (const [, options] of http.mock.calls) {
       expect(new Headers((options as RequestInit).headers).has("authorization")).toBe(false);
     }
