@@ -127,7 +127,7 @@ describe("المادة ٢٧ — «لم يُقَس» في الجدول: لا صف
     expect(toSheetCell("123.5", true)).toBe(123.5);
   });
 
-  it("preserves high-precision fractional measurements instead of rounding them in Excel", async () => {
+  it("preserves fractional measurement precision in XLSX", async () => {
     const precise = "0.1234567890123456789";
     const roundedToInteger = "1.0000000000000001";
     const arabic = "٠٫١٢٣٤٥٦٧٨٩٠١٢٣٤٥٦٧";
