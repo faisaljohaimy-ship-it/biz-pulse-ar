@@ -156,9 +156,12 @@ export function toSheetCell(value: ReportCellValue, numeric = false): SheetCell 
       // Excel stores at most 15 significant decimal digits; keep longer
       // measured decimal literals as text instead of silently rounding them.
       const literal = normalized.replace(",", ".");
-      const significantDigits = literal.replace(/\D/g, "").replace(/^0+/, "").replace(/0+$/, "").length;
-      const safePrecision = significantDigits <= 15 ||
-        (!literal.includes(".") && Number.isSafeInteger(parsed));
+      const significantDigits = literal
+        .replace(/\D/g, "")
+        .replace(/^0+/, "")
+        .replace(/0+$/, "").length;
+      const safePrecision =
+        significantDigits <= 15 || (!literal.includes(".") && Number.isSafeInteger(parsed));
       if (
         Number.isFinite(parsed) &&
         (!Number.isInteger(parsed) || Number.isSafeInteger(parsed)) &&
