@@ -76,9 +76,10 @@ describe("enterprise showcase list timers", () => {
     const rows = [{ id: "delayed" }];
     stubs.from.mockReturnValue({
       select: () => ({
-        order: () => new Promise((resolve) => {
-          setTimeout(() => resolve({ data: rows, error: null }), 1_000);
-        }),
+        order: () =>
+          new Promise((resolve) => {
+            setTimeout(() => resolve({ data: rows, error: null }), 1_000);
+          }),
       }),
     });
     const pending = listQuery()();
