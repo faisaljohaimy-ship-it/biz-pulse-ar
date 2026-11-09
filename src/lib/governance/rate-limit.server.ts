@@ -242,6 +242,9 @@ export function degradedAllowance(
   const cap = Math.max(1, Math.floor(maxRequests * DEGRADED_FRACTION));
   const windowMs = Math.max(1, windowSeconds) * 1000;
   let bucket = degradedBuckets.get(bucketKey);
+  // A clock rollback must not stretch an active quota window by the clock offset.
+  // Keep the consumed count and restrictive cap; only rebase its expiry clock.
+  if (bucket && now < bucket.windowStart) bucket.windowStart = now;
   if (bucket && now - bucket.windowStart >= bucket.windowMs) {
     degradedBuckets.delete(bucketKey);
     bucket = undefined;
@@ -250,7 +253,9 @@ export function degradedAllowance(
   if (!bucket) {
     if (degradedBuckets.size >= DEGRADED_MAX_KEYS) {
       for (const [key, entry] of degradedBuckets) {
-        if (now - entry.windowStart >= entry.windowMs) degradedBuckets.delete(key);
+        // Rebase even untouched buckets at capacity, without freeing quota early.
+        if (now < entry.windowStart) entry.windowStart = now;
+        else if (now - entry.windowStart >= entry.windowMs) degradedBuckets.delete(key);
       }
     }
     if (degradedBuckets.size >= DEGRADED_MAX_KEYS) {
