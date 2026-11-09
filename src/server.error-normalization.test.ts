@@ -9,7 +9,9 @@ afterEach(() => vi.restoreAllMocks());
 describe("catastrophic SSR error normalization", () => {
   it("recognizes h3's equivalent pretty-printed and reordered JSON error", async () => {
     const log = vi.spyOn(console, "error").mockImplementation(() => {});
-    const original = jsonResponse(JSON.stringify({ message: "HTTPError", unhandled: true }, null, 2));
+    const original = jsonResponse(
+      JSON.stringify({ message: "HTTPError", unhandled: true }, null, 2),
+    );
 
     const response = await normalizeCatastrophicSsrResponse(original);
 
