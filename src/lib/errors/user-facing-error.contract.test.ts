@@ -73,11 +73,14 @@ describe("لا تصل عبارة مصادقة إلى الشاشة", () => {
         },
       },
     };
-    const badProxy = new Proxy({}, {
-      get() {
-        throw new Error("proxy failed");
+    const badProxy = new Proxy(
+      {},
+      {
+        get() {
+          throw new Error("proxy failed");
+        },
       },
-    });
+    );
 
     for (const hostile of [badGetter, badCoercion, badProxy]) {
       expect(userFacingError(hostile)).toBe(GENERIC_ERROR_AR);
