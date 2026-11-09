@@ -7,37 +7,38 @@ function aborted() {
   return new DOMException("Aborted", "AbortError");
 }
 
-async function readSession(signal?: AbortSignal | null) {
+type SessionLookup = Awaited<ReturnType<typeof supabase.auth.getSession>>;
+
+async function readSession(signal?: AbortSignal | null): Promise<SessionLookup> {
   if (signal?.aborted) throw aborted();
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  let onAbort: (() => void) | undefined;
-  const interrupted = new Promise<never>((_, reject) => {
-    onAbort = () => reject(aborted());
-    signal?.addEventListener("abort", onAbort, { once: true });
-    timer = setTimeout(
-      () => reject(new DOMException("Timed out", "TimeoutError")),
+  return new Promise((resolve, reject) => {
+    const finish = (value?: SessionLookup, error?: Error) => {
+      clearTimeout(timer);
+      signal?.removeEventListener("abort", onAbort);
+      if (error) reject(error);
+      else resolve(value!);
+    };
+    const onAbort = () => finish(undefined, aborted());
+    const timer = setTimeout(
+      () => finish(undefined, new DOMException("Timed out", "TimeoutError")),
       AUTH_SESSION_DEADLINE_MS,
     );
+    signal?.addEventListener("abort", onAbort, { once: true });
+    // Supabase has no abort option: settle promptly without making a late request.
+    Promise.resolve()
+      .then(() => {
+        if (signal?.aborted) throw aborted();
+        return supabase.auth.getSession();
+      })
+      .then(
+        (value) => finish(value),
+        () =>
+          finish(
+            undefined,
+            signal?.aborted ? aborted() : new Error("Authentication session unavailable."),
+          ),
+      );
   });
-  try {
-    // getSession has no AbortSignal option. Stop waiting, but never send a late
-    // application request if the SDK resolves after cancellation or timeout.
-    return await Promise.race([
-      Promise.resolve()
-        .then(() => {
-          if (signal?.aborted) throw aborted();
-          return supabase.auth.getSession();
-        })
-        .catch(() => {
-          if (signal?.aborted) throw aborted();
-          throw new Error("Authentication session unavailable.");
-        }),
-      interrupted,
-    ]);
-  } finally {
-    clearTimeout(timer);
-    if (onAbort) signal?.removeEventListener("abort", onAbort);
-  }
 }
 
 export async function authenticatedFetch(input: RequestInfo | URL, init: RequestInit = {}) {

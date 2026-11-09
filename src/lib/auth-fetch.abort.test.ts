@@ -140,6 +140,21 @@ describe("authenticated request session lifecycle", () => {
     );
   });
 
+  it("sanitizes thrown SDK session errors without sending a request", async () => {
+    auth.getSession.mockImplementationOnce(() => {
+      throw new Error("sensitive SDK detail");
+    });
+    await expect(authenticatedFetch("/api/chat")).rejects.toThrow(
+      "Authentication session unavailable.",
+    );
+    auth.getSession.mockRejectedValueOnce(new Error("sensitive async SDK detail"));
+    await expect(authenticatedFetch("/api/chat")).rejects.toThrow(
+      "Authentication session unavailable.",
+    );
+    expect(http).not.toHaveBeenCalled();
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
   it("preserves valid guest access and Request headers", async () => {
     const request = new Request("https://example.invalid/chat", { headers: { "x-test": "kept" } });
     await authenticatedFetch(request);
