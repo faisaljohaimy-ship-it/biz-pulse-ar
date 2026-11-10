@@ -49,8 +49,11 @@ async function fetchWithRetry(url) {
   let last;
   for (let i = 0; i < ATTEMPTS; i++) {
     try {
+      // A redirect to login/SSO is not proof the requested production route works.
+      // Even a final HTTP 200 with valid CSS/theme could be the login page.
+      // Require a direct success for the exact path under test.
       const res = await fetch(url, {
-        redirect: "follow",
+        redirect: "manual",
         headers: { "user-agent": "sadeed-production-check" },
       });
       if (res.ok) return res;
