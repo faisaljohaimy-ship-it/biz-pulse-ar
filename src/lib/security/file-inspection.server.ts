@@ -116,6 +116,14 @@ function u32(bytes: Uint8Array, offset: number): number {
   );
 }
 
+function containsControlCharacter(value: string): boolean {
+  for (let i = 0; i < value.length; i++) {
+    const code = value.charCodeAt(i);
+    if (code < 0x20 || (code >= 0x7f && code <= 0x9f)) return true;
+  }
+  return false;
+}
+
 function assertFilename(filename: string, claimedMime: SadeedAttachmentMime) {
   const normalized = filename.normalize("NFKC").trim();
   // Invisible direction controls can visually disguise a harmless extension as a
@@ -125,7 +133,7 @@ function assertFilename(filename: string, claimedMime: SadeedAttachmentMime) {
   if (
     !normalized ||
     normalized.startsWith(".") ||
-    /[\u0000-\u001f\u007f-\u009f/\\]/.test(normalized) ||
+    /[/\\]/.test(normalized) || containsControlCharacter(normalized) ||
     bidiControls.test(normalized)
   ) {
     throw new FileInspectionError("unsafe_filename", "Attachment filename is unsafe.");
