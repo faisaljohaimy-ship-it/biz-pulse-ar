@@ -50,12 +50,8 @@ export async function authenticatedFetch(input: RequestInfo | URL, init: Request
   // Resolve a destination before adding a bearer: "/\t/host" is off-origin.
   const target =
     typeof input === "string" ? input : ((input as Request).url ?? (input as URL).href);
-  if (
-    token &&
-    (typeof location === "undefined"
-      ? /^\/(?![/\\\s])/.test(target)
-      : new URL(target, location.href).origin === location.origin)
-  ) {
+  const origin = globalThis.location?.origin;
+  if (token && (origin ? new URL(target, origin).origin === origin : /^\/(?![/\\\s])/.test(target))) {
     headers.set("Authorization", `Bearer ${token}`);
   }
   return fetch(input, { ...init, headers, signal });
