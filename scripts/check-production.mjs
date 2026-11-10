@@ -112,10 +112,7 @@ for (const route of ROUTES) {
     // Require an actual stylesheet link with a nonempty href.
     // HTML comments and inert containers can quote link markup without loading CSS.
     // Only a live stylesheet element is evidence that the application is styled.
-    const activeMarkup = nonInertHtml.replace(
-      /<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,
-      "",
-    );
+    const activeMarkup = nonInertHtml.replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, "");
     const stylesheetLink = activeMarkup.match(
       /<link\b(?=[^>]*\brel\s*=\s*["']stylesheet["'])(?=[^>]*\bhref\s*=\s*["'][^"']+["'])[^>]*>/i,
     )?.[0];
