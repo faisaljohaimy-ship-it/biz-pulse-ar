@@ -133,7 +133,11 @@ for (const route of ROUTES) {
         await stylesheetRes.body?.cancel();
         if (!cssLoaded) throw new Error("stylesheet response is not text/css");
       } catch (error) {
-        failures.push(route + ": تعذّر تحميل ملف الأنماط — " + (error instanceof Error ? error.message : String(error)));
+        failures.push(
+          route +
+            ": تعذّر تحميل ملف الأنماط — " +
+            (error instanceof Error ? error.message : String(error)),
+        );
       }
     }
 
