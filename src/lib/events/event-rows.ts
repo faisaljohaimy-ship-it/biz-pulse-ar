@@ -11,7 +11,9 @@ export function mergeEventRowsById<T extends { readonly id: string }>(
   older: readonly T[],
   limit: number,
 ): T[] {
-  if (limit <= 0) return [];
+  // Fail closed on invalid caps before reading either snapshot. Int32 is
+  // already vastly larger than any event list the UI can safely render.
+  if (limit < 1 || (limit | 0) !== limit) return [];
   const seen = new Set<string>();
   const merged: T[] = [];
   // Consume lazily: spreading both snapshots up-front may allocate thousands
@@ -21,7 +23,8 @@ export function mergeEventRowsById<T extends { readonly id: string }>(
       if (seen.has(row.id)) continue;
       seen.add(row.id);
       merged.push(row);
-      if (merged.length >= limit) return merged;
+      // Count distinct events against the cap without re-reading array length.
+      if (!--limit) return merged;
     }
   }
   return merged;
