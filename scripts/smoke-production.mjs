@@ -226,7 +226,7 @@ if (!h1.ok) {
     );
   } else if (expected) {
     const sha = String(build.sha).toLowerCase();
-    const match = sha.startsWith(expected) || expected.startsWith(sha);
+    const match = /^[0-9a-f]{40}$/.test(sha) && /^[0-9a-f]{40}$/.test(expected) && sha === expected;
     note(
       "B1 build-id",
       match ? "pass" : "fail",
