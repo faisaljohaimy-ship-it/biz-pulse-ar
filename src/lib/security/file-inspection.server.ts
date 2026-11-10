@@ -125,7 +125,7 @@ function assertFilename(filename: string, claimedMime: SadeedAttachmentMime) {
   if (
     !normalized ||
     normalized.startsWith(".") ||
-    /[\0\r\n/\\]/.test(normalized) ||
+    /[\u0000-\u001f\u007f-\u009f/\\]/.test(normalized) ||
     bidiControls.test(normalized)
   ) {
     throw new FileInspectionError("unsafe_filename", "Attachment filename is unsafe.");
