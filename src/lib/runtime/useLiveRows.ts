@@ -36,8 +36,11 @@ export function useLiveRows<T>(
 
   useEffect(() => {
     let alive = true;
+    // Realtime messages may trigger overlapping reads; only the newest result may update the UI.
+    let latestRunId = 0;
     setLoading(true);
     const run = () => {
+      const runId = ++latestRunId;
       // كان هذا `.then(...)` وحده: لا `catch` ولا سقف زمني. فرفضُ الوعد —
       // انقطاع شبكة، أو رفض RLS يعيد `error` بدل `data` — يعني أن
       // `setLoading(false)` لا يُنفَّذ **أبدًا**، فيبقى هيكل التحميل إلى
@@ -60,19 +63,19 @@ export function useLiveRows<T>(
         }),
       ])
         .then((next: T[]) => {
-          if (!alive) return;
+          if (!alive || runId !== latestRunId) return;
           setRows(next);
           setError(null);
         })
         .catch((err: unknown) => {
+          if (!alive || runId !== latestRunId) return;
           console.warn(`[useLiveRows] ${table} تعذّرت قراءته`, err);
-          if (!alive) return;
           // الصفوف السابقة تبقى إن وُجدت — خطأُ تحديثٍ عابر لا يمحو ما عُرض.
           setError(err instanceof Error ? err : new Error(LIVE_ROWS_ERROR_AR));
         })
         .finally(() => {
           if (timer) clearTimeout(timer);
-          if (alive) setLoading(false);
+          if (alive && runId === latestRunId) setLoading(false);
         });
     };
     run();
