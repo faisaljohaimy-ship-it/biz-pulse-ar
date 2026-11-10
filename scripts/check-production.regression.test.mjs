@@ -105,3 +105,30 @@ test("rejects a stylesheet link whose referenced CSS asset returns HTTP 404", as
 test("rejects a stylesheet link whose asset serves HTML instead of CSS", async () => {
   assert.equal(await runFixture(normalPage, "text/html", 200, "text/html"), 1);
 });
+
+test("accepts the real root's Google Fonts stylesheet before its same-origin CSS", async () => {
+  const withFonts = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo">' +
+      '<link rel="stylesheet" href="/assets/app.css">',
+  );
+  // Never fetch an off-origin CDN just to establish the app's CSS contract.
+  assert.equal(await runFixture(withFonts), null);
+});
+
+test("rejects an external font stylesheet without any local app CSS", async () => {
+  const fontsOnly = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo">',
+  );
+  assert.equal(await runFixture(fontsOnly), 1);
+});
+
+test("does not let a font CDN hide a broken local CSS asset", async () => {
+  const withFonts = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo">' +
+      '<link rel="stylesheet" href="/assets/app.css">',
+  );
+  assert.equal(await runFixture(withFonts, "text/html", 404), 1);
+});
