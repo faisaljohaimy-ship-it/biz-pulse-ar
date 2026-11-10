@@ -5,6 +5,8 @@ import { test } from "node:test";
 import vm from "node:vm";
 
 const source = readFileSync(new URL("./check-production.mjs", import.meta.url), "utf8");
+// An executable shebang cannot appear inside a VM async-function wrapper.
+const executableSource = source.replace(/^#![^\n]*\n/, "");
 const normalPage = `<!doctype html><html lang="ar"><head>
 <script>sessionStorage.getItem('theme')</script>
 <link rel="stylesheet" href="/assets/app.css">
@@ -27,7 +29,7 @@ async function runFixture(body, contentType = "text/html") {
       return new Response(body, { status: 200, headers: { "content-type": contentType } });
     },
   });
-  await new vm.Script(`(async () => {\n${source}\n})()`).runInContext(context);
+  await new vm.Script(`(async () => {\n${executableSource}\n})()`).runInContext(context);
   return exitCode;
 }
 
