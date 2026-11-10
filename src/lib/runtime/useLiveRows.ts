@@ -46,12 +46,19 @@ export function useLiveRows<T>(
       let timer: ReturnType<typeof setTimeout> | null = null;
       Promise.race([
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (build(supabase.from(table as any)) as any).then(
-          ({ data, error }: { data: T[] | null; error: { message?: string } | null }) => {
+        // Schedule the builder inside a promise: a synchronous error from
+        // query construction must reach the existing error/loading handler,
+        // rather than escape the effect and leave the UI stuck loading.
+        Promise.resolve()
+          .then(() => build(supabase.from(table as any)))
+          .then((response) => {
+            const { data, error } = response as {
+              data: T[] | null;
+              error: { message?: string } | null;
+            };
             if (error) throw new Error(error.message || LIVE_ROWS_ERROR_AR);
             return data ?? [];
-          },
-        ),
+          }),
         new Promise<T[]>((_, reject) => {
           timer = setTimeout(() => reject(new Error(LIVE_ROWS_TIMEOUT_AR)), LIVE_ROWS_TIMEOUT_MS);
         }),
