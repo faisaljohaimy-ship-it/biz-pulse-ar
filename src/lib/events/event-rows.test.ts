@@ -34,7 +34,15 @@ describe("event stream hydration and realtime reconciliation", () => {
 
   it("rejects malformed caps instead of draining both event snapshots", () => {
     const rows = [incoming, { id: "newer-2" }];
-    for (const invalid of [NaN, Infinity, -Infinity, 1.5, 0.5, 2 ** 31, Number.MAX_SAFE_INTEGER + 1]) {
+    for (const invalid of [
+      NaN,
+      Infinity,
+      -Infinity,
+      1.5,
+      0.5,
+      2 ** 31,
+      Number.MAX_SAFE_INTEGER + 1,
+    ]) {
       expect(mergeEventRowsById(rows, prior, invalid)).toEqual([]);
     }
   });
