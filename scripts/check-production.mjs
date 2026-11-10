@@ -91,7 +91,16 @@ for (const route of ROUTES) {
       );
 
     // الاختيار في `sessionStorage` منذ ٢٠٢٦/١٠/٢٤ (الداكن افتراضًا دائمًا): السكربت المانع يقرؤه منه لا من `localStorage`.
-    const themeScript = /sessionStorage\.getItem\(['"]theme['"]\)/.test(html);
+    // Only executable script elements count as theme-bootstrap evidence.
+    // Comments, templates and textarea content are inert, even when they quote JS.
+    const uncommentedHtml = html.replace(/<!--[\s\S]*?-->/g, "");
+    const nonInertHtml = uncommentedHtml.replace(
+      /<(template|textarea)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,
+      "",
+    );
+    const themeScript = [...nonInertHtml.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script\s*>/gi)].some(
+      ([, body]) => /sessionStorage\.getItem\(['"]theme['"]\)/.test(body),
+    );
     // النطاق `neexios.com` معرّف تقني (رابط · بريد · بيانات منظَّمة) لا اسم
     // معروض، وهو مُستثنى صراحةً في حارس العلامة على المصدر. يُنزع قبل المسح
     // وإلا رسب كل مسار على ذكر رابطه القانوني. أما `NEEXIOS` في نصّ مرئي
@@ -103,9 +112,10 @@ for (const route of ROUTES) {
     // Require an actual stylesheet link with a nonempty href.
     // HTML comments and inert containers can quote link markup without loading CSS.
     // Only a live stylesheet element is evidence that the application is styled.
-    const activeMarkup = html
-      .replace(/<!--[\s\S]*?-->/g, "")
-      .replace(/<(script|style|template)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, "");
+    const activeMarkup = nonInertHtml.replace(
+      /<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,
+      "",
+    );
     const stylesheetLink = activeMarkup.match(
       /<link\b(?=[^>]*\brel\s*=\s*["']stylesheet["'])(?=[^>]*\bhref\s*=\s*["'][^"']+["'])[^>]*>/i,
     )?.[0];
