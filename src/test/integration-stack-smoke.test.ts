@@ -33,7 +33,7 @@ describe("isolated integration fixture readiness smoke", () => {
     '[{"ref":"INT-A-1"},{"ref":"INT-B-2"},{"ref":"INT-C-3"}]',
     '[{"ref":"INT-B-2"},{"ref":"INT-A-1"}]',
     '[{"ref":"INT-A-1","unexpected":true},{"ref":"INT-B-2"}]',
-    'not JSON INT-A-1 INT-B-2',
+    "not JSON INT-A-1 INT-B-2",
   ])("rejects false-positive fixture responses (%s)", (response) => {
     expect(smokeExit(response)).not.toBe(0);
   });
