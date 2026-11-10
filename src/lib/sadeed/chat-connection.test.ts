@@ -65,7 +65,12 @@ describe("connectionFromHealth — الشارة تقرأ البوّابة لا �
     // A provider label is descriptive, not proof of an active credential.
     for (const key_present of [null, 0, "false", [], {}]) {
       expect(() =>
-        connectionFromHealth({ ok: true, key_present, provider: "google-gemini", gate: "verified" }),
+        connectionFromHealth({
+          ok: true,
+          key_present,
+          provider: "google-gemini",
+          gate: "verified",
+        }),
       ).toThrow("invalid key flag");
     }
     // Older health responses may legitimately omit the field.
