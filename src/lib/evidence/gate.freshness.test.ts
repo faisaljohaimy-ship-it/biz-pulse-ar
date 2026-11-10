@@ -50,8 +50,6 @@ describe("FR-19 query evidence: malformed update timestamps fail closed", () => 
       value: 3,
       href: "/sec/incidents",
     });
-    expect(queryEvidence("sec_incidents", 8.64e15)?.observedAt).toBe(
-      "+275760-09-13T00:00:00.000Z",
-    );
+    expect(queryEvidence("sec_incidents", 8.64e15)?.observedAt).toBe("+275760-09-13T00:00:00.000Z");
   });
 });
