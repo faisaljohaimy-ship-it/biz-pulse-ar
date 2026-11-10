@@ -97,6 +97,22 @@ wait_for_port() {
   die "$what did not open port $port in time"
 }
 
+# A response mentioning both fixture refs is not proof that the query returned them.
+# Check the exact ordered JSON projection, not substrings in an error message.
+is_exact_fixture_response() {
+  printf '%s' "$1" | node -e '
+    const fs = require("node:fs");
+    let rows;
+    try { rows = JSON.parse(fs.readFileSync(0, "utf8")); } catch { process.exit(1); }
+    const expected = ["INT-A-1", "INT-B-2"];
+    if (!Array.isArray(rows) || rows.length !== expected.length ||
+        !rows.every((row, index) => row && typeof row === "object" &&
+          !Array.isArray(row) && Object.keys(row).length === 1 && row.ref === expected[index])) {
+      process.exit(1);
+    }
+  '
+}
+
 # The socket opening is not proof that PostgREST has loaded its schema cache.
 # A freshly booted gateway may transiently return PGRST002. Accept only the
 # exact fixture result; fail closed on any other non-startup response.
@@ -105,8 +121,8 @@ wait_for_fixture_smoke() {
   for attempt in $(seq 1 30); do
     probe="$(curl -sS -H "apikey: $anon_jwt" -H "Authorization: Bearer $service_jwt" \
       "http://127.0.0.1:${GW_PORT}/rest/v1/sec_incidents?select=ref&ref=like.INT-*&order=ref" 2>/dev/null || true)"
+    if is_exact_fixture_response "$probe"; then return 0; fi
     case "$probe" in
-      *INT-A-1*INT-B-2*) return 0 ;;
       "" | *'"code":"PGRST002"'*) if [ "$attempt" -lt 30 ]; then sleep 0.5; fi ;;
       *) die "fixture smoke returned an unexpected gateway response" ;;
     esac
