@@ -233,12 +233,17 @@ export function normalizeSapWo(v: unknown): string | null {
 const DECIMAL_CELL = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i;
 const GROUPED_DECIMAL_CELL = /^[+-]?\d{1,3}(?:,\d{3})+(?:\.\d*)?(?:e[+-]?\d+)?$/i;
 
+// Number cannot represent integers above MAX_SAFE_INTEGER faithfully. Reject
+// rounded imports rather than silently changing a measured quantity or cost.
+const isSafeImportedNumber = (value: number): boolean =>
+  Number.isFinite(value) && (!Number.isInteger(value) || Number.isSafeInteger(value));
+
 export function toNumber(v: unknown): number | null {
-  if (typeof v === "number" && Number.isFinite(v)) return v;
+  if (typeof v === "number") return isSafeImportedNumber(v) ? v : null;
   const s = cleanText(v);
   if (!s || (!DECIMAL_CELL.test(s) && !GROUPED_DECIMAL_CELL.test(s))) return null;
   const n = Number(s.replace(/,/g, ""));
-  return Number.isFinite(n) ? n : null;
+  return isSafeImportedNumber(n) ? n : null;
 }
 
 /** تاريخ ISO (يوم) من خلية Excel — `Date` أو رقم تسلسلي أو نص. */
