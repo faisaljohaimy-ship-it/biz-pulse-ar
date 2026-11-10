@@ -45,11 +45,11 @@ export function useLiveRows<T>(
       // والجديد أن الخطأ يُعاد للصفحة بدل أن يتنكّر قائمةً فارغة.
       let timer: ReturnType<typeof setTimeout> | null = null;
       Promise.race([
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         // Schedule the builder inside a promise: a synchronous error from
         // query construction must reach the existing error/loading handler,
         // rather than escape the effect and leave the UI stuck loading.
         Promise.resolve()
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .then(() => build(supabase.from(table as any)))
           .then((response) => {
             const { data, error } = response as {
