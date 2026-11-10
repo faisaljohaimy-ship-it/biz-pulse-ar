@@ -55,6 +55,9 @@ async function fetchWithRetry(url) {
       const res = await fetch(url, {
         redirect: "manual",
         headers: { "user-agent": "sadeed-production-check" },
+        // A stalled network or response body must not hang the release gate.
+        // Node 22 fetch observes this signal during headers and body reads.
+        signal: AbortSignal.timeout(10_000),
       });
       if (res.ok) return res;
       last = `HTTP ${res.status}`;
