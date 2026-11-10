@@ -40,7 +40,10 @@ test("rejects 200 application/json even with plausible HTML fragments", async ()
 });
 
 test("rejects 200 HTML with only a textual .css mention", async () => {
-  const html = normalPage.replace('<link rel="stylesheet" href="/assets/app.css">', '<script>const asset = "/assets/app.css";</script>');
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<script>const asset = "/assets/app.css";</script>',
+  );
   assert.equal(await runFixture(html), 1);
 });
 
