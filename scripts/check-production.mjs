@@ -106,10 +106,10 @@ for (const route of ROUTES) {
     const activeMarkup = html
       .replace(/<!--[\s\S]*?-->/g, "")
       .replace(/<(script|style|template)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, "");
-    const hasCss =
-      /<link\b(?=[^>]*\brel\s*=\s*["']stylesheet["'])(?=[^>]*\bhref\s*=\s*["'][^"']+["'])[^>]*>/i.test(
-        activeMarkup,
-      );
+    const stylesheetLink = activeMarkup.match(
+      /<link\b(?=[^>]*\brel\s*=\s*["']stylesheet["'])(?=[^>]*\bhref\s*=\s*["'][^"']+["'])[^>]*>/i,
+    )?.[0];
+    const hasCss = Boolean(stylesheetLink);
 
     if (!isHtml) failures.push(`${route}: الاستجابة ليست مستند HTML صالحًا للتطبيق`);
     if (isLoginWall) failures.push(`${route}: صفحة توثيق Vercel ليست نجاحًا لمسار التطبيق`);
@@ -117,13 +117,33 @@ for (const route of ROUTES) {
     if (retired.length) failures.push(`${route}: اسم متقاعد ظاهر — ${retired.join(" · ")}`);
     if (!hasCss) failures.push(`${route}: لا ورقة أنماط في الصفحة المُقدَّمة`);
 
+    // A link tag is not proof its referenced stylesheet is actually served.
+    // Probe the same-origin asset without following redirects or sending credentials.
+    let cssLoaded = false;
+    if (stylesheetLink) {
+      try {
+        const href = stylesheetLink.match(/\bhref\s*=\s*(["'])(.*?)\1/i)?.[2];
+        if (!href) throw new Error("stylesheet href is empty");
+        const stylesheetUrl = new URL(href, url);
+        if (stylesheetUrl.origin !== new URL(BASE).origin) {
+          throw new Error("stylesheet is not same-origin");
+        }
+        const stylesheetRes = await fetchWithRetry(stylesheetUrl.href);
+        cssLoaded = /\btext\/css\b/i.test(stylesheetRes.headers.get("content-type") || "");
+        await stylesheetRes.body?.cancel();
+        if (!cssLoaded) throw new Error("stylesheet response is not text/css");
+      } catch (error) {
+        failures.push(route + ": تعذّر تحميل ملف الأنماط — " + (error instanceof Error ? error.message : String(error)));
+      }
+    }
+
     rows.push({
       route,
       status: res.status,
       bytes: html.length,
       theme: themeScript ? "✓" : "✗",
       brand: retired.length ? "✗" : "✓",
-      css: hasCss ? "✓" : "✗",
+      css: cssLoaded ? "✓" : "✗",
     });
   } catch (e) {
     failures.push(`${route}: تعذّر الوصول — ${e instanceof Error ? e.message : e}`);
