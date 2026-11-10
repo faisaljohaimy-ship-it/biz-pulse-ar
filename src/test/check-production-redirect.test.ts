@@ -1,9 +1,10 @@
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const program = readFileSync(
-  new URL("../../scripts/check-production.mjs", import.meta.url),
+  resolve(process.cwd(), "scripts/check-production.mjs"),
   "utf8",
 );
 const healthyHtml = `<!doctype html><script>sessionStorage.getItem('theme')</script><link rel="stylesheet" href="/app.css">SADEED`;
