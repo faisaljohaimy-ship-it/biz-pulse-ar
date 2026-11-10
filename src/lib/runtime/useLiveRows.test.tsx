@@ -142,3 +142,21 @@ describe("useLiveRows overlapping realtime reads", () => {
     expect(result.current.loading).toBe(false);
   });
 });
+
+describe("useLiveRows table changes", () => {
+  it("queries the new source when table changes without manually repeating it in deps", async () => {
+    const { result, rerender } = renderHook(
+      ({ table }: { table: string }) =>
+        useLiveRows<{ id: string }>(table, () =>
+          Promise.resolve({ data: [{ id: table }], error: null }),
+        ),
+      { initialProps: { table: "first_events" } },
+    );
+    await waitFor(() => expect(result.current.rows).toEqual([{ id: "first_events" }]));
+
+    rerender({ table: "second_events" });
+    await waitFor(() => expect(result.current.rows).toEqual([{ id: "second_events" }]));
+    expect(result.current.error).toBeNull();
+    expect(result.current.loading).toBe(false);
+  });
+});
