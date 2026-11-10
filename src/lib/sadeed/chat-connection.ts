@@ -20,16 +20,11 @@ export function connectionFromHealth(body: unknown): ChatConnection {
     gate?: unknown;
   } | null;
   if (!j || typeof j !== "object" || j.ok !== true) throw new Error("chat health: invalid");
-  // A malformed key flag cannot prove provider readiness. Only omission is
-  // supported for legacy health responses that report a provider name alone.
-  if (j.key_present !== undefined && typeof j.key_present !== "boolean") {
-    throw new Error("chat health: invalid key flag");
-  }
-  // An explicit missing key wins over a descriptive provider label. Legacy
-  // health bodies may omit key_present and supply only a provider name.
+  // Only an omitted flag permits the legacy provider-name fallback. Malformed
+  // flags must never make the badge claim the model is connected.
   const configured =
     j.key_present === true ||
-    (j.key_present !== false && typeof j.provider === "string" && !!j.provider.trim());
+    (j.key_present === undefined && typeof j.provider === "string" && !!j.provider.trim());
   if (!configured) return "local";
   if (j.gate === "closed") return "limited";
   // Only the known, provider-reachable gate states may show "connected".
