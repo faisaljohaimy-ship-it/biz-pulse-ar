@@ -7,37 +7,35 @@ function aborted() {
   return new DOMException("Aborted", "AbortError");
 }
 
-async function readSession(signal?: AbortSignal | null) {
+type SessionLookup = Awaited<ReturnType<typeof supabase.auth.getSession>>;
+const AUTH_UNAVAILABLE = "Authentication session unavailable.";
+
+async function readSession(signal?: AbortSignal | null): Promise<SessionLookup> {
   if (signal?.aborted) throw aborted();
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  let onAbort: (() => void) | undefined;
-  const interrupted = new Promise<never>((_, reject) => {
-    onAbort = () => reject(aborted());
-    signal?.addEventListener("abort", onAbort, { once: true });
-    timer = setTimeout(
-      () => reject(new DOMException("Timed out", "TimeoutError")),
+  return new Promise((resolve, reject) => {
+    const finish = (error?: Error, value?: SessionLookup) => {
+      clearTimeout(timer);
+      signal?.removeEventListener("abort", onAbort);
+      if (error) reject(error);
+      else resolve(value!);
+    };
+    const onAbort = () => finish(aborted());
+    const timer = setTimeout(
+      () => finish(new DOMException("Timed out", "TimeoutError")),
       AUTH_SESSION_DEADLINE_MS,
     );
+    signal?.addEventListener("abort", onAbort, { once: true });
+    // A late SDK response cannot restart an aborted or timed-out request.
+    Promise.resolve()
+      .then(() => {
+        if (signal?.aborted) throw aborted();
+        return supabase.auth.getSession();
+      })
+      .then(
+        (value) => finish(undefined, value),
+        () => finish(signal?.aborted ? aborted() : new Error(AUTH_UNAVAILABLE)),
+      );
   });
-  try {
-    // getSession has no AbortSignal option. Stop waiting, but never send a late
-    // application request if the SDK resolves after cancellation or timeout.
-    return await Promise.race([
-      Promise.resolve()
-        .then(() => {
-          if (signal?.aborted) throw aborted();
-          return supabase.auth.getSession();
-        })
-        .catch(() => {
-          if (signal?.aborted) throw aborted();
-          throw new Error("Authentication session unavailable.");
-        }),
-      interrupted,
-    ]);
-  } finally {
-    clearTimeout(timer);
-    if (onAbort) signal?.removeEventListener("abort", onAbort);
-  }
 }
 
 export async function authenticatedFetch(input: RequestInfo | URL, init: RequestInit = {}) {
@@ -47,7 +45,7 @@ export async function authenticatedFetch(input: RequestInfo | URL, init: Request
   if (signal?.aborted) throw aborted();
   // A valid guest session is allowed; a failed session lookup is not a guest.
   // Never leak the SDK's raw error or silently downgrade a private request.
-  if (error) throw new Error("Authentication session unavailable.");
+  if (error) throw new Error(AUTH_UNAVAILABLE);
   const token = data.session?.access_token;
   const headers = new Headers(init.headers ?? request?.headers);
   // Never forward a bearer token inherited from a Request or caller headers
