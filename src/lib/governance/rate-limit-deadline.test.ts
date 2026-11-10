@@ -158,6 +158,24 @@ describe("enforceRateLimit — المهلة", () => {
     });
   });
 
+  it("opaque RPC rejections fail closed even when string conversion throws", async () => {
+    const nullPrototypeError = Object.create(null);
+    const hostilePrimitive = {
+      [Symbol.toPrimitive]() {
+        throw new Error("cannot convert rejected value");
+      },
+    };
+    for (const rejected of [nullPrototypeError, hostilePrimitive]) {
+      rpc.impl = async () => {
+        throw rejected;
+      };
+      await expect(enforceRateLimit("chat:opaque-error", 10, 60)).resolves.toEqual({
+        allowed: false,
+        unavailable: true,
+      });
+    }
+  });
+
   it("نداءٌ يرمي (شبكة) يُعامل كخطأ قاعدة — مغلقًا لا استثناءً", async () => {
     rpc.impl = async () => {
       throw new Error("fetch failed");
