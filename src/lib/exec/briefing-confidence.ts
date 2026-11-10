@@ -58,6 +58,14 @@ export function observationCount(s: BriefingSignal): number {
   return s.openIncidents + s.activePatrols + s.highRiskPermits;
 }
 
+/** Reject invalid, negative, fractional or precision-losing database counters. */
+function validatedObservationCount(s: BriefingSignal): number | null {
+  const counters = [s.openIncidents, s.criticalIncidents, s.activePatrols, s.highRiskPermits];
+  if (counters.some((count) => !Number.isSafeInteger(count) || count < 0)) return null;
+  const total = observationCount(s);
+  return Number.isSafeInteger(total) ? total : null;
+}
+
 /**
  * دليلُ الموجز: لقطةُ العدّات المرصودة لحظةَ القراءة.
  *
@@ -65,13 +73,17 @@ export function observationCount(s: BriefingSignal): number {
  * (‏FR-19 §3).
  */
 export function briefingEvidence(s: BriefingSignal, observedAt: string): Evidence {
+  const count = validatedObservationCount(s);
+  if (count === null) {
+    throw new Error("عدادات تشغيلية غير صالحة — لا يجوز تمثيلها كدليل مقيس");
+  }
   return {
     kind: "db.query",
     source: "sec_incidents,sec_patrols,sec_permits",
     observedAt,
-    value: observationCount(s),
+    value: count,
     limitation:
-      observationCount(s) < DERIVED_THRESHOLD
+      count < DERIVED_THRESHOLD
         ? `عيّنة دون ${DERIVED_THRESHOLD} مشاهدات — التوصية على طرفٍ من الصورة`
         : undefined,
   };
@@ -87,7 +99,10 @@ export function briefingConfidence(
   signal: BriefingSignal,
   observedAt: string,
 ): Grounded<Confidence> {
-  const n = observationCount(signal);
+  const n = validatedObservationCount(signal);
+  if (n === null) {
+    return unmeasured("عدادات تشغيلية غير صالحة — لا يمكن إثبات درجة ثقة");
+  }
   if (n === 0) {
     // صفرُ مشاهدات لا يعني «الوضع مطمئن»: يعني **لم يُرصد شيء**.
     // ونسبةُ ثقةٍ هنا هي الاختلاق في أصفى صوره.
