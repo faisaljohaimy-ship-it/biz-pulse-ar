@@ -224,6 +224,10 @@ export function normalizeSystem(v: unknown): SystemCode | null {
 
 /** رقم أمر SAP: أرقام فقط، و«NEED SAP» وأشباهها ⇐ `null` (معلَّق). */
 export function normalizeSapWo(v: unknown): string | null {
+  // Excel numeric cells outside the safe integer range have already lost
+  // digits. Never turn that rounded value into a different SAP work-order ID.
+  // Text identifiers preserve the original digits and remain acceptable.
+  if (typeof v === "number" && !Number.isSafeInteger(v)) return null;
   const s = cleanText(v);
   return s && /^\d{6,}$/.test(s) ? s : null;
 }
