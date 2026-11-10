@@ -96,31 +96,22 @@ export function useLiveRows<T>(
 
 export function fmtRel(iso: string | null | undefined): string {
   if (!iso) return "—";
-  const timestamp = new Date(iso).getTime();
-  // Invalid timestamps should never produce misleading "NaN" text in the UI.
-  if (!Number.isFinite(timestamp)) return "—";
-  const elapsedMs = Date.now() - timestamp;
-  const future = elapsedMs < 0;
-  const s = Math.max(1, Math.round(Math.abs(elapsedMs) / 1000));
-  let value: string;
-  if (s < 60) value = `${s}s`;
-  else {
-    const m = Math.round(s / 60);
-    if (m < 60) value = `${m}m`;
-    else {
-      const h = Math.round(m / 60);
-      value = h < 24 ? `${h}h` : `${Math.round(h / 24)}d`;
-    }
-  }
-  // A future event is not an event that happened "1s ago".
-  return future ? `in ${value}` : `${value} ago`;
+  const ms = Date.now() - new Date(iso).getTime();
+  if (!(ms >= 0)) return "—"; // Invalid or future timestamps are not past events.
+  const s = Math.max(1, Math.round(ms / 1000));
+  if (s < 60) return `${s}s ago`;
+  const m = Math.round(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.round(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.round(h / 24)}d ago`;
 }
 
 export function fmtDuration(startIso: string | null | undefined, endIso?: string | null): string {
   if (!startIso) return "—";
   const start = new Date(startIso).getTime();
   const end = endIso ? new Date(endIso).getTime() : Date.now();
-  if (!Number.isFinite(start) || !Number.isFinite(end)) return "—";
+  if (!Number.isFinite(start + end)) return "—";
   const ms = Math.max(0, end - start);
   const s = Math.round(ms / 1000);
   if (s < 60) return `${s}s`;
