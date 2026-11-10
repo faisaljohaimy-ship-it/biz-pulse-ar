@@ -118,7 +118,16 @@ function u32(bytes: Uint8Array, offset: number): number {
 
 function assertFilename(filename: string, claimedMime: SadeedAttachmentMime) {
   const normalized = filename.normalize("NFKC").trim();
-  if (!normalized || normalized.startsWith(".") || /[\0\r\n/\\]/.test(normalized)) {
+  // Invisible direction controls can visually disguise a harmless extension as a
+  // different file type in RTL/LTR evidence lists. Preserve ordinary Arabic
+  // letters while rejecting bidi overrides, isolates and direction marks.
+  const bidiControls = /[\u061c\u200e\u200f\u202a-\u202e\u2066-\u2069]/;
+  if (
+    !normalized ||
+    normalized.startsWith(".") ||
+    /[\0\r\n/\\]/.test(normalized) ||
+    bidiControls.test(normalized)
+  ) {
     throw new FileInspectionError("unsafe_filename", "Attachment filename is unsafe.");
   }
   if (DANGEROUS_EXTENSION.test(normalized)) {

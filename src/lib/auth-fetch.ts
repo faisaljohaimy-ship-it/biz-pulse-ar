@@ -2,35 +2,42 @@ import { supabase } from "@/integrations/supabase/client";
 
 /** Bound session refresh/lock waits before starting an application request. */
 export const AUTH_SESSION_DEADLINE_MS = 10_000;
-const AUTH_UNAVAILABLE = "Authentication session unavailable.";
 
 function aborted() {
   return new DOMException("Aborted", "AbortError");
 }
 
-type SessionLookup = Awaited<ReturnType<typeof supabase.auth.getSession>>;
-
-async function readSession(signal?: AbortSignal | null): Promise<SessionLookup> {
+async function readSession(signal?: AbortSignal | null) {
   if (signal?.aborted) throw aborted();
-  return new Promise((resolve, reject) => {
-    const finish = (error?: Error, value?: SessionLookup) => {
-      clearTimeout(timer);
-      signal?.removeEventListener("abort", onAbort);
-      if (error) reject(error);
-      else resolve(value!);
-    };
-    const onAbort = () => finish(aborted());
-    const timer = setTimeout(
-      () => finish(new DOMException("Timed out", "TimeoutError")),
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let onAbort: (() => void) | undefined;
+  const interrupted = new Promise<never>((_, reject) => {
+    onAbort = () => reject(aborted());
+    signal?.addEventListener("abort", onAbort, { once: true });
+    timer = setTimeout(
+      () => reject(new DOMException("Timed out", "TimeoutError")),
       AUTH_SESSION_DEADLINE_MS,
     );
-    signal?.addEventListener("abort", onAbort, { once: true });
-    // Supabase has no abort option: settle promptly without making a late request.
-    (async () => supabase.auth.getSession())().then(
-      (value) => finish(undefined, value),
-      () => finish(signal?.aborted ? aborted() : new Error(AUTH_UNAVAILABLE)),
-    );
   });
+  try {
+    // getSession has no AbortSignal option. Stop waiting, but never send a late
+    // application request if the SDK resolves after cancellation or timeout.
+    return await Promise.race([
+      Promise.resolve()
+        .then(() => {
+          if (signal?.aborted) throw aborted();
+          return supabase.auth.getSession();
+        })
+        .catch(() => {
+          if (signal?.aborted) throw aborted();
+          throw new Error("Authentication session unavailable.");
+        }),
+      interrupted,
+    ]);
+  } finally {
+    clearTimeout(timer);
+    if (onAbort) signal?.removeEventListener("abort", onAbort);
+  }
 }
 
 export async function authenticatedFetch(input: RequestInfo | URL, init: RequestInit = {}) {

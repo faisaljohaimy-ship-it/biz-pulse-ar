@@ -78,10 +78,14 @@ export function hasEvidence(e: Evidence | null | undefined): e is Evidence {
   return true;
 }
 
-/** Freshness gate: evidence older than `maxAgeMs` is treated as stale. */
+/** Freshness gate: reject stale, invalid, and future-dated evidence. */
 export function isFresh(e: Evidence, maxAgeMs = 5 * 60_000): boolean {
   const t = Date.parse(e.observedAt);
-  return Date.now() - t <= maxAgeMs;
+  const ageMs = Date.now() - t;
+  // A future timestamp previously produced a negative age, so even evidence
+  // years ahead was mistakenly treated as fresh by the status-badge gate.
+  // NaN from an invalid date fails both comparisons naturally.
+  return ageMs >= 0 && ageMs <= maxAgeMs;
 }
 
 /**
@@ -103,7 +107,8 @@ export function queryEvidence(
   value?: string | number,
   href?: string,
 ): Evidence | null {
-  if (!dataUpdatedAt || dataUpdatedAt <= 0) return null;
+  // Reject invalid or out-of-range Date timestamps before toISOString can throw.
+  if (!(dataUpdatedAt > 0 && dataUpdatedAt <= 8.64e15)) return null;
   return {
     kind: "db.query",
     source,

@@ -139,6 +139,32 @@ describe("chunkSpeechText — safe segmentation", () => {
     expect(chunks.some((c) => c.includes(idPhrase))).toBe(true);
   });
 
+  it("does not exceed the default TTS limit by joining a short trailing sentence", () => {
+    const full = `${"ا".repeat(3999)}.`;
+    const chunks = chunkSpeechText(`${full} ب`);
+    expect(chunks).toEqual([full, "ب"]);
+    expect(chunks.every((chunk) => chunk.length <= 4000)).toBe(true);
+  });
+
+  it("hard-bounds an unbroken token without losing its characters", () => {
+    const word = "ا".repeat(4001);
+    const chunks = chunkSpeechText(word);
+    expect(chunks).toEqual(["ا".repeat(4000), "ا"]);
+    expect(chunks.join("")).toBe(word);
+  });
+
+  it("splits overlong emoji tokens only between Unicode code points", () => {
+    const word = "😀".repeat(5);
+    const chunks = chunkSpeechText(word, 4);
+    expect(chunks).toEqual(["😀😀", "😀😀", "😀"]);
+    expect(chunks.every((chunk) => chunk.length <= 4)).toBe(true);
+    expect(chunks.join("")).toBe(word);
+  });
+
+  it("still coalesces short fragments when the previous chunk has space", () => {
+    expect(chunkSpeechText("abc def. z", 7)).toEqual(["abc", "def. z"]);
+  });
+
   it("returns [] for empty speech", () => {
     expect(chunkSpeechText("   ")).toEqual([]);
   });
