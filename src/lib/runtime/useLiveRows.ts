@@ -45,16 +45,16 @@ export function useLiveRows<T>(
       // والجديد أن الخطأ يُعاد للصفحة بدل أن يتنكّر قائمةً فارغة.
       let timer: ReturnType<typeof setTimeout> | null = null;
       Promise.race([
-        // The async boundary converts synchronous builder throws into a
-        // rejection handled by the existing catch/finally and four-second timer.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ((async () => build(supabase.from(table as any)))() as Promise<{
-          data: T[] | null;
-          error: { message?: string } | null;
-        }>).then(({ data, error }) => {
+        // An async boundary also catches synchronous query-builder failures.
+        (async () => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const { data, error } = (await build(supabase.from(table as any))) as {
+            data: T[] | null;
+            error: { message?: string } | null;
+          };
           if (error) throw new Error(error.message || LIVE_ROWS_ERROR_AR);
           return data ?? [];
-        }),
+        })(),
         new Promise<T[]>((_, reject) => {
           timer = setTimeout(() => reject(new Error(LIVE_ROWS_TIMEOUT_AR)), LIVE_ROWS_TIMEOUT_MS);
         }),
