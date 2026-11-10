@@ -132,3 +132,35 @@ test("does not let a font CDN hide a broken local CSS asset", async () => {
   );
   assert.equal(await runFixture(withFonts, "text/html", 404), 1);
 });
+
+test("rejects inert JSON script that only quotes the theme bootstrap", async () => {
+  const html = normalPage.replace(
+    "<script>sessionStorage.getItem('theme')</script>",
+    '<script type="application/json">sessionStorage.getItem(\'theme\')</script>',
+  );
+  assert.equal(await runFixture(html), 1);
+});
+
+test("rejects unquoted non-JavaScript script types as theme proof", async () => {
+  const html = normalPage.replace(
+    "<script>sessionStorage.getItem('theme')</script>",
+    "<script type=text/plain>sessionStorage.getItem('theme')</script>",
+  );
+  assert.equal(await runFixture(html), 1);
+});
+
+test("accepts an executable module theme bootstrap", async () => {
+  const html = normalPage.replace(
+    "<script>sessionStorage.getItem('theme')</script>",
+    "<script type=\"module\">sessionStorage.getItem('theme')</script>",
+  );
+  assert.equal(await runFixture(html), null);
+});
+
+test("accepts an explicit JavaScript MIME theme bootstrap", async () => {
+  const html = normalPage.replace(
+    "<script>sessionStorage.getItem('theme')</script>",
+    "<script type=\"text/javascript\">sessionStorage.getItem('theme')</script>",
+  );
+  assert.equal(await runFixture(html), null);
+});
