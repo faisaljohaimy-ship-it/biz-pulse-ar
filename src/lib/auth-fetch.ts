@@ -26,20 +26,15 @@ async function readSession(signal?: AbortSignal | null): Promise<SessionLookup> 
     );
     signal?.addEventListener("abort", onAbort, { once: true });
     // A late SDK response cannot restart an aborted or timed-out request.
-    Promise.resolve()
-      .then(() => {
-        if (signal?.aborted) throw aborted();
-        return supabase.auth.getSession();
-      })
-      .then(
-        (value) => finish(undefined, value),
-        () => finish(signal?.aborted ? aborted() : new Error(AUTH_UNAVAILABLE)),
-      );
+    (async () => supabase.auth.getSession())().then(
+      (value) => finish(undefined, value),
+      () => finish(signal?.aborted ? aborted() : new Error(AUTH_UNAVAILABLE)),
+    );
   });
 }
 
 export async function authenticatedFetch(input: RequestInfo | URL, init: RequestInit = {}) {
-  const request = typeof Request !== "undefined" && input instanceof Request ? input : null;
+  const request = input instanceof Request ? input : null;
   const signal = init.signal === undefined ? request?.signal : init.signal;
   const { data, error } = await readSession(signal);
   if (signal?.aborted) throw aborted();
@@ -58,7 +53,7 @@ export async function authenticatedFetch(input: RequestInfo | URL, init: Request
   if (
     token &&
     (typeof location === "undefined"
-      ? /^\/(?![/\\\t\n\r])/.test(target)
+      ? /^\/(?![/\\\s])/.test(target)
       : new URL(target, location.href).origin === location.origin)
   ) {
     headers.set("Authorization", `Bearer ${token}`);
