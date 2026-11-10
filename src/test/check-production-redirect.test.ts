@@ -34,7 +34,9 @@ async function runOfflineProbe(redirectStatus?: 302 | 307) {
         return {
           ok: true,
           status: 200,
-          headers: { get: (name: string) => (name.toLowerCase() === "content-type" ? "text/css" : null) },
+          headers: {
+            get: (name: string) => (name.toLowerCase() === "content-type" ? "text/css" : null),
+          },
           body: { cancel: async () => {} },
         };
       }
