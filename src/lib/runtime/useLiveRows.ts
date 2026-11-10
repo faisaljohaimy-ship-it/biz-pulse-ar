@@ -93,7 +93,7 @@ export function useLiveRows<T>(
       void supabase.removeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [attempt, ...deps]);
+  }, [attempt, table, ...deps]);
   return { rows, loading, error, refetch };
 }
 
