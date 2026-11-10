@@ -26,6 +26,7 @@ async function runFixture(options = {}) {
     process: {
       env: {
         PRODUCTION_URL: "https://offline.invalid",
+        EXPECTED_SHA: options.expectedSha ?? "",
         STRICT: options.strict ? "1" : "0",
         EXPECT_N8N: options.expectN8n ? "1" : "",
       },
@@ -45,7 +46,7 @@ async function runFixture(options = {}) {
       assert.equal(url.origin, "https://offline.invalid", "Network access is forbidden");
       if (url.pathname === "/api/public/health") {
         const body = {
-          build: { sha: "a".repeat(40), ref: "fixture" },
+          build: { sha: options.buildSha ?? "a".repeat(40), ref: "fixture" },
           subsystems: {
             db: { status: options.db ?? "ok" },
             rate_limit_storage: { status: options.storage ?? "ok" },
@@ -303,4 +304,29 @@ test("n8n: الخلاصة تحمل صفوف N1/N2/N3", async () => {
   for (const id of ["N1 n8n public/health", "N2 n8n chat/health", "N3 n8n advisory"]) {
     assert.ok(r.markdown.includes(id), id);
   }
+});
+
+// The release gate must not accept SHA prefixes as proof of an exact deployed commit.
+test("build gate rejects a truncated deployed SHA even when it prefixes the expected commit", async () => {
+  const r = await runFixture({ expectedSha: "a".repeat(40), buildSha: "a".repeat(9) });
+  assert.equal(r.result("B1 build-id").status, "fail");
+  assert.equal(r.exitCode, 1);
+});
+
+test("build gate rejects an abbreviated expected SHA", async () => {
+  const r = await runFixture({ expectedSha: "a".repeat(9), buildSha: "a".repeat(40) });
+  assert.equal(r.result("B1 build-id").status, "fail");
+  assert.equal(r.exitCode, 1);
+});
+
+test("build gate rejects a different full SHA", async () => {
+  const r = await runFixture({ expectedSha: "b".repeat(40), buildSha: "a".repeat(40) });
+  assert.equal(r.result("B1 build-id").status, "fail");
+  assert.equal(r.exitCode, 1);
+});
+
+test("build gate accepts an exact full SHA", async () => {
+  const r = await runFixture({ expectedSha: "a".repeat(40), buildSha: "a".repeat(40) });
+  assert.equal(r.result("B1 build-id").status, "pass");
+  assert.equal(r.exitCode, 0);
 });
