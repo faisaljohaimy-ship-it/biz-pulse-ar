@@ -83,6 +83,24 @@ describe("SADEED attachment structural inspection", () => {
     );
   });
 
+  it.each([
+    "gate\u001b[31m-report.txt",
+    "incident\tinternal.txt",
+    "archive\u0007bell.txt",
+    "panel\u007fstatus.txt",
+    "audit\u0085note.txt",
+  ])("rejects ASCII and C1 control characters in attachment filename %s", (filename) => {
+    expectBlocked(
+      () =>
+        inspectSadeedAttachment({
+          bytes: new TextEncoder().encode("safe incident note"),
+          filename,
+          claimedMime: "text/plain",
+        }),
+      "unsafe_filename",
+    );
+  });
+
   it("continues accepting legitimate Arabic evidence filenames", () => {
     const result = inspectSadeedAttachment({
       bytes: new TextEncoder().encode("نص تقرير السلامة"),
