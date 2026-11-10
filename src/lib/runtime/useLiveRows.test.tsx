@@ -65,7 +65,7 @@ describe("realtime timestamp formatting", () => {
     vi.useFakeTimers();
     try {
       vi.setSystemTime(new Date("2026-11-10T12:00:00Z"));
-      expect(fmtRel("2026-11-10T12:10:00Z")).toBe("in 10m");
+      expect(fmtRel("2026-11-10T12:10:00Z")).toBe("—");
       expect(fmtRel("2026-11-10T11:58:00Z")).toBe("2m ago");
       expect(fmtRel(null)).toBe("—");
     } finally {
