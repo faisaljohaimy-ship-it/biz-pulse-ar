@@ -105,6 +105,16 @@ describe("التنظيف", () => {
     expect(normalizeSapWo("NEED SAP")).toBeNull();
   });
 
+  it("rejects rounded numeric SAP IDs but preserves exact text identifiers", () => {
+    // Excel numeric conversion has already rounded the original final digit.
+    const rounded = Number("9007199254740993");
+    expect(rounded).toBe(9007199254740992);
+    expect(normalizeSapWo(rounded)).toBeNull();
+    expect(normalizeSapWo(123456.5)).toBeNull();
+    expect(normalizeSapWo("9007199254740993")).toBe("9007199254740993");
+    expect(normalizeSapWo(12345678901)).toBe("12345678901");
+  });
+
   it("التأخير من التاريخين: لا سالب، وبلا تاريخ لا رقم (لا ‎-45838)", () => {
     expect(delayDays("2025-06-30", "2025-07-05")).toBe(5);
     expect(delayDays("2025-06-30", "2025-06-28")).toBe(0);
