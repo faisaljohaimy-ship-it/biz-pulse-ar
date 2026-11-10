@@ -6,7 +6,10 @@ import { describe, expect, it } from "vitest";
 const program = readFileSync(resolve(process.cwd(), "scripts/check-production.mjs"), "utf8");
 // The executable's shebang cannot appear inside an async-function VM wrapper.
 const executableProgram = program.replace(/^#![^\n]*\n/, "");
-const healthyHtml = `<!doctype html><script>sessionStorage.getItem('theme')</script><link rel="stylesheet" href="/app.css">SADEED`;
+const healthyHtml = `<!doctype html><html><head>
+<script>sessionStorage.getItem('theme')</script>
+<link rel="stylesheet" href="/app.css">
+</head><body>SADEED</body></html>`;
 
 async function runOfflineProbe(redirectStatus?: 302 | 307) {
   let exitCode = 0;
@@ -32,7 +35,14 @@ async function runOfflineProbe(redirectStatus?: 302 | 307) {
       if (redirectStatus && init.redirect === "manual") {
         return { ok: false, status: redirectStatus };
       }
-      return { ok: true, status: 200, text: async () => healthyHtml };
+      return {
+        ok: true,
+        status: 200,
+        headers: {
+          get: (name: string) => (name.toLowerCase() === "content-type" ? "text/html" : null),
+        },
+        text: async () => healthyHtml,
+      };
     },
   });
   await new vm.Script(`(async () => {\n${executableProgram}\n})()`).runInContext(context);

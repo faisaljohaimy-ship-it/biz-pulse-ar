@@ -86,6 +86,8 @@ jobs:
         run: npm test
       - name: Offline production smoke regression tests
         run: node --test scripts/smoke-production.regression.test.mjs
+      - name: Offline production page validation regression tests
+        run: node --test scripts/check-production.regression.test.mjs
       # الأمر نفسه الذي تشغّله السلسلة المحلّية (`npm run check`) — لا نسخة ثانية.
       - name: Production dependency audit
         run: npm run check:audit
