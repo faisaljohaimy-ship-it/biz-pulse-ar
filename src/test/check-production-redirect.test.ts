@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 
 const program = readFileSync(resolve(process.cwd(), "scripts/check-production.mjs"), "utf8");
 // The executable's shebang cannot appear inside an async-function VM wrapper.
-const executableProgram = program.replace(/^#![^\\n]*\\n/, "");
+const executableProgram = program.replace(/^#![^\n]*\n/, "");
 const healthyHtml = `<!doctype html><script>sessionStorage.getItem('theme')</script><link rel="stylesheet" href="/app.css">SADEED`;
 
 async function runOfflineProbe(redirectStatus?: 302 | 307) {
