@@ -81,6 +81,12 @@ for (const route of ROUTES) {
   try {
     const res = await fetchWithRetry(url);
     const html = await res.text();
+    // An HTTP 200 JSON, plain-text maintenance response, or Vercel SSO wall
+    // is not evidence that the requested application HTML rendered.
+    const contentType = res.headers.get("content-type") || "";
+    const isHtml = /\btext\/html\b/i.test(contentType) && /<html\b/i.test(html);
+    const isLoginWall =
+      /<title\b[^>]*>\s*(?:Authentication Required|Vercel Authentication)[^<]*<\/title>/i.test(html);
 
     // الاختيار في `sessionStorage` منذ ٢٠٢٦/١٠/٢٤ (الداكن افتراضًا دائمًا): السكربت المانع يقرؤه منه لا من `localStorage`.
     const themeScript = /sessionStorage\.getItem\(['"]theme['"]\)/.test(html);
@@ -91,8 +97,15 @@ for (const route of ROUTES) {
     const scanned = html.replace(/(?:https?:\/\/)?(?:[\w-]+\.)*neexios\.com/gi, "«DOMAIN»");
     const retired = RETIRED.filter((re) => re.test(scanned)).map(String);
     // الصفحة المُقدَّمة يجب أن تشير إلى ورقة أنماط واحدة على الأقل.
-    const hasCss = /<link[^>]+rel=["']stylesheet["']/.test(html) || /\.css/.test(html);
+    // A textual '.css' mention (e.g. in JSON or a script) is not a stylesheet.
+    // Require an actual stylesheet link with a nonempty href.
+    const hasCss =
+      /<link\b(?=[^>]*\brel\s*=\s*["']stylesheet["'])(?=[^>]*\bhref\s*=\s*["'][^"']+["'])[^>]*>/i.test(
+        html,
+      );
 
+    if (!isHtml) failures.push(`${route}: الاستجابة ليست مستند HTML صالحًا للتطبيق`);
+    if (isLoginWall) failures.push(`${route}: صفحة توثيق Vercel ليست نجاحًا لمسار التطبيق`);
     if (!themeScript) failures.push(`${route}: سكربت الثيم المانع غائب من HTML المُقدَّم`);
     if (retired.length) failures.push(`${route}: اسم متقاعد ظاهر — ${retired.join(" · ")}`);
     if (!hasCss) failures.push(`${route}: لا ورقة أنماط في الصفحة المُقدَّمة`);
