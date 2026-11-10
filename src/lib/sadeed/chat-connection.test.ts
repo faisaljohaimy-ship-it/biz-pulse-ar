@@ -61,17 +61,17 @@ describe("connectionFromHealth — الشارة تقرأ البوّابة لا �
     expect(connectionFromHealth({ ok: true, key_present: false, gate: "blocked" })).toBe("local");
   });
 
-  it("rejects malformed key flags instead of reporting a connected model", () => {
-    // A provider label is descriptive, not proof of an active credential.
+  it("does not infer a connected model from a malformed key flag", () => {
+    // Provider labels are not credential evidence when a flag is present.
     for (const key_present of [null, 0, "false", [], {}]) {
-      expect(() =>
+      expect(
         connectionFromHealth({
           ok: true,
           key_present,
           provider: "google-gemini",
           gate: "verified",
         }),
-      ).toThrow("invalid key flag");
+      ).toBe("local");
     }
     // Older health responses may legitimately omit the field.
     expect(connectionFromHealth({ ok: true, provider: "google-gemini" })).toBe("ready");
