@@ -48,8 +48,7 @@ export async function authenticatedFetch(input: RequestInfo | URL, init: Request
   // different security context, even when the current SDK session is null.
   headers.delete("Authorization");
   // Resolve a destination before adding a bearer: "/\t/host" is off-origin.
-  const target =
-    typeof input === "string" ? input : (input as Request).url || (input as URL).href;
+  const target = typeof input === "string" ? input : (input as Request).url || (input as URL).href;
   const origin = globalThis.location?.origin;
   if (
     token &&
