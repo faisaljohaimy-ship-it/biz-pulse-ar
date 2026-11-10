@@ -95,27 +95,22 @@ export function useLiveRows<T>(
 }
 
 export function fmtRel(iso: string | null | undefined): string {
-  if (!iso) return "—";
-  const ms = Date.now() - new Date(iso).getTime();
-  const s = Math.max(1, Math.round(ms / 1000));
+  const ms = Date.now() - Date.parse(iso ?? "");
+  if (!(ms >= 0)) return "—";
+  const s = Math.round(ms / 1000) || 1;
   if (s < 60) return `${s}s ago`;
   const m = Math.round(s / 60);
   if (m < 60) return `${m}m ago`;
   const h = Math.round(m / 60);
-  if (h < 24) return `${h}h ago`;
-  return `${Math.round(h / 24)}d ago`;
+  return h < 24 ? `${h}h ago` : `${Math.round(h / 24)}d ago`;
 }
 
 export function fmtDuration(startIso: string | null | undefined, endIso?: string | null): string {
-  if (!startIso) return "—";
-  const start = new Date(startIso).getTime();
-  const end = endIso ? new Date(endIso).getTime() : Date.now();
-  const ms = Math.max(0, end - start);
-  const s = Math.round(ms / 1000);
+  const start = Date.parse(startIso ?? "");
+  const end = endIso ? Date.parse(endIso) : Date.now();
+  if (!Number.isFinite(start + end)) return "—";
+  const s = Math.round(Math.max(0, end - start) / 1000);
   if (s < 60) return `${s}s`;
   const m = Math.floor(s / 60);
-  const rs = s % 60;
-  if (m < 60) return `${m}m ${rs}s`;
-  const h = Math.floor(m / 60);
-  return `${h}h ${m % 60}m`;
+  return m < 60 ? `${m}m ${s % 60}s` : `${Math.floor(m / 60)}h ${m % 60}m`;
 }
