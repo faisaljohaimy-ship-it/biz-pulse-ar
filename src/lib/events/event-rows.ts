@@ -11,7 +11,9 @@ export function mergeEventRowsById<T extends { readonly id: string }>(
   older: readonly T[],
   limit: number,
 ): T[] {
-  if (limit <= 0) return [];
+  // NaN/Infinity (or a fractional cap) can turn a bounded merge into an
+  // uncapped scan. Reject invalid caller limits before touching either snapshot.
+  if (!Number.isSafeInteger(limit) || limit <= 0) return [];
   const seen = new Set<string>();
   const merged: T[] = [];
   // Consume lazily: spreading both snapshots up-front may allocate thousands
