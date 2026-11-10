@@ -77,7 +77,7 @@ export function useLiveRows<T>(
     };
     run();
     const channel = supabase
-      .channel(`live:${table}:${Math.random().toString(36).slice(2, 8)}`)
+      .channel(`live:${table}:${Math.random()}`)
       .on(
         "postgres_changes",
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
