@@ -1,11 +1,14 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+const realtime = vi.hoisted(() => ({ onChange: undefined as undefined | (() => void) }));
+
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
     from: () => ({}),
     channel: () => ({
-      on() {
+      on(_type: unknown, _filter: unknown, callback: () => void) {
+        realtime.onChange = callback;
         return this;
       },
       subscribe() {
@@ -20,6 +23,7 @@ import { fmtDuration, fmtRel, useLiveRows } from "./useLiveRows";
 
 afterEach(() => {
   vi.restoreAllMocks();
+  realtime.onChange = undefined;
 });
 
 describe("useLiveRows synchronous query failures", () => {
@@ -76,5 +80,65 @@ describe("realtime timestamp formatting", () => {
   it("preserves valid duration formatting and zero-clamps reversed periods", () => {
     expect(fmtDuration("2026-11-10T12:00:00Z", "2026-11-10T12:01:01Z")).toBe("1m 1s");
     expect(fmtDuration("2026-11-10T12:01:01Z", "2026-11-10T12:00:00Z")).toBe("0s");
+  });
+});
+
+describe("useLiveRows overlapping realtime reads", () => {
+  it("never replaces newer realtime data with an older slow query result", async () => {
+    type Snapshot = { data: { id: string }[]; error: null };
+    const pending: Array<(value: Snapshot) => void> = [];
+    const build = () =>
+      new Promise<Snapshot>((resolve) => {
+        pending.push(resolve);
+      });
+
+    const { result } = renderHook(() => useLiveRows<{ id: string }>("events", build));
+    expect(pending).toHaveLength(1);
+    act(() => realtime.onChange?.());
+    expect(pending).toHaveLength(2);
+
+    await act(async () => {
+      pending[1]({ data: [{ id: "latest" }], error: null });
+      await Promise.resolve();
+    });
+    await waitFor(() => expect(result.current.rows).toEqual([{ id: "latest" }]));
+
+    await act(async () => {
+      pending[0]({ data: [{ id: "stale" }], error: null });
+      await Promise.resolve();
+    });
+    expect(result.current.rows).toEqual([{ id: "latest" }]);
+    expect(result.current.error).toBeNull();
+    expect(result.current.loading).toBe(false);
+  });
+
+  it("does not show a stale failed read after the newest realtime read succeeds", async () => {
+    type Snapshot = { data: { id: string }[]; error: null };
+    const pending: Array<{
+      resolve: (value: Snapshot) => void;
+      reject: (reason: Error) => void;
+    }> = [];
+    const build = () =>
+      new Promise<Snapshot>((resolve, reject) => {
+        pending.push({ resolve, reject });
+      });
+
+    const { result } = renderHook(() => useLiveRows<{ id: string }>("events", build));
+    act(() => realtime.onChange?.());
+    expect(pending).toHaveLength(2);
+
+    await act(async () => {
+      pending[1].resolve({ data: [{ id: "latest" }], error: null });
+      await Promise.resolve();
+    });
+    await waitFor(() => expect(result.current.rows).toEqual([{ id: "latest" }]));
+
+    await act(async () => {
+      pending[0].reject(new Error("late stale failure"));
+      await Promise.resolve();
+    });
+    expect(result.current.rows).toEqual([{ id: "latest" }]);
+    expect(result.current.error).toBeNull();
+    expect(result.current.loading).toBe(false);
   });
 });
