@@ -101,9 +101,14 @@ for (const route of ROUTES) {
     // الصفحة المُقدَّمة يجب أن تشير إلى ورقة أنماط واحدة على الأقل.
     // A textual '.css' mention (e.g. in JSON or a script) is not a stylesheet.
     // Require an actual stylesheet link with a nonempty href.
+    // HTML comments and inert containers can quote link markup without loading CSS.
+    // Only a live stylesheet element is evidence that the application is styled.
+    const activeMarkup = html
+      .replace(/<!--[\s\S]*?-->/g, "")
+      .replace(/<(script|style|template)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, "");
     const hasCss =
       /<link\b(?=[^>]*\brel\s*=\s*["']stylesheet["'])(?=[^>]*\bhref\s*=\s*["'][^"']+["'])[^>]*>/i.test(
-        html,
+        activeMarkup,
       );
 
     if (!isHtml) failures.push(`${route}: الاستجابة ليست مستند HTML صالحًا للتطبيق`);

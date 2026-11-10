@@ -53,3 +53,27 @@ test("rejects an in-place SSO login wall even when theme and CSS are present", a
   const html = normalPage.replace("SADEED", "<title>Authentication Required</title>");
   assert.equal(await runFixture(html), 1);
 });
+
+test("rejects 200 HTML when a stylesheet exists only inside an HTML comment", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<!-- <link rel="stylesheet" href="/assets/app.css"> -->',
+  );
+  assert.equal(await runFixture(html), 1);
+});
+
+test("rejects 200 HTML when a stylesheet exists only in a script string", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    `<script>const fake = '<link rel="stylesheet" href="/assets/app.css">';</script>`,
+  );
+  assert.equal(await runFixture(html), 1);
+});
+
+test("rejects 200 HTML when a stylesheet exists only inside an inert template", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<template><link rel="stylesheet" href="/assets/app.css"></template>',
+  );
+  assert.equal(await runFixture(html), 1);
+});
