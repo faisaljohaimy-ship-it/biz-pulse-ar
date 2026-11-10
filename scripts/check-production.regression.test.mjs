@@ -82,6 +82,22 @@ test("rejects 200 HTML when a stylesheet exists only inside an inert template", 
   assert.equal(await runFixture(html), 1);
 });
 
+test("rejects theme bootstrap only mentioned in an HTML comment", async () => {
+  const html = normalPage.replace(
+    "<script>sessionStorage.getItem('theme')</script>",
+    "<!-- sessionStorage.getItem('theme') -->",
+  );
+  assert.equal(await runFixture(html), 1);
+});
+
+test("rejects theme bootstrap only inside an inert template", async () => {
+  const html = normalPage.replace(
+    "<script>sessionStorage.getItem('theme')</script>",
+    "<template><script>sessionStorage.getItem('theme')</script></template>",
+  );
+  assert.equal(await runFixture(html), 1);
+});
+
 test("rejects a stylesheet link whose referenced CSS asset returns HTTP 404", async () => {
   assert.equal(await runFixture(normalPage, "text/html", 404), 1);
 });
