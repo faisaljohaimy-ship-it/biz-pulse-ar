@@ -20,6 +20,25 @@ describe("maintenance numeric import integrity", () => {
     expect(toNumber(raw)).toBe(expected);
   });
 
+  it.each([
+    "9007199254740992",
+    "9007199254740993",
+    "9,007,199,254,740,993",
+    "9.007199254740993e15",
+    "-9007199254740993",
+  ])("rejects unsafe integer magnitude %s rather than rounding a measured value", (raw) => {
+    expect(toNumber(raw)).toBeNull();
+  });
+
+  it("rejects an already-rounded unsafe JS integer", () => {
+    expect(toNumber(Number.MAX_SAFE_INTEGER + 2)).toBeNull();
+  });
+
+  it("preserves the maximum safely representable positive and negative integers", () => {
+    expect(toNumber("9007199254740991")).toBe(Number.MAX_SAFE_INTEGER);
+    expect(toNumber("-9,007,199,254,740,991")).toBe(-Number.MAX_SAFE_INTEGER);
+  });
+
   it("retains null for empty cells and finite numeric zero", () => {
     expect(toNumber(null)).toBeNull();
     expect(toNumber("")).toBeNull();
