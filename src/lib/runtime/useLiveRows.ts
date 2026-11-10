@@ -45,13 +45,16 @@ export function useLiveRows<T>(
       // والجديد أن الخطأ يُعاد للصفحة بدل أن يتنكّر قائمةً فارغة.
       let timer: ReturnType<typeof setTimeout> | null = null;
       Promise.race([
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (build(supabase.from(table as any)) as any).then(
-          ({ data, error }: { data: T[] | null; error: { message?: string } | null }) => {
-            if (error) throw new Error(error.message || LIVE_ROWS_ERROR_AR);
-            return data ?? [];
-          },
-        ),
+        // An async boundary also catches synchronous query-builder failures.
+        (async () => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const { data, error } = (await build(supabase.from(table as any))) as {
+            data: T[] | null;
+            error: { message?: string } | null;
+          };
+          if (error) throw new Error(error.message || LIVE_ROWS_ERROR_AR);
+          return data ?? [];
+        })(),
         new Promise<T[]>((_, reject) => {
           timer = setTimeout(() => reject(new Error(LIVE_ROWS_TIMEOUT_AR)), LIVE_ROWS_TIMEOUT_MS);
         }),
@@ -74,7 +77,7 @@ export function useLiveRows<T>(
     };
     run();
     const channel = supabase
-      .channel(`live:${table}:${Math.random().toString(36).slice(2, 8)}`)
+      .channel(`live:${table}:${Math.random()}`)
       .on(
         "postgres_changes",
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
