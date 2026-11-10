@@ -12,7 +12,7 @@ const normalPage = `<!doctype html><html lang="ar"><head>
 <link rel="stylesheet" href="/assets/app.css">
 </head><body>SADEED</body></html>`;
 
-async function runFixture(body, contentType = "text/html") {
+async function runFixture(body, contentType = "text/html", cssStatus = 200, cssType = "text/css") {
   let exitCode = null;
   const context = vm.createContext({
     process: {
@@ -24,9 +24,12 @@ async function runFixture(body, contentType = "text/html") {
     console: { log() {}, error() {} },
     AbortSignal,
     async fetch(input, options) {
-      assert.equal(input, "https://offline.invalid/");
       assert.equal(options.redirect, "manual");
-      return new Response(body, { status: 200, headers: { "content-type": contentType } });
+      if (input === "https://offline.invalid/") {
+        return new Response(body, { status: 200, headers: { "content-type": contentType } });
+      }
+      assert.equal(input, "https://offline.invalid/assets/app.css");
+      return new Response("body {}", { status: cssStatus, headers: { "content-type": cssType } });
     },
   });
   await new vm.Script(`(async () => {\n${executableSource}\n})()`).runInContext(context);
@@ -76,4 +79,12 @@ test("rejects 200 HTML when a stylesheet exists only inside an inert template", 
     '<template><link rel="stylesheet" href="/assets/app.css"></template>',
   );
   assert.equal(await runFixture(html), 1);
+});
+
+test("rejects a stylesheet link whose referenced CSS asset returns HTTP 404", async () => {
+  assert.equal(await runFixture(normalPage, "text/html", 404), 1);
+});
+
+test("rejects a stylesheet link whose asset serves HTML instead of CSS", async () => {
+  assert.equal(await runFixture(normalPage, "text/html", 200, "text/html"), 1);
 });
