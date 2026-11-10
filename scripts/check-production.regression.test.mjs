@@ -136,7 +136,7 @@ test("does not let a font CDN hide a broken local CSS asset", async () => {
 test("rejects inert JSON script that only quotes the theme bootstrap", async () => {
   const html = normalPage.replace(
     "<script>sessionStorage.getItem('theme')</script>",
-    '<script type="application/json">sessionStorage.getItem(\'theme\')</script>',
+    "<script type=\"application/json\">sessionStorage.getItem('theme')</script>",
   );
   assert.equal(await runFixture(html), 1);
 });

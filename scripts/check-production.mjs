@@ -103,12 +103,8 @@ for (const route of ROUTES) {
     ].some(([, openingTag, body]) => {
       // A script data block (e.g. JSON-LD, importmap or text/plain) is inert.
       // Requiring a runnable script avoids a false production-ready result.
-      const typeMatch = openingTag.match(
-        /\stype\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i,
-      );
-      const type = (typeMatch?.[1] ?? typeMatch?.[2] ?? typeMatch?.[3] ?? "")
-        .trim()
-        .toLowerCase();
+      const typeMatch = openingTag.match(/\stype\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i);
+      const type = (typeMatch?.[1] ?? typeMatch?.[2] ?? typeMatch?.[3] ?? "").trim().toLowerCase();
       const executable =
         !typeMatch ||
         type === "module" ||
