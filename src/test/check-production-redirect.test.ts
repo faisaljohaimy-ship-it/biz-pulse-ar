@@ -12,6 +12,7 @@ async function runOfflineProbe(redirectStatus?: 302 | 307) {
   let exitCode = 0;
   let redirectMode: string | undefined;
   const context = vm.createContext({
+    AbortSignal,
     process: {
       env: {
         PRODUCTION_URL: "https://offline.invalid",
