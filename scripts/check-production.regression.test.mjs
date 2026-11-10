@@ -23,6 +23,7 @@ async function runFixture(body, contentType = "text/html", cssStatus = 200, cssT
     },
     console: { log() {}, error() {} },
     AbortSignal,
+    URL,
     async fetch(input, options) {
       assert.equal(options.redirect, "manual");
       if (input === "https://offline.invalid/") {
