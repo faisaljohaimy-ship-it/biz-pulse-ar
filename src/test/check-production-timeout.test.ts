@@ -3,10 +3,10 @@ import { resolve } from "node:path";
 import vm from "node:vm";
 import { describe, expect, it } from "vitest";
 
-const program = readFileSync(resolve(process.cwd(), "scripts/check-production.mjs"), "utf8").replace(
-  /^#![^\n]*\n/,
-  "",
-);
+const program = readFileSync(
+  resolve(process.cwd(), "scripts/check-production.mjs"),
+  "utf8",
+).replace(/^#![^\n]*\n/, "");
 const healthyHtml = `<!doctype html><script>sessionStorage.getItem('theme')</script><link rel="stylesheet" href="/app.css">SADEED`;
 
 describe("production smoke network deadline", () => {
