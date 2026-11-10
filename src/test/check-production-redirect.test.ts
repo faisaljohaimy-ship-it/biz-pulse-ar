@@ -16,6 +16,7 @@ async function runOfflineProbe(redirectStatus?: 302 | 307) {
   let redirectMode: string | undefined;
   const context = vm.createContext({
     AbortSignal,
+    URL,
     process: {
       env: {
         PRODUCTION_URL: "https://offline.invalid",
@@ -28,6 +29,15 @@ async function runOfflineProbe(redirectStatus?: 302 | 307) {
     },
     console: { log() {}, error() {} },
     fetch: async (url: string, init: { redirect?: string }) => {
+      if (url === "https://offline.invalid/app.css") {
+        expect(init.redirect).toBe("manual");
+        return {
+          ok: true,
+          status: 200,
+          headers: { get: (name: string) => (name.toLowerCase() === "content-type" ? "text/css" : null) },
+          body: { cancel: async () => {} },
+        };
+      }
       expect(url).toBe("https://offline.invalid/");
       redirectMode = init.redirect;
       // A following client sees a healthy-looking HTTP 200 login page;
