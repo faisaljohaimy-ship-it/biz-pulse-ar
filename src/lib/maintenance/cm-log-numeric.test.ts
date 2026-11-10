@@ -39,6 +39,26 @@ describe("maintenance numeric import integrity", () => {
     expect(toNumber("-9,007,199,254,740,991")).toBe(-Number.MAX_SAFE_INTEGER);
   });
 
+  it.each([
+    "0.1234567890123456789",
+    "1.0000000000000001",
+    "1e-400",
+    "1.2345678901234567e10",
+    "12,345,678.90123456789",
+  ])("rejects fractional import precision loss %s rather than silently rounding", (raw) => {
+    expect(toNumber(raw)).toBeNull();
+  });
+
+  it.each([
+    ["1.2300e-2", 0.0123],
+    ["-0.000", -0],
+    ["0.000000000", 0],
+    ["1e+3", 1000],
+    ["5e-324", 5e-324],
+  ] as const)("preserves equivalent decimal forms %s", (raw, expected) => {
+    expect(toNumber(raw)).toBe(expected);
+  });
+
   it("retains null for empty cells and finite numeric zero", () => {
     expect(toNumber(null)).toBeNull();
     expect(toNumber("")).toBeNull();

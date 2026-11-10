@@ -238,12 +238,29 @@ const GROUPED_DECIMAL_CELL = /^[+-]?\d{1,3}(?:,\d{3})+(?:\.\d*)?(?:e[+-]?\d+)?$/
 const isSafeImportedNumber = (value: number): boolean =>
   Number.isFinite(value) && (!Number.isInteger(value) || Number.isSafeInteger(value));
 
+// A decimal cell is recorded evidence, not a request to round. Number() can
+// silently turn 1.0000000000000001 into 1 or underflow 1e-400 to zero.
+// Compare canonical base-10 forms after conversion, retaining decimal scale,
+// insignificant zeroes and scientific notation without confusing them with loss.
+function decimalFingerprint(raw: string): string {
+  const [mantissa, exponent = "0"] = raw.replace(/,/g, "").toLowerCase().split("e");
+  const negative = mantissa.startsWith("-");
+  const [integer, fraction = ""] = mantissa.replace(/^[+-]/, "").split(".");
+  const digits = `${integer}${fraction}`.replace(/^0+/, "");
+  if (!digits) return "0";
+  const significant = digits.replace(/0+$/, "");
+  const power = Number(exponent) - fraction.length + (digits.length - significant.length);
+  return `${negative ? "-" : ""}${significant}e${power}`;
+}
+
 export function toNumber(v: unknown): number | null {
   if (typeof v === "number") return isSafeImportedNumber(v) ? v : null;
   const s = cleanText(v);
   if (!s || (!DECIMAL_CELL.test(s) && !GROUPED_DECIMAL_CELL.test(s))) return null;
   const n = Number(s.replace(/,/g, ""));
-  return isSafeImportedNumber(n) ? n : null;
+  return isSafeImportedNumber(n) && decimalFingerprint(s) === decimalFingerprint(String(n))
+    ? n
+    : null;
 }
 
 /** تاريخ ISO (يوم) من خلية Excel — `Date` أو رقم تسلسلي أو نص. */
