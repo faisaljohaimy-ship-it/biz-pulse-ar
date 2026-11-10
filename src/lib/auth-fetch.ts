@@ -28,7 +28,7 @@ function readSession(signal?: AbortSignal | null): Promise<SessionLookup> {
     // A late SDK response cannot restart an aborted or timed-out request.
     (async () => supabase.auth.getSession())().then(
       (value) => finish(undefined, value),
-      () => finish(signal?.aborted ? aborted() : new Error(AUTH_UNAVAILABLE)),
+      () => finish(signal?.aborted ? aborted() : Error(AUTH_UNAVAILABLE)),
     );
   });
 }
@@ -40,7 +40,7 @@ export async function authenticatedFetch(input: RequestInfo | URL, init: Request
   if (signal?.aborted) throw aborted();
   // A valid guest session is allowed; a failed session lookup is not a guest.
   // Never leak the SDK's raw error or silently downgrade a private request.
-  if (error) throw new Error(AUTH_UNAVAILABLE);
+  if (error) throw Error(AUTH_UNAVAILABLE);
   const token = data.session?.access_token;
   const headers = new Headers(init.headers ?? request?.headers);
   // Never forward a bearer token inherited from a Request or caller headers
@@ -49,7 +49,7 @@ export async function authenticatedFetch(input: RequestInfo | URL, init: Request
   headers.delete("Authorization");
   // Resolve a destination before adding a bearer: "/\t/host" is off-origin.
   const target =
-    typeof input === "string" ? input : ((input as Request).url || (input as URL).href);
+    typeof input === "string" ? input : (input as Request).url || (input as URL).href;
   const origin = globalThis.location?.origin;
   if (
     token &&
