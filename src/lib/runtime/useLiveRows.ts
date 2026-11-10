@@ -69,7 +69,7 @@ export function useLiveRows<T>(
         })
         .catch((err: unknown) => {
           if (!alive || runId !== latestRunId) return;
-          console.warn(`[useLiveRows] ${table} تعذّرت قراءته`, err);
+          console.warn(table, err);
           // الصفوف السابقة تبقى إن وُجدت — خطأُ تحديثٍ عابر لا يمحو ما عُرض.
           setError(err instanceof Error ? err : new Error(LIVE_ROWS_ERROR_AR));
         })
