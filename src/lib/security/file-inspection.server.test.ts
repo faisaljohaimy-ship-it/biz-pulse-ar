@@ -64,6 +64,34 @@ describe("SADEED attachment structural inspection", () => {
     );
   });
 
+  it.each([
+    "incident\\u202Egnp.txt",
+    "incident\\u202Dgnp.txt",
+    "incident\\u2066gnp.txt",
+    "incident\\u2069gnp.txt",
+    "incident\\u200Fgnp.txt",
+    "incident\\u061Cgnp.txt",
+  ])("rejects bidirectional control characters in attachment filename %s", (filename) => {
+    expectBlocked(
+      () =>
+        inspectSadeedAttachment({
+          bytes: new TextEncoder().encode("safe incident note"),
+          filename,
+          claimedMime: "text/plain",
+        }),
+      "unsafe_filename",
+    );
+  });
+
+  it("continues accepting legitimate Arabic evidence filenames", () => {
+    const result = inspectSadeedAttachment({
+      bytes: new TextEncoder().encode("نص تقرير السلامة"),
+      filename: "محضر-الأمن-الصناعي.txt",
+      claimedMime: "text/plain",
+    });
+    expect(result).toMatchObject({ family: "text", detectedMime: "text/plain" });
+  });
+
   it("blocks dangerous double extensions", () => {
     expectBlocked(
       () =>
