@@ -113,10 +113,12 @@ for (const route of ROUTES) {
     // HTML comments and inert containers can quote link markup without loading CSS.
     // Only a live stylesheet element is evidence that the application is styled.
     const activeMarkup = nonInertHtml.replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, "");
-    const stylesheetLink = activeMarkup.match(
-      /<link\b(?=[^>]*\brel\s*=\s*["']stylesheet["'])(?=[^>]*\bhref\s*=\s*["'][^"']+["'])[^>]*>/i,
-    )?.[0];
-    const hasCss = Boolean(stylesheetLink);
+    const stylesheetLinks = [
+      ...activeMarkup.matchAll(
+        /<link\b(?=[^>]*\brel\s*=\s*["']stylesheet["'])(?=[^>]*\bhref\s*=\s*["'][^"']+["'])[^>]*>/gi,
+      ),
+    ].map(([tag]) => tag);
+    const hasCss = stylesheetLinks.length > 0;
 
     if (!isHtml) failures.push(`${route}: الاستجابة ليست مستند HTML صالحًا للتطبيق`);
     if (isLoginWall) failures.push(`${route}: صفحة توثيق Vercel ليست نجاحًا لمسار التطبيق`);
@@ -127,25 +129,29 @@ for (const route of ROUTES) {
     // A link tag is not proof its referenced stylesheet is actually served.
     // Probe the same-origin asset without following redirects or sending credentials.
     let cssLoaded = false;
-    if (stylesheetLink) {
-      try {
-        const href = stylesheetLink.match(/\bhref\s*=\s*(["'])(.*?)\1/i)?.[2];
-        if (!href) throw new Error("stylesheet href is empty");
-        const stylesheetUrl = new URL(href, url);
-        if (stylesheetUrl.origin !== new URL(BASE).origin) {
-          throw new Error("stylesheet is not same-origin");
+    if (hasCss) {
+      // Font CDNs may precede the application's own CSS. Never count an
+      // external link as proof, but do inspect later same-origin stylesheets.
+      let reason = "no same-origin stylesheet";
+      for (const tag of stylesheetLinks) {
+        try {
+          const href = tag.match(/\bhref\s*=\s*(["'])(.*?)\1/i)?.[2];
+          if (!href) continue;
+          const stylesheetUrl = new URL(href, url);
+          if (stylesheetUrl.origin !== new URL(BASE).origin) continue;
+          const stylesheetRes = await fetchWithRetry(stylesheetUrl.href);
+          const isCss = /\btext\/css\b/i.test(stylesheetRes.headers.get("content-type") || "");
+          await stylesheetRes.body?.cancel();
+          if (isCss) {
+            cssLoaded = true;
+            break;
+          }
+          reason = "stylesheet response is not text/css";
+        } catch (error) {
+          reason = error instanceof Error ? error.message : String(error);
         }
-        const stylesheetRes = await fetchWithRetry(stylesheetUrl.href);
-        cssLoaded = /\btext\/css\b/i.test(stylesheetRes.headers.get("content-type") || "");
-        await stylesheetRes.body?.cancel();
-        if (!cssLoaded) throw new Error("stylesheet response is not text/css");
-      } catch (error) {
-        failures.push(
-          route +
-            ": تعذّر تحميل ملف الأنماط — " +
-            (error instanceof Error ? error.message : String(error)),
-        );
       }
+      if (!cssLoaded) failures.push(route + ": تعذّر تحميل ملف الأنماط — " + reason);
     }
 
     rows.push({
