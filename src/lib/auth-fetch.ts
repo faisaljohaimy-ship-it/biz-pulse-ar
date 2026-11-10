@@ -10,7 +10,7 @@ function aborted() {
 type SessionLookup = Awaited<ReturnType<typeof supabase.auth.getSession>>;
 const AUTH_UNAVAILABLE = "Authentication session unavailable.";
 
-async function readSession(signal?: AbortSignal | null): Promise<SessionLookup> {
+function readSession(signal?: AbortSignal | null): Promise<SessionLookup> {
   if (signal?.aborted) throw aborted();
   return new Promise((resolve, reject) => {
     const finish = (error?: Error, value?: SessionLookup) => {
@@ -49,9 +49,12 @@ export async function authenticatedFetch(input: RequestInfo | URL, init: Request
   headers.delete("Authorization");
   // Resolve a destination before adding a bearer: "/\t/host" is off-origin.
   const target =
-    typeof input === "string" ? input : ((input as Request).url ?? (input as URL).href);
+    typeof input === "string" ? input : ((input as Request).url || (input as URL).href);
   const origin = globalThis.location?.origin;
-  if (token && (origin ? new URL(target, origin).origin === origin : /^\/(?![/\\\s])/.test(target))) {
+  if (
+    token &&
+    (origin ? new URL(target, origin).origin === origin : /^\/(?![/\\\s])/.test(target))
+  ) {
     headers.set("Authorization", `Bearer ${token}`);
   }
   return fetch(input, { ...init, headers, signal });
