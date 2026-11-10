@@ -86,7 +86,9 @@ for (const route of ROUTES) {
     const contentType = res.headers.get("content-type") || "";
     const isHtml = /\btext\/html\b/i.test(contentType) && /<html\b/i.test(html);
     const isLoginWall =
-      /<title\b[^>]*>\s*(?:Authentication Required|Vercel Authentication)[^<]*<\/title>/i.test(html);
+      /<title\b[^>]*>\s*(?:Authentication Required|Vercel Authentication)[^<]*<\/title>/i.test(
+        html,
+      );
 
     // الاختيار في `sessionStorage` منذ ٢٠٢٦/١٠/٢٤ (الداكن افتراضًا دائمًا): السكربت المانع يقرؤه منه لا من `localStorage`.
     const themeScript = /sessionStorage\.getItem\(['"]theme['"]\)/.test(html);
