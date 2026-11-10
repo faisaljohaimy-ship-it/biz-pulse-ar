@@ -23,7 +23,8 @@ export function mergeEventRowsById<T extends { readonly id: string }>(
       if (seen.has(row.id)) continue;
       seen.add(row.id);
       merged.push(row);
-      if (merged.length >= limit) return merged;
+      // Count distinct events against the cap without re-reading array length.
+      if (--limit === 0) return merged;
     }
   }
   return merged;
