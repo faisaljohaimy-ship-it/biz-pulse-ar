@@ -107,7 +107,8 @@ export function queryEvidence(
   value?: string | number,
   href?: string,
 ): Evidence | null {
-  if (!dataUpdatedAt || dataUpdatedAt <= 0) return null;
+  // Reject invalid or out-of-range Date timestamps before toISOString can throw.
+  if (!(dataUpdatedAt > 0 && dataUpdatedAt <= 8.64e15)) return null;
   return {
     kind: "db.query",
     source,
