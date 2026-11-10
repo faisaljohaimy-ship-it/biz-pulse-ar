@@ -98,9 +98,21 @@ for (const route of ROUTES) {
       /<(template|textarea)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,
       "",
     );
-    const themeScript = [...nonInertHtml.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script\s*>/gi)].some(
-      ([, body]) => /sessionStorage\.getItem\(['"]theme['"]\)/.test(body),
-    );
+    const themeScript = [
+      ...nonInertHtml.matchAll(/(<script\b[^>]*>)([\s\S]*?)<\/script\s*>/gi),
+    ].some(([, openingTag, body]) => {
+      // A script data block (e.g. JSON-LD, importmap or text/plain) is inert.
+      // Requiring a runnable script avoids a false production-ready result.
+      const typeMatch = openingTag.match(/\stype\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i);
+      const type = (typeMatch?.[1] ?? typeMatch?.[2] ?? typeMatch?.[3] ?? "").trim().toLowerCase();
+      const executable =
+        !typeMatch ||
+        type === "module" ||
+        /^(?:text|application)\/(?:java|ecma)script(?:\s*;.*)?$/.test(type) ||
+        type === "text/x-javascript" ||
+        type === "application/x-javascript";
+      return executable && /sessionStorage\.getItem\(['"]theme['"]\)/.test(body);
+    });
     // النطاق `neexios.com` معرّف تقني (رابط · بريد · بيانات منظَّمة) لا اسم
     // معروض، وهو مُستثنى صراحةً في حارس العلامة على المصدر. يُنزع قبل المسح
     // وإلا رسب كل مسار على ذكر رابطه القانوني. أما `NEEXIOS` في نصّ مرئي
