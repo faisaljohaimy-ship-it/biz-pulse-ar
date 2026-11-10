@@ -65,12 +65,12 @@ describe("SADEED attachment structural inspection", () => {
   });
 
   it.each([
-    "incident\\u202Egnp.txt",
-    "incident\\u202Dgnp.txt",
-    "incident\\u2066gnp.txt",
-    "incident\\u2069gnp.txt",
-    "incident\\u200Fgnp.txt",
-    "incident\\u061Cgnp.txt",
+    "incident\u202Egnp.txt",
+    "incident\u202Dgnp.txt",
+    "incident\u2066gnp.txt",
+    "incident\u2069gnp.txt",
+    "incident\u200Fgnp.txt",
+    "incident\u061Cgnp.txt",
   ])("rejects bidirectional control characters in attachment filename %s", (filename) => {
     expectBlocked(
       () =>
