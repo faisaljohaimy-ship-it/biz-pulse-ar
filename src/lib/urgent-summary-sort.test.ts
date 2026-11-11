@@ -42,4 +42,26 @@ describe("urgent-summary critical-task ordering", () => {
       overflow,
     ]);
   });
+
+  it("orders offset-free and explicit-zone deadlines consistently in Riyadh and UTC", () => {
+    const previous = process.env.TZ;
+    try {
+      const rows = [
+        { id: "offset-free", priority: "عاجل", due_at: "2026-11-11T10:00:00" },
+        { id: "with-zone", priority: "عاجل", due_at: "2026-11-11T09:30:00Z" },
+        { id: "with-offset", priority: "عاجل", due_at: "2026-11-11T10:00:00+03:00" },
+      ];
+      for (const timezone of ["UTC", "Asia/Riyadh"]) {
+        process.env.TZ = timezone;
+        expect([...rows].sort(compareUrgentTasks).map((row) => row.id)).toEqual([
+          "with-offset",
+          "with-zone",
+          "offset-free",
+        ]);
+      }
+    } finally {
+      if (previous === undefined) delete process.env.TZ;
+      else process.env.TZ = previous;
+    }
+  });
 });
