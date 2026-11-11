@@ -6,23 +6,21 @@
 export function formatRelativeTime(date: Date, locale: "ar" | "en"): string {
   const diff = Math.floor((Date.now() - date.getTime()) / 1_000);
   if (!Number.isFinite(diff)) return "—";
+  if (diff >= -5 && diff < 5) return locale === "ar" ? "الآن" : "just now";
 
-  // A small clock skew is displayed as "now" rather than an artificial future event.
-  if (diff < -5) {
-    const secondsAhead = -diff;
-    if (secondsAhead < 60)
-      return locale === "ar" ? `بعد ${secondsAhead} ثانية` : `in ${secondsAhead}s`;
-    const minutesAhead = Math.ceil(secondsAhead / 60);
-    if (minutesAhead < 60)
-      return locale === "ar" ? `بعد ${minutesAhead} دقيقة` : `in ${minutesAhead}m`;
-    const hoursAhead = Math.ceil(minutesAhead / 60);
-    return locale === "ar" ? `بعد ${hoursAhead} ساعة` : `in ${hoursAhead}h`;
+  const future = diff < 0;
+  let value = Math.abs(diff);
+  let unit = "s";
+  if (value >= 60) {
+    value = future ? Math.ceil(value / 60) : Math.floor(value / 60);
+    unit = "m";
+    if (value >= 60) {
+      value = future ? Math.ceil(value / 60) : Math.floor(value / 60);
+      unit = "h";
+    }
   }
-
-  if (diff < 5) return locale === "ar" ? "الآن" : "just now";
-  if (diff < 60) return locale === "ar" ? `قبل ${diff} ثانية` : `${diff}s ago`;
-  const m = Math.floor(diff / 60);
-  if (m < 60) return locale === "ar" ? `قبل ${m} دقيقة` : `${m}m ago`;
-  const h = Math.floor(m / 60);
-  return locale === "ar" ? `قبل ${h} ساعة` : `${h}h ago`;
+  if (locale === "ar") {
+    return `${future ? "بعد" : "قبل"} ${value} ${unit === "s" ? "ثانية" : unit === "m" ? "دقيقة" : "ساعة"}`;
+  }
+  return future ? `in ${value}${unit}` : `${value}${unit} ago`;
 }
