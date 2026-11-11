@@ -107,7 +107,9 @@ describe("invalid or inconsistent operational observations fail closed", () => {
 
   it("preserves zero-observation and valid-count semantics", () => {
     expect(briefingConfidence(none, AT)).toMatchObject({ measured: false });
-    expect(spokenConfidenceEn(briefingConfidence(none, AT))).toContain("no operational observations");
+    expect(spokenConfidenceEn(briefingConfidence(none, AT))).toContain(
+      "no operational observations",
+    );
     expect(isMeasured(briefingConfidence(few, AT))).toBe(true);
     expect(isMeasured(briefingConfidence(many, AT))).toBe(true);
   });
