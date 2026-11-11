@@ -12,7 +12,7 @@ const normalPage = `<!doctype html><html lang="ar"><head>
 <link rel="stylesheet" href="/assets/app.css">
 </head><body>SADEED</body></html>`;
 
-async function runFixture(body, contentType = "text/html", cssStatus = 200, cssType = "text/css") {
+async function runFixture(body, contentType = "text/html", cssStatus = 200, cssType = "text/css", cssBody = "body {}") {
   let exitCode = null;
   const context = vm.createContext({
     process: {
@@ -30,7 +30,7 @@ async function runFixture(body, contentType = "text/html", cssStatus = 200, cssT
         return new Response(body, { status: 200, headers: { "content-type": contentType } });
       }
       assert.equal(input, "https://offline.invalid/assets/app.css");
-      return new Response("body {}", { status: cssStatus, headers: { "content-type": cssType } });
+      return new Response(cssBody, { status: cssStatus, headers: { "content-type": cssType } });
     },
   });
   await new vm.Script(`(async () => {\n${executableSource}\n})()`).runInContext(context);
@@ -253,4 +253,13 @@ test("accepts real application CSS alongside a noscript fallback", async () => {
       '<link rel="stylesheet" href="/assets/app.css">',
   );
   assert.equal(await runFixture(html), null);
+});
+
+
+test("rejects an empty text/css response instead of treating its MIME as working styles", async () => {
+  assert.equal(await runFixture(normalPage, "text/html", 200, "text/css", ""), 1);
+});
+
+test("rejects a whitespace-only CSS response as unstyled", async () => {
+  assert.equal(await runFixture(normalPage, "text/html", 200, "text/css", " \n  \t"), 1);
 });
