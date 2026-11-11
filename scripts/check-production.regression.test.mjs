@@ -138,6 +138,23 @@ test("rejects a print-only stylesheet as proof that screen styles are active", a
   assert.equal(await runFixture(html), 1);
 });
 
+test("rejects a never-matching media=not all stylesheet as screen-style proof", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="stylesheet" href="/assets/app.css" media="not all">',
+  );
+  assert.equal(await runFixture(html), 1);
+});
+
+test("accepts active app CSS after an inert media=not all stylesheet", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="stylesheet" href="/assets/app.css" media="not all">' +
+      '<link rel="stylesheet" href="/assets/app.css" media="screen">',
+  );
+  assert.equal(await runFixture(html), null);
+});
+
 test("accepts active screen styles even if a print-only stylesheet precedes them", async () => {
   const html = normalPage.replace(
     '<link rel="stylesheet" href="/assets/app.css">',
