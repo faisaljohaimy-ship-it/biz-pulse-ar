@@ -116,8 +116,10 @@ for (const route of ROUTES) {
     // Only executable script elements count as theme-bootstrap evidence.
     // Comments, templates and textarea content are inert, even when they quote JS.
     const uncommentedHtml = html.replace(/<!--[\s\S]*?-->/g, "");
+    // A noscript fallback does not style the JavaScript-enabled app.
+    // Count only stylesheets that are active when the theme bootstrap runs.
     const nonInertHtml = uncommentedHtml.replace(
-      /<(template|textarea)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,
+      /<(template|textarea|noscript)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,
       "",
     );
     const themeScript = [
