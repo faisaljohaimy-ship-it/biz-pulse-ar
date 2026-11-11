@@ -44,11 +44,15 @@ export const SadeedVoiceDebug = {
     const evt: VoiceEvent = { ...e, at: Date.now() };
     current = evt;
 
-    console.log(
-      `[aria-voice] source=${evt.source} id=${shortVoiceId(evt.voiceId)} reason=${evt.reason}` +
-        (typeof evt.status === "number" ? ` status=${evt.status}` : "") +
-        (evt.failed ? " FAILED" : ""),
-    );
+    // Operational event delivery is unconditional, but debug details should not
+    // be printed to every visitor's console unless diagnostics are enabled.
+    if (isDebugFlagOn()) {
+      console.log(
+        `[aria-voice] source=${evt.source} id=${shortVoiceId(evt.voiceId)} reason=${evt.reason}` +
+          (typeof evt.status === "number" ? ` status=${evt.status}` : "") +
+          (evt.failed ? " FAILED" : ""),
+      );
+    }
     for (const l of listeners) {
       try {
         l(evt);
