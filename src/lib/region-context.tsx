@@ -64,21 +64,26 @@ export function RegionProvider({ children }: { children: ReactNode }) {
    * مجهول يسقط إلى التفضيل ثمّ الافتراضي، ولا يُمرَّر إلى استعلام.
    */
   useEffect(() => {
-    // Safari private mode may deny storage even when ?region=... is valid.
-    // Keep the URL authoritative; storage is an optional fallback only.
-    let fromStorage: string | null = null;
-    try {
-      fromStorage = localStorage.getItem(STORAGE_KEY);
-    } catch {
-      /* storage unavailable — continue with URL scope */
-    }
-    try {
-      const fromUrl = new URLSearchParams(location.search).get(REGION_PARAM);
-      setRegionState(resolveRegionScope({ fromUrl, fromStorage }));
-    } catch {
-      /* location unavailable — preserve default */
-    }
+    // Browser history can change ?region without remounting the provider.
+    // Keep the visible region aligned with the URL after back/forward navigation.
+    const syncFromLocation = () => {
+      let fromStorage: string | null = null;
+      try {
+        fromStorage = localStorage.getItem(STORAGE_KEY);
+      } catch {
+        /* Safari private mode may deny storage; the URL still works. */
+      }
+      try {
+        const fromUrl = new URLSearchParams(location.search).get(REGION_PARAM);
+        setRegionState(resolveRegionScope({ fromUrl, fromStorage }));
+      } catch {
+        /* location unavailable — preserve current region */
+      }
+    };
+    syncFromLocation();
     setHydrated(true);
+    window.addEventListener("popstate", syncFromLocation);
+    return () => window.removeEventListener("popstate", syncFromLocation);
   }, []);
 
   /**
