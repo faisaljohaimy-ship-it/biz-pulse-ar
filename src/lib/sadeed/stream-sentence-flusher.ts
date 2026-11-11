@@ -120,15 +120,21 @@ export function reportVoiceLatencyRegression(latencyMs: number, detail?: string)
           : "desktop",
       ts: Date.now(),
     });
-    if (typeof navigator !== "undefined" && navigator.sendBeacon) {
-      navigator.sendBeacon("/api/public/hooks/sadeed-incident", body);
-    } else if (typeof fetch !== "undefined") {
-      void fetch("/api/public/hooks/sadeed-incident", {
+    const endpoint = "/api/public/hooks/sadeed-incident";
+    try {
+      // A rejected beacon (false or thrown) must fall back to fetch.
+      if (typeof navigator !== "undefined" && navigator.sendBeacon?.(endpoint, body)) return;
+    } catch {
+      /* beacon unavailable */
+    }
+    if (typeof fetch !== "undefined") {
+      // Offline fallback errors must not create a second unhandled rejection.
+      void fetch(endpoint, {
         method: "POST",
         body,
         keepalive: true,
         headers: { "content-type": "application/json" },
-      });
+      }).catch(() => {});
     }
   } catch {
     /* swallow */
