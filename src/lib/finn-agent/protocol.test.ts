@@ -233,9 +233,9 @@ describe("بروتوكول البثّ", () => {
     expect(parser.push('data: {"type":"delta","text":"أ"}\r')).toEqual([]);
     expect(parser.push("")).toEqual([]);
     expect(parser.push("\n\r")).toEqual([{ type: "delta", text: "أ" }]);
-    expect(
-      parser.push("\n" + encodeFinnEvent({ type: "done", truncated: false })),
-    ).toEqual([{ type: "done", truncated: false }]);
+    expect(parser.push("\n" + encodeFinnEvent({ type: "done", truncated: false }))).toEqual([
+      { type: "done", truncated: false },
+    ]);
     expect(parser.flush()).toEqual([]);
   });
 
