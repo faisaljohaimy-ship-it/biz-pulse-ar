@@ -120,15 +120,23 @@ export function reportVoiceLatencyRegression(latencyMs: number, detail?: string)
           : "desktop",
       ts: Date.now(),
     });
-    if (typeof navigator !== "undefined" && navigator.sendBeacon) {
-      navigator.sendBeacon("/api/public/hooks/sadeed-incident", body);
-    } else if (typeof fetch !== "undefined") {
+    if (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
+      try {
+        // false means the browser did not queue the incident; use the fallback.
+        if (navigator.sendBeacon("/api/public/hooks/sadeed-incident", body)) return;
+      } catch {
+        // Some browser privacy modes reject beacons synchronously.
+      }
+    }
+    if (typeof fetch === "function") {
+      // Offline fetch failures must not trigger an unhandled-rejection incident
+      // from the latency watchdog itself.
       void fetch("/api/public/hooks/sadeed-incident", {
         method: "POST",
         body,
         keepalive: true,
         headers: { "content-type": "application/json" },
-      });
+      }).catch(() => {});
     }
   } catch {
     /* swallow */
