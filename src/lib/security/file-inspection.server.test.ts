@@ -181,6 +181,25 @@ describe("SADEED attachment structural inspection", () => {
     expect(result.checks).toContain("archive-limits");
   });
 
+  it("blocks terminal parent paths and Windows-rooted Office ZIP entries", () => {
+    for (const unsafePath of [
+      "word/..",
+      "C:/word/document.xml",
+      "C:\\word\\document.xml",
+      "word/report../evil.xml",
+    ]) {
+      expectBlocked(
+        () =>
+          inspectSadeedAttachment({
+            bytes: fakeOfficeZip(["[Content_Types].xml", "word/document.xml", unsafePath]),
+            filename: "brief.docx",
+            claimedMime: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          }),
+        "archive_traversal",
+      );
+    }
+  });
+
   it("blocks macros embedded in an Office container", () => {
     expectBlocked(
       () =>
