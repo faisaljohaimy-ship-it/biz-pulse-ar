@@ -433,19 +433,18 @@ export function useEnterprisePulse(): EnterprisePulse {
 }
 
 export function formatRelativeTime(date: Date, locale: "ar" | "en"): string {
-  const diff = Math.floor((Date.now() - date.getTime()) / 1_000);
+  let diff = Math.floor((Date.now() - date.getTime()) / 1_000);
   if (!Number.isFinite(diff)) return "—";
   if (diff >= -5 && diff < 5) return locale === "ar" ? "الآن" : "just now";
 
   const future = diff < 0;
-  let value = Math.abs(diff);
+  diff = Math.abs(diff);
   let unit = 0;
-  while (value >= 60 && unit < 2) {
-    value = future ? Math.ceil(value / 60) : Math.floor(value / 60);
+  while (diff >= 60 && unit < 2) {
+    diff = Math.floor((diff + (future ? 59 : 0)) / 60);
     unit++;
   }
-  if (locale === "ar") {
-    return `${future ? "بعد" : "قبل"} ${value} ${["ثانية", "دقيقة", "ساعة"][unit]}`;
-  }
-  return `${future ? "in " : ""}${value}${"smh"[unit]}${future ? "" : " ago"}`;
+  return locale === "ar"
+    ? `${future ? "بعد" : "قبل"} ${diff} ${["ثانية", "دقيقة", "ساعة"][unit]}`
+    : `${future ? "in " : ""}${diff}${"smh"[unit]}${future ? "" : " ago"}`;
 }
