@@ -73,6 +73,23 @@ async function fetchWithRetry(url) {
   throw new Error(last);
 }
 
+// Read actual link attributes, not lookalike tokens inside quoted values.
+// Browsers keep the first instance of a duplicated HTML attribute.
+function stylesheetHref(tag) {
+  const attrs = Object.create(null);
+  const attr = /\s+([^\s=/>]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/gy;
+  let pos = 5; // Skip "<link".
+  while (pos < tag.length) {
+    attr.lastIndex = pos;
+    const match = attr.exec(tag);
+    if (!match) break;
+    const name = match[1].toLowerCase();
+    if (!(name in attrs)) attrs[name] = match[2] ?? match[3] ?? match[4] ?? "";
+    pos = attr.lastIndex;
+  }
+  return attrs.rel?.toLowerCase() === "stylesheet" && attrs.href?.trim() ? attrs.href : null;
+}
+
 const failures = [];
 const rows = [];
 
@@ -127,11 +144,9 @@ for (const route of ROUTES) {
     const activeMarkup = nonInertHtml.replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, "");
     // An attribute must begin after whitespace; data-rel/data-href are inert
     // and must never satisfy the production stylesheet readiness gate.
-    const stylesheetLinks = [
-      ...activeMarkup.matchAll(
-        /<link\b(?=[^>]*\srel\s*=\s*["']stylesheet["'])(?=[^>]*\shref\s*=\s*["'][^"']+["'])[^>]*>/gi,
-      ),
-    ].map(([tag]) => tag);
+    const stylesheetLinks = [...activeMarkup.matchAll(/<link\b[^>]*>/gi)]
+      .map(([tag]) => stylesheetHref(tag))
+      .filter(Boolean);
     const hasCss = stylesheetLinks.length > 0;
 
     if (!isHtml) failures.push(`${route}: الاستجابة ليست مستند HTML صالحًا للتطبيق`);
@@ -147,10 +162,8 @@ for (const route of ROUTES) {
       // Font CDNs may precede the application's own CSS. Never count an
       // external link as proof, but do inspect later same-origin stylesheets.
       let reason = "no same-origin stylesheet";
-      for (const tag of stylesheetLinks) {
+      for (const href of stylesheetLinks) {
         try {
-          const href = tag.match(/\bhref\s*=\s*(["'])(.*?)\1/i)?.[2];
-          if (!href) continue;
           const stylesheetUrl = new URL(href, url);
           if (stylesheetUrl.origin !== new URL(BASE).origin) continue;
           const stylesheetRes = await fetchWithRetry(stylesheetUrl.href);
