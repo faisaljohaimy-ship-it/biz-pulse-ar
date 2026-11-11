@@ -87,7 +87,15 @@ function stylesheetHref(tag) {
     if (!(name in attrs)) attrs[name] = match[2] ?? match[3] ?? match[4] ?? "";
     pos = attr.lastIndex;
   }
-  return attrs.rel?.toLowerCase() === "stylesheet" && attrs.href?.trim() ? attrs.href : null;
+  // A disabled or print-only link may load HTTP 200 text/css but cannot style
+  // the interactive screen. Do not count it as production CSS evidence.
+  const media = (attrs.media || "").trim().toLowerCase();
+  return attrs.rel?.toLowerCase() === "stylesheet" &&
+    !("disabled" in attrs) &&
+    media !== "print" &&
+    attrs.href?.trim()
+    ? attrs.href
+    : null;
 }
 
 const failures = [];
