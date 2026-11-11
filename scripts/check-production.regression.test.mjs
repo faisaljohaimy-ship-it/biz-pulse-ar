@@ -180,3 +180,35 @@ test("rejects a data-href attribute masquerading as a loaded stylesheet", async 
   );
   assert.equal(await runFixture(html), 1);
 });
+
+test("rejects stylesheet tokens that appear only inside quoted metadata", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    `<link data-note=" rel='stylesheet' href='/assets/app.css'">`,
+  );
+  assert.equal(await runFixture(html), 1);
+});
+
+test("rejects a fake href inside quoted metadata even with a real rel", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    `<link rel="stylesheet" data-note=" href='/assets/app.css'">`,
+  );
+  assert.equal(await runFixture(html), 1);
+});
+
+test("keeps the first duplicated rel attribute as browsers do", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="icon" rel="stylesheet" href="/assets/app.css">',
+  );
+  assert.equal(await runFixture(html), 1);
+});
+
+test("accepts genuine link attributes next to unrelated quoted metadata", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    `<link data-note=" rel='icon' href='/wrong.css'" rel="stylesheet" href="/assets/app.css">`,
+  );
+  assert.equal(await runFixture(html), null);
+});
