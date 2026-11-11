@@ -5,6 +5,9 @@ import { unmeasuredLabel } from "@/lib/evidence/evidence";
 import { useLiveTwinNodes } from "./twin-live-nodes";
 
 const nodes = [
+  { id: "depts", value: "reference departments" },
+  { id: "agents", value: "reference agents" },
+  { id: "integ", value: "reference integrations" },
   { id: "know", value: "reference documents" },
   { id: "exec", value: "reference speed" },
   { id: "data", value: "reference events" },
@@ -57,6 +60,34 @@ describe("digital twin signal memo — locale regression", () => {
     expect(valueOf(result.current, "know")).toBe("0");
     expect(valueOf(result.current, "exec")).toBe("0%");
     expect(valueOf(result.current, "data")).toBe("0");
+  });
+
+  it("shows measured zero rather than reference counts for departments, agents and integrations", () => {
+    const zeroSignals = { ...baseSignals, departments: 0, agents: 0, integrations: 0 };
+    const { result, rerender } = renderHook(
+      ({ signals }) => useLiveTwinNodes(nodes, signals, true),
+      { initialProps: { signals: zeroSignals } },
+    );
+    for (const id of ["depts", "agents", "integ"]) {
+      expect(valueOf(result.current, id)).toBe("0");
+    }
+    rerender({ signals: { ...zeroSignals, departments: 3, agents: 2, integrations: 1 } });
+    expect(valueOf(result.current, "depts")).toBe("3");
+    expect(valueOf(result.current, "agents")).toBe("2");
+    expect(valueOf(result.current, "integ")).toBe("1");
+  });
+
+  it("keeps reference fallback for non-finite counts instead of rendering NaN or Infinity", () => {
+    const signals = {
+      ...baseSignals,
+      departments: Number.NaN,
+      agents: Number.POSITIVE_INFINITY,
+      integrations: Number.NEGATIVE_INFINITY,
+    };
+    const { result } = renderHook(() => useLiveTwinNodes(nodes, signals, false));
+    expect(valueOf(result.current, "depts")).toBe("reference departments");
+    expect(valueOf(result.current, "agents")).toBe("reference agents");
+    expect(valueOf(result.current, "integ")).toBe("reference integrations");
   });
 
   it("leaves built-in reference nodes alone before live signals arrive", () => {
