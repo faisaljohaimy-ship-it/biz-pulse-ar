@@ -439,17 +439,13 @@ export function formatRelativeTime(date: Date, locale: "ar" | "en"): string {
 
   const future = diff < 0;
   let value = Math.abs(diff);
-  let unit = "s";
-  if (value >= 60) {
+  let unit = 0;
+  while (value >= 60 && unit < 2) {
     value = future ? Math.ceil(value / 60) : Math.floor(value / 60);
-    unit = "m";
-    if (value >= 60) {
-      value = future ? Math.ceil(value / 60) : Math.floor(value / 60);
-      unit = "h";
-    }
+    unit++;
   }
   if (locale === "ar") {
-    return `${future ? "بعد" : "قبل"} ${value} ${unit === "s" ? "ثانية" : unit === "m" ? "دقيقة" : "ساعة"}`;
+    return `${future ? "بعد" : "قبل"} ${value} ${["ثانية", "دقيقة", "ساعة"][unit]}`;
   }
-  return future ? `in ${value}${unit}` : `${value}${unit} ago`;
+  return `${future ? "in " : ""}${value}${"smh"[unit]}${future ? "" : " ago"}`;
 }
