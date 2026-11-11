@@ -21,8 +21,10 @@ import { pathToFileURL } from "node:url";
 // Forbidden filenames — real env files and database DUMPS/backups. Legitimate
 // DDL migrations (supabase/migrations/**, seeds, preflight) are allowed; only
 // a name that screams "dump/backup" is forbidden by name.
+// Every .env dotted variant is private unless explicitly marked example/sample/template;
+// two-part names like .env.production.local previously bypassed the guard.
 const FORBIDDEN_NAME =
-  /(^|\/)\.env(\.(local|development|production|staging|test))?$|\.dump$|(^|\/)[^/]*(dump|backup)[^/]*\.(sql|gz|tar|zip)$/i;
+  /(^|\/)\.env(?:\.[^/]+)?$|\.dump$|(^|\/)[^/]*(dump|backup)[^/]*\.(sql|gz|tar|zip)$/i;
 const ALLOWED_ENV = /(^|\/)\.env\.(example|sample|template)$/i;
 
 // A committed `.sql` is only a leak if its CONTENT is a real database dump
