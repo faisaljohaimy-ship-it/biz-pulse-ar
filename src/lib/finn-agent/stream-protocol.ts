@@ -75,7 +75,7 @@ export function createFinnEventParser() {
       // when a CRLF pair is split between network chunks, so deltas do not
       // wait until the stream closes. Swallow only the paired leading LF.
       const pairedLF = previousEndedWithCR && chunk[0] === "\n";
-      if (chunk) previousEndedWithCR = chunk.endsWith("\r");
+      if (chunk) previousEndedWithCR = chunk.at(-1) === "\r";
       buffer += chunk.slice(pairedLF ? 1 : 0).replace(/\r\n?/g, "\n");
       return drain(false);
     },
