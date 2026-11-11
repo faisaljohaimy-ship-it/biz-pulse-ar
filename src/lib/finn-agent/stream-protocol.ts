@@ -45,7 +45,8 @@ function asEvent(value: unknown): FinnStreamEvent | null {
  */
 export function createFinnEventParser() {
   let buffer = "";
-  let previousEndedWithCR = false;
+  // Undefined is equivalent to no preceding CR until the first nonempty chunk.
+  let previousEndedWithCR: boolean | undefined;
   const drain = (final: boolean): FinnStreamEvent[] => {
     const out: FinnStreamEvent[] = [];
     const blocks = buffer.split("\n\n");
@@ -55,7 +56,7 @@ export function createFinnEventParser() {
     buffer = final ? "" : blocks.pop()!;
     for (const block of blocks) {
       for (const line of block.split("\n")) {
-        if (!line.startsWith("data:")) continue;
+        if (!/^data:/.test(line)) continue;
         try {
           // JSON.parse already ignores surrounding whitespace and rejects
           // empty or malformed payloads, all handled by the existing catch.
@@ -75,7 +76,7 @@ export function createFinnEventParser() {
       // wait until the stream closes. Swallow only the paired leading LF.
       const pairedLF = previousEndedWithCR && chunk[0] === "\n";
       if (chunk) previousEndedWithCR = chunk.endsWith("\r");
-      buffer += (pairedLF ? chunk.slice(1) : chunk).replace(/\r\n?/g, "\n");
+      buffer += chunk.slice(pairedLF ? 1 : 0).replace(/\r\n?/g, "\n");
       return drain(false);
     },
     /** ما بقي في الذاكرة عند نهاية الجسم (حدثٌ أخير بلا فاصلٍ ختاميّ). */
