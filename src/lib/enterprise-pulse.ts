@@ -141,7 +141,7 @@ async function ensureSeeded(userId: string, openTasks: number) {
     .select("id", { count: "exact", head: true })
     .eq("user_id", userId);
   if (countError) {
-    console.error("[enterprise-pulse] seed count check failed:", countError.message);
+    console.error("pulse seed count failed:", countError.message);
     return; // transient read failure — leave unseeded so it retries
   }
   if ((count ?? 0) > 0) {
@@ -164,7 +164,7 @@ async function ensureSeeded(userId: string, openTasks: number) {
   ]);
   const insertError = results.find((r) => r.error)?.error;
   if (insertError) {
-    console.error("[enterprise-pulse] seed insert failed:", insertError.message);
+    console.error("pulse seed insert failed:", insertError.message);
     return; // leave unseeded so a later call retries the seed
   }
   seeded.add(userId); // mark seeded ONLY after a fully successful seed
@@ -420,7 +420,7 @@ export function useEnterprisePulse(): EnterprisePulse {
         .subscribe();
     } catch (err) {
       // Realtime is best-effort; page remains functional with initial load.
-      console.warn("[enterprise-pulse] realtime unavailable", err);
+      console.warn("pulse realtime unavailable", err);
     }
 
     return () => {
@@ -433,11 +433,18 @@ export function useEnterprisePulse(): EnterprisePulse {
 }
 
 export function formatRelativeTime(date: Date, locale: "ar" | "en"): string {
-  const diff = Math.floor((Date.now() - date.getTime()) / 1000);
-  if (diff < 5) return locale === "ar" ? "الآن" : "just now";
-  if (diff < 60) return locale === "ar" ? `قبل ${diff} ثانية` : `${diff}s ago`;
-  const m = Math.floor(diff / 60);
-  if (m < 60) return locale === "ar" ? `قبل ${m} دقيقة` : `${m}m ago`;
-  const h = Math.floor(m / 60);
-  return locale === "ar" ? `قبل ${h} ساعة` : `${h}h ago`;
+  let diff = Math.floor((Date.now() - date.getTime()) / 1_000);
+  if (!Number.isFinite(diff)) return "—";
+  if (diff >= -5 && diff < 5) return locale === "ar" ? "الآن" : "just now";
+
+  const future = diff < 0;
+  diff = Math.abs(diff);
+  let unit = 0;
+  while (diff >= 60 && unit < 2) {
+    diff = Math.floor((diff + (future ? 59 : 0)) / 60);
+    unit++;
+  }
+  return locale === "ar"
+    ? `${future ? "بعد" : "قبل"} ${diff} ${["ثانية", "دقيقة", "ساعة"][unit]}`
+    : `${future ? "in " : ""}${diff}${"smh"[unit]}${future ? "" : " ago"}`;
 }
