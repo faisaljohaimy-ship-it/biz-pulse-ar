@@ -27,7 +27,9 @@ export const TRANSIENT_MIN_REMAINING_MS = 12_000;
 function statusOf(error: unknown, text: string): number {
   if (error && typeof error === "object" && "statusCode" in error) {
     const n = Number((error as { statusCode?: unknown }).statusCode);
-    if (Number.isFinite(n)) return n;
+    // null, false and empty status codes coerce to 0. Do not let such
+    // placeholders override a real 4xx rejection in the error message.
+    if (Number.isInteger(n) && n >= 400 && n <= 599) return n;
   }
   return Number(text.match(/\b([45]\d\d)\b/)?.[1]);
 }
