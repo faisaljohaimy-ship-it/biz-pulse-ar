@@ -175,12 +175,15 @@ for (const route of ROUTES) {
           if (stylesheetUrl.origin !== new URL(BASE).origin) continue;
           const stylesheetRes = await fetchWithRetry(stylesheetUrl.href);
           const isCss = /\btext\/css\b/i.test(stylesheetRes.headers.get("content-type") || "");
-          await stylesheetRes.body?.cancel();
-          if (isCss) {
+          // An empty text/css response is not application styling. Verify the
+          // body rather than trusting only status and a Content-Type header.
+          const cssText = isCss ? await stylesheetRes.text() : "";
+          if (!isCss) await stylesheetRes.body?.cancel();
+          if (isCss && cssText.trim().length > 0) {
             cssLoaded = true;
             break;
           }
-          reason = "stylesheet response is not text/css";
+          reason = isCss ? "stylesheet response is empty" : "stylesheet response is not text/css";
         } catch (error) {
           reason = error instanceof Error ? error.message : String(error);
         }

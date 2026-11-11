@@ -38,6 +38,7 @@ async function runOfflineProbe(redirectStatus?: 302 | 307) {
             get: (name: string) => (name.toLowerCase() === "content-type" ? "text/css" : null),
           },
           body: { cancel: async () => {} },
+          text: async () => "body {}",
         };
       }
       expect(url).toBe("https://offline.invalid/");
