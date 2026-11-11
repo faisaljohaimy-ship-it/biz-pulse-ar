@@ -164,3 +164,20 @@ test("accepts an explicit JavaScript MIME theme bootstrap", async () => {
   );
   assert.equal(await runFixture(html), null);
 });
+
+
+test("rejects a data-rel attribute masquerading as an active stylesheet", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link data-rel="stylesheet" href="/assets/app.css">',
+  );
+  assert.equal(await runFixture(html), 1);
+});
+
+test("rejects a data-href attribute masquerading as a loaded stylesheet", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="stylesheet" data-href="/assets/app.css">',
+  );
+  assert.equal(await runFixture(html), 1);
+});
