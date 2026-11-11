@@ -65,6 +65,13 @@ const css = files.filter((file) => extname(file.absolute) === ".css");
 const media = files.filter((file) =>
   [".mp4", ".webm", ".mov", ".mp3", ".wav", ".ogg"].includes(extname(file.absolute)),
 );
+// A missing/empty asset build used to pass every maximum-size budget as 0 bytes.
+// Vite's production client must emit JavaScript; fail closed instead of certifying
+// an empty, CSS-only or stale output directory as a valid deployable build.
+if (js.length === 0) {
+  console.error("✗ Production output contains no JavaScript assets.");
+  process.exitCode = 1;
+}
 const total = files.reduce((sum, file) => sum + file.size, 0);
 const jsTotal = js.reduce((sum, file) => sum + file.size, 0);
 const cssTotal = css.reduce((sum, file) => sum + file.size, 0);
