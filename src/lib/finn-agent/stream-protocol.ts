@@ -45,6 +45,7 @@ function asEvent(value: unknown): FinnStreamEvent | null {
  */
 export function createFinnEventParser() {
   let buffer = "";
+  let previousEndedWithCR = false;
   const drain = (final: boolean): FinnStreamEvent[] => {
     const out: FinnStreamEvent[] = [];
     const blocks = buffer.split("\n\n");
@@ -68,10 +69,12 @@ export function createFinnEventParser() {
   };
   return {
     push(chunk: string): FinnStreamEvent[] {
-      // A CRLF pair may cross the boundary between two network chunks.
-      // Normalize the accumulated fragment so the event is delivered immediately.
-      buffer += chunk;
-      buffer = buffer.replace(/\r\n/g, "\n");
+      // SSE accepts CR, LF and CRLF. Normalize bare CR immediately, even
+      // when a CRLF pair is split between network chunks, so deltas do not
+      // wait until the stream closes. Swallow only the paired leading LF.
+      const pairedLF = previousEndedWithCR && chunk.startsWith("\n");
+      if (chunk.length > 0) previousEndedWithCR = chunk.endsWith("\r");
+      buffer += (pairedLF ? chunk.slice(1) : chunk).replace(/\r\n?/g, "\n");
       return drain(false);
     },
     /** ما بقي في الذاكرة عند نهاية الجسم (حدثٌ أخير بلا فاصلٍ ختاميّ). */
