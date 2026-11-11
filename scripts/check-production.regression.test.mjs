@@ -18,6 +18,7 @@ async function runFixture(
   cssStatus = 200,
   cssType = "text/css",
   cssBody = "body {}",
+  pageStatus = 200,
 ) {
   let exitCode = null;
   const context = vm.createContext({
@@ -33,7 +34,7 @@ async function runFixture(
     async fetch(input, options) {
       assert.equal(options.redirect, "manual");
       if (input === "https://offline.invalid/") {
-        return new Response(body, { status: 200, headers: { "content-type": contentType } });
+        return new Response(body, { status: pageStatus, headers: { "content-type": contentType } });
       }
       assert.equal(input, "https://offline.invalid/assets/app.css");
       return new Response(cssBody, { status: cssStatus, headers: { "content-type": cssType } });
@@ -45,6 +46,14 @@ async function runFixture(
 
 test("accepts a real HTML document with a stylesheet link", async () => {
   assert.equal(await runFixture(normalPage), null);
+});
+
+test("rejects a partial HTTP 206 HTML response despite valid-looking markup", async () => {
+  assert.equal(await runFixture(normalPage, "text/html", 200, "text/css", "body {}", 206), 1);
+});
+
+test("rejects a partial HTTP 206 stylesheet despite a valid CSS content type", async () => {
+  assert.equal(await runFixture(normalPage, "text/html", 206), 1);
 });
 
 test("rejects 200 application/json even with plausible HTML fragments", async () => {
