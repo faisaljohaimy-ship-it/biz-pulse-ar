@@ -51,14 +51,15 @@ export function createFinnEventParser() {
     const blocks = buffer.split("\n\n");
     // عند الإنهاء تُحلَّل كل الكتل (الأخيرة بلا فاصلٍ ختاميّ)؛ وقبله يُحجز الذيل
     // الناقص لحين اكتماله.
-    buffer = final ? "" : (blocks.pop() ?? "");
+    // split always returns a nonempty array, even for an empty buffer.
+    buffer = final ? "" : blocks.pop()!;
     for (const block of blocks) {
       for (const line of block.split("\n")) {
         if (!line.startsWith("data:")) continue;
-        const payload = line.slice(5).trim();
-        if (!payload) continue;
         try {
-          const event = asEvent(JSON.parse(payload));
+          // JSON.parse already ignores surrounding whitespace and rejects
+          // empty or malformed payloads, all handled by the existing catch.
+          const event = asEvent(JSON.parse(line.slice(5)));
           if (event) out.push(event);
         } catch {
           /* كتلةٌ معطوبة — تُهمَل. */
@@ -72,8 +73,8 @@ export function createFinnEventParser() {
       // SSE accepts CR, LF and CRLF. Normalize bare CR immediately, even
       // when a CRLF pair is split between network chunks, so deltas do not
       // wait until the stream closes. Swallow only the paired leading LF.
-      const pairedLF = previousEndedWithCR && chunk.startsWith("\n");
-      if (chunk.length > 0) previousEndedWithCR = chunk.endsWith("\r");
+      const pairedLF = previousEndedWithCR && chunk[0] === "\n";
+      if (chunk) previousEndedWithCR = chunk.endsWith("\r");
       buffer += (pairedLF ? chunk.slice(1) : chunk).replace(/\r\n?/g, "\n");
       return drain(false);
     },
