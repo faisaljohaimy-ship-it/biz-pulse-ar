@@ -68,12 +68,12 @@ export function RegionProvider({ children }: { children: ReactNode }) {
     // Keep the URL authoritative; storage is an optional fallback only.
     let fromStorage: string | null = null;
     try {
-      fromStorage = window.localStorage.getItem(STORAGE_KEY);
+      fromStorage = localStorage.getItem(STORAGE_KEY);
     } catch {
       /* storage unavailable — continue with URL scope */
     }
     try {
-      const fromUrl = new URLSearchParams(window.location.search).get(REGION_PARAM);
+      const fromUrl = new URLSearchParams(location.search).get(REGION_PARAM);
       setRegionState(resolveRegionScope({ fromUrl, fromStorage }));
     } catch {
       /* location unavailable — preserve default */
@@ -91,10 +91,10 @@ export function RegionProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!hydrated) return;
     try {
-      const url = new URL(window.location.href);
+      const url = new URL(location.href);
       if (url.searchParams.get(REGION_PARAM) === regionId) return;
       url.searchParams.set(REGION_PARAM, regionId);
-      window.history.replaceState(window.history.state, "", url.toString());
+      history.replaceState(history.state, "", url.toString());
     } catch {
       /* noop */
     }
@@ -121,7 +121,7 @@ export function RegionProvider({ children }: { children: ReactNode }) {
   const setRegion = useCallback((id: RegionId) => {
     setRegionState(id);
     try {
-      window.localStorage.setItem(STORAGE_KEY, id);
+      localStorage.setItem(STORAGE_KEY, id);
     } catch {
       /* noop */
     }
