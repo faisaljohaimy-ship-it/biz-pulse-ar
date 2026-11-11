@@ -53,6 +53,18 @@ export interface BriefingSignal {
  */
 export const DERIVED_THRESHOLD = 5;
 
+const INVALID_OBSERVATIONS_REASON = "أعداد المشاهدات التشغيلية غير صالحة — لا يمكن إثبات درجة ثقة";
+
+/** Reject inconsistent or non-integer inputs before treating a confidence claim as grounded. */
+function validBriefingSignal(s: BriefingSignal): boolean {
+  const counts = [s.openIncidents, s.criticalIncidents, s.activePatrols, s.highRiskPermits];
+  return (
+    counts.every((count) => Number.isSafeInteger(count) && count >= 0) &&
+    s.criticalIncidents <= s.openIncidents &&
+    Number.isSafeInteger(observationCount(s))
+  );
+}
+
 /** مجموع ما رُصد — أساسُ الحكم. */
 export function observationCount(s: BriefingSignal): number {
   return s.openIncidents + s.activePatrols + s.highRiskPermits;
@@ -65,6 +77,7 @@ export function observationCount(s: BriefingSignal): number {
  * (‏FR-19 §3).
  */
 export function briefingEvidence(s: BriefingSignal, observedAt: string): Evidence {
+  if (!validBriefingSignal(s)) throw new Error(INVALID_OBSERVATIONS_REASON);
   return {
     kind: "db.query",
     source: "sec_incidents,sec_patrols,sec_permits",
@@ -87,6 +100,7 @@ export function briefingConfidence(
   signal: BriefingSignal,
   observedAt: string,
 ): Grounded<Confidence> {
+  if (!validBriefingSignal(signal)) return unmeasured(INVALID_OBSERVATIONS_REASON);
   const n = observationCount(signal);
   if (n === 0) {
     // صفرُ مشاهدات لا يعني «الوضع مطمئن»: يعني **لم يُرصد شيء**.
@@ -104,14 +118,22 @@ export function briefingConfidence(
  * المعروضة: لا تحمل شارةً ولا مصدرًا، ويسمعها المسؤول قرارًا.
  */
 export function spokenConfidenceAr(c: Grounded<Confidence>): string {
-  if (!c.measured) return "ودرجة الثقة لا تُثبت: لا مشاهدات تشغيلية مرصودة.";
+  if (!c.measured) {
+    return c.reason === INVALID_OBSERVATIONS_REASON
+      ? "ودرجة الثقة لا تُثبت: أعداد المشاهدات التشغيلية غير صالحة."
+      : "ودرجة الثقة لا تُثبت: لا مشاهدات تشغيلية مرصودة.";
+  }
   return c.value === "derived"
     ? "وهذه التوصية مشتقّة من المشاهدات المرصودة."
     : "وهذه التوصية تقديرية على عيّنة محدودة.";
 }
 
 export function spokenConfidenceEn(c: Grounded<Confidence>): string {
-  if (!c.measured) return "Confidence cannot be established: no operational observations recorded.";
+  if (!c.measured) {
+    return c.reason === INVALID_OBSERVATIONS_REASON
+      ? "Confidence cannot be established: invalid operational observation counts."
+      : "Confidence cannot be established: no operational observations recorded.";
+  }
   return c.value === "derived"
     ? "This recommendation is derived from recorded observations."
     : "This recommendation is estimated on a limited sample.";
