@@ -90,12 +90,9 @@ function stylesheetHref(tag) {
   // A disabled or print-only link may load HTTP 200 text/css but cannot style
   // the interactive screen. Do not count it as production CSS evidence.
   const media = (attrs.media || "").trim().toLowerCase();
-  return attrs.rel?.toLowerCase() === "stylesheet" &&
-    !("disabled" in attrs) &&
-    media !== "print" &&
-    attrs.href?.trim()
-    ? attrs.href
-    : null;
+  if (attrs.rel?.toLowerCase() !== "stylesheet") return null;
+  if ("disabled" in attrs || media === "print") return null;
+  return attrs.href?.trim() ? attrs.href : null;
 }
 
 const failures = [];
