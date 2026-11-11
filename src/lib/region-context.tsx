@@ -64,12 +64,19 @@ export function RegionProvider({ children }: { children: ReactNode }) {
    * مجهول يسقط إلى التفضيل ثمّ الافتراضي، ولا يُمرَّر إلى استعلام.
    */
   useEffect(() => {
+    // Safari private mode may deny storage even when ?region=... is valid.
+    // Keep the URL authoritative; storage is an optional fallback only.
+    let fromStorage: string | null = null;
+    try {
+      fromStorage = window.localStorage.getItem(STORAGE_KEY);
+    } catch {
+      /* storage unavailable — continue with URL scope */
+    }
     try {
       const fromUrl = new URLSearchParams(window.location.search).get(REGION_PARAM);
-      const fromStorage = window.localStorage.getItem(STORAGE_KEY);
       setRegionState(resolveRegionScope({ fromUrl, fromStorage }));
     } catch {
-      /* نافذة محظورة أو تخزين معطّل — يبقى الافتراضي */
+      /* location unavailable — preserve default */
     }
     setHydrated(true);
   }, []);
