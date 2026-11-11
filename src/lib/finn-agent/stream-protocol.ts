@@ -56,14 +56,14 @@ export function createFinnEventParser() {
     buffer = final ? "" : blocks.pop()!;
     for (const block of blocks) {
       for (const line of block.split("\n")) {
-        if (!/^data:/.test(line)) continue;
-        try {
-          // JSON.parse already ignores surrounding whitespace and rejects
-          // empty or malformed payloads, all handled by the existing catch.
-          const event = asEvent(JSON.parse(line.slice(5)));
-          if (event) out.push(event);
-        } catch {
-          /* كتلةٌ معطوبة — تُهمَل. */
+        if (/^data:/.test(line)) {
+          try {
+            // JSON.parse accepts whitespace and rejects malformed or empty data.
+            const event = asEvent(JSON.parse(line.slice(5)));
+            if (event) out.push(event);
+          } catch {
+            /* كتلةٌ معطوبة — تُهمَل. */
+          }
         }
       }
     }
