@@ -76,7 +76,7 @@ export function createFinnEventParser() {
       // wait until the stream closes. Swallow only the paired leading LF.
       const pairedLF = previousEndedWithCR && chunk[0] === "\n";
       if (chunk) previousEndedWithCR = chunk.endsWith("\r");
-      buffer += chunk.slice(Number(pairedLF)).replace(/\r\n?/g, "\n");
+      buffer += chunk.slice(pairedLF ? 1 : 0).replace(/\r\n?/g, "\n");
       return drain(false);
     },
     /** ما بقي في الذاكرة عند نهاية الجسم (حدثٌ أخير بلا فاصلٍ ختاميّ). */
