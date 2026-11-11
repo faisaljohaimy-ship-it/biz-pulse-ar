@@ -59,7 +59,9 @@ async function fetchWithRetry(url) {
         // Node 22 fetch observes this signal during headers and body reads.
         signal: AbortSignal.timeout(10_000),
       });
-      if (res.ok) return res;
+      // GET release evidence must be complete. A 206 Partial Content response
+      // can carry a plausible HTML/CSS fragment while omitting critical bytes.
+      if (res.status === 200) return res;
       last = `HTTP ${res.status}`;
     } catch (e) {
       last = e instanceof Error ? e.message : String(e);
