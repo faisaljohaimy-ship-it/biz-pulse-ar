@@ -91,7 +91,8 @@ function stylesheetHref(tag) {
   // the interactive screen. Do not count it as production CSS evidence.
   const media = (attrs.media || "").trim().toLowerCase();
   if (attrs.rel?.toLowerCase() !== "stylesheet") return null;
-  if ("disabled" in attrs || media === "print") return null;
+  // `not all` never matches a browser media type: its CSS cannot style the UI.
+  if ("disabled" in attrs || media === "print" || media === "not all") return null;
   return attrs.href?.trim() ? attrs.href : null;
 }
 
