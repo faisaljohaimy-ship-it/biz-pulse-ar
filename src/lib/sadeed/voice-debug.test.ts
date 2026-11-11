@@ -60,4 +60,25 @@ describe("Sadeed voice diagnostic console privacy", () => {
     expect(SadeedVoiceDebug.current()?.source).toBe("greeting");
     getter.mockRestore();
   });
+
+  it("continues delivering voice events even when the opted-in diagnostic logger throws", () => {
+    window.localStorage.setItem("aria-voice-debug", "1");
+    const logger = vi.spyOn(console, "log").mockImplementation(() => {
+      throw new Error("console unavailable");
+    });
+    const seen: Array<VoiceEvent | null> = [];
+    const unsubscribe = SadeedVoiceDebug.subscribe((event) => seen.push(event));
+
+    expect(() =>
+      SadeedVoiceDebug.emit({ source: "browser", reason: "fallback", failed: true }),
+    ).not.toThrow();
+    expect(logger).toHaveBeenCalledTimes(1);
+    expect(SadeedVoiceDebug.current()).toMatchObject({
+      source: "browser",
+      reason: "fallback",
+      failed: true,
+    });
+    expect(seen.at(-1)).toMatchObject({ source: "browser", failed: true });
+    unsubscribe();
+  });
 });
