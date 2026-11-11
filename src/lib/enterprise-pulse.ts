@@ -432,12 +432,4 @@ export function useEnterprisePulse(): EnterprisePulse {
   return pulse;
 }
 
-export function formatRelativeTime(date: Date, locale: "ar" | "en"): string {
-  const diff = Math.floor((Date.now() - date.getTime()) / 1000);
-  if (diff < 5) return locale === "ar" ? "الآن" : "just now";
-  if (diff < 60) return locale === "ar" ? `قبل ${diff} ثانية` : `${diff}s ago`;
-  const m = Math.floor(diff / 60);
-  if (m < 60) return locale === "ar" ? `قبل ${m} دقيقة` : `${m}m ago`;
-  const h = Math.floor(m / 60);
-  return locale === "ar" ? `قبل ${h} ساعة` : `${h}h ago`;
-}
+export { formatRelativeTime } from "./enterprise-pulse-time";
