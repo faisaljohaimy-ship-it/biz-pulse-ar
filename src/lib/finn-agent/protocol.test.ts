@@ -220,6 +220,25 @@ describe("بروتوكول البثّ", () => {
     ]);
   });
 
+  it("emits CR-only SSE events before the stream closes", () => {
+    const parser = createFinnEventParser();
+    expect(parser.push('data: {"type":"delta","text":"سديد"}\r\r')).toEqual([
+      { type: "delta", text: "سديد" },
+    ]);
+    expect(parser.flush()).toEqual([]);
+  });
+
+  it("does not double-count a CRLF pair split across chunks (even with an empty chunk)", () => {
+    const parser = createFinnEventParser();
+    expect(parser.push('data: {"type":"delta","text":"أ"}\r')).toEqual([]);
+    expect(parser.push("")).toEqual([]);
+    expect(parser.push("\n\r")).toEqual([{ type: "delta", text: "أ" }]);
+    expect(
+      parser.push("\n" + encodeFinnEvent({ type: "done", truncated: false })),
+    ).toEqual([{ type: "done", truncated: false }]);
+    expect(parser.flush()).toEqual([]);
+  });
+
   it("CRLF split between network chunks emits events before stream closure", () => {
     const parser = createFinnEventParser();
     const wire = events.map(encodeFinnEvent).join("").replace(/\n/g, "\r\n");
