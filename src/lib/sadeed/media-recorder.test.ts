@@ -19,4 +19,13 @@ describe("SADEED media recorder compatibility", () => {
   ])("maps %s to %s", (mime, extension) => {
     expect(recorderFileExtension(mime)).toBe(extension);
   });
+
+  it.each([
+    ["audio/mp4 ; codecs=mp4a.40.2", "m4a"],
+    [" AUDIO/OGG ; CODECS=opus", "ogg"],
+    [" audio/wav ", "wav"],
+    [" Video/MP4 ; codecs=avc1", "m4a"],
+  ])("preserves the correct extension for MIME whitespace/case in %s", (mime, extension) => {
+    expect(recorderFileExtension(mime)).toBe(extension);
+  });
 });
