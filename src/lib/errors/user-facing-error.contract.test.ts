@@ -60,6 +60,35 @@ describe("لا تصل عبارة مصادقة إلى الشاشة", () => {
     expect(userFacingError("unauthorized")).toBe(SESSION_ERROR_AR);
   });
 
+  it("لا تنهار واجهة الخطأ بسبب getter أو تحويل نصّي يرمي استثناءً", () => {
+    const badGetter = Object.defineProperty({}, "message", {
+      get() {
+        throw new Error("getter failed");
+      },
+    });
+    const badCoercion = {
+      message: {
+        [Symbol.toPrimitive]() {
+          throw new Error("conversion failed");
+        },
+      },
+    };
+    const badProxy = new Proxy(
+      {},
+      {
+        get() {
+          throw new Error("proxy failed");
+        },
+      },
+    );
+
+    for (const hostile of [badGetter, badCoercion, badProxy]) {
+      expect(userFacingError(hostile)).toBe(GENERIC_ERROR_AR);
+      expect(isSessionError(hostile)).toBe(false);
+    }
+    expect(userFacingError(new Error("JWT expired"))).toBe(SESSION_ERROR_AR);
+  });
+
   it("الرسالتان عربيّتان وفيهما ما يفعله المستخدم تاليًا", () => {
     for (const msg of [GENERIC_ERROR_AR, SESSION_ERROR_AR]) {
       expect(msg).toMatch(/[؀-ۿ]/);

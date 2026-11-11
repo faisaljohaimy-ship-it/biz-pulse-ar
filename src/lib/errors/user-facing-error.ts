@@ -43,13 +43,19 @@ export const SESSION_ERROR_AR =
  * المصدر إلى الشاشة في أي فرع.
  */
 function readableErrorMessage(error: unknown): string {
-  const raw =
-    error instanceof Error
-      ? error.message
-      : typeof error === "string"
-        ? error
-        : ((error as { message?: unknown } | null)?.message ?? "");
-  return String(raw);
+  try {
+    const raw =
+      error instanceof Error
+        ? error.message
+        : typeof error === "string"
+          ? error
+          : ((error as { message?: unknown } | null)?.message ?? "");
+    return String(raw);
+  } catch {
+    // A thrown value can have a hostile message getter or string coercion.
+    // The error boundary must still render a safe, anonymized fallback.
+    return "";
+  }
 }
 
 export function userFacingError(error: unknown): string {
