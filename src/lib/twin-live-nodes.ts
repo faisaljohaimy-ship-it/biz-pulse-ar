@@ -22,11 +22,15 @@ export function useLiveTwinNodes<T extends TwinValueNode>(
   return useMemo(() => {
     if (!signals) return nodes;
     const fallback = (id: string) => nodes.find((n) => n.id === id)?.value ?? "";
+    // A measured zero is not missing: never replace it with a reference count.
+    // Preserve the existing fallback only for non-finite/missing signals.
+    const countOrFallback = (value: number, id: string) =>
+      Number.isFinite(value) ? String(value) : fallback(id);
     const values: Record<string, string> = {
-      depts: String(signals.departments || fallback("depts")),
+      depts: countOrFallback(signals.departments, "depts"),
       data: String(signals.events),
-      agents: String(signals.agents || fallback("agents")),
-      integ: String(signals.integrations || fallback("integ")),
+      agents: countOrFallback(signals.agents, "agents"),
+      integ: countOrFallback(signals.integrations, "integ"),
       flows: String(signals.automations),
       know: twinValue(signals.documents, ar),
       risk: String(signals.criticalRisks),
