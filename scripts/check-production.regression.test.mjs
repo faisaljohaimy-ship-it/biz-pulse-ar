@@ -12,7 +12,13 @@ const normalPage = `<!doctype html><html lang="ar"><head>
 <link rel="stylesheet" href="/assets/app.css">
 </head><body>SADEED</body></html>`;
 
-async function runFixture(body, contentType = "text/html", cssStatus = 200, cssType = "text/css", cssBody = "body {}") {
+async function runFixture(
+  body,
+  contentType = "text/html",
+  cssStatus = 200,
+  cssType = "text/css",
+  cssBody = "body {}",
+) {
   let exitCode = null;
   const context = vm.createContext({
     process: {
@@ -254,7 +260,6 @@ test("accepts real application CSS alongside a noscript fallback", async () => {
   );
   assert.equal(await runFixture(html), null);
 });
-
 
 test("rejects an empty text/css response instead of treating its MIME as working styles", async () => {
   assert.equal(await runFixture(normalPage, "text/html", 200, "text/css", ""), 1);
