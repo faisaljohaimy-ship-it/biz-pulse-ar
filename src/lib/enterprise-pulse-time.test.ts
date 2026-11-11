@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { formatRelativeTime } from "./enterprise-pulse-time";
+import { formatRelativeTime } from "./enterprise-pulse";
 
 const NOW = new Date("2026-11-11T02:00:00.000Z");
 const atOffset = (milliseconds: number) => new Date(NOW.getTime() + milliseconds);
