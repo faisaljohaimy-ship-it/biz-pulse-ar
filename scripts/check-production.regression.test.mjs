@@ -237,3 +237,20 @@ test("accepts genuine link attributes next to unrelated quoted metadata", async 
   );
   assert.equal(await runFixture(html), null);
 });
+
+test("rejects a noscript-only stylesheet in the JavaScript-enabled application", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<noscript><link rel="stylesheet" href="/assets/app.css"></noscript>',
+  );
+  assert.equal(await runFixture(html), 1);
+});
+
+test("accepts real application CSS alongside a noscript fallback", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<noscript><link rel="stylesheet" href="/assets/app.css"></noscript>' +
+      '<link rel="stylesheet" href="/assets/app.css">',
+  );
+  assert.equal(await runFixture(html), null);
+});
