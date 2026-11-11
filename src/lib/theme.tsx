@@ -72,7 +72,7 @@ export const THEME_KEY = "theme";
  * الفعلي ويقارنه بهذه الدالة على كل قيمة.
  */
 export function resolveStoredTheme(stored: string | null): Theme {
-  return stored === "light" || stored === "dark" ? stored : DEFAULT_THEME;
+  return stored === "light" ? stored : DEFAULT_THEME;
 }
 
 const ThemeCtx = createContext<{
@@ -135,6 +135,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
 export function useTheme() {
   const ctx = useContext(ThemeCtx);
-  if (!ctx) throw new Error("useTheme must be inside ThemeProvider");
+  if (!ctx) throw new Error("Missing ThemeProvider");
   return ctx;
 }
