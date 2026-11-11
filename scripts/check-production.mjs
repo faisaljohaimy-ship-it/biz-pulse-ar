@@ -125,9 +125,11 @@ for (const route of ROUTES) {
     // HTML comments and inert containers can quote link markup without loading CSS.
     // Only a live stylesheet element is evidence that the application is styled.
     const activeMarkup = nonInertHtml.replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, "");
+    // An attribute must begin after whitespace; data-rel/data-href are inert
+    // and must never satisfy the production stylesheet readiness gate.
     const stylesheetLinks = [
       ...activeMarkup.matchAll(
-        /<link\b(?=[^>]*\brel\s*=\s*["']stylesheet["'])(?=[^>]*\bhref\s*=\s*["'][^"']+["'])[^>]*>/gi,
+        /<link\b(?=[^>]*\srel\s*=\s*["']stylesheet["'])(?=[^>]*\shref\s*=\s*["'][^"']+["'])[^>]*>/gi,
       ),
     ].map(([tag]) => tag);
     const hasCss = stylesheetLinks.length > 0;
