@@ -14,31 +14,34 @@ export interface Region {
   shortEn: string;
 }
 
+// Share the exact Arabic label prefix in the client bundle without changing any displayed names.
+const REGION_LABEL_PREFIX_AR = "الأمن الصناعي — المنطقة ";
+
 export const REGIONS: readonly Region[] = [
   {
     id: "central",
-    labelAr: "الأمن الصناعي — المنطقة الوسطى",
+    labelAr: `${REGION_LABEL_PREFIX_AR}الوسطى`,
     labelEn: "Industrial Security — Central Region",
     shortAr: "الوسطى",
     shortEn: "Central",
   },
   {
     id: "western",
-    labelAr: "الأمن الصناعي — المنطقة الغربية",
+    labelAr: `${REGION_LABEL_PREFIX_AR}الغربية`,
     labelEn: "Industrial Security — Western Region",
     shortAr: "الغربية",
     shortEn: "Western",
   },
   {
     id: "eastern",
-    labelAr: "الأمن الصناعي — المنطقة الشرقية",
+    labelAr: `${REGION_LABEL_PREFIX_AR}الشرقية`,
     labelEn: "Industrial Security — Eastern Region",
     shortAr: "الشرقية",
     shortEn: "Eastern",
   },
   {
     id: "southern",
-    labelAr: "الأمن الصناعي — المنطقة الجنوبية",
+    labelAr: `${REGION_LABEL_PREFIX_AR}الجنوبية`,
     labelEn: "Industrial Security — Southern Region",
     shortAr: "الجنوبية",
     shortEn: "Southern",
