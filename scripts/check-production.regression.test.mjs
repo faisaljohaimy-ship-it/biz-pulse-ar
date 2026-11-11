@@ -116,6 +116,31 @@ test("accepts the real root's Google Fonts stylesheet before its same-origin CSS
   assert.equal(await runFixture(withFonts), null);
 });
 
+test("rejects a disabled stylesheet as proof that screen styles are active", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="stylesheet" href="/assets/app.css" disabled>',
+  );
+  assert.equal(await runFixture(html), 1);
+});
+
+test("rejects a print-only stylesheet as proof that screen styles are active", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="stylesheet" href="/assets/app.css" media="print">',
+  );
+  assert.equal(await runFixture(html), 1);
+});
+
+test("accepts active screen styles even if a print-only stylesheet precedes them", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="stylesheet" href="/assets/app.css" media="print">' +
+      '<link rel="stylesheet" href="/assets/app.css" media="all">',
+  );
+  assert.equal(await runFixture(html), null);
+});
+
 test("rejects an external font stylesheet without any local app CSS", async () => {
   const fontsOnly = normalPage.replace(
     '<link rel="stylesheet" href="/assets/app.css">',
