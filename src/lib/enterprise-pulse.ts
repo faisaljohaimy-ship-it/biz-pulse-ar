@@ -141,7 +141,7 @@ async function ensureSeeded(userId: string, openTasks: number) {
     .select("id", { count: "exact", head: true })
     .eq("user_id", userId);
   if (countError) {
-    console.error("[enterprise-pulse] seed count check failed:", countError.message);
+    console.error("pulse seed count failed:", countError.message);
     return; // transient read failure — leave unseeded so it retries
   }
   if ((count ?? 0) > 0) {
@@ -164,7 +164,7 @@ async function ensureSeeded(userId: string, openTasks: number) {
   ]);
   const insertError = results.find((r) => r.error)?.error;
   if (insertError) {
-    console.error("[enterprise-pulse] seed insert failed:", insertError.message);
+    console.error("pulse seed insert failed:", insertError.message);
     return; // leave unseeded so a later call retries the seed
   }
   seeded.add(userId); // mark seeded ONLY after a fully successful seed
@@ -420,7 +420,7 @@ export function useEnterprisePulse(): EnterprisePulse {
         .subscribe();
     } catch (err) {
       // Realtime is best-effort; page remains functional with initial load.
-      console.warn("[enterprise-pulse] realtime unavailable", err);
+      console.warn("pulse realtime unavailable", err);
     }
 
     return () => {
