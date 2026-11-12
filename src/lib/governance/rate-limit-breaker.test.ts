@@ -114,6 +114,32 @@ describe("القاطع", () => {
     expect(rateLimitStorageState().consecutiveFailures).toBe(1);
   });
 
+  it("a backward clock jump starts a fresh failure streak without masking fresh outages", async () => {
+    rpc.mode = "error";
+    vi.setSystemTime(10_000_000);
+    for (let i = 0; i < BREAKER_FAILURE_THRESHOLD - 1; i++) {
+      expect(await settle(enforceRateLimit("pre-rollback", 10, 60), 0)).toEqual({
+        allowed: false,
+        unavailable: true,
+      });
+    }
+    expect(rateLimitStorageState().consecutiveFailures).toBe(BREAKER_FAILURE_THRESHOLD - 1);
+
+    vi.setSystemTime(1_000_000);
+    expect(await settle(enforceRateLimit("post-rollback", 10, 60), 0)).toEqual({
+      allowed: false,
+      unavailable: true,
+    });
+    expect(rateLimitStorageState().state).toBe("closed");
+    expect(rateLimitStorageState().consecutiveFailures).toBe(1);
+
+    for (let i = 1; i < BREAKER_FAILURE_THRESHOLD; i++) {
+      await settle(enforceRateLimit("post-rollback", 10, 60), 0);
+    }
+    expect(rateLimitStorageState().state).toBe("open");
+    expect(rateLimitStorageState().consecutiveFailures).toBe(BREAKER_FAILURE_THRESHOLD);
+  });
+
   it("خطأ القاعدة يُحتسب فشلًا، ويفشل مغلقًا، وخمسةٌ منه تفتح القاطع", async () => {
     rpc.mode = "error";
     for (let i = 0; i < BREAKER_FAILURE_THRESHOLD; i++) {
