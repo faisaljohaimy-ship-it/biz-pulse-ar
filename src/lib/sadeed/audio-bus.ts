@@ -53,6 +53,27 @@ function emit(e: BusEvent) {
   }
 }
 
+// Transition atomically: stop() may synchronously release the old owner.
+function stopCurrentOwner() {
+  if (!current) return;
+  const previous = current;
+  const hadAudio = currentAudioEl !== null;
+  current = null;
+  currentAudioEl = null;
+  transitioning = true;
+  try {
+    try {
+      previous.stop();
+    } catch {
+      /* ignore */
+    }
+    if (hadAudio) emit({ kind: "stopped", source: previous.source });
+    emit({ kind: "end", source: previous.source });
+  } finally {
+    transitioning = false;
+  }
+}
+
 export const SadeedAudioBus = {
   /** Call from the FIRST user gesture (any tap). Unlocks autoplay on iOS. */
   unlock() {
@@ -105,29 +126,12 @@ export const SadeedAudioBus = {
       return false;
     }
     if (current) {
-      const previous = current;
-      const hadAudio = currentAudioEl !== null;
-      // Detach before invoking user-provided stop: it may call release(),
-      // stopAll() or acquire() synchronously. Never emit a second end.
-      current = null;
-      currentAudioEl = null;
-      transitioning = true;
-      try {
-        VoiceTimeline.push("PREEMPT", "owner preempted", {
-          prev: previous.source,
-          next: source,
-          stack,
-        });
-        try {
-          previous.stop();
-        } catch {
-          /* ignore */
-        }
-        if (hadAudio) emit({ kind: "stopped", source: previous.source });
-        emit({ kind: "end", source: previous.source });
-      } finally {
-        transitioning = false;
-      }
+      VoiceTimeline.push("PREEMPT", "owner preempted", {
+        prev: current.source,
+        next: source,
+        stack,
+      });
+      stopCurrentOwner();
     }
     current = { source, stop };
     VoiceTimeline.push("OWNER", "ACQUIRED", {
@@ -180,24 +184,7 @@ export const SadeedAudioBus = {
   },
 
   stopAll() {
-    if (current) {
-      const previous = current;
-      const hadAudio = currentAudioEl !== null;
-      current = null;
-      currentAudioEl = null;
-      transitioning = true;
-      try {
-        try {
-          previous.stop();
-        } catch {
-          /* ignore */
-        }
-        if (hadAudio) emit({ kind: "stopped", source: previous.source });
-        emit({ kind: "end", source: previous.source });
-      } finally {
-        transitioning = false;
-      }
-    }
+    stopCurrentOwner();
   },
 
   /** Subscribe to start/end events. Returns unsubscribe fn. */
