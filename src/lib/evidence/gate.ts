@@ -74,22 +74,18 @@ export interface Evidence {
  * wrongly certify a fabricated observation as LIVE. Require a complete ISO
  * timestamp and validate its Gregorian calendar day before parsing.
  */
-function validObservedAt(value: string): boolean {
-  const parts = /^(\d{4}|[+-]\d{6})-(\d{2})-(\d{2})T[\d:.+-]+(?:Z|[+-]\d{2}:\d{2})$/.exec(value);
-  if (!parts || !Number.isFinite(Date.parse(value))) return false;
-  // setUTCFullYear handles years 0–99 correctly (Date.UTC does not).
-  const date = new Date(0);
-  date.setUTCFullYear(Number(parts[1]), Number(parts[2]) - 1, Number(parts[3]));
-  return date.getUTCMonth() === Number(parts[2]) - 1 && date.getUTCDate() === Number(parts[3]);
-}
-
 export function hasEvidence(e: Evidence | null | undefined): e is Evidence {
+  if (!e || typeof e.source !== "string" || !e.source.trim() || typeof e.observedAt !== "string")
+    return false;
+  const value = e.observedAt;
+  const match =
+    /^(?:\d{4}|[+-]\d{6})-\d\d-(\d\d)T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d{1,9})?(?:Z|[+-]\d\d:[0-5]\d)$/.exec(
+      value,
+    );
   return (
-    !!e &&
-    typeof e.source === "string" &&
-    e.source.trim().length > 0 &&
-    typeof e.observedAt === "string" &&
-    validObservedAt(e.observedAt)
+    !!match &&
+    Number.isFinite(Date.parse(value)) &&
+    new Date(value.slice(0, value.indexOf("T"))).getUTCDate() === +match[1]
   );
 }
 
