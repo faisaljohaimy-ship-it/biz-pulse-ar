@@ -23,9 +23,9 @@ describe("SADEED audio bus synchronous stop callbacks", () => {
       events.push(`${kind}:${source}`);
     });
     SadeedAudioBus.unlock();
-    expect(
-      SadeedAudioBus.acquire("agent-tts", () => SadeedAudioBus.release("agent-tts")),
-    ).toBe(true);
+    expect(SadeedAudioBus.acquire("agent-tts", () => SadeedAudioBus.release("agent-tts"))).toBe(
+      true,
+    );
     SadeedAudioBus.notifyPlaying("agent-tts", {} as HTMLMediaElement);
     expect(SadeedAudioBus.acquire("chat-tts", () => {})).toBe(true);
     expect(SadeedAudioBus.currentSource()).toBe("chat-tts");
@@ -44,9 +44,9 @@ describe("SADEED audio bus synchronous stop callbacks", () => {
     const unsubscribe = SadeedAudioBus.subscribe(({ kind, source }) => {
       events.push(`${kind}:${source}`);
     });
-    expect(
-      SadeedAudioBus.acquire("agent-tts", () => SadeedAudioBus.release("agent-tts")),
-    ).toBe(true);
+    expect(SadeedAudioBus.acquire("agent-tts", () => SadeedAudioBus.release("agent-tts"))).toBe(
+      true,
+    );
     SadeedAudioBus.stopAll();
     expect(SadeedAudioBus.currentSource()).toBeNull();
     expect(events).toEqual(["start:agent-tts", "end:agent-tts"]);
