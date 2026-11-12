@@ -69,17 +69,37 @@ export interface Evidence {
   readonly limitation?: string;
 }
 
+/**
+ * Date.parse normalizes impossible dates (Feb 30 becomes Mar 2), which can
+ * wrongly certify a fabricated observation as LIVE. Require a complete ISO
+ * timestamp and validate its Gregorian calendar day before parsing.
+ */
+function validObservedAt(value: string): boolean {
+  const match =
+    /^(\d{4}|[+-]\d{6})-(\d{2})-(\d{2})T([01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d{1,3})?(?:Z|[+-]\d{2}:[0-5]\d)$/.exec(value);
+  if (!match) return false;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  if (month < 1 || month > 12 || day < 1) return false;
+  const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+  const days = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  return day <= days[month - 1] && Number.isFinite(Date.parse(value));
+}
+
 export function hasEvidence(e: Evidence | null | undefined): e is Evidence {
-  if (!e) return false;
-  if (!e.source || typeof e.source !== "string") return false;
-  if (!e.observedAt || typeof e.observedAt !== "string") return false;
-  const t = Date.parse(e.observedAt);
-  if (Number.isNaN(t)) return false;
-  return true;
+  return (
+    !!e &&
+    typeof e.source === "string" &&
+    e.source.trim().length > 0 &&
+    typeof e.observedAt === "string" &&
+    validObservedAt(e.observedAt)
+  );
 }
 
 /** Freshness gate: reject stale, invalid, and future-dated evidence. */
 export function isFresh(e: Evidence, maxAgeMs = 5 * 60_000): boolean {
+  if (!hasEvidence(e)) return false;
   const t = Date.parse(e.observedAt);
   const ageMs = Date.now() - t;
   // A future timestamp previously produced a negative age, so even evidence
