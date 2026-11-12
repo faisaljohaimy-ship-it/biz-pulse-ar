@@ -175,6 +175,7 @@ type ZipSummary = { names: string[]; totalUncompressed: number; entries: number 
 
 function inspectZip(bytes: Uint8Array): ZipSummary {
   const names: string[] = [];
+  const seenNames = new Set<string>();
   let totalUncompressed = 0;
   let entries = 0;
 
@@ -227,6 +228,13 @@ function inspectZip(bytes: Uint8Array): ZipSummary {
     if (compressed === 0 ? uncompressed > 0 : uncompressed / compressed > 100) {
       throw new FileInspectionError("archive_ratio", "Office archive compression ratio is unsafe.");
     }
+    // Duplicate ZIP members can make Office readers and the quarantine scanner
+    // disagree about which payload a part name resolves to. Fail closed even
+    // when aliases differ only by case or Windows path separators.
+    if (seenNames.has(lower)) {
+      throw new FileInspectionError("invalid_zip", "Office archive contains duplicate part names.");
+    }
+    seenNames.add(lower);
     names.push(lower);
     offset = end - 1;
   }
