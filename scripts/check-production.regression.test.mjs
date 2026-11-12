@@ -359,3 +359,24 @@ test("rejects an empty text/css response instead of treating its MIME as working
 test("rejects a whitespace-only CSS response as unstyled", async () => {
   assert.equal(await runFixture(normalPage, "text/html", 200, "text/css", " \n  \t"), 1);
 });
+
+test("rejects a nonempty CSS asset containing only a comment", async () => {
+  assert.equal(
+    await runFixture(normalPage, "text/html", 200, "text/css", "/* compilation banner */"),
+    1,
+  );
+});
+
+test("rejects multiple CSS comments and whitespace with no styling rules", async () => {
+  assert.equal(
+    await runFixture(normalPage, "text/html", 200, "text/css", " /* a */\n /* b */\n"),
+    1,
+  );
+});
+
+test("accepts functional CSS following a build banner comment", async () => {
+  assert.equal(
+    await runFixture(normalPage, "text/html", 200, "text/css", "/* banner */ body { color: navy; }"),
+    null,
+  );
+});
