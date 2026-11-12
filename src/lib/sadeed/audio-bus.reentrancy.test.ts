@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("./voice-timeline", () => ({ VoiceTimeline: { push: vi.fn() } }));
 vi.mock("@/lib/sadeed-core/state/voice-mute", () => ({
@@ -7,6 +7,10 @@ vi.mock("@/lib/sadeed-core/state/voice-mute", () => ({
 }));
 
 import { SadeedAudioBus } from "./audio-bus";
+
+beforeEach(() => {
+  SadeedAudioBus.unlock();
+});
 
 afterEach(() => {
   SadeedAudioBus.stopAll();
