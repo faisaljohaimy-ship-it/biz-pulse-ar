@@ -26,6 +26,7 @@ import { AuthProvider } from "@/lib/auth-context";
 import { ThemeProvider } from "@/lib/theme";
 import { Toaster } from "@/components/ui/sonner";
 import { armHealthyBootReset } from "@/lib/sadeed/self-healing/crash-loop";
+import { Analytics } from "@vercel/analytics/react";
 
 // ── SADEED Singleton ────────────────────────────────────────────────────
 // ONE SADEED. Do not add a second copilot at the root. See
@@ -344,6 +345,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
       </head>
       <body className="bg-background">
         {children}
+        <Analytics />
         <Scripts />
       </body>
     </html>
@@ -491,7 +493,7 @@ function RootComponent() {
                   {/* الخلفيتان الجغرافية والصورية للصفحات العامّة وحدها: صفحات
                       النظام (الرئيسية والداخلية) تلبس خلفية القشرة الواحدة
                       (`HoloVideoEngine` داخل `SystemChrome`) — أمر المالك
-                      ٢٠٢٦/١٠/١٨ «بنفس تخطيط وهيئة الصفحة الرئيسية»، والرئيسية
+                      ٢٠٢٦/١٠/١٨ «بنفس ت��طيط وهيئة الصفحة الرئيسية»، والرئيسية
                       لم تحمل أيًّا منهما قط. ومنصّة عمليات الوكلاء بخلفيةٍ
                       نظيفة عمدًا. */}
                   {!isSystemRoute && !introActive && !isAccessGate && !isAgentOperations && (
