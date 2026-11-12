@@ -354,8 +354,11 @@ export function useEnterprisePulse(): EnterprisePulse {
 
   useEffect(() => {
     let cancelled = false;
+    // A slow earlier Supabase read must not overwrite a newer realtime snapshot.
+    let loadGeneration = 0;
 
     async function load() {
+      const generation = ++loadGeneration;
       const { data: userData } = await supabase.auth.getUser();
       const userId = userData.user?.id;
       if (!userId) return;
@@ -382,7 +385,7 @@ export function useEnterprisePulse(): EnterprisePulse {
         supabase.from("pulse_memory").select("*").eq("user_id", userId).order("sort_order"),
       ]);
 
-      if (cancelled) return;
+      if (cancelled || generation !== loadGeneration) return;
       const crisesData = (crises.data ?? []).map(mapCrisis);
       const { status, health } = deriveStatus(crisesData);
 
