@@ -158,6 +158,8 @@ for (const route of ROUTES) {
       // A script data block (e.g. JSON-LD, importmap or text/plain) is inert.
       // Requiring a runnable script avoids a false production-ready result.
       const scriptAttrs = scriptAttributes(openingTag);
+      // Modern browsers skip nomodule fallbacks; they cannot prove theme initialization.
+      if ("nomodule" in scriptAttrs) return false;
       const type = (scriptAttrs.type ?? "").trim().toLowerCase();
       const executable =
         !("type" in scriptAttrs) ||

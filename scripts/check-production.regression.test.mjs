@@ -97,6 +97,31 @@ test("rejects 200 HTML when a stylesheet exists only inside an inert template", 
   assert.equal(await runFixture(html), 1);
 });
 
+test("rejects a nomodule-only theme bootstrap ignored by modern browsers", async () => {
+  const html = normalPage.replace(
+    "<script>sessionStorage.getItem('theme')</script>",
+    "<script nomodule>sessionStorage.getItem('theme')</script>",
+  );
+  assert.equal(await runFixture(html), 1);
+});
+
+test("treats nomodule=false as a present HTML boolean attribute", async () => {
+  const html = normalPage.replace(
+    "<script>sessionStorage.getItem('theme')</script>",
+    "<script nomodule=\"false\">sessionStorage.getItem('theme')</script>",
+  );
+  assert.equal(await runFixture(html), 1);
+});
+
+test("accepts a modern theme bootstrap following an ignored nomodule fallback", async () => {
+  const html = normalPage.replace(
+    "<script>sessionStorage.getItem('theme')</script>",
+    "<script nomodule>sessionStorage.getItem('theme')</script>" +
+      "<script type=\"module\">sessionStorage.getItem('theme')</script>",
+  );
+  assert.equal(await runFixture(html), null);
+});
+
 test("rejects theme bootstrap only mentioned in an HTML comment", async () => {
   const html = normalPage.replace(
     "<script>sessionStorage.getItem('theme')</script>",
