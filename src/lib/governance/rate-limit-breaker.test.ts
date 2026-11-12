@@ -240,6 +240,32 @@ describe("القاطع", () => {
 });
 
 describe("الحصّة المحدودة في الذاكرة", () => {
+  it.each([
+    ["infinite limit", Number.POSITIVE_INFINITY, 60, 1_000],
+    ["unsafe limit", Number.MAX_SAFE_INTEGER + 1, 60, 1_000],
+    ["NaN limit", Number.NaN, 60, 1_000],
+    ["zero limit", 0, 60, 1_000],
+    ["infinite window", 2, Number.POSITIVE_INFINITY, 1_000],
+    ["unsafe window", 2, Number.MAX_SAFE_INTEGER, 1_000],
+    ["NaN clock", 2, 60, Number.NaN],
+  ] as const)(
+    "invalid quota arguments (%s) deny without consuming a bucket",
+    (_label, limit, window, now) => {
+      const key = `invalid:${_label}`;
+      expect(degradedAllowance(key, limit, window, now)).toEqual({
+        allowed: false,
+        cap: 0,
+        remaining: 0,
+        retryAfterSeconds: 60,
+      });
+      expect(degradedAllowance(key, 2, 60, 1_000)).toMatchObject({
+        allowed: true,
+        cap: 1,
+        remaining: 0,
+      });
+    },
+  );
+
   it("نصف السقف: 12 في 300 ث ⇐ ستٌّ تمرّ والسابعة تُرفض بـRetry-After ضمن النافذة", () => {
     for (let i = 1; i <= 6; i++) {
       const d = degradedAllowance("chat:ip:1", 12, 300);

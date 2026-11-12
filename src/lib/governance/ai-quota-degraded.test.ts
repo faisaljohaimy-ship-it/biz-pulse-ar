@@ -39,6 +39,18 @@ afterEach(() => {
 });
 
 describe("degradedAiQuota — السقف العام عند حدّه الفعليّ", () => {
+  it("unsafe configured identity cap falls back to its documented limit", async () => {
+    const { degradedAiQuota } = await loadFresh({
+      SADEED_CHAT_DAILY_PER_IDENTITY: "999999999999999999999999999999",
+    });
+    for (let i = 1; i <= 60; i++) {
+      expect(degradedAiQuota("chat", "ip:unsafe-cap"), `request ${i}`).toBe(null);
+    }
+    const over = degradedAiQuota("chat", "ip:unsafe-cap");
+    expect((over as Response).status).toBe(429);
+    expect((await body(over)).error).toBe("daily_identity_cap");
+  });
+
   it("الافتراض: 2500 هوية مختلفة تمرّ، والهوية 2501 تُرفض 429 daily_global_cap (V34)", async () => {
     const { degradedAiQuota } = await loadFresh();
     for (let i = 1; i <= 2500; i++) {
