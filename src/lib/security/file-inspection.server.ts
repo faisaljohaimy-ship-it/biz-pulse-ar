@@ -196,6 +196,20 @@ function inspectZip(bytes: Uint8Array): ZipSummary {
       throw new FileInspectionError("encrypted_archive", "Encrypted Office archives are blocked.");
     }
 
+    // POSIX links, sockets, pipes and devices must never leave quarantine
+    // disguised as Office ZIP parts. Unix mode is stored in the upper half
+    // of the central-directory external attributes for Unix/macOS creators.
+    const unixHost = bytes[offset + 5] === 3 || bytes[offset + 5] === 19;
+    if (unixHost) {
+      const fileType = (u32(bytes, offset + 38) >>> 16) & 0xf000;
+      if (fileType !== 0 && fileType !== 0x8000 && fileType !== 0x4000) {
+        throw new FileInspectionError(
+          "invalid_zip",
+          "Office archive contains an unsafe Unix file type.",
+        );
+      }
+    }
+
     const nameBytes = bytes.subarray(offset + 46, offset + 46 + nameLength);
     let name: string;
     if ((flags & 0x0800) !== 0) {
