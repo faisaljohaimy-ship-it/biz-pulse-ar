@@ -294,7 +294,7 @@ const STATIC_INTEL: PulseIntel[] = [
   {
     id: "ai-accel",
     text_ar: "تبني AI الداخلي يتسارع 2.3x",
-    text_en: "Internal AI adoption accelerating 2.3x",
+    text_en: "Internal AI adoption up 2.3x",
     confidence: 94,
     tone: "violet",
   },
