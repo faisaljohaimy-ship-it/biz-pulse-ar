@@ -119,9 +119,7 @@ function stylesheetHref(tag) {
   // `not screen`/`not all`, but NOT `not screen and (color)`: `not` negates
   // the entire feature query, which can match a monochrome screen.
   const nonScreenQuery = (query) =>
-    /^(?:(?:only\s+)?(?:print|speech)(?:\s+and\b|$)|not\s+(?:all|screen)$)/.test(
-      query.trim(),
-    );
+    /^(?:(?:only\s+)?(?:print|speech)(?:\s+and\b|$)|not\s+(?:all|screen)$)/.test(query.trim());
   const inactiveMedia = media !== "" && media.split(",").every(nonScreenQuery);
   if ("disabled" in attrs || inactiveMedia) return null;
   return attrs.href?.trim() ? attrs.href : null;
