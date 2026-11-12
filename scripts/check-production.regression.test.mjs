@@ -376,7 +376,13 @@ test("rejects multiple CSS comments and whitespace with no styling rules", async
 
 test("accepts functional CSS following a build banner comment", async () => {
   assert.equal(
-    await runFixture(normalPage, "text/html", 200, "text/css", "/* banner */ body { color: navy; }"),
+    await runFixture(
+      normalPage,
+      "text/html",
+      200,
+      "text/css",
+      "/* banner */ body { color: navy; }",
+    ),
     null,
   );
 });
