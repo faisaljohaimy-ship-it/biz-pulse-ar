@@ -116,6 +116,8 @@ function u32(bytes: Uint8Array, offset: number): number {
   );
 }
 
+const BIDI_CONTROLS = /[\u061c\u200e\u200f\u202a-\u202e\u2066-\u2069]/;
+
 function containsControlCharacter(value: string): boolean {
   for (let i = 0; i < value.length; i++) {
     const code = value.charCodeAt(i);
@@ -129,13 +131,12 @@ function assertFilename(filename: string, claimedMime: SadeedAttachmentMime) {
   // Invisible direction controls can visually disguise a harmless extension as a
   // different file type in RTL/LTR evidence lists. Preserve ordinary Arabic
   // letters while rejecting bidi overrides, isolates and direction marks.
-  const bidiControls = /[\u061c\u200e\u200f\u202a-\u202e\u2066-\u2069]/;
   if (
     !normalized ||
     normalized.startsWith(".") ||
     /[/\\]/.test(normalized) ||
     containsControlCharacter(normalized) ||
-    bidiControls.test(normalized)
+    BIDI_CONTROLS.test(normalized)
   ) {
     throw new FileInspectionError("unsafe_filename", "Attachment filename is unsafe.");
   }
@@ -195,12 +196,29 @@ function inspectZip(bytes: Uint8Array): ZipSummary {
       throw new FileInspectionError("encrypted_archive", "Encrypted Office archives are blocked.");
     }
 
-    const name = ascii(bytes, offset + 46, offset + 46 + nameLength).replace(/\\/g, "/");
-    const lower = name.toLowerCase();
-    const pathSegments = name.split("/");
+    const nameBytes = bytes.subarray(offset + 46, offset + 46 + nameLength);
+    let name: string;
+    if ((flags & 0x0800) !== 0) {
+      try {
+        name = new TextDecoder("utf-8", { fatal: true }).decode(nameBytes);
+      } catch {
+        throw new FileInspectionError("invalid_zip", "Office archive filename is not valid UTF-8.");
+      }
+    } else {
+      name = ascii(nameBytes);
+    }
+    name = name.replace(/\\/g, "/");
+    // Normalization and bidi/control checks prevent ZIP members from hiding
+    // active extensions or colliding with another member after extraction.
+    if (containsControlCharacter(name) || BIDI_CONTROLS.test(name)) {
+      throw new FileInspectionError("invalid_zip", "Office archive filename is unsafe.");
+    }
+    const canonicalName = name.normalize("NFKC");
+    const lower = canonicalName.toLowerCase();
+    const pathSegments = canonicalName.split("/");
     if (
-      name.startsWith("/") ||
-      /^[a-z]:\//i.test(name) ||
+      canonicalName.startsWith("/") ||
+      /^[a-z]:\//i.test(canonicalName) ||
       pathSegments.includes("..") ||
       lower.includes("../") ||
       lower.includes("\0")
