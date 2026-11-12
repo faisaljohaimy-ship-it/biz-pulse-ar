@@ -287,6 +287,22 @@ test("accepts real application CSS alongside a noscript fallback", async () => {
   assert.equal(await runFixture(html), null);
 });
 
+test("rejects theme text inside an external script whose inline body is ignored by browsers", async () => {
+  const html = normalPage.replace(
+    "<script>sessionStorage.getItem('theme')</script>",
+    "<script src=\"/assets/missing.js\">sessionStorage.getItem('theme')</script>",
+  );
+  assert.equal(await runFixture(html), 1);
+});
+
+test("accepts a genuine inline theme script when src appears only in quoted metadata", async () => {
+  const html = normalPage.replace(
+    "<script>sessionStorage.getItem('theme')</script>",
+    "<script data-note=\"src='/assets/missing.js'\">sessionStorage.getItem('theme')</script>",
+  );
+  assert.equal(await runFixture(html), null);
+});
+
 test("rejects an empty text/css response instead of treating its MIME as working styles", async () => {
   assert.equal(await runFixture(normalPage, "text/html", 200, "text/css", ""), 1);
 });
