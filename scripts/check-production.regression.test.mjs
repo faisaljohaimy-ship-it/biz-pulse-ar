@@ -448,3 +448,45 @@ for (const media of [
     assert.equal(await runFixture(html), null);
   });
 }
+
+test("cancels rejected HTTP response streams for both routes and CSS assets", async () => {
+  for (const failedCss of [false, true]) {
+    let canceled = 0;
+    let exitCode = null;
+    const context = vm.createContext({
+      process: {
+        env: { PRODUCTION_URL: "https://offline.invalid", ROUTES: "/", ATTEMPTS: "1" },
+        exit(code) {
+          exitCode = code;
+        },
+      },
+      console: { log() {}, error() {} },
+      AbortSignal,
+      URL,
+      async fetch(input, options) {
+        assert.equal(options.redirect, "manual");
+        if (failedCss && input === "https://offline.invalid/") {
+          return new Response(normalPage, { headers: { "content-type": "text/html" } });
+        }
+        assert.equal(
+          input,
+          failedCss ? "https://offline.invalid/assets/app.css" : "https://offline.invalid/",
+        );
+        return new Response(
+          new ReadableStream({
+            start(controller) {
+              controller.enqueue(new Uint8Array([35]));
+            },
+            cancel() {
+              canceled += 1;
+            },
+          }),
+          { status: 503, headers: { "content-type": failedCss ? "text/css" : "text/html" } },
+        );
+      },
+    });
+    await new vm.Script(`(async () => {\n${executableSource}\n})()`).runInContext(context);
+    assert.equal(exitCode, 1);
+    assert.equal(canceled, 1, failedCss ? "CSS response body leaked" : "HTML response body leaked");
+  }
+});
