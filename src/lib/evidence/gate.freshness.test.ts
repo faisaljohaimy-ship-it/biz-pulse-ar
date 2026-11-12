@@ -81,6 +81,7 @@ describe("FR-19 evidence identity and timestamp validation", () => {
   it("keeps valid leap days, timezone offsets and extended-year ISO timestamps", () => {
     expect(hasEvidence(evidenceAt("2024-02-29T09:30:00+03:00"))).toBe(true);
     expect(hasEvidence(evidenceAt("2000-02-29T09:30:00.123Z"))).toBe(true);
+    expect(hasEvidence(evidenceAt("2026-11-10T00:00:00.123456+00:00"))).toBe(true);
     expect(hasEvidence(evidenceAt("+275760-09-13T00:00:00.000Z"))).toBe(true);
     expect(hasEvidence(evidenceAt("1900-02-29T00:00:00Z"))).toBe(false);
   });
