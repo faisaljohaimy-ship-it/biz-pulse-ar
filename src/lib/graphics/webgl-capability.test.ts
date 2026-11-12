@@ -13,6 +13,7 @@ import { __resetWebGLCapabilityCache, cappedDpr, canUseWebGL } from "./webgl-cap
 afterEach(() => {
   __resetWebGLCapabilityCache();
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
 });
 
 describe("canUseWebGL", () => {
@@ -47,6 +48,35 @@ describe("canUseWebGL", () => {
     expect(spy).toHaveBeenCalled();
     expect(spy.mock.calls.flat()).toContain("webgl2");
   });
+  it("releases the detected experimental-webgl context on older browsers", () => {
+    vi.stubGlobal("WebGL2RenderingContext", undefined);
+    vi.stubGlobal("WebGLRenderingContext", class {});
+    const loseContext = vi.fn();
+    const context = {
+      getExtension: vi.fn().mockReturnValue({ loseContext }),
+    } as unknown as WebGLRenderingContext;
+    const getContext = vi
+      .spyOn(HTMLCanvasElement.prototype, "getContext")
+      .mockImplementation((kind) => (kind === "experimental-webgl" ? context : null));
+
+    expect(canUseWebGL()).toBe(true);
+    expect(getContext.mock.calls.map(([kind]) => kind)).toEqual(["webgl", "experimental-webgl"]);
+    expect(loseContext).toHaveBeenCalledTimes(1);
+  });
+
+  it("releases a WebGL2 probe without querying the same context twice", () => {
+    vi.stubGlobal("WebGL2RenderingContext", class {});
+    const loseContext = vi.fn();
+    const context = {
+      getExtension: vi.fn().mockReturnValue({ loseContext }),
+    } as unknown as WebGL2RenderingContext;
+    const getContext = vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(context);
+
+    expect(canUseWebGL()).toBe(true);
+    expect(getContext.mock.calls.map(([kind]) => kind)).toEqual(["webgl2"]);
+    expect(loseContext).toHaveBeenCalledTimes(1);
+  });
+
 });
 
 describe("cappedDpr", () => {
