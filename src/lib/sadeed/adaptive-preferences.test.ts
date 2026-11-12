@@ -83,9 +83,9 @@ describe("SADEED adaptive preferences", () => {
     expect(
       extractSadeedAdaptivePreferences("Always keep your replies concise, not detailed."),
     ).toEqual([{ key: "response_length", value: "concise", confidence: 0.95 }]);
-    expect(
-      extractSadeedAdaptivePreferences("From now on, never use detailed replies."),
-    ).toEqual([]);
+    expect(extractSadeedAdaptivePreferences("From now on, never use detailed replies.")).toEqual(
+      [],
+    );
     expect(
       extractSadeedAdaptivePreferences("From now on, keep your replies detailed, not concise."),
     ).toEqual([{ key: "response_length", value: "detailed", confidence: 0.95 }]);
@@ -95,9 +95,9 @@ describe("SADEED adaptive preferences", () => {
     expect(extractSadeedAdaptivePreferences("من الآن فصاعدا لا تختصر ردودك.")).toEqual([
       { key: "response_length", value: "detailed", confidence: 0.95 },
     ]);
-    expect(
-      extractSadeedAdaptivePreferences("اجعل ردودك باختصار، لا أريد شرحاً وافياً."),
-    ).toEqual([{ key: "response_length", value: "concise", confidence: 0.95 }]);
+    expect(extractSadeedAdaptivePreferences("اجعل ردودك باختصار، لا أريد شرحاً وافياً.")).toEqual([
+      { key: "response_length", value: "concise", confidence: 0.95 },
+    ]);
   });
 
   it("maps only approved enum pairs into prompt hints", () => {
