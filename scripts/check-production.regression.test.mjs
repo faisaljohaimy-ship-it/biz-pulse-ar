@@ -392,7 +392,6 @@ test("accepts functional CSS following a build banner comment", async () => {
 for (const media of [
   "speech",
   "not screen",
-  "not screen and (color)",
   "only print",
   "print and (color), speech",
   "print, not screen",
@@ -406,7 +405,16 @@ for (const media of [
   });
 }
 
-for (const media of ["print, screen", "print, all", "screen and (min-width: 1px)"]) {
+for (const media of [
+  "print, screen",
+  "print, all",
+  "screen and (min-width: 1px)",
+  // CSS negates the WHOLE media query: these can match a screen when the
+  // feature is false, so they must not be mistaken for non-screen-only CSS.
+  "not screen and (color)",
+  "not all and (color)",
+  "print, not screen and (monochrome)",
+]) {
   test(`accepts a screen-capable media list: ${media}`, async () => {
     const html = normalPage.replace(
       '<link rel="stylesheet" href="/assets/app.css">',
