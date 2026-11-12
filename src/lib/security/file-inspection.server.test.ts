@@ -203,7 +203,7 @@ describe("SADEED attachment structural inspection", () => {
   it.each([
     ["identical part names", "word/document.xml"],
     ["case-insensitive part aliases", "WORD/DOCUMENT.XML"],
-    ["backslash path aliases", "word\\\\document.xml"],
+    ["backslash path aliases", "word\\document.xml"],
   ])("blocks %s in Office ZIP central-directory entries", (_kind, alias) => {
     expectBlocked(
       () =>
