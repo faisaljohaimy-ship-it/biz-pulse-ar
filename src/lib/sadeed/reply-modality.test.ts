@@ -25,7 +25,7 @@ describe("SADEED reply modality", () => {
   });
 
   it("never narrates code inside tilde-fenced Markdown blocks", () => {
-    expect(toSadeedSpeechText("قبل\\n~~~ts\\nconst DO_NOT_NARRATE = true;\\n~~~\\nبعد")).toBe(
+    expect(toSadeedSpeechText("قبل\n~~~ts\nconst DO_NOT_NARRATE = true;\n~~~\nبعد")).toBe(
       "قبل بعد",
     );
   });
