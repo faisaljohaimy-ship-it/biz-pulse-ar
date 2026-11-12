@@ -158,7 +158,7 @@ export async function sadeedAuthedFetch(
     // session must never surface as a chat failure; /api/chat serves the
     // rate-limited guest demo path instead. (Same pattern as
     // /api/sadeed/transcribe → /api/public/sadeed-transcribe and aria-tts.)
-    if (!res.ok && (res.status === 401 || res.status === 403) && headers.has("Authorization")) {
+    if ((res.status === 401 || res.status === 403) && headers.has("Authorization")) {
       // The rejected response will never be read. Release its body before
       // the guest retry so a streaming 401/403 cannot retain a connection.
       // Cancellation is best-effort: a locked/broken body must not block chat.
