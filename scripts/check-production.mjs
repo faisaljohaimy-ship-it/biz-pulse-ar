@@ -112,7 +112,10 @@ function stylesheetHref(tag) {
   // A disabled or print-only link may load HTTP 200 text/css but cannot style
   // the interactive screen. Do not count it as production CSS evidence.
   const media = (attrs.media || "").trim().toLowerCase();
-  if (attrs.rel?.toLowerCase() !== "stylesheet") return null;
+  // HTML link relations are ASCII-insensitive whitespace-separated tokens.
+  // Alternate stylesheets are opt-in and cannot prove active app styling.
+  const relTokens = (attrs.rel || "").toLowerCase().trim().split(/\s+/);
+  if (!relTokens.includes("stylesheet") || relTokens.includes("alternate")) return null;
   // A non-CSS type prevents browsers from applying the link as a stylesheet.
   // Missing/empty type remains valid; retain optional MIME parameters.
   const linkType = (attrs.type || "").trim().toLowerCase();
