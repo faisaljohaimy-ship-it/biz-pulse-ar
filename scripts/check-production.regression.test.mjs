@@ -19,6 +19,7 @@ async function runFixture(
   cssType = "text/css",
   cssBody = "body {}",
   pageStatus = 200,
+  expectedCssUrl = "https://offline.invalid/assets/app.css",
 ) {
   let exitCode = null;
   const context = vm.createContext({
@@ -36,7 +37,7 @@ async function runFixture(
       if (input === "https://offline.invalid/") {
         return new Response(body, { status: pageStatus, headers: { "content-type": contentType } });
       }
-      assert.equal(input, "https://offline.invalid/assets/app.css");
+      assert.equal(input, expectedCssUrl);
       return new Response(cssBody, { status: cssStatus, headers: { "content-type": cssType } });
     },
   });
@@ -521,4 +522,44 @@ test("cancels rejected HTTP response streams for both routes and CSS assets", as
     assert.equal(exitCode, 1);
     assert.equal(canceled, 1, failedCss ? "CSS response body leaked" : "HTML response body leaked");
   }
+});
+
+test("decodes HTML-escaped ampersands in CSS query strings before probing", async () => {
+  for (const entity of ["&amp;", "&#38;", "&#x26;"]) {
+    const html = normalPage.replace(
+      'href="/assets/app.css"',
+      `href="/assets/app.css?version=1${entity}mode=dark"`,
+    );
+    assert.equal(
+      await runFixture(
+        html,
+        "text/html",
+        200,
+        "text/css",
+        "body {}",
+        200,
+        "https://offline.invalid/assets/app.css?version=1&mode=dark",
+      ),
+      null,
+    );
+  }
+});
+
+test("does not decode a nested ampersand HTML reference twice", async () => {
+  const html = normalPage.replace(
+    'href="/assets/app.css"',
+    'href="/assets/app.css?x=1&amp;amp;y=2"',
+  );
+  assert.equal(
+    await runFixture(
+      html,
+      "text/html",
+      200,
+      "text/css",
+      "body {}",
+      200,
+      "https://offline.invalid/assets/app.css?x=1&amp;y=2",
+    ),
+    null,
+  );
 });
