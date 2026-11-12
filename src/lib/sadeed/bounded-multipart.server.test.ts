@@ -67,4 +67,46 @@ describe("bounded voice multipart parser", () => {
     const result = await parseBoundedMultipart(request, 1_024);
     expect(result).toEqual({ form: null, tooLarge: false });
   });
+
+  it.each([
+    ["actual overflow", 1_025, undefined],
+    ["oversized declared length", 1, "99999"],
+  ] as const)(
+    "responds promptly when cancellation never settles (%s)",
+    async (_case, size, declared) => {
+      let cancelled = false;
+      const source = new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.enqueue(new Uint8Array(size));
+        },
+        cancel() {
+          cancelled = true;
+          // An untrusted upload source may never resolve cancellation.
+          return new Promise<void>(() => {});
+        },
+      });
+      const headers = new Headers({ "Content-Type": "multipart/form-data; boundary=stall" });
+      if (declared) headers.set("Content-Length", declared);
+      const request = new Request(ENDPOINT, {
+        method: "POST",
+        headers,
+        body: source,
+        duplex: "half",
+      } as RequestInit & { duplex: "half" });
+
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      try {
+        const outcome = await Promise.race([
+          parseBoundedMultipart(request, 1_024),
+          new Promise<"cancel_hung">((resolve) => {
+            timer = setTimeout(() => resolve("cancel_hung"), 1_000);
+          }),
+        ]);
+        expect(outcome).toEqual({ form: null, tooLarge: true });
+        expect(cancelled).toBe(true);
+      } finally {
+        if (timer) clearTimeout(timer);
+      }
+    },
+  );
 });

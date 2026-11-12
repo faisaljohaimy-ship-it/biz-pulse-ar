@@ -14,7 +14,8 @@ export async function parseBoundedMultipart(
   const declared = request.headers.get("content-length");
   // Content-Length is only an early rejection signal: it can be absent or forged.
   if (declared && /^\d+$/.test(declared) && BigInt(declared) > BigInt(maxBytes)) {
-    await request.body?.cancel().catch(() => {});
+    // A hostile stream can keep cancel() pending forever; never delay a 413.
+    void request.body?.cancel().catch(() => {});
     return { form: null, tooLarge: true };
   }
   if (!request.body) return { form: null, tooLarge: false };
@@ -28,7 +29,8 @@ export async function parseBoundedMultipart(
       if (done) break;
       byteCount += value.byteLength;
       if (byteCount > maxBytes) {
-        await reader.cancel().catch(() => {});
+        // Do not block the oversized response on an untrusted cancel hook.
+        void reader.cancel().catch(() => {});
         return { form: null, tooLarge: true };
       }
       chunks.push(value);
