@@ -76,7 +76,6 @@ describe("canUseWebGL", () => {
     expect(getContext.mock.calls.map(([kind]) => kind)).toEqual(["webgl2"]);
     expect(loseContext).toHaveBeenCalledTimes(1);
   });
-
 });
 
 describe("cappedDpr", () => {
