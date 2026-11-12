@@ -38,16 +38,17 @@ export function canUseWebGL(): boolean {
   }
   try {
     const canvas = document.createElement("canvas");
-    const ok =
-      Boolean(window.WebGL2RenderingContext && canvas.getContext("webgl2")) ||
-      Boolean(
-        window.WebGLRenderingContext &&
-        (canvas.getContext("webgl") || canvas.getContext("experimental-webgl")),
-      );
-    // Release the probe context immediately rather than waiting for GC — it
-    // counts against the browser's live-context cap like any other.
-    const probe = (canvas.getContext("webgl2") ??
-      canvas.getContext("webgl")) as WebGLRenderingContext | null;
+    // Keep the actual context used for detection. Re-querying getContext
+    // could create another context, and misses older experimental-webgl only
+    // implementations, leaving their probe alive against the browser limit.
+    const probe = (
+      (window.WebGL2RenderingContext ? canvas.getContext("webgl2") : null) ??
+      (window.WebGLRenderingContext
+        ? (canvas.getContext("webgl") ?? canvas.getContext("experimental-webgl"))
+        : null)
+    ) as WebGLRenderingContext | null;
+    const ok = Boolean(probe);
+    // Release that same probe immediately, never request a second context.
     probe?.getExtension("WEBGL_lose_context")?.loseContext();
     cached = ok;
     return ok;
