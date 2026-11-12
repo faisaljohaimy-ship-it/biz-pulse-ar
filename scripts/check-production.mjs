@@ -115,10 +115,11 @@ function stylesheetHref(tag) {
   const linkType = (attrs.type || "").trim().toLowerCase();
   if (linkType && linkType.split(";")[0].trim() !== "text/css") return null;
   // `not all` never matches a browser media type: its CSS cannot style the UI.
-  // Media query lists are OR-combined. A print/speech-only or negated-screen
-  // list cannot style the app on a screen, even when its CSS returns HTTP 200.
+  // Lists are OR-combined. Reject print/speech-only queries and bare
+  // `not screen`/`not all`, but NOT `not screen and (color)`: `not` negates
+  // the entire feature query, which can match a monochrome screen.
   const nonScreenQuery = (query) =>
-    /^(?:(?:only\s+)?(?:print|speech)(?:\s+and\b|$)|not\s+(?:all|screen)(?:\s+and\b|$))/.test(
+    /^(?:(?:only\s+)?(?:print|speech)(?:\s+and\b|$)|not\s+(?:all|screen)$)/.test(
       query.trim(),
     );
   const inactiveMedia = media !== "" && media.split(",").every(nonScreenQuery);
