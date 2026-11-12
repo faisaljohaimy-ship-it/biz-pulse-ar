@@ -167,7 +167,7 @@ export async function sadeedAuthedFetch(
       } catch {
         /* Preserve the anonymous fallback even if cancellation throws. */
       }
-      const anonHeaders = new Headers(init.headers);
+      const anonHeaders = new Headers(headers);
       anonHeaders.delete("Authorization");
       res = await fetch(input, {
         ...init,
