@@ -485,7 +485,7 @@ test("cancels rejected HTTP response streams for both routes and CSS assets", as
         );
       },
     });
-    await new vm.Script(`(async () => {\\n${executableSource}\\n})()`).runInContext(context);
+    await new vm.Script(`(async () => {\n${executableSource}\n})()`).runInContext(context);
     assert.equal(exitCode, 1);
     assert.equal(canceled, 1, failedCss ? "CSS response body leaked" : "HTML response body leaked");
   }
