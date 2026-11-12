@@ -92,12 +92,12 @@ describe("SADEED adaptive preferences", () => {
       ]);
     }
 
-    expect(
-      extractSadeedAdaptivePreferences("Always reply in English without any tables."),
-    ).toEqual([
-      { key: "response_language", value: "en", confidence: 0.95 },
-      { key: "response_format", value: "no_tables", confidence: 0.95 },
-    ]);
+    expect(extractSadeedAdaptivePreferences("Always reply in English without any tables.")).toEqual(
+      [
+        { key: "response_language", value: "en", confidence: 0.95 },
+        { key: "response_format", value: "no_tables", confidence: 0.95 },
+      ],
+    );
   });
 
   it("maps only approved enum pairs into prompt hints", () => {
