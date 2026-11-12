@@ -303,6 +303,30 @@ test("accepts a genuine inline theme script when src appears only in quoted meta
   assert.equal(await runFixture(html), null);
 });
 
+test("rejects inert JSON scripts even when quoted metadata falsely says type=module", async () => {
+  const html = normalPage.replace(
+    "<script>sessionStorage.getItem('theme')</script>",
+    '<script data-note=" type=\\'module\\'" type="application/json">sessionStorage.getItem(\\'theme\\')</script>',
+  );
+  assert.equal(await runFixture(html), 1);
+});
+
+test("accepts a real classic theme script despite inert type tokens in quoted metadata", async () => {
+  const html = normalPage.replace(
+    "<script>sessionStorage.getItem('theme')</script>",
+    '<script data-note=" type=\\'application/json\\'">sessionStorage.getItem(\\'theme\\')</script>',
+  );
+  assert.equal(await runFixture(html), null);
+});
+
+test("accepts an empty script type, which browsers execute as classic JavaScript", async () => {
+  const html = normalPage.replace(
+    "<script>sessionStorage.getItem('theme')</script>",
+    '<script type="">sessionStorage.getItem(\\'theme\\')</script>',
+  );
+  assert.equal(await runFixture(html), null);
+});
+
 test("rejects an empty text/css response instead of treating its MIME as working styles", async () => {
   assert.equal(await runFixture(normalPage, "text/html", 200, "text/css", ""), 1);
 });
