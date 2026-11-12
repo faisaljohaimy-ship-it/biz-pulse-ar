@@ -52,11 +52,10 @@ declare global {
 
 function ringPush(entry: DiagEntry) {
   if (typeof window === "undefined") return;
-  if (!window.__nxAuthLog) window.__nxAuthLog = [];
-  window.__nxAuthLog.push(entry);
-  if (window.__nxAuthLog.length > MAX_MEM) {
-    window.__nxAuthLog.splice(0, window.__nxAuthLog.length - MAX_MEM);
-  }
+  // Reuse the ring reference rather than repeatedly reading the window slot.
+  const memory = (window.__nxAuthLog ??= []);
+  memory.push(entry);
+  if (memory.length > MAX_MEM) memory.splice(0, memory.length - MAX_MEM);
   try {
     let arr: DiagEntry[] = [];
     try {

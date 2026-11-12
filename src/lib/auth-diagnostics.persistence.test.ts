@@ -47,4 +47,13 @@ describe("auth diagnostic persistence recovery", () => {
     expect(persisted[0].ev).toBe("previous:1");
     expect(persisted.at(-1).ev).toBe("login:success");
   });
+  it("retains the last 100 in-memory diagnostic events without altering persistence", () => {
+    for (let i = 0; i < 102; i++) authLog(`auth:event:${i}`);
+    expect(window.__nxAuthLog).toHaveLength(100);
+    expect(window.__nxAuthLog?.[0].ev).toBe("auth:event:2");
+    expect(window.__nxAuthLog?.at(-1)?.ev).toBe("auth:event:101");
+    const persisted = JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? "null");
+    expect(persisted).toHaveLength(50);
+    expect(persisted[0].ev).toBe("auth:event:52");
+  });
 });
