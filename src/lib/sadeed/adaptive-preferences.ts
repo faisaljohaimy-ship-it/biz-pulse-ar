@@ -58,7 +58,11 @@ export function extractSadeedAdaptivePreferences(input: string): SadeedAdaptiveP
     add("response_language", "ar");
   }
 
-  if (/(?:بدون جداول|لا تستخدم الجداول|no tables|without (?:any )?tables|never use tables|do not use tables|don't use tables)/i.test(text)) {
+  if (
+    /(?:بدون جداول|لا تستخدم الجداول|no tables|without (?:any )?tables|never use tables|do not use tables|don't use tables)/i.test(
+      text,
+    )
+  ) {
     add("response_format", "no_tables");
   } else if (hasAffirmativeMention(text, BULLET_FORMAT_MENTION)) {
     add("response_format", "bullets");
