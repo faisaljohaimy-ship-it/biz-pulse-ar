@@ -131,9 +131,7 @@ function stylesheetHref(tag) {
   // HTML parses character references in href before the browser fetches CSS.
   // Decode one layer of common ampersand references in query strings so the
   // release probe requests the same URL as the browser, not a literal &amp;.
-  return attrs.href?.trim()
-    ? attrs.href.replace(/&(?:amp|#0*38|#x0*26);/gi, "&")
-    : null;
+  return attrs.href?.trim() ? attrs.href.replace(/&(?:amp|#0*38|#x0*26);/gi, "&") : null;
 }
 
 const failures = [];
