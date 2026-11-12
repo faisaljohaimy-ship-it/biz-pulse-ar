@@ -75,19 +75,21 @@ async function fetchWithRetry(url) {
   throw new Error(last);
 }
 
-// A script with a real src attribute ignores its inline body in browsers.
-// Parse attributes rather than matching "src=" inside quoted data attributes.
-function hasScriptSource(tag) {
+// Inspect actual script attributes, not tokens buried inside quoted metadata.
+// Browsers honor the first duplicate attribute; absent/empty type is classic JS.
+function scriptAttributes(tag) {
+  const attrs = Object.create(null);
   const attr = /\s+([^\s=/>]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/gy;
   let pos = 7; // Skip "<script".
   while (pos < tag.length) {
     attr.lastIndex = pos;
     const match = attr.exec(tag);
     if (!match) break;
-    if (match[1].toLowerCase() === "src") return true;
+    const name = match[1].toLowerCase();
+    if (!(name in attrs)) attrs[name] = match[2] ?? match[3] ?? match[4] ?? "";
     pos = attr.lastIndex;
   }
-  return false;
+  return attrs;
 }
 
 // Read actual link attributes, not lookalike tokens inside quoted values.
@@ -145,17 +147,18 @@ for (const route of ROUTES) {
     ].some(([, openingTag, body]) => {
       // A script data block (e.g. JSON-LD, importmap or text/plain) is inert.
       // Requiring a runnable script avoids a false production-ready result.
-      const typeMatch = openingTag.match(/\stype\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i);
-      const type = (typeMatch?.[1] ?? typeMatch?.[2] ?? typeMatch?.[3] ?? "").trim().toLowerCase();
+      const scriptAttrs = scriptAttributes(openingTag);
+      const type = (scriptAttrs.type ?? "").trim().toLowerCase();
       const executable =
-        !typeMatch ||
+        !("type" in scriptAttrs) ||
+        type === "" ||
         type === "module" ||
         /^(?:text|application)\/(?:java|ecma)script(?:\s*;.*)?$/.test(type) ||
         type === "text/x-javascript" ||
         type === "application/x-javascript";
       return (
         executable &&
-        !hasScriptSource(openingTag) &&
+        !("src" in scriptAttrs) &&
         /sessionStorage\.getItem\(['"]theme['"]\)/.test(body)
       );
     });
