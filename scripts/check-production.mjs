@@ -75,6 +75,21 @@ async function fetchWithRetry(url) {
   throw new Error(last);
 }
 
+// A script with a real src attribute ignores its inline body in browsers.
+// Parse attributes rather than matching "src=" inside quoted data attributes.
+function hasScriptSource(tag) {
+  const attr = /\s+([^\s=/>]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/gy;
+  let pos = 7; // Skip "<script".
+  while (pos < tag.length) {
+    attr.lastIndex = pos;
+    const match = attr.exec(tag);
+    if (!match) break;
+    if (match[1].toLowerCase() === "src") return true;
+    pos = attr.lastIndex;
+  }
+  return false;
+}
+
 // Read actual link attributes, not lookalike tokens inside quoted values.
 // Browsers keep the first instance of a duplicated HTML attribute.
 function stylesheetHref(tag) {
@@ -138,7 +153,7 @@ for (const route of ROUTES) {
         /^(?:text|application)\/(?:java|ecma)script(?:\s*;.*)?$/.test(type) ||
         type === "text/x-javascript" ||
         type === "application/x-javascript";
-      return executable && /sessionStorage\.getItem\(['"]theme['"]\)/.test(body);
+      return executable && !hasScriptSource(openingTag) && /sessionStorage\.getItem\(['"]theme['"]\)/.test(body);
     });
     // النطاق `neexios.com` معرّف تقني (رابط · بريد · بيانات منظَّمة) لا اسم
     // معروض، وهو مُستثنى صراحةً في حارس العلامة على المصدر. يُنزع قبل المسح
