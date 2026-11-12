@@ -41,12 +41,10 @@ export function canUseWebGL(): boolean {
     // Keep the actual context used for detection. Re-querying getContext
     // could create another context, and misses older experimental-webgl only
     // implementations, leaving their probe alive against the browser limit.
-    const probe = (
-      (window.WebGL2RenderingContext ? canvas.getContext("webgl2") : null) ??
+    const probe = ((window.WebGL2RenderingContext ? canvas.getContext("webgl2") : null) ??
       (window.WebGLRenderingContext
         ? (canvas.getContext("webgl") ?? canvas.getContext("experimental-webgl"))
-        : null)
-    ) as WebGLRenderingContext | null;
+        : null)) as WebGLRenderingContext | null;
     const ok = Boolean(probe);
     // Release that same probe immediately, never request a second context.
     probe?.getExtension("WEBGL_lose_context")?.loseContext();
