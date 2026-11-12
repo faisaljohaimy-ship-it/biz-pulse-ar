@@ -115,7 +115,13 @@ function stylesheetHref(tag) {
   const linkType = (attrs.type || "").trim().toLowerCase();
   if (linkType && linkType.split(";")[0].trim() !== "text/css") return null;
   // `not all` never matches a browser media type: its CSS cannot style the UI.
-  if ("disabled" in attrs || media === "print" || media === "not all") return null;
+  // Lists are OR-combined. Reject print/speech-only queries and bare
+  // `not screen`/`not all`, but NOT `not screen and (color)`: `not` negates
+  // the entire feature query, which can match a monochrome screen.
+  const nonScreenQuery = (query) =>
+    /^(?:(?:only\s+)?(?:print|speech)(?:\s+and\b|$)|not\s+(?:all|screen)$)/.test(query.trim());
+  const inactiveMedia = media !== "" && media.split(",").every(nonScreenQuery);
+  if ("disabled" in attrs || inactiveMedia) return null;
   return attrs.href?.trim() ? attrs.href : null;
 }
 

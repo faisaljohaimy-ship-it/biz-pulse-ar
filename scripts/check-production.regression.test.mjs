@@ -386,3 +386,40 @@ test("accepts functional CSS following a build banner comment", async () => {
     null,
   );
 });
+
+// Media lists are comma-separated OR queries: none of the following can apply
+// to a screen, even if a same-origin CSS asset has the correct MIME and bytes.
+for (const media of [
+  "speech",
+  "not screen",
+  "only print",
+  "print and (color), speech",
+  "print, not screen",
+]) {
+  test(`rejects media="${media}" as app screen CSS evidence`, async () => {
+    const html = normalPage.replace(
+      '<link rel="stylesheet" href="/assets/app.css">',
+      `<link rel="stylesheet" href="/assets/app.css" media="${media}">`,
+    );
+    assert.equal(await runFixture(html), 1);
+  });
+}
+
+for (const media of [
+  "print, screen",
+  "print, all",
+  "screen and (min-width: 1px)",
+  // CSS negates the WHOLE media query: these can match a screen when the
+  // feature is false, so they must not be mistaken for non-screen-only CSS.
+  "not screen and (color)",
+  "not all and (color)",
+  "print, not screen and (monochrome)",
+]) {
+  test(`accepts a screen-capable media list: ${media}`, async () => {
+    const html = normalPage.replace(
+      '<link rel="stylesheet" href="/assets/app.css">',
+      `<link rel="stylesheet" href="/assets/app.css" media="${media}">`,
+    );
+    assert.equal(await runFixture(html), null);
+  });
+}
