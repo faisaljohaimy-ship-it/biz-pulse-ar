@@ -208,7 +208,9 @@ for (const route of ROUTES) {
           // body rather than trusting only status and a Content-Type header.
           const cssText = isCss ? await stylesheetRes.text() : "";
           if (!isCss) await stylesheetRes.body?.cancel();
-          if (isCss && cssText.trim().length > 0) {
+          // An all-comment CSS file cannot style the app; MIME and bytes alone are insufficient.
+          const effectiveCss = cssText.replace(/\/\*[\s\S]*?\*\//g, "").trim();
+          if (isCss && effectiveCss.length > 0) {
             cssLoaded = true;
             break;
           }
