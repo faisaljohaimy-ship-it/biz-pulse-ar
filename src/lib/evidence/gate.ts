@@ -75,18 +75,13 @@ export interface Evidence {
  * timestamp and validate its Gregorian calendar day before parsing.
  */
 function validObservedAt(value: string): boolean {
-  const match =
-    /^(\d{4}|[+-]\d{6})-(\d{2})-(\d{2})T([01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d{1,9})?(?:Z|[+-]\d{2}:[0-5]\d)$/.exec(
-      value,
-    );
-  if (!match) return false;
-  const year = Number(match[1]);
-  const month = Number(match[2]);
-  const day = Number(match[3]);
-  if (month < 1 || month > 12 || day < 1) return false;
-  const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
-  const days = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-  return day <= days[month - 1] && Number.isFinite(Date.parse(value));
+  const parts =
+    /^(\d{4}|[+-]\d{6})-(\d{2})-(\d{2})T[\d:.+-]+(?:Z|[+-]\d{2}:\d{2})$/.exec(value);
+  if (!parts || !Number.isFinite(Date.parse(value))) return false;
+  // setUTCFullYear handles years 0–99 correctly (Date.UTC does not).
+  const date = new Date(0);
+  date.setUTCFullYear(Number(parts[1]), Number(parts[2]) - 1, Number(parts[3]));
+  return date.getUTCMonth() === Number(parts[2]) - 1 && date.getUTCDate() === Number(parts[3]);
 }
 
 export function hasEvidence(e: Evidence | null | undefined): e is Evidence {
