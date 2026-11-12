@@ -40,23 +40,12 @@ describe("Enterprise Pulse executive risk alerts", () => {
       "high",
       "medium",
     ]);
-    expect(crises.map((item) => item.id)).toEqual([
-      "c-1",
-      "c-2",
-      "c-3",
-      "c-4",
-      "c-5",
-      "c-6",
-    ]);
+    expect(crises.map((item) => item.id)).toEqual(["c-1", "c-2", "c-3", "c-4", "c-5", "c-6"]);
   });
 
   it("preserves original ordering for equal risks and does not mutate the source", () => {
     const crises = [crisis("first", 69), crisis("second", 69), crisis("third", 80)];
-    expect(deriveAlerts(crises).map((alert) => alert.id)).toEqual([
-      "third",
-      "first",
-      "second",
-    ]);
+    expect(deriveAlerts(crises).map((alert) => alert.id)).toEqual(["third", "first", "second"]);
     expect(crises.map((item) => item.id)).toEqual(["first", "second", "third"]);
   });
 });
