@@ -115,7 +115,14 @@ function stylesheetHref(tag) {
   const linkType = (attrs.type || "").trim().toLowerCase();
   if (linkType && linkType.split(";")[0].trim() !== "text/css") return null;
   // `not all` never matches a browser media type: its CSS cannot style the UI.
-  if ("disabled" in attrs || media === "print" || media === "not all") return null;
+  // Media query lists are OR-combined. A print/speech-only or negated-screen
+  // list cannot style the app on a screen, even when its CSS returns HTTP 200.
+  const nonScreenQuery = (query) =>
+    /^(?:(?:only\s+)?(?:print|speech)(?:\s+and\b|$)|not\s+(?:all|screen)(?:\s+and\b|$))/.test(
+      query.trim(),
+    );
+  const inactiveMedia = media !== "" && media.split(",").every(nonScreenQuery);
+  if ("disabled" in attrs || inactiveMedia) return null;
   return attrs.href?.trim() ? attrs.href : null;
 }
 
