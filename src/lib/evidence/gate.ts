@@ -75,8 +75,7 @@ export interface Evidence {
  * timestamp and validate its Gregorian calendar day before parsing.
  */
 function validObservedAt(value: string): boolean {
-  const parts =
-    /^(\d{4}|[+-]\d{6})-(\d{2})-(\d{2})T[\d:.+-]+(?:Z|[+-]\d{2}:\d{2})$/.exec(value);
+  const parts = /^(\d{4}|[+-]\d{6})-(\d{2})-(\d{2})T[\d:.+-]+(?:Z|[+-]\d{2}:\d{2})$/.exec(value);
   if (!parts || !Number.isFinite(Date.parse(value))) return false;
   // setUTCFullYear handles years 0–99 correctly (Date.UTC does not).
   const date = new Date(0);
