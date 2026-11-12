@@ -33,11 +33,14 @@ export function shouldSpeakSadeedReply({
  * «سِك ثمانية عشر», PTW → «تصريح العمل») instead of letter-spelled. */
 export function toSadeedSpeechText(value: string): string {
   const cleaned = value
-    // Markdown also permits ~~~ fenced code blocks. Never narrate their contents.\n    .replace(/```[\s\S]*?```|~~~[^\r\n]*\r?\n[\s\S]*?~~~/g, " ")
+    // Markdown also permits ~~~ fenced code blocks. Never narrate their contents.
+    .replace(/```[\s\S]*?```|~~~[^\r\n]*\r?\n[\s\S]*?~~~/g, " ")
     .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
     .replace(/\[([^\]]+)\]\((?:https?:\/\/|mailto:|tel:)[^)]*\)/gi, "$1")
     // الروابط النسبية (روابط الشاشات من الموجّه بلا تكلفة): يُنطق اسمها لا مسارها.
-    .replace(/\[([^\]]+)\]\(\/[^)]*\)/g, "$1")\n    // Preserve visible labels for section anchors and relative screen links.\n    .replace(/\[([^\]]+)\]\((?:#|\.{1,2}\/)[^)]*\)/g, "$1")
+    .replace(/\[([^\]]+)\]\(\/[^)]*\)/g, "$1")
+    // Preserve visible labels for section anchors and relative screen links.
+    .replace(/\[([^\]]+)\]\((?:#|\.{1,2}\/)[^)]*\)/g, "$1")
     .replace(/https?:\/\/\S+/gi, " ")
     .replace(/\[(?:DOC|KB):[^\]]+\]/gi, " ")
     .replace(/\[(?:\d+(?:\s*[-,]\s*\d+)*)\]/g, " ")
