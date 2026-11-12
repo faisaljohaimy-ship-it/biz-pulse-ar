@@ -62,6 +62,9 @@ async function fetchWithRetry(url) {
       // GET release evidence must be complete. A 206 Partial Content response
       // can carry a plausible HTML/CSS fragment while omitting critical bytes.
       if (res.status === 200) return res;
+      // Failed or partial streaming responses can hold open network sockets.
+      // Release their bodies before retrying another request.
+      await res.body?.cancel().catch(() => {});
       last = `HTTP ${res.status}`;
     } catch (e) {
       last = e instanceof Error ? e.message : String(e);
