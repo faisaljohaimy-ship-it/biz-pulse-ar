@@ -153,7 +153,11 @@ for (const route of ROUTES) {
         /^(?:text|application)\/(?:java|ecma)script(?:\s*;.*)?$/.test(type) ||
         type === "text/x-javascript" ||
         type === "application/x-javascript";
-      return executable && !hasScriptSource(openingTag) && /sessionStorage\.getItem\(['"]theme['"]\)/.test(body);
+      return (
+        executable &&
+        !hasScriptSource(openingTag) &&
+        /sessionStorage\.getItem\(['"]theme['"]\)/.test(body)
+      );
     });
     // النطاق `neexios.com` معرّف تقني (رابط · بريد · بيانات منظَّمة) لا اسم
     // معروض، وهو مُستثنى صراحةً في حارس العلامة على المصدر. يُنزع قبل المسح
