@@ -172,6 +172,38 @@ test("accepts an explicitly typed text/css stylesheet", async () => {
   assert.equal(await runFixture(html), null);
 });
 
+test("accepts a real stylesheet among whitespace-separated rel tokens", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="preload stylesheet" href="/assets/app.css">',
+  );
+  assert.equal(await runFixture(html), null);
+});
+
+test("accepts a mixed-case stylesheet token after other link relations", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="preload STYLESHEET" href="/assets/app.css">',
+  );
+  assert.equal(await runFixture(html), null);
+});
+
+test("does not count alternate stylesheets as enabled app styles", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="alternate stylesheet" href="/assets/app.css">',
+  );
+  assert.equal(await runFixture(html), 1);
+});
+
+test("rejects lookalike rel tokens that are not a stylesheet relation", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="preload stylesheets" href="/assets/app.css">',
+  );
+  assert.equal(await runFixture(html), 1);
+});
+
 test("uses a valid stylesheet after a link with an incompatible type", async () => {
   const html = normalPage.replace(
     '<link rel="stylesheet" href="/assets/app.css">',
