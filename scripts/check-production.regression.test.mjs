@@ -131,6 +131,31 @@ test("accepts the real root's Google Fonts stylesheet before its same-origin CSS
   assert.equal(await runFixture(withFonts), null);
 });
 
+test("rejects an incompatible stylesheet type despite a real CSS response", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="stylesheet" href="/assets/app.css" type="text/plain">',
+  );
+  assert.equal(await runFixture(html), 1);
+});
+
+test("accepts an explicitly typed text/css stylesheet", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="stylesheet" href="/assets/app.css" type="text/css">',
+  );
+  assert.equal(await runFixture(html), null);
+});
+
+test("uses a valid stylesheet after a link with an incompatible type", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="stylesheet" href="/assets/app.css" type="application/json">' +
+      '<link rel="stylesheet" href="/assets/app.css">',
+  );
+  assert.equal(await runFixture(html), null);
+});
+
 test("rejects a disabled stylesheet as proof that screen styles are active", async () => {
   const html = normalPage.replace(
     '<link rel="stylesheet" href="/assets/app.css">',

@@ -110,6 +110,10 @@ function stylesheetHref(tag) {
   // the interactive screen. Do not count it as production CSS evidence.
   const media = (attrs.media || "").trim().toLowerCase();
   if (attrs.rel?.toLowerCase() !== "stylesheet") return null;
+  // A non-CSS type prevents browsers from applying the link as a stylesheet.
+  // Missing/empty type remains valid; retain optional MIME parameters.
+  const linkType = (attrs.type || "").trim().toLowerCase();
+  if (linkType && linkType.split(";")[0].trim() !== "text/css") return null;
   // `not all` never matches a browser media type: its CSS cannot style the UI.
   if ("disabled" in attrs || media === "print" || media === "not all") return null;
   return attrs.href?.trim() ? attrs.href : null;
