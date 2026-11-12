@@ -11,6 +11,10 @@ import {
   MAX_GEMINI_AUDIO_BYTES,
   transcribeWithGemini,
 } from "@/lib/sadeed/gemini-transcription.server";
+import { parseBoundedMultipart } from "@/lib/sadeed/bounded-multipart.server";
+
+// Allow a small envelope overhead around the 12 MiB audio field, never an unbounded body.
+const MAX_MULTIPART_BYTES = MAX_GEMINI_AUDIO_BYTES + 64 * 1024;
 
 const ARABIC_RANGE = /[\u0600-\u06FF]/;
 
@@ -34,7 +38,10 @@ export const Route = createFileRoute("/api/voice-stt")({
         });
         if (quota) return quota;
 
-        const form = await request.formData().catch(() => null);
+        const { form, tooLarge } = await parseBoundedMultipart(request, MAX_MULTIPART_BYTES);
+        if (tooLarge) {
+          return Response.json({ error: "audio_too_large" }, { status: 413 });
+        }
         const audio = form?.get("audio");
         if (!(audio instanceof File) || audio.size < 300) {
           return Response.json({ error: "audio_required" }, { status: 400 });

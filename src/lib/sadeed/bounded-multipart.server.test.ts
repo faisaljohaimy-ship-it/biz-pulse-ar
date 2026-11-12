@@ -1,0 +1,70 @@
+import { describe, expect, it } from "vitest";
+import { parseBoundedMultipart } from "./bounded-multipart.server";
+
+const ENDPOINT = "https://sadeed.invalid/api/voice-stt";
+
+/**
+ * Build transport bytes directly instead of passing a jsdom File into Node's
+ * fetch/FormData implementation. Cross-realm Files silently serialize as text
+ * in CI, which previously made the forged-length test exercise a 9-byte body.
+ */
+function audioRequest(size: number): Request {
+  const boundary = "----sadeed-bounded-test";
+  const encoder = new TextEncoder();
+  const prefix = encoder.encode(
+    `--${boundary}\r\nContent-Disposition: form-data; name="audio"; filename="clip.webm"\r\nContent-Type: audio/webm\r\n\r\n`,
+  );
+  const suffix = encoder.encode(`\r\n--${boundary}--\r\n`);
+  const body = new Uint8Array(prefix.length + size + suffix.length);
+  body.set(prefix);
+  body.set(suffix, prefix.length + size);
+  return new Request(ENDPOINT, {
+    method: "POST",
+    headers: { "Content-Type": `multipart/form-data; boundary=${boundary}` },
+    body,
+  });
+}
+
+describe("bounded voice multipart parser", () => {
+  it("parses a valid multipart recording under the wire limit", async () => {
+    const result = await parseBoundedMultipart(audioRequest(350), 1_024);
+    expect(result.tooLarge).toBe(false);
+    const audio = result.form?.get("audio");
+    expect(audio?.constructor.name).toBe("File");
+    expect((audio as File).size).toBe(350);
+    expect((audio as File).name).toBe("clip.webm");
+    expect((audio as File).type).toBe("audio/webm");
+  });
+
+  it("rejects actual streamed bytes beyond the cap even with a forged short Content-Length", async () => {
+    const original = audioRequest(1_200);
+    const headers = new Headers(original.headers);
+    headers.set("Content-Length", "1");
+    const spoofed = new Request(original, { headers });
+    const result = await parseBoundedMultipart(spoofed, 1_024);
+    expect(result).toEqual({ form: null, tooLarge: true });
+  });
+
+  it("rejects excess transport bytes even without a Content-Length header", async () => {
+    const result = await parseBoundedMultipart(audioRequest(1_200), 1_024);
+    expect(result).toEqual({ form: null, tooLarge: true });
+  });
+
+  it("rejects an oversized declared length before parsing an otherwise small body", async () => {
+    const original = audioRequest(350);
+    const headers = new Headers(original.headers);
+    headers.set("Content-Length", "100000");
+    const result = await parseBoundedMultipart(new Request(original, { headers }), 1_024);
+    expect(result).toEqual({ form: null, tooLarge: true });
+  });
+
+  it("rejects malformed multipart without treating it as an oversized upload", async () => {
+    const request = new Request(ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "multipart/form-data; boundary=bad" },
+      body: new TextEncoder().encode("invalid"),
+    });
+    const result = await parseBoundedMultipart(request, 1_024);
+    expect(result).toEqual({ form: null, tooLarge: false });
+  });
+});
