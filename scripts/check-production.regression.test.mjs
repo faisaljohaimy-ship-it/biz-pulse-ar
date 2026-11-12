@@ -306,7 +306,7 @@ test("accepts a genuine inline theme script when src appears only in quoted meta
 test("rejects inert JSON scripts even when quoted metadata falsely says type=module", async () => {
   const html = normalPage.replace(
     "<script>sessionStorage.getItem('theme')</script>",
-    `<script data-note=" type='application/json'">sessionStorage.getItem('theme')</script>`,
+    `<script data-note=" type='module'" type="application/json">sessionStorage.getItem('theme')</script>`,
   );
   assert.equal(await runFixture(html), 1);
 });
