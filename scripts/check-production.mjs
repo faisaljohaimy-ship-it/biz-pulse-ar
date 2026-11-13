@@ -127,6 +127,43 @@ function stylesheetHref(tag) {
   return attrs.href?.trim() ? attrs.href.replace(/&(?:amp|#0*38|#x0*26);/gi, "&") : null;
 }
 
+// A textual theme call in a JS comment or string does not initialize the UI.
+// Scan only executable-looking code; preserve quoted URL strings (including //)
+// instead of stripping comments with a regex that would hide valid statements.
+function hasExecutableThemeBootstrap(body) {
+  for (let i = 0; i < body.length; i++) {
+    const ch = body[i];
+    const next = body[i + 1];
+    if (ch === "/" && next === "/") {
+      i = body.indexOf("\n", i + 2);
+      if (i === -1) break;
+      continue;
+    }
+    if (ch === "/" && next === "*") {
+      const end = body.indexOf("*/", i + 2);
+      if (end === -1) break;
+      i = end + 1;
+      continue;
+    }
+    if (ch === "'" || ch === '"' || ch === "`") {
+      const quote = ch;
+      i++;
+      while (i < body.length && body[i] !== quote) {
+        if (body[i] === "\\") i++;
+        i++;
+      }
+      continue;
+    }
+    if (
+      (i === 0 || !/[\\w$.]/.test(body[i - 1])) &&
+      /^sessionStorage\\.getItem\\((['"])theme\\1\\)/.test(body.slice(i))
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
 const failures = [];
 const rows = [];
 
@@ -173,7 +210,7 @@ for (const route of ROUTES) {
       return (
         executable &&
         !("src" in scriptAttrs) &&
-        /sessionStorage\.getItem\(['"]theme['"]\)/.test(body)
+        hasExecutableThemeBootstrap(body)
       );
     });
     // النطاق `neexios.com` معرّف تقني (رابط · بريد · بيانات منظَّمة) لا اسم
