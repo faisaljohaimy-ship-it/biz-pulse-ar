@@ -481,12 +481,22 @@ if (!c1.ok) {
   // A duplicate rejection alone does not prove the first request succeeded:
   // both calls might fail with 429, or the peer might time out / return 5xx.
   const peer = dup ? [p, s].find((r) => r !== dup) : null;
-  if (dup && peer?.ok && peer.status === 200 && !peer.code && !peer.errorText) {
+  // Duplicate throttling is not compliant unless clients receive a usable
+  // Retry-After header (delta seconds or a future HTTP-date).
+  const retryValue = dup?.retryAfter?.trim() ?? "";
+  const retryDate = Date.parse(retryValue);
+  const validRetryAfter =
+    (/^(?:0|[1-9]\\d*)$/.test(retryValue) &&
+      Number.isSafeInteger(Number(retryValue))) ||
+    (Number.isFinite(retryDate) && retryDate > Date.now());
+  if (dup && peer?.ok && peer.status === 200 && !peer.code && !peer.errorText && validRetryAfter) {
     note(
       "C2 duplicate",
       "pass",
       `429 duplicate_request · Retry-After=${dup.retryAfter ?? "—"} · peer 200 completed`,
     );
+  } else if (dup && !validRetryAfter) {
+    note("C2 duplicate", "fail", "429 duplicate_request without a valid Retry-After header");
   } else if (statuses.every((x) => x === 200)) {
     note("C2 duplicate", "warn", "كلاهما 200 — الأوّل أُنهي قبل وصول الثاني (غير حاسم، لا عيب)");
   } else {
