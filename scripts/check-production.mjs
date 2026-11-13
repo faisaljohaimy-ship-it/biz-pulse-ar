@@ -131,9 +131,31 @@ function stylesheetHref(tag) {
 // Scan only executable-looking code; preserve quoted URL strings (including //)
 // instead of stripping comments with a regex that would hide valid statements.
 function hasExecutableThemeBootstrap(body) {
+  // Template literal text is inert, but JavaScript evaluates the expressions
+  // between interpolation braces. Track nested templates and expression braces
+  // so executable theme reads do not become false production-gate failures.
+  const contexts = [{ type: "code" }];
   for (let i = 0; i < body.length; i++) {
+    const current = contexts[contexts.length - 1];
     const ch = body[i];
     const next = body[i + 1];
+
+    if (current.type === "template") {
+      if (ch === "\\") {
+        i++;
+        continue;
+      }
+      if (ch === "`") {
+        contexts.pop();
+        continue;
+      }
+      if (ch === "$" && next === "{") {
+        contexts.push({ type: "expression", depth: 1 });
+        i++;
+      }
+      continue;
+    }
+
     if (ch === "/" && next === "/") {
       i = body.indexOf("\n", i + 2);
       if (i === -1) break;
@@ -145,7 +167,7 @@ function hasExecutableThemeBootstrap(body) {
       i = end + 1;
       continue;
     }
-    if (ch === "'" || ch === '"' || ch === "`") {
+    if (ch === "'" || ch === '"') {
       const quote = ch;
       i++;
       while (i < body.length && body[i] !== quote) {
@@ -153,6 +175,21 @@ function hasExecutableThemeBootstrap(body) {
         i++;
       }
       continue;
+    }
+    if (ch === "`") {
+      contexts.push({ type: "template" });
+      continue;
+    }
+    if (current.type === "expression") {
+      if (ch === "{") {
+        current.depth++;
+        continue;
+      }
+      if (ch === "}") {
+        current.depth--;
+        if (current.depth === 0) contexts.pop();
+        continue;
+      }
     }
     if (
       (i === 0 || !/[\w$.]/.test(body[i - 1])) &&
