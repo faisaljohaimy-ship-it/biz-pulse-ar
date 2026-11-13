@@ -130,18 +130,15 @@ function stylesheetHref(tag) {
 // HTML decodes character references in attribute values before applying
 // http-equiv=refresh. Decode one layer to match browser redirect semantics.
 function decodeMetaAttribute(value) {
-  return value.replace(
-    /&(?:#(x[0-9a-f]+|\d+);?|(?:semi|tab|newline);)/gi,
-    (entity, numeric) => {
-      if (!numeric) {
-        const names = { semi: ";", tab: "\t", newline: "\n" };
-        return names[entity.slice(1, -1).toLowerCase()] ?? entity;
-      }
-      const hex = numeric[0].toLowerCase() === "x";
-      const code = Number.parseInt(hex ? numeric.slice(1) : numeric, hex ? 16 : 10);
-      return code > 0 && code <= 0x10ffff ? String.fromCodePoint(code) : entity;
-    },
-  );
+  return value.replace(/&(?:#(x[0-9a-f]+|\d+);?|(?:semi|tab|newline);)/gi, (entity, numeric) => {
+    if (!numeric) {
+      const names = { semi: ";", tab: "\t", newline: "\n" };
+      return names[entity.slice(1, -1).toLowerCase()] ?? entity;
+    }
+    const hex = numeric[0].toLowerCase() === "x";
+    const code = Number.parseInt(hex ? numeric.slice(1) : numeric, hex ? 16 : 10);
+    return code > 0 && code <= 0x10ffff ? String.fromCodePoint(code) : entity;
+  });
 }
 
 const failures = [];
@@ -212,7 +209,11 @@ for (const route of ROUTES) {
     // Read actual attributes, not lookalikes in metadata or inert containers.
     const immediateMetaRefresh = [...activeMarkup.matchAll(/<meta\b[^>]*>/gi)].some(([tag]) => {
       const attrs = tagAttributes(tag, 5); // Skip "<meta".
-      if (decodeMetaAttribute(attrs["http-equiv"] || "").trim().toLowerCase() !== "refresh") {
+      if (
+        decodeMetaAttribute(attrs["http-equiv"] || "")
+          .trim()
+          .toLowerCase() !== "refresh"
+      ) {
         return false;
       }
       const delay = /^(\d+(?:\.\d+)?)(?:\s*;|$)/.exec(
