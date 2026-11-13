@@ -75,7 +75,10 @@ async function runFixture(options = {}) {
         const terminator = options.doneWithoutSpace ? "data:[DONE]" : "data: [DONE]";
         body += `${terminator}${options.doneCrLf ? "\r\n\r\n" : "\n\n"}`;
       }
-      const headers = { "content-type": "text/event-stream", "x-sadeed-gate": options.gate ?? "verified" };
+      const headers = {
+        "content-type": "text/event-stream",
+        "x-sadeed-gate": options.gate ?? "verified",
+      };
       if (options.source !== null) headers["x-sadeed-reply-source"] = options.source ?? "model";
       return new Response(body, { status: options.status ?? 200, headers });
     },
