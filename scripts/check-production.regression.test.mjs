@@ -679,10 +679,7 @@ test("does not reject a delayed periodic refresh outside the immediate redirect 
 });
 
 test("rejects a stylesheet containing only a CSS encoding declaration", async () => {
-  assert.equal(
-    await runFixture(normalPage, "text/html", 200, "text/css", '@charset "UTF-8";'),
-    1,
-  );
+  assert.equal(await runFixture(normalPage, "text/html", 200, "text/css", '@charset "UTF-8";'), 1);
 });
 
 test("rejects CSS comments followed only by a charset declaration", async () => {
