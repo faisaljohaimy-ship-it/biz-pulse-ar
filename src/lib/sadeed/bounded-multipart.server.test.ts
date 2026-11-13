@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { parseBoundedMultipart } from "./bounded-multipart.server";
+import { describe, expect, it, vi } from "vitest";
+import { MULTIPART_READ_TIMEOUT_MS, parseBoundedMultipart } from "./bounded-multipart.server";
 
 const ENDPOINT = "https://sadeed.invalid/api/voice-stt";
 
@@ -109,4 +109,37 @@ describe("bounded voice multipart parser", () => {
       }
     },
   );
+
+  it.each([
+    ["no first byte", false],
+    ["one byte then stalled", true],
+  ] as const)("returns a bounded timeout when upload stalls (%s)", async (_label, enqueueFirst) => {
+    vi.useFakeTimers();
+    let cancelled = false;
+    try {
+      const source = new ReadableStream<Uint8Array>({
+        start(controller) {
+          if (enqueueFirst) controller.enqueue(new Uint8Array([1]));
+          // Deliberately never close; both absent bytes and a trickle must expire.
+        },
+        cancel() {
+          cancelled = true;
+          // A malicious source may keep cancellation pending indefinitely.
+          return new Promise<void>(() => {});
+        },
+      });
+      const request = new Request(ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "multipart/form-data; boundary=stall" },
+        body: source,
+        duplex: "half",
+      } as RequestInit & { duplex: "half" });
+      const result = parseBoundedMultipart(request, 1_024);
+      await vi.advanceTimersByTimeAsync(MULTIPART_READ_TIMEOUT_MS);
+      expect(await result).toEqual({ form: null, tooLarge: false, timedOut: true });
+      expect(cancelled).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });
