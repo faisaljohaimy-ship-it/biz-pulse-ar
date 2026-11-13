@@ -63,12 +63,23 @@ function delay(ms: number, signal?: AbortSignal): Promise<void> {
 }
 
 function parseRetryAfter(value: string | null): number | null {
-  if (!value) return null;
-  const seconds = Number(value);
-  if (Number.isFinite(seconds)) return Math.max(0, seconds * 1000);
-  const at = Date.parse(value);
-  if (Number.isFinite(at)) return Math.max(0, at - Date.now());
-  return null;
+  const field = value?.trim();
+  if (!field) return null;
+  // Retry-After delta-seconds is decimal DIGITs, not Number() syntax such as
+  // hex, exponent or signed numbers; the latter could suppress useful retries.
+  if (/^\d+$/.test(field)) {
+    const seconds = Number(field);
+    return Number.isSafeInteger(seconds) ? seconds * 1000 : null;
+  }
+  // Date.parse accepts non-HTTP date strings (including ISO dates). Limit this
+  // branch to IMF-fixdate and the two obsolete HTTP-date forms.
+  const isHttpDate =
+    /^[A-Za-z]{3}, \d{2} [A-Za-z]{3} \d{4} \d{2}:\d{2}:\d{2} GMT$/.test(field) ||
+    /^[A-Za-z]{6,9}, \d{2}-[A-Za-z]{3}-\d{2} \d{2}:\d{2}:\d{2} GMT$/.test(field) ||
+    /^[A-Za-z]{3} [A-Za-z]{3} [ \d]\d \d{2}:\d{2}:\d{2} \d{4}$/.test(field);
+  if (!isHttpDate) return null;
+  const at = Date.parse(field);
+  return Number.isFinite(at) ? Math.max(0, at - Date.now()) : null;
 }
 
 /**

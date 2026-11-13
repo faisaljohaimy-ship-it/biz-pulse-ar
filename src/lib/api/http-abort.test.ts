@@ -150,6 +150,28 @@ describe("upstream Retry-After wait budget", () => {
     },
   );
 
+  it.each(["0x10", "1e2", "+500", "2099-01-01"])(
+    "ignores non-HTTP Retry-After %s instead of suppressing a healthy retry",
+    async (retryAfter) => {
+      let calls = 0;
+      globalThis.fetch = (async () => {
+        calls += 1;
+        return calls === 1
+          ? new Response("busy", { status: 429, headers: { "Retry-After": retryAfter } })
+          : new Response("ok", { status: 200 });
+      }) as typeof fetch;
+
+      const response = await httpFetch("https://example.invalid/invalid-retry-after", {
+        retries: 1,
+        timeoutMs: 100,
+        retryBaseMs: 0,
+      });
+
+      expect(calls).toBe(2);
+      expect(response.status).toBe(200);
+    },
+  );
+
   it("still retries a short Retry-After and returns a recovered response", async () => {
     let calls = 0;
     globalThis.fetch = (async () => {
