@@ -418,12 +418,10 @@ export const Route = createFileRoute("/api/chat")({
         // الأصلية أدناه باقية حرفًا؛ وإخفاق استيرادٍ هنا يُبتلع ويُرمى عند موقعه الحقيقي كما كان.
         // وحدة الاسترجاع ليست في القائمة عمدًا: مستوردةٌ ساكنًا في رأس الملف (`evaluateRagCoverage`)
         // فهي محمَّلة قبل أول طلب. والأدوات للمسجَّل وحده، فلا يدفعها الزائر.
-        // Start the heaviest context graph first; all imports remain concurrent.
-        // This avoids starving its cold-start evaluation behind the lighter modules.
         const warmUp: Array<Promise<unknown>> = [
-          import("@/lib/sadeed-context.server"),
           import("@/lib/sadeed/instant-data-answers.server"),
           import("@/lib/sadeed/llm/zero-cost-router.server"),
+          import("@/lib/sadeed-context.server"),
         ];
         if (request.headers.get("authorization")) warmUp.push(import("@/lib/sadeed-tools.server"));
         void Promise.all(warmUp).catch(() => {});
