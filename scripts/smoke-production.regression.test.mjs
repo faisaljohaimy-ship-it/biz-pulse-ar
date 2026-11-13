@@ -64,20 +64,33 @@ async function runFixture(options = {}) {
       assert.equal(url.pathname, "/api/chat");
       if (init.headers.authorization) return json({ error: "unauthorized" }, 401);
       anonymousCalls++;
-      if (anonymousCalls > 1) {
+      // C1 runs first. C2 then sends a successful peer and a duplicate 429.
+      // Negative fixtures prove that a duplicate rejection cannot conceal a broken peer.
+      if (anonymousCalls === 3 || (anonymousCalls === 2 && options.duplicatePeer === "both-429")) {
         return json({ code: "duplicate_request" }, 429);
       }
-      if (options.networkFailure) throw new Error("fixture network failure");
+      if (anonymousCalls === 2 && options.duplicatePeer === "http-503")
+        return json({ code: "upstream_failure" }, 503);
+      if (anonymousCalls === 2 && options.duplicatePeer === "network-error")
+        throw new Error("fixture peer timeout");
+      if (options.networkFailure && anonymousCalls === 1)
+        throw new Error("fixture network failure");
       const text = options.text ?? "تحقق من تصريح العمل ومعدات الوقاية قبل البدء.";
       let body = encodeEvent({ type: "text-delta", delta: text });
       if (options.event) body += encodeEvent(options.event);
-      if (!options.omitDone) {
+      if (
+        !options.omitDone &&
+        !(anonymousCalls === 2 && options.duplicatePeer === "incomplete-200")
+      ) {
         const terminator = options.doneWithoutSpace ? "data:[DONE]" : "data: [DONE]";
         body += `${terminator}${options.doneCrLf ? "\r\n\r\n" : "\n\n"}`;
       }
       const headers = { "content-type": "text/event-stream", "x-sadeed-gate": "verified" };
       if (options.source !== null) headers["x-sadeed-reply-source"] = options.source ?? "model";
-      return new Response(body, { status: options.status ?? 200, headers });
+      return new Response(body, {
+        status: anonymousCalls === 1 ? (options.status ?? 200) : 200,
+        headers,
+      });
     },
   });
   await new vm.Script(`(async () => {\n${program}\n})()`).runInContext(context);
@@ -94,8 +107,23 @@ async function runFixture(options = {}) {
 test("a complete Arabic model reply passes", async () => {
   const r = await runFixture();
   assert.equal(r.result("C1 chat").status, "pass");
+  assert.equal(r.result("C2 duplicate").status, "pass");
   assert.equal(r.exitCode, 0);
 });
+
+for (const [duplicatePeer, label] of [
+  ["both-429", "both concurrent calls rejected as duplicates"],
+  ["http-503", "the supposed successful peer instead returns HTTP 503"],
+  ["network-error", "the supposed successful peer times out"],
+  ["incomplete-200", "the peer returns HTTP 200 with a truncated SSE stream"],
+]) {
+  test(`C2 fails when ${label}`, async () => {
+    const r = await runFixture({ duplicatePeer });
+    assert.equal(r.result("C1 chat").status, "pass");
+    assert.equal(r.result("C2 duplicate").status, "fail");
+    assert.equal(r.exitCode, 1);
+  });
+}
 test("rejects a truncated HTTP 200 SSE response with valid-looking Arabic text", async () => {
   const r = await runFixture({ omitDone: true });
   assert.equal(r.result("C1 chat").status, "fail");
