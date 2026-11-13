@@ -167,6 +167,40 @@ function hasExecutableThemeBootstrap(body) {
       i = end + 1;
       continue;
     }
+    // Regex literal source is inert just like a quoted string. Without this,
+    // /sessionStorage.getItem('theme')/ can falsely certify a broken page.
+    // Distinguish regex from division using the preceding token; a genuine
+    // sessionStorage call after arithmetic division must still be recognized.
+    if (ch === "/" && next !== "/" && next !== "*") {
+      const prefix = body.slice(0, i).trimEnd();
+      const preceding = prefix.at(-1);
+      const startsRegex =
+        prefix.length === 0 ||
+        (preceding !== undefined && "=(:,[{!?;+*%&|^~<>".includes(preceding)) ||
+        /\b(?:return|throw|yield|case|await)$/.test(prefix);
+      if (startsRegex) {
+        let inCharacterClass = false;
+        let regexpEnd = -1;
+        for (let end = i + 1; end < body.length; end++) {
+          if (body[end] === "\\") {
+            end++; // Escape may hide a slash, bracket, or delimiter.
+          } else if (body[end] === "[") {
+            inCharacterClass = true;
+          } else if (body[end] === "]") {
+            inCharacterClass = false;
+          } else if (body[end] === "/" && !inCharacterClass) {
+            regexpEnd = end;
+            break;
+          } else if (body[end] === "\n") {
+            break; // A JavaScript regexp cannot span an unescaped newline.
+          }
+        }
+        if (regexpEnd !== -1) {
+          i = regexpEnd;
+          continue;
+        }
+      }
+    }
     if (ch === "'" || ch === '"') {
       const quote = ch;
       i++;
