@@ -90,6 +90,46 @@ function parseDataUrl(url: string): { bytes: number; mediaType: string } | null 
   };
 }
 
+/**
+ * Count the actual bytes received, not only Content-Length (which may be absent
+ * or controlled by the client). Read one bounded request stream and reject
+ * malformed UTF-8/JSON before forwarding any attachment to an AI provider.
+ */
+async function readBoundedChatJson(
+  request: Request,
+): Promise<{ ok: true; value: unknown } | { ok: false; status: 400 | 413; error: string }> {
+  const reader = request.body?.getReader();
+  if (!reader) return { ok: false, status: 400, error: "Invalid JSON body." };
+  const chunks: Uint8Array[] = [];
+  let totalBytes = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      totalBytes += value.byteLength;
+      if (totalBytes > MAX_REQUEST_BYTES) {
+        // A hostile or broken stream can leave cancel() pending forever.
+        // Reject immediately without waiting for its cancellation callback.
+        void reader.cancel().catch(() => {});
+        return { ok: false, status: 413, error: "Chat request is too large." };
+      }
+      chunks.push(value);
+    }
+    const bytes = new Uint8Array(totalBytes);
+    let offset = 0;
+    for (const chunk of chunks) {
+      bytes.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
+    const json = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+    return { ok: true, value: JSON.parse(json) as unknown };
+  } catch {
+    return { ok: false, status: 400, error: "Invalid JSON body." };
+  } finally {
+    reader.releaseLock();
+  }
+}
+
 const MAX_ATTACHMENT_TEXT_CHARS = 60_000;
 
 /**
@@ -241,15 +281,14 @@ export async function validateChatRequest(
     };
   }
 
-  let raw: unknown;
-  try {
-    raw = await request.json();
-  } catch {
+  const read = await readBoundedChatJson(request);
+  if (!read.ok) {
     return {
       ok: false,
-      response: chatJsonError("Invalid JSON body.", 400, requestId),
+      response: chatJsonError(read.error, read.status, requestId),
     };
   }
+  const raw = read.value;
   if (!raw || typeof raw !== "object") {
     return {
       ok: false,
