@@ -75,7 +75,7 @@ async function runFixture(options = {}) {
         const terminator = options.doneWithoutSpace ? "data:[DONE]" : "data: [DONE]";
         body += `${terminator}${options.doneCrLf ? "\r\n\r\n" : "\n\n"}`;
       }
-      const headers = { "content-type": "text/event-stream", "x-sadeed-gate": "verified" };
+      const headers = { "content-type": "text/event-stream", "x-sadeed-gate": options.gate ?? "verified" };
       if (options.source !== null) headers["x-sadeed-reply-source"] = options.source ?? "model";
       return new Response(body, { status: options.status ?? 200, headers });
     },
@@ -111,6 +111,21 @@ test("accepts a valid SSE terminal data marker without a separating space", asyn
 test("accepts a CRLF-terminated SSE completion marker", async () => {
   const r = await runFixture({ doneCrLf: true });
   assert.equal(r.result("C1 chat").status, "pass");
+  assert.equal(r.exitCode, 0);
+});
+
+for (const gate of ["degraded", "unverified", "unknown"]) {
+  test(`a model-sourced Arabic 200 reply cannot certify an unverified gate (${gate})`, async () => {
+    const r = await runFixture({ gate });
+    assert.equal(r.result("C1 chat").status, "fail");
+    assert.match(r.result("C1 chat").detail, /gate=/);
+    assert.equal(r.exitCode, 1);
+  });
+}
+
+test("a local fallback behind a degraded gate remains a warning, not model proof", async () => {
+  const r = await runFixture({ gate: "degraded", source: "local-guaranteed" });
+  assert.equal(r.result("C1 chat").status, "warn");
   assert.equal(r.exitCode, 0);
 });
 
