@@ -80,10 +80,10 @@ async function fetchWithRetry(url) {
 
 // Inspect actual script attributes, not tokens buried inside quoted metadata.
 // Browsers honor the first duplicate attribute; absent/empty type is classic JS.
-function scriptAttributes(tag) {
+function tagAttributes(tag, start) {
   const attrs = Object.create(null);
   const attr = /\s+([^\s=/>]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/gy;
-  let pos = 7; // Skip "<script".
+  let pos = start;
   while (pos < tag.length) {
     attr.lastIndex = pos;
     const match = attr.exec(tag);
@@ -94,21 +94,14 @@ function scriptAttributes(tag) {
   }
   return attrs;
 }
+function scriptAttributes(tag) {
+  return tagAttributes(tag, 7); // Skip "<script".
+}
 
 // Read actual link attributes, not lookalike tokens inside quoted values.
 // Browsers keep the first instance of a duplicated HTML attribute.
 function stylesheetHref(tag) {
-  const attrs = Object.create(null);
-  const attr = /\s+([^\s=/>]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/gy;
-  let pos = 5; // Skip "<link".
-  while (pos < tag.length) {
-    attr.lastIndex = pos;
-    const match = attr.exec(tag);
-    if (!match) break;
-    const name = match[1].toLowerCase();
-    if (!(name in attrs)) attrs[name] = match[2] ?? match[3] ?? match[4] ?? "";
-    pos = attr.lastIndex;
-  }
+  const attrs = tagAttributes(tag, 5); // Skip "<link".
   // A disabled or print-only link may load HTTP 200 text/css but cannot style
   // the interactive screen. Do not count it as production CSS evidence.
   const media = (attrs.media || "").trim().toLowerCase();
@@ -197,6 +190,18 @@ for (const route of ROUTES) {
     const activeMarkup = nonInertHtml.replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, "");
     // An attribute must begin after whitespace; data-rel/data-href are inert
     // and must never satisfy the production stylesheet readiness gate.
+    // A browser immediately leaves pages containing an active HTML meta refresh.
+    // A 200 response from that page does not prove the requested route is usable.
+    // Read actual attributes, not lookalikes in metadata or inert containers.
+    const immediateMetaRefresh = [...activeMarkup.matchAll(/<meta\b[^>]*>/gi)].some(([tag]) => {
+      const attrs = tagAttributes(tag, 5); // Skip "<meta".
+      if ((attrs["http-equiv"] || "").trim().toLowerCase() !== "refresh") return false;
+      const delay = /^(\d+(?:\.\d+)?)(?:\s*;|$)/.exec((attrs.content || "").trim());
+      return delay !== null && Number(delay[1]) <= 5;
+    });
+    if (immediateMetaRefresh) {
+      failures.push(route + ": الصفحة تحوّل أو تعيد التحميل تلقائيًا عبر meta refresh");
+    }
     const stylesheetLinks = [...activeMarkup.matchAll(/<link\b[^>]*>/gi)]
       .map(([tag]) => stylesheetHref(tag))
       .filter(Boolean);
