@@ -165,7 +165,10 @@ for (const executable of [
 // A regular-expression literal contains pattern text, not an executed
 // sessionStorage read. Escaped slashes and character classes remain inert.
 for (const { label, source } of [
-  { label: "regexp assignment", source: "const pattern = /sessionStorage.getItem('theme')/;" },
+  {
+    label: "regexp assignment",
+    source: "const pattern = /sessionStorage.getItem('theme')/;",
+  },
   {
     label: "regexp after return",
     source: "function pattern() { return /sessionStorage.getItem('theme')/; }",
