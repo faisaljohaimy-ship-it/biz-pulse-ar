@@ -112,6 +112,7 @@ async function chat(text, threadId, { headers = {}, timeoutMs = 60_000 } = {}) {
     let shown = "";
     let code = null;
     let errorText = null;
+    let streamCompleted = false;
     if (res.headers.get("content-type")?.includes("application/json")) {
       try {
         const j = JSON.parse(raw);
@@ -127,9 +128,16 @@ async function chat(text, threadId, { headers = {}, timeoutMs = 60_000 } = {}) {
       }
     } else {
       for (const line of raw.split("\n")) {
-        if (!line.startsWith("data: ")) continue;
+        // SSE permits no space after data:. Only an explicit terminal
+        // marker proves the server completed the reply stream.
+        const dataLine = /^data: ?(.*)\r?$/.exec(line);
+        if (!dataLine) continue;
+        if (dataLine[1].trim() === "[DONE]") {
+          streamCompleted = true;
+          continue;
+        }
         try {
-          const ev = JSON.parse(line.slice(6));
+          const ev = JSON.parse(dataLine[1]);
           if (ev.type === "text-delta" && typeof ev.delta === "string") shown += ev.delta;
           // A partial Arabic answer followed by a stream failure is not a successful reply.
           if (ev.type === "error" || ev.type === "abort" || ev.finishReason === "error") {
@@ -139,6 +147,11 @@ async function chat(text, threadId, { headers = {}, timeoutMs = 60_000 } = {}) {
         } catch {
           /* سطر غير JSON ([DONE]) */
         }
+      }
+      if (!streamCompleted) {
+        // HTTP 200 with a partial Arabic delta must never pass C1.
+        code ||= "stream_incomplete";
+        errorText ||= "انتهى البثّ قبل علامة اكتمال الاستجابة";
       }
     }
     return {
