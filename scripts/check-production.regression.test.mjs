@@ -131,6 +131,37 @@ test("rejects theme bootstrap only mentioned in an HTML comment", async () => {
   assert.equal(await runFixture(html), 1);
 });
 
+// A JS comment or quoted example can contain the exact source text the old
+// regex counted as a working theme bootstrap, despite never running the call.
+for (const fake of [
+  "// sessionStorage.getItem('theme')",
+  "/* sessionStorage.getItem('theme') */",
+  "const sample = \"sessionStorage.getItem('theme')\";",
+  "const sample = `sessionStorage.getItem('theme')`;",
+]) {
+  test("rejects a theme call appearing only in inert JavaScript text: " + fake, async () => {
+    const html = normalPage.replace(
+      "<script>sessionStorage.getItem('theme')</script>",
+      "<script>" + fake + "</script>",
+    );
+    assert.equal(await runFixture(html), 1);
+  });
+}
+
+for (const executable of [
+  "const saved = sessionStorage.getItem('theme');",
+  "// earlier comment\nconst saved = sessionStorage.getItem('theme');",
+  "const url = 'https://offline.invalid'; const saved = sessionStorage.getItem('theme');",
+]) {
+  test("retains a real theme bootstrap even when comments or URLs precede it", async () => {
+    const html = normalPage.replace(
+      "<script>sessionStorage.getItem('theme')</script>",
+      "<script>" + executable + "</script>",
+    );
+    assert.equal(await runFixture(html), null);
+  });
+}
+
 test("rejects theme bootstrap only inside an inert template", async () => {
   const html = normalPage.replace(
     "<script>sessionStorage.getItem('theme')</script>",
