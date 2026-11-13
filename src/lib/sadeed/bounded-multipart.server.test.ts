@@ -109,10 +109,13 @@ describe("bounded voice multipart parser", () => {
       }
     },
   );
+
   it.each([
     ["no first byte", false],
     ["one byte then stalled", true],
-  ] as const)("returns a bounded timeout when upload stalls (%s)", async (_label, enqueueFirst) => {
+  ] as const)(
+    "returns a bounded timeout when upload stalls (%s)",
+    async (_label, enqueueFirst) => {
     vi.useFakeTimers();
     let cancelled = false;
     try {
@@ -137,9 +140,9 @@ describe("bounded voice multipart parser", () => {
       await vi.advanceTimersByTimeAsync(MULTIPART_READ_TIMEOUT_MS);
       expect(await result).toEqual({ form: null, tooLarge: false, timedOut: true });
       expect(cancelled).toBe(true);
-    } finally {
-      vi.useRealTimers();
-    }
-  });
-
+      } finally {
+        vi.useRealTimers();
+      }
+    },
+  );
 });
