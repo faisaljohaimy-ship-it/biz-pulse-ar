@@ -71,7 +71,7 @@ async function runFixture(options = {}) {
       const text = options.text ?? "تحقق من تصريح العمل ومعدات الوقاية قبل البدء.";
       let body = encodeEvent({ type: "text-delta", delta: text });
       if (options.event) body += encodeEvent(options.event);
-      body += "data: [DONE]\n\n";
+      if (!options.omitDone) body += options.doneWithoutSpace ? "data:[DONE]\n\n" : "data: [DONE]\n\n";
       const headers = { "content-type": "text/event-stream", "x-sadeed-gate": "verified" };
       if (options.source !== null) headers["x-sadeed-reply-source"] = options.source ?? "model";
       return new Response(body, { status: options.status ?? 200, headers });
@@ -93,6 +93,18 @@ test("a complete Arabic model reply passes", async () => {
   assert.equal(r.result("C1 chat").status, "pass");
   assert.equal(r.exitCode, 0);
 });
+test("rejects a truncated HTTP 200 SSE response with valid-looking Arabic text", async () => {
+  const r = await runFixture({ omitDone: true });
+  assert.equal(r.result("C1 chat").status, "fail");
+  assert.equal(r.exitCode, 1);
+});
+
+test("accepts a valid SSE terminal data marker without a separating space", async () => {
+  const r = await runFixture({ doneWithoutSpace: true });
+  assert.equal(r.result("C1 chat").status, "pass");
+  assert.equal(r.exitCode, 0);
+});
+
 test("HTTP 200 model-error must fail", async () => {
   const r = await runFixture({ source: "model-error", text: "تعذر إكمال الرد" });
   assert.equal(r.result("C1 chat").status, "fail");
