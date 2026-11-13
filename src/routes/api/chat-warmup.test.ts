@@ -79,11 +79,7 @@ beforeEach(() => {
   vi.spyOn(console, "log").mockImplementation(() => undefined);
   vi.spyOn(console, "warn").mockImplementation(() => undefined);
 });
-afterEach(async () => {
-  // Finish the previous request's fire-and-forget imports before the next test
-  // resets Vitest's module registry. Otherwise the in-flight context module
-  // can be reused without re-invoking its tracking mock on the next request.
-  await vi.dynamicImportSettled();
+afterEach(() => {
   vi.unstubAllEnvs();
   vi.stubEnv("GEMINI_API_KEY", "test-key-not-a-secret");
   vi.stubEnv("SUPABASE_URL", "https://stub.invalid");
@@ -104,16 +100,18 @@ describe("التسخين عند أعلى المعالج", () => {
       authorization: "Bearer valid.jwt.that.is.long.enough.for.the.guard",
     });
     expect(res.status).toBe(400);
-    await vi.dynamicImportSettled();
-    expect([...sim.loaded].sort()).toEqual(["context", "instant", "router", "tools"]);
+    await vi.waitFor(() =>
+      expect([...sim.loaded].sort()).toEqual(["context", "instant", "router", "tools"]),
+    );
   });
 
   it("زائر (بلا Authorization): الثلاث دون الأدوات — لا يدفعها من لن يستعملها", async () => {
     await import("@/routes/api/chat");
     const res = await postInvalid();
     expect(res.status).toBe(400);
-    await vi.dynamicImportSettled();
-    expect([...sim.loaded].sort()).toEqual(["context", "instant", "router"]);
+    await vi.waitFor(() =>
+      expect([...sim.loaded].sort()).toEqual(["context", "instant", "router"]),
+    );
     await new Promise((resolve) => setTimeout(resolve, 50));
     expect(sim.loaded.has("tools")).toBe(false);
   });
