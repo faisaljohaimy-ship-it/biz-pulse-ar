@@ -66,10 +66,7 @@ async function runFixture(options = {}) {
       anonymousCalls++;
       // C1 runs first. C2 then sends a successful peer and a duplicate 429.
       // Negative fixtures prove that a duplicate rejection cannot conceal a broken peer.
-      if (
-        anonymousCalls === 3 ||
-        (anonymousCalls === 2 && options.duplicatePeer === "both-429")
-      ) {
+      if (anonymousCalls === 3 || (anonymousCalls === 2 && options.duplicatePeer === "both-429")) {
         return json({ code: "duplicate_request" }, 429);
       }
       if (anonymousCalls === 2 && options.duplicatePeer === "http-503")
@@ -81,7 +78,10 @@ async function runFixture(options = {}) {
       const text = options.text ?? "تحقق من تصريح العمل ومعدات الوقاية قبل البدء.";
       let body = encodeEvent({ type: "text-delta", delta: text });
       if (options.event) body += encodeEvent(options.event);
-      if (!options.omitDone && !(anonymousCalls === 2 && options.duplicatePeer === "incomplete-200")) {
+      if (
+        !options.omitDone &&
+        !(anonymousCalls === 2 && options.duplicatePeer === "incomplete-200")
+      ) {
         const terminator = options.doneWithoutSpace ? "data:[DONE]" : "data: [DONE]";
         body += `${terminator}${options.doneCrLf ? "\r\n\r\n" : "\n\n"}`;
       }
