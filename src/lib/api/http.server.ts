@@ -95,7 +95,7 @@ function parseRetryAfter(value: string | null): number | null {
     const expected = `${canonical.slice(0, 3)} ${canonical.slice(8, 11)} ${String(date.getUTCDate()).padStart(2, " ")} ${canonical.slice(17, 25)} ${canonical.slice(12, 16)}`;
     if (expected !== field) return null;
   }
-    return Math.max(0, at - Date.now());
+  return Math.max(0, at - Date.now());
 }
 
 /**
