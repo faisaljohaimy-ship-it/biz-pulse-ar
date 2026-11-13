@@ -563,3 +563,38 @@ test("does not decode a nested ampersand HTML reference twice", async () => {
     null,
   );
 });
+
+for (const delay of ["0", "2.5", "5"]) {
+  test("rejects an immediate HTML meta refresh (" + delay + "s) despite valid theme and CSS", async () => {
+    const html = normalPage.replace(
+      "</head>",
+      '<meta http-equiv="refresh" content="' + delay + '; url=/login"></head>',
+    );
+    assert.equal(await runFixture(html), 1);
+  });
+}
+
+test("ignores fake refresh attributes inside quoted metadata", async () => {
+  const html = normalPage.replace(
+    "</head>",
+    '<meta data-note="http-equiv=refresh" content="0; url=/login"></head>',
+  );
+  assert.equal(await runFixture(html), null);
+});
+
+test("ignores a refresh tag only present in an inert template or script", async () => {
+  for (const fake of [
+    '<template><meta http-equiv="refresh" content="0; url=/login"></template>',
+    '<script>const example = "<meta http-equiv=refresh content=0>";</script>',
+  ]) {
+    assert.equal(await runFixture(normalPage.replace("</head>", fake + "</head>")), null);
+  }
+});
+
+test("does not reject a delayed periodic refresh outside the immediate redirect window", async () => {
+  const html = normalPage.replace(
+    "</head>",
+    '<meta http-equiv="refresh" content="3600"></head>',
+  );
+  assert.equal(await runFixture(html), null);
+});
