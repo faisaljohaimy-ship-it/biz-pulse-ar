@@ -74,6 +74,77 @@ describe("chat request guard", () => {
     expect(result.ok).toBe(true);
   });
 
+  it("rejects an oversized stream using actual bytes even with a forged small length", async () => {
+    let pulls = 0;
+    const body = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        pulls += 1;
+        controller.enqueue(new Uint8Array(1024 * 1024).fill(32));
+      },
+      // A stalled stream cancellation must not block the 413 response.
+      cancel() {
+        return new Promise<void>(() => {});
+      },
+    });
+    const request = new Request("https://example.test/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Content-Length": "1" },
+      body,
+      duplex: "half",
+    } as RequestInit & { duplex: "half" });
+    const result = await validateChatRequest(request);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.response.status).toBe(413);
+      expect(await result.response.json()).toMatchObject({
+        error: "Chat request is too large.",
+      });
+    }
+    expect(pulls).toBeLessThanOrEqual(27);
+  });
+
+  it("accepts valid JSON split across a stream without Content-Length", async () => {
+    const json = JSON.stringify({
+      messages: [{ id: "m1", role: "user", parts: [{ type: "text", text: "مرحبا" }] }],
+    });
+    const bytes = new TextEncoder().encode(json);
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(bytes.slice(0, 13));
+        controller.enqueue(bytes.slice(13));
+        controller.close();
+      },
+    });
+    const request = new Request("https://example.test/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body,
+      duplex: "half",
+    } as RequestInit & { duplex: "half" });
+    const result = await validateChatRequest(request);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.data.messages[0].parts).toEqual([{ type: "text", text: "مرحبا" }]);
+    }
+  });
+
+  it("rejects invalid UTF-8 inside otherwise valid JSON instead of changing the text", async () => {
+    const bytes = Uint8Array.from([
+      ...new TextEncoder().encode('{"messages":[{"id":"m1","role":"user","parts":[{"type":"text","text":"'),
+      0xc3,
+      0x28,
+      ...new TextEncoder().encode('"}]}]}'),
+    ]);
+    const request = new Request("https://example.test/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: bytes,
+    });
+    const result = await validateChatRequest(request);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.response.status).toBe(400);
+  });
+
   it("rejects a declared media type that differs from its data URL", async () => {
     const result = await validateChatRequest(
       chatRequest({
