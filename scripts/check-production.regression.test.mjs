@@ -162,6 +162,46 @@ for (const executable of [
   });
 }
 
+// A regular-expression literal contains pattern text, not an executed
+// sessionStorage read. Escaped slashes and character classes remain inert.
+for (const { label, source } of [
+  {
+    label: "regexp assignment",
+    source: "const pattern = /sessionStorage.getItem('theme')/;",
+  },
+  {
+    label: "regexp after return",
+    source: "function pattern() { return /sessionStorage.getItem('theme')/; }",
+  },
+  {
+    label: "escaped slash and character class in regexp",
+    source: String.raw`const pattern = /http:\/\/[a-z]+\/sessionStorage.getItem('theme')/;`,
+  },
+]) {
+  test("rejects inert theme bootstrap text inside " + label, async () => {
+    const html = normalPage.replace(
+      "<script>sessionStorage.getItem('theme')</script>",
+      "<script>" + source + "</script>",
+    );
+    assert.equal(await runFixture(html), 1);
+  });
+}
+
+// Regex parsing must not hide a real call later in the script or treat
+// division by a sessionStorage read as a regex literal.
+for (const source of [
+  "const pattern = /sessionStorage.getItem('theme')/; sessionStorage.getItem('theme');",
+  "const ratio = 8 / sessionStorage.getItem('theme');",
+]) {
+  test("retains executable theme bootstrap after regex or division", async () => {
+    const html = normalPage.replace(
+      "<script>sessionStorage.getItem('theme')</script>",
+      "<script>" + source + "</script>",
+    );
+    assert.equal(await runFixture(html), null);
+  });
+}
+
 // Template literal text does not run, but its interpolated expressions do.
 // Verify nested expressions without accepting escaped, commented or quoted text.
 for (const { label, source, expected } of [
