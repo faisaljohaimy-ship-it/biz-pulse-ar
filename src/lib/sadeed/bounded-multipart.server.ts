@@ -5,11 +5,13 @@
 export type BoundedMultipartResult = {
   form: FormData | null;
   tooLarge: boolean;
+  timedOut?: boolean;
 };
 
 export async function parseBoundedMultipart(
   request: Request,
   maxBytes: number,
+  readTimeoutMs = 30_000,
 ): Promise<BoundedMultipartResult> {
   const declared = request.headers.get("content-length");
   // Content-Length is only an early rejection signal: it can be absent or forged.
@@ -23,9 +25,22 @@ export async function parseBoundedMultipart(
   const reader = request.body.getReader();
   const chunks: Uint8Array[] = [];
   let byteCount = 0;
+  // An untrusted client can send one chunk and then never finish the upload.
+  // One absolute deadline bounds the whole read, not each individual chunk.
+  const deadlineMarker = Symbol("multipart-read-deadline");
+  let deadlineTimer: ReturnType<typeof setTimeout> | undefined;
+  const deadline = new Promise<typeof deadlineMarker>((resolve) => {
+    deadlineTimer = setTimeout(() => resolve(deadlineMarker), readTimeoutMs);
+  });
   try {
     for (;;) {
-      const { done, value } = await reader.read();
+      const next = await Promise.race([reader.read(), deadline]);
+      if (next === deadlineMarker) {
+        // Cancellation itself may never settle; return the timeout immediately.
+        void reader.cancel().catch(() => {});
+        return { form: null, tooLarge: false, timedOut: true };
+      }
+      const { done, value } = next;
       if (done) break;
       byteCount += value.byteLength;
       if (byteCount > maxBytes) {
@@ -56,6 +71,7 @@ export async function parseBoundedMultipart(
   } catch {
     return { form: null, tooLarge: false };
   } finally {
+    if (deadlineTimer !== undefined) clearTimeout(deadlineTimer);
     reader.releaseLock();
   }
 }

@@ -58,6 +58,46 @@ describe("bounded voice multipart parser", () => {
     expect(result).toEqual({ form: null, tooLarge: true });
   });
 
+  it.each([
+    ["before any bytes", false],
+    ["after a partial upload", true],
+  ] as const)(
+    "times out stalled body reads %s without awaiting cancellation",
+    async (_case, partial) => {
+      let cancelled = false;
+      const source = new ReadableStream<Uint8Array>({
+        start(controller) {
+          if (partial) controller.enqueue(new Uint8Array([1, 2, 3]));
+          // Never close the stream or enqueue another chunk.
+        },
+        cancel() {
+          cancelled = true;
+          return new Promise<void>(() => {});
+        },
+      });
+      const request = new Request(ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "multipart/form-data; boundary=stalled" },
+        body: source,
+        duplex: "half",
+      } as RequestInit & { duplex: "half" });
+
+      let watchdog: ReturnType<typeof setTimeout> | undefined;
+      try {
+        const outcome = await Promise.race([
+          parseBoundedMultipart(request, 1_024, 25),
+          new Promise<"hung">((resolve) => {
+            watchdog = setTimeout(() => resolve("hung"), 1_000);
+          }),
+        ]);
+        expect(outcome).toEqual({ form: null, tooLarge: false, timedOut: true });
+        expect(cancelled).toBe(true);
+      } finally {
+        if (watchdog) clearTimeout(watchdog);
+      }
+    },
+  );
+
   it("rejects malformed multipart without treating it as an oversized upload", async () => {
     const request = new Request(ENDPOINT, {
       method: "POST",

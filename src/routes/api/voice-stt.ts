@@ -38,9 +38,15 @@ export const Route = createFileRoute("/api/voice-stt")({
         });
         if (quota) return quota;
 
-        const { form, tooLarge } = await parseBoundedMultipart(request, MAX_MULTIPART_BYTES);
+        const { form, tooLarge, timedOut } = await parseBoundedMultipart(
+          request,
+          MAX_MULTIPART_BYTES,
+        );
         if (tooLarge) {
           return Response.json({ error: "audio_too_large" }, { status: 413 });
+        }
+        if (timedOut) {
+          return Response.json({ error: "audio_upload_timeout" }, { status: 408 });
         }
         const audio = form?.get("audio");
         if (!(audio instanceof File) || audio.size < 300) {
