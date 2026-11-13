@@ -452,6 +452,8 @@ if (!c1.ok) {
   const problems = [];
   if (c1.status !== 200) problems.push(`http ${c1.status} (${c1.code ?? c1.rawHead})`);
   if (!c1.gate) problems.push("لا ترويسة X-SADEED-Gate (بناءٌ أقدم من VIBE 5.1؟)");
+  if (c1.source === "model" && c1.gate !== "verified")
+    problems.push(`إجابة النموذج لا تثبت جاهزية بوابة متدهورة (gate=${c1.gate ?? "—"})`);
   if (!c1.source) problems.push("لا ترويسة X-SADEED-Reply-Source");
   if (c1.source === "model-error") problems.push("فشل النموذج (model-error)، لا إجابة ناجحة");
   if (c1.code || c1.errorText) problems.push("الاستجابة تحتوي خطأً أو بثًّا غير مكتمل");
