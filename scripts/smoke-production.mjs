@@ -471,6 +471,31 @@ if (!c1.ok) {
   }
 }
 
+// Date.parse accepts non-HTTP dates and normalizes impossible days; neither
+// can certify the retry guidance attached to a duplicate 429 response.
+function validDuplicateRetryAfter(value) {
+  const field = value?.trim() ?? "";
+  if (/^(?:0|[1-9]\d*)$/.test(field)) return Number.isSafeInteger(Number(field));
+
+  const imf = /^[A-Za-z]{3}, \d{2} [A-Za-z]{3} \d{4} \d{2}:\d{2}:\d{2} GMT$/.test(field);
+  const rfc850 = /^[A-Za-z]{6,9}, \d{2}-[A-Za-z]{3}-\d{2} \d{2}:\d{2}:\d{2} GMT$/.test(field);
+  const asctime = /^[A-Za-z]{3} [A-Za-z]{3} [ \d]\d \d{2}:\d{2}:\d{2} \d{4}$/.test(field);
+  if (!imf && !rfc850 && !asctime) return false;
+  const timestamp = Date.parse(field);
+  if (!Number.isFinite(timestamp) || timestamp <= Date.now()) return false;
+
+  const date = new Date(timestamp);
+  const canonical = date.toUTCString();
+  if (imf) return field === canonical;
+  if (rfc850) {
+    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const expected = `${days[date.getUTCDay()]}, ${canonical.slice(5, 7)}-${canonical.slice(8, 11)}-${canonical.slice(14, 16)} ${canonical.slice(17, 25)} GMT`;
+    return field === expected;
+  }
+  const expected = `${canonical.slice(0, 3)} ${canonical.slice(8, 11)} ${String(date.getUTCDate()).padStart(2, " ")} ${canonical.slice(17, 25)} ${canonical.slice(12, 16)}`;
+  return field === expected;
+}
+
 // ── C2 التكرار الجاري ──────────────────────────────────────────────────────────
 {
   const thread = crypto.randomUUID();
@@ -483,11 +508,7 @@ if (!c1.ok) {
   const peer = dup ? [p, s].find((r) => r !== dup) : null;
   // Duplicate throttling is not compliant unless clients receive a usable
   // Retry-After header (delta seconds or a future HTTP-date).
-  const retryValue = dup?.retryAfter?.trim() ?? "";
-  const retryDate = Date.parse(retryValue);
-  const validRetryAfter =
-    (/^(?:0|[1-9]\d*)$/.test(retryValue) && Number.isSafeInteger(Number(retryValue))) ||
-    (Number.isFinite(retryDate) && retryDate > Date.now());
+  const validRetryAfter = validDuplicateRetryAfter(dup?.retryAfter);
   if (dup && peer?.ok && peer.status === 200 && !peer.code && !peer.errorText && validRetryAfter) {
     note(
       "C2 duplicate",
