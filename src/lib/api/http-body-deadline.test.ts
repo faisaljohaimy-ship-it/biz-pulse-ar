@@ -129,6 +129,40 @@ describe("httpJson response body deadline", () => {
     ).resolves.toEqual({ label: "ع" });
   });
 
+  it.each([200, 503])(
+    "returns a sanitized upstream error when the %s response stream fails mid-body",
+    async (status) => {
+      const privateDiagnostic = "upstream transport detail must not escape";
+      let pulls = 0;
+      globalThis.fetch = (async () =>
+        new Response(
+          new ReadableStream<Uint8Array>({
+            pull(controller) {
+              if (pulls++ === 0) {
+                controller.enqueue(new TextEncoder().encode('{"incomplete":'));
+              } else {
+                controller.error(new Error(privateDiagnostic));
+              }
+            },
+          }),
+          { status },
+        )) as typeof fetch;
+
+      let caught: unknown;
+      try {
+        await httpJson("https://example.invalid/broken-stream", {
+          retries: 0,
+          timeoutMs: 100,
+        });
+      } catch (error) {
+        caught = error;
+      }
+      expect(caught).toMatchObject({ code: "upstream_failed", status: 502 });
+      expect((caught as Error).message).not.toContain(privateDiagnostic);
+      expect(pulls).toBeGreaterThanOrEqual(2);
+    },
+  );
+
   it("preserves successful JSON parsing", async () => {
     globalThis.fetch = (async () =>
       new Response(JSON.stringify({ ok: true, count: 2 }), { status: 200 })) as typeof fetch;
