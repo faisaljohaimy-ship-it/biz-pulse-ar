@@ -131,6 +131,125 @@ test("rejects theme bootstrap only mentioned in an HTML comment", async () => {
   assert.equal(await runFixture(html), 1);
 });
 
+// A JS comment or quoted example can contain the exact source text the old
+// regex counted as a working theme bootstrap, despite never running the call.
+for (const fake of [
+  "// sessionStorage.getItem('theme')",
+  "/* sessionStorage.getItem('theme') */",
+  "const sample = \"sessionStorage.getItem('theme')\";",
+  "const sample = `sessionStorage.getItem('theme')`;",
+]) {
+  test("rejects a theme call appearing only in inert JavaScript text: " + fake, async () => {
+    const html = normalPage.replace(
+      "<script>sessionStorage.getItem('theme')</script>",
+      "<script>" + fake + "</script>",
+    );
+    assert.equal(await runFixture(html), 1);
+  });
+}
+
+for (const executable of [
+  "const saved = sessionStorage.getItem('theme');",
+  "// earlier comment\nconst saved = sessionStorage.getItem('theme');",
+  "const url = 'https://offline.invalid'; const saved = sessionStorage.getItem('theme');",
+]) {
+  test("retains a real theme bootstrap even when comments or URLs precede it", async () => {
+    const html = normalPage.replace(
+      "<script>sessionStorage.getItem('theme')</script>",
+      "<script>" + executable + "</script>",
+    );
+    assert.equal(await runFixture(html), null);
+  });
+}
+
+// A regular-expression literal contains pattern text, not an executed
+// sessionStorage read. Escaped slashes and character classes remain inert.
+for (const { label, source } of [
+  {
+    label: "regexp assignment",
+    source: "const pattern = /sessionStorage.getItem('theme')/;",
+  },
+  {
+    label: "regexp after return",
+    source: "function pattern() { return /sessionStorage.getItem('theme')/; }",
+  },
+  {
+    label: "escaped slash and character class in regexp",
+    source: String.raw`const pattern = /http:\/\/[a-z]+\/sessionStorage.getItem('theme')/;`,
+  },
+]) {
+  test("rejects inert theme bootstrap text inside " + label, async () => {
+    const html = normalPage.replace(
+      "<script>sessionStorage.getItem('theme')</script>",
+      "<script>" + source + "</script>",
+    );
+    assert.equal(await runFixture(html), 1);
+  });
+}
+
+// Regex parsing must not hide a real call later in the script or treat
+// division by a sessionStorage read as a regex literal.
+for (const source of [
+  "const pattern = /sessionStorage.getItem('theme')/; sessionStorage.getItem('theme');",
+  "const ratio = 8 / sessionStorage.getItem('theme');",
+]) {
+  test("retains executable theme bootstrap after regex or division", async () => {
+    const html = normalPage.replace(
+      "<script>sessionStorage.getItem('theme')</script>",
+      "<script>" + source + "</script>",
+    );
+    assert.equal(await runFixture(html), null);
+  });
+}
+
+// Template literal text does not run, but its interpolated expressions do.
+// Verify nested expressions without accepting escaped, commented or quoted text.
+for (const { label, source, expected } of [
+  {
+    label: "single executable interpolation",
+    source: "const saved = `${sessionStorage.getItem('theme')}`;",
+    expected: null,
+  },
+  {
+    label: "nested executable template",
+    source: "const saved = `outer ${`inner ${sessionStorage.getItem('theme')}`}`;",
+    expected: null,
+  },
+  {
+    label: "object literal inside interpolation",
+    source: "const saved = `${({ value: sessionStorage.getItem('theme') }).value}`;",
+    expected: null,
+  },
+  {
+    label: "plain template text",
+    source: "const saved = `sessionStorage.getItem('theme')`;",
+    expected: 1,
+  },
+  {
+    label: "escaped interpolation text",
+    source: "const saved = `literal \\${sessionStorage.getItem('theme')}`;",
+    expected: 1,
+  },
+  {
+    label: "comment inside interpolation",
+    source: "const saved = `${/* sessionStorage.getItem('theme') */ 'dark'}`;",
+    expected: 1,
+  },
+  {
+    label: "quoted example inside interpolation",
+    source: "const saved = `${\"sessionStorage.getItem('theme')\"}`;",
+    expected: 1,
+  },
+]) {
+  test("distinguishes executable theme reads within templates: " + label, async () => {
+    const html = normalPage.replace(
+      "<script>sessionStorage.getItem('theme')</script>",
+      "<script>" + source + "</script>",
+    );
+    assert.equal(await runFixture(html), expected);
+  });
+}
+
 test("rejects theme bootstrap only inside an inert template", async () => {
   const html = normalPage.replace(
     "<script>sessionStorage.getItem('theme')</script>",
@@ -597,4 +716,34 @@ test("ignores a refresh tag only present in an inert template or script", async 
 test("does not reject a delayed periodic refresh outside the immediate redirect window", async () => {
   const html = normalPage.replace("</head>", '<meta http-equiv="refresh" content="3600"></head>');
   assert.equal(await runFixture(html), null);
+});
+
+test("rejects a stylesheet containing only a CSS encoding declaration", async () => {
+  assert.equal(await runFixture(normalPage, "text/html", 200, "text/css", '@charset "UTF-8";'), 1);
+});
+
+test("rejects CSS comments followed only by a charset declaration", async () => {
+  assert.equal(
+    await runFixture(
+      normalPage,
+      "text/html",
+      200,
+      "text/css",
+      '/* build header */ @charset "UTF-8"; /* no actual rules */',
+    ),
+    1,
+  );
+});
+
+test("accepts real application styles following a charset declaration", async () => {
+  assert.equal(
+    await runFixture(
+      normalPage,
+      "text/html",
+      200,
+      "text/css",
+      '@charset "UTF-8"; body { color: navy; }',
+    ),
+    null,
+  );
 });

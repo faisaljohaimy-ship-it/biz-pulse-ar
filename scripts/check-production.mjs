@@ -127,6 +127,114 @@ function stylesheetHref(tag) {
   return attrs.href?.trim() ? attrs.href.replace(/&(?:amp|#0*38|#x0*26);/gi, "&") : null;
 }
 
+// A textual theme call in a JS comment or string does not initialize the UI.
+// Scan only executable-looking code; preserve quoted URL strings (including //)
+// instead of stripping comments with a regex that would hide valid statements.
+function hasExecutableThemeBootstrap(body) {
+  // Template literal text is inert, but JavaScript evaluates the expressions
+  // between interpolation braces. Track nested templates and expression braces
+  // so executable theme reads do not become false production-gate failures.
+  const contexts = [{ type: "code" }];
+  for (let i = 0; i < body.length; i++) {
+    const current = contexts[contexts.length - 1];
+    const ch = body[i];
+    const next = body[i + 1];
+
+    if (current.type === "template") {
+      if (ch === "\\") {
+        i++;
+        continue;
+      }
+      if (ch === "`") {
+        contexts.pop();
+        continue;
+      }
+      if (ch === "$" && next === "{") {
+        contexts.push({ type: "expression", depth: 1 });
+        i++;
+      }
+      continue;
+    }
+
+    if (ch === "/" && next === "/") {
+      i = body.indexOf("\n", i + 2);
+      if (i === -1) break;
+      continue;
+    }
+    if (ch === "/" && next === "*") {
+      const end = body.indexOf("*/", i + 2);
+      if (end === -1) break;
+      i = end + 1;
+      continue;
+    }
+    // Regex literal source is inert just like a quoted string. Without this,
+    // /sessionStorage.getItem('theme')/ can falsely certify a broken page.
+    // Distinguish regex from division using the preceding token; a genuine
+    // sessionStorage call after arithmetic division must still be recognized.
+    if (ch === "/" && next !== "/" && next !== "*") {
+      const prefix = body.slice(0, i).trimEnd();
+      const preceding = prefix.at(-1);
+      const startsRegex =
+        prefix.length === 0 ||
+        (preceding !== undefined && "=(:,[{!?;+*%&|^~<>".includes(preceding)) ||
+        /\b(?:return|throw|yield|case|await)$/.test(prefix);
+      if (startsRegex) {
+        let inCharacterClass = false;
+        let regexpEnd = -1;
+        for (let end = i + 1; end < body.length; end++) {
+          if (body[end] === "\\") {
+            end++; // Escape may hide a slash, bracket, or delimiter.
+          } else if (body[end] === "[") {
+            inCharacterClass = true;
+          } else if (body[end] === "]") {
+            inCharacterClass = false;
+          } else if (body[end] === "/" && !inCharacterClass) {
+            regexpEnd = end;
+            break;
+          } else if (body[end] === "\n") {
+            break; // A JavaScript regexp cannot span an unescaped newline.
+          }
+        }
+        if (regexpEnd !== -1) {
+          i = regexpEnd;
+          continue;
+        }
+      }
+    }
+    if (ch === "'" || ch === '"') {
+      const quote = ch;
+      i++;
+      while (i < body.length && body[i] !== quote) {
+        if (body[i] === "\\") i++;
+        i++;
+      }
+      continue;
+    }
+    if (ch === "`") {
+      contexts.push({ type: "template" });
+      continue;
+    }
+    if (current.type === "expression") {
+      if (ch === "{") {
+        current.depth++;
+        continue;
+      }
+      if (ch === "}") {
+        current.depth--;
+        if (current.depth === 0) contexts.pop();
+        continue;
+      }
+    }
+    if (
+      (i === 0 || !/[\w$.]/.test(body[i - 1])) &&
+      /^sessionStorage\.getItem\((['"])theme\1\)/.test(body.slice(i))
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
 const failures = [];
 const rows = [];
 
@@ -170,11 +278,7 @@ for (const route of ROUTES) {
         /^(?:text|application)\/(?:java|ecma)script(?:\s*;.*)?$/.test(type) ||
         type === "text/x-javascript" ||
         type === "application/x-javascript";
-      return (
-        executable &&
-        !("src" in scriptAttrs) &&
-        /sessionStorage\.getItem\(['"]theme['"]\)/.test(body)
-      );
+      return executable && !("src" in scriptAttrs) && hasExecutableThemeBootstrap(body);
     });
     // النطاق `neexios.com` معرّف تقني (رابط · بريد · بيانات منظَّمة) لا اسم
     // معروض، وهو مُستثنى صراحةً في حارس العلامة على المصدر. يُنزع قبل المسح
@@ -231,7 +335,12 @@ for (const route of ROUTES) {
           const cssText = isCss ? await stylesheetRes.text() : "";
           if (!isCss) await stylesheetRes.body?.cancel();
           // An all-comment CSS file cannot style the app; MIME and bytes alone are insufficient.
-          const effectiveCss = cssText.replace(/\/\*[\s\S]*?\*\//g, "").trim();
+          // A CSS encoding declaration cannot style an application by itself.
+          // Preserve legitimate style rules that follow that declaration.
+          const effectiveCss = cssText
+            .replace(/\/\*[\s\S]*?\*\//g, "")
+            .replace(/^\s*@charset\s+(?:"[^"]*"|'[^']*')\s*;\s*/i, "")
+            .trim();
           if (isCss && effectiveCss.length > 0) {
             cssLoaded = true;
             break;

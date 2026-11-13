@@ -235,18 +235,37 @@ async function readResponseTextWithin(
   });
 
   const consume = (async () => {
-    const decoder = new TextDecoder();
+    // A lossy decoder silently changes invalid upstream JSON string values.
+    // Reject malformed bytes rather than accepting corrupted incident/report data.
+    const decoder = new TextDecoder("utf-8", { fatal: true });
+    const decode = (chunk?: Uint8Array, stream = false): string => {
+      try {
+        return decoder.decode(chunk, { stream });
+      } catch {
+        void reader.cancel().catch(() => {});
+        throw apiError("upstream_failed", "Invalid UTF-8 from upstream response");
+      }
+    };
     let text = "";
     let receivedBytes = 0;
     for (;;) {
-      const { done, value } = await reader.read();
-      if (done) return text + decoder.decode();
+      // A broken upstream stream can reject reader.read() with arbitrary
+      // network diagnostics. Do not surface them as an unhandled 500.
+      let read: ReadableStreamReadResult<Uint8Array>;
+      try {
+        read = await reader.read();
+      } catch {
+        void reader.cancel().catch(() => {});
+        throw apiError("upstream_failed", "Failed reading upstream JSON response body");
+      }
+      const { done, value } = read;
+      if (done) return text + decode();
       receivedBytes += value.byteLength;
       if (receivedBytes > MAX_HTTP_JSON_BODY_BYTES) {
         void reader.cancel().catch(() => {});
         throw apiError("upstream_failed", "Upstream JSON response exceeds size limit");
       }
-      text += decoder.decode(value, { stream: true });
+      text += decode(value, true);
     }
   })();
 

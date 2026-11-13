@@ -144,6 +144,28 @@ for (const [duplicateRetryAfter, label] of [
   });
 }
 
+for (const [duplicateRetryAfter, label] of [
+  ["2099-01-01", "non-HTTP ISO date"],
+  ["Sun, 30 Feb 2099 00:00:00 GMT", "impossible calendar day"],
+  ["Sun, 01 Jan 2099 00:00:00 GMT", "incorrect weekday"],
+  ["Tuesday, 31-Nov-35 08:49:37 GMT", "invalid RFC850 day"],
+]) {
+  test(`C2 rejects a ${label} even when Date.parse accepts it`, async () => {
+    const r = await runFixture({ duplicateRetryAfter });
+    assert.equal(r.result("C1 chat").status, "pass");
+    assert.equal(r.result("C2 duplicate").status, "fail");
+    assert.equal(r.exitCode, 1);
+  });
+}
+
+for (const duplicateRetryAfter of ["Tuesday, 06-Nov-35 08:49:37 GMT", "Tue Nov  6 08:49:37 2035"]) {
+  test(`C2 preserves valid obsolete HTTP dates: ${duplicateRetryAfter}`, async () => {
+    const r = await runFixture({ duplicateRetryAfter });
+    assert.equal(r.result("C2 duplicate").status, "pass");
+    assert.equal(r.exitCode, 0);
+  });
+}
+
 test("C2 accepts a future HTTP-date Retry-After", async () => {
   const r = await runFixture({
     duplicateRetryAfter: new Date(Date.now() + 120_000).toUTCString(),
