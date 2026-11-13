@@ -783,3 +783,28 @@ test("does not hang on a failed HTTP response whose stream cancellation never se
   assert.equal(cancellationStarted, true);
   assert.equal(exitCode, 1, "a 503 must still fail the production gate");
 });
+
+for (const [equiv, content] of [
+  ["refre&#x73;h", "0;url=/login"],
+  ["refresh", "0&#59;url=/login"],
+  ["refresh", "0&#x3b;url=/login"],
+  ["refresh", "0&semi;url=/login"],
+  ["refresh", "0&#59url=/login"],
+  ["refresh&Tab;", "0;url=/login"],
+]) {
+  test(`detects HTML-encoded meta refresh: ${equiv} / ${content}`, async () => {
+    const html = normalPage.replace(
+      "</head>",
+      `<meta http-equiv="${equiv}" content="${content}"></head>`,
+    );
+    assert.equal(await runFixture(html), 1);
+  });
+}
+
+test("does not double-decode nested refresh entities", async () => {
+  const html = normalPage.replace(
+    "</head>",
+    '<meta http-equiv="refresh" content="0&amp;semi;url=/login"></head>',
+  );
+  assert.equal(await runFixture(html), null);
+});
