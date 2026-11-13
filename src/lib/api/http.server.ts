@@ -233,7 +233,16 @@ async function readResponseTextWithin(
     let text = "";
     let receivedBytes = 0;
     for (;;) {
-      const { done, value } = await reader.read();
+      // A broken upstream stream can reject reader.read() with arbitrary
+      // network diagnostics. Do not surface them as an unhandled 500.
+      let read: ReadableStreamReadResult<Uint8Array>;
+      try {
+        read = await reader.read();
+      } catch {
+        void reader.cancel().catch(() => {});
+        throw apiError("upstream_failed", "Failed reading upstream JSON response body");
+      }
+      const { done, value } = read;
       if (done) return text + decode();
       receivedBytes += value.byteLength;
       if (receivedBytes > MAX_HTTP_JSON_BODY_BYTES) {
