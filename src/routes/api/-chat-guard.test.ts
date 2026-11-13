@@ -130,7 +130,9 @@ describe("chat request guard", () => {
 
   it("rejects invalid UTF-8 inside otherwise valid JSON instead of changing the text", async () => {
     const bytes = Uint8Array.from([
-      ...new TextEncoder().encode('{"messages":[{"id":"m1","role":"user","parts":[{"type":"text","text":"'),
+      ...new TextEncoder().encode(
+        '{"messages":[{"id":"m1","role":"user","parts":[{"type":"text","text":"',
+      ),
       0xc3,
       0x28,
       ...new TextEncoder().encode('"}]}]}'),
