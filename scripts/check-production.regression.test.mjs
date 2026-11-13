@@ -162,6 +162,54 @@ for (const executable of [
   });
 }
 
+// Template literal text does not run, but its interpolated expressions do.
+// Verify nested expressions without accepting escaped, commented or quoted text.
+for (const { label, source, expected } of [
+  {
+    label: "single executable interpolation",
+    source: "const saved = `${sessionStorage.getItem('theme')}`;",
+    expected: null,
+  },
+  {
+    label: "nested executable template",
+    source: "const saved = `outer ${`inner ${sessionStorage.getItem('theme')}`}`;",
+    expected: null,
+  },
+  {
+    label: "object literal inside interpolation",
+    source: "const saved = `${({ value: sessionStorage.getItem('theme') }).value}`;",
+    expected: null,
+  },
+  {
+    label: "plain template text",
+    source: "const saved = `sessionStorage.getItem('theme')`;",
+    expected: 1,
+  },
+  {
+    label: "escaped interpolation text",
+    source: "const saved = `literal \\${sessionStorage.getItem('theme')}`;",
+    expected: 1,
+  },
+  {
+    label: "comment inside interpolation",
+    source: "const saved = `${/* sessionStorage.getItem('theme') */ 'dark'}`;",
+    expected: 1,
+  },
+  {
+    label: "quoted example inside interpolation",
+    source: "const saved = `${\"sessionStorage.getItem('theme')\"}`;",
+    expected: 1,
+  },
+]) {
+  test("distinguishes executable theme reads within templates: " + label, async () => {
+    const html = normalPage.replace(
+      "<script>sessionStorage.getItem('theme')</script>",
+      "<script>" + source + "</script>",
+    );
+    assert.equal(await runFixture(html), expected);
+  });
+}
+
 test("rejects theme bootstrap only inside an inert template", async () => {
   const html = normalPage.replace(
     "<script>sessionStorage.getItem('theme')</script>",
