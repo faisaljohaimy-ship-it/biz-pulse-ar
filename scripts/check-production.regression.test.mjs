@@ -677,3 +677,36 @@ test("does not reject a delayed periodic refresh outside the immediate redirect 
   const html = normalPage.replace("</head>", '<meta http-equiv="refresh" content="3600"></head>');
   assert.equal(await runFixture(html), null);
 });
+
+test("rejects a stylesheet containing only a CSS encoding declaration", async () => {
+  assert.equal(
+    await runFixture(normalPage, "text/html", 200, "text/css", '@charset "UTF-8";'),
+    1,
+  );
+});
+
+test("rejects CSS comments followed only by a charset declaration", async () => {
+  assert.equal(
+    await runFixture(
+      normalPage,
+      "text/html",
+      200,
+      "text/css",
+      '/* build header */ @charset "UTF-8"; /* no actual rules */',
+    ),
+    1,
+  );
+});
+
+test("accepts real application styles following a charset declaration", async () => {
+  assert.equal(
+    await runFixture(
+      normalPage,
+      "text/html",
+      200,
+      "text/css",
+      '@charset "UTF-8"; body { color: navy; }',
+    ),
+    null,
+  );
+});
