@@ -48,6 +48,16 @@ describe("resolveBackTarget — كل شاشة لها مخرج، ولا مخرج 
     expect(back("/assistant/abc-123")).toBe("/assistant");
   });
 
+  it("الخريطة اليدوية لا تُرجع أبًا محجوبًا أو غير مسجّل", () => {
+    expect(resolveBackTarget("/sec/contractors", exists, (p) => p === "/sec/access")).toBeNull();
+    expect(resolveBackTarget("/sec/contractors", () => false, isRouteHidden)).toBeNull();
+  });
+
+  it("الأب الديناميكي يخضع لفحص التسجيل والحجب أيضًا", () => {
+    expect(resolveBackTarget("/assistant/abc-123", exists, (p) => p === "/assistant")).toBeNull();
+    expect(resolveBackTarget("/assistant/abc-123", () => false, isRouteHidden)).toBeNull();
+  });
+
   it("الأب المشتقّ يُقبل حين يكون شاشةً مسجّلة فعلًا", () => {
     // هذا هو المكسب: مسارٌ لا ذكر له في الخريطة صار له رجوع.
     expect(drilldownParent("/sec/reports")).toBeNull();
