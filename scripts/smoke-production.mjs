@@ -486,7 +486,7 @@ if (!c1.ok) {
   const retryValue = dup?.retryAfter?.trim() ?? "";
   const retryDate = Date.parse(retryValue);
   const validRetryAfter =
-    (/^(?:0|[1-9]\\d*)$/.test(retryValue) &&
+    (/^(?:0|[1-9]\d*)$/.test(retryValue) &&
       Number.isSafeInteger(Number(retryValue))) ||
     (Number.isFinite(retryDate) && retryDate > Date.now());
   if (dup && peer?.ok && peer.status === 200 && !peer.code && !peer.errorText && validRetryAfter) {
