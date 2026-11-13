@@ -13,10 +13,10 @@ async function runFixture(options = {}) {
   let exitCode = null;
   let anonymousCalls = 0;
   const encodeEvent = (value) => `data: ${JSON.stringify(value)}\n\n`;
-  const json = (body, status = 200) =>
+  const json = (body, status = 200, extraHeaders = {}) =>
     new Response(JSON.stringify(body), {
       status,
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", ...extraHeaders },
     });
   const context = vm.createContext({
     console: {
@@ -67,7 +67,13 @@ async function runFixture(options = {}) {
       // C1 runs first. C2 then sends a successful peer and a duplicate 429.
       // Negative fixtures prove that a duplicate rejection cannot conceal a broken peer.
       if (anonymousCalls === 3 || (anonymousCalls === 2 && options.duplicatePeer === "both-429")) {
-        return json({ code: "duplicate_request" }, 429);
+        return json(
+          { code: "duplicate_request" },
+          429,
+          options.duplicateRetryAfter === null
+            ? {}
+            : { "retry-after": options.duplicateRetryAfter ?? "2" },
+        );
       }
       if (anonymousCalls === 2 && options.duplicatePeer === "http-503")
         return json({ code: "upstream_failure" }, 503);
@@ -124,6 +130,28 @@ for (const [duplicatePeer, label] of [
     assert.equal(r.exitCode, 1);
   });
 }
+for (const [duplicateRetryAfter, label] of [
+  [null, "missing"],
+  ["-1", "negative"],
+  ["not-a-date", "malformed"],
+  ["999999999999999999999999999999", "unsafe integer"],
+]) {
+  test(`C2 rejects a ${label} Retry-After on a duplicate rejection`, async () => {
+    const r = await runFixture({ duplicateRetryAfter });
+    assert.equal(r.result("C1 chat").status, "pass");
+    assert.equal(r.result("C2 duplicate").status, "fail");
+    assert.equal(r.exitCode, 1);
+  });
+}
+
+test("C2 accepts a future HTTP-date Retry-After", async () => {
+  const r = await runFixture({
+    duplicateRetryAfter: new Date(Date.now() + 120_000).toUTCString(),
+  });
+  assert.equal(r.result("C2 duplicate").status, "pass");
+  assert.equal(r.exitCode, 0);
+});
+
 test("rejects a truncated HTTP 200 SSE response with valid-looking Arabic text", async () => {
   const r = await runFixture({ omitDone: true });
   assert.equal(r.result("C1 chat").status, "fail");
