@@ -17,7 +17,10 @@ test("full CI provisions PostgreSQL 16 before bringing up the real integration s
 
   const setup = integration.slice(provisioning, bringUp);
   assert.match(setup, /sudo apt-get update -qq/);
-  assert.match(setup, /apt-get install -y --no-install-recommends postgresql-16 postgresql-client-16/);
+  assert.match(
+    setup,
+    /apt-get install -y --no-install-recommends postgresql-16 postgresql-client-16/,
+  );
   assert.match(setup, /test -x \/usr\/lib\/postgresql\/16\/bin\/initdb/);
   assert.match(setup, /test -x \/usr\/lib\/postgresql\/16\/bin\/pg_ctl/);
   assert.match(setup, /command -v psql/);
