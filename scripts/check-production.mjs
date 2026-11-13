@@ -301,7 +301,12 @@ for (const route of ROUTES) {
           const cssText = isCss ? await stylesheetRes.text() : "";
           if (!isCss) await stylesheetRes.body?.cancel();
           // An all-comment CSS file cannot style the app; MIME and bytes alone are insufficient.
-          const effectiveCss = cssText.replace(/\/\*[\s\S]*?\*\//g, "").trim();
+          // A CSS encoding declaration cannot style an application by itself.
+          // Preserve legitimate style rules that follow that declaration.
+          const effectiveCss = cssText
+            .replace(/\/\*[\s\S]*?\*\//g, "")
+            .replace(/^\s*@charset\s+(?:"[^"]*"|'[^']*')\s*;\s*/i, "")
+            .trim();
           if (isCss && effectiveCss.length > 0) {
             cssLoaded = true;
             break;
