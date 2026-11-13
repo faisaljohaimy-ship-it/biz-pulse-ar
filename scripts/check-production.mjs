@@ -155,8 +155,8 @@ function hasExecutableThemeBootstrap(body) {
       continue;
     }
     if (
-      (i === 0 || !/[\\w$.]/.test(body[i - 1])) &&
-      /^sessionStorage\\.getItem\\((['"])theme\\1\\)/.test(body.slice(i))
+      (i === 0 || !/[\w$.]/.test(body[i - 1])) &&
+      /^sessionStorage\.getItem\((['"])theme\1\)/.test(body.slice(i))
     ) {
       return true;
     }
