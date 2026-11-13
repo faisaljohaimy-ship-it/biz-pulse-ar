@@ -305,7 +305,7 @@ for (const route of ROUTES) {
           // Preserve legitimate style rules that follow that declaration.
           const effectiveCss = cssText
             .replace(/\/\*[\s\S]*?\*\//g, "")
-            .replace(/^@charset\s+(?:"[^"]*"|'[^']*')\s*;\s*/i, "")
+            .replace(/^\s*@charset\s+(?:"[^"]*"|'[^']*')\s*;\s*/i, "")
             .trim();
           if (isCss && effectiveCss.length > 0) {
             cssLoaded = true;
