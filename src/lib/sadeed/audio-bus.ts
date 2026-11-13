@@ -38,6 +38,9 @@ type Listener = (e: BusEvent) => void;
 let current: { source: Source; stop: StopFn } | null = null;
 let currentAudioEl: HTMLMediaElement | null = null;
 let unlocked = false;
+// A stop callback may synchronously release or request the bus again.
+// Never allow reentrant ownership changes halfway through a transition.
+let transitioning = false;
 const listeners = new Set<Listener>();
 
 function emit(e: BusEvent) {
@@ -47,6 +50,27 @@ function emit(e: BusEvent) {
     } catch {
       /* ignore */
     }
+  }
+}
+
+// Transition atomically: stop() may synchronously release the old owner.
+function stopCurrentOwner() {
+  if (!current) return;
+  const previous = current;
+  const hadAudio = currentAudioEl !== null;
+  current = null;
+  currentAudioEl = null;
+  transitioning = true;
+  try {
+    try {
+      previous.stop();
+    } catch {
+      /* ignore */
+    }
+    if (hadAudio) emit({ kind: "stopped", source: previous.source });
+    emit({ kind: "end", source: previous.source });
+  } finally {
+    transitioning = false;
   }
 }
 
@@ -64,6 +88,7 @@ export const SadeedAudioBus = {
    * Granting ALWAYS hard-stops whatever is playing first.
    */
   acquire(source: Source, stop: StopFn, opts?: { bypassGesture?: boolean }): boolean {
+    if (transitioning) return false;
     const stack = new Error().stack?.split("\n").slice(2, 5).join(" | ");
     // Global no-autoplay guard: refuse any AUDIBLE source unless the bus has
     // been unlocked by a real user gesture. SadeedAudioBus.unlock() MUST be
@@ -101,22 +126,12 @@ export const SadeedAudioBus = {
       return false;
     }
     if (current) {
-      const prev = current.source;
       VoiceTimeline.push("PREEMPT", "owner preempted", {
-        prev,
+        prev: current.source,
         next: source,
         stack,
       });
-      try {
-        current.stop();
-      } catch {
-        /* ignore */
-      }
-      if (currentAudioEl) {
-        emit({ kind: "stopped", source: prev });
-        currentAudioEl = null;
-      }
-      emit({ kind: "end", source: prev });
+      stopCurrentOwner();
     }
     current = { source, stop };
     VoiceTimeline.push("OWNER", "ACQUIRED", {
@@ -158,31 +173,18 @@ export const SadeedAudioBus = {
 
   release(source: Source) {
     if (current?.source === source) {
-      VoiceTimeline.push("RELEASE", "released", { owner: source });
-      if (currentAudioEl) {
-        emit({ kind: "stopped", source });
-        currentAudioEl = null;
-      }
+      const hadAudio = currentAudioEl !== null;
+      // Detach first so an end listener can acquire its next owner safely.
       current = null;
+      currentAudioEl = null;
+      VoiceTimeline.push("RELEASE", "released", { owner: source });
+      if (hadAudio) emit({ kind: "stopped", source });
       emit({ kind: "end", source });
     }
   },
 
   stopAll() {
-    if (current) {
-      const prev = current.source;
-      try {
-        current.stop();
-      } catch {
-        /* ignore */
-      }
-      if (currentAudioEl) {
-        emit({ kind: "stopped", source: prev });
-        currentAudioEl = null;
-      }
-      current = null;
-      emit({ kind: "end", source: prev });
-    }
+    stopCurrentOwner();
   },
 
   /** Subscribe to start/end events. Returns unsubscribe fn. */

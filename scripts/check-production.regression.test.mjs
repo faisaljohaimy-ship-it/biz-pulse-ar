@@ -19,6 +19,7 @@ async function runFixture(
   cssType = "text/css",
   cssBody = "body {}",
   pageStatus = 200,
+  expectedCssUrl = "https://offline.invalid/assets/app.css",
 ) {
   let exitCode = null;
   const context = vm.createContext({
@@ -36,7 +37,7 @@ async function runFixture(
       if (input === "https://offline.invalid/") {
         return new Response(body, { status: pageStatus, headers: { "content-type": contentType } });
       }
-      assert.equal(input, "https://offline.invalid/assets/app.css");
+      assert.equal(input, expectedCssUrl);
       return new Response(cssBody, { status: cssStatus, headers: { "content-type": cssType } });
     },
   });
@@ -130,6 +131,125 @@ test("rejects theme bootstrap only mentioned in an HTML comment", async () => {
   assert.equal(await runFixture(html), 1);
 });
 
+// A JS comment or quoted example can contain the exact source text the old
+// regex counted as a working theme bootstrap, despite never running the call.
+for (const fake of [
+  "// sessionStorage.getItem('theme')",
+  "/* sessionStorage.getItem('theme') */",
+  "const sample = \"sessionStorage.getItem('theme')\";",
+  "const sample = `sessionStorage.getItem('theme')`;",
+]) {
+  test("rejects a theme call appearing only in inert JavaScript text: " + fake, async () => {
+    const html = normalPage.replace(
+      "<script>sessionStorage.getItem('theme')</script>",
+      "<script>" + fake + "</script>",
+    );
+    assert.equal(await runFixture(html), 1);
+  });
+}
+
+for (const executable of [
+  "const saved = sessionStorage.getItem('theme');",
+  "// earlier comment\nconst saved = sessionStorage.getItem('theme');",
+  "const url = 'https://offline.invalid'; const saved = sessionStorage.getItem('theme');",
+]) {
+  test("retains a real theme bootstrap even when comments or URLs precede it", async () => {
+    const html = normalPage.replace(
+      "<script>sessionStorage.getItem('theme')</script>",
+      "<script>" + executable + "</script>",
+    );
+    assert.equal(await runFixture(html), null);
+  });
+}
+
+// A regular-expression literal contains pattern text, not an executed
+// sessionStorage read. Escaped slashes and character classes remain inert.
+for (const { label, source } of [
+  {
+    label: "regexp assignment",
+    source: "const pattern = /sessionStorage.getItem('theme')/;",
+  },
+  {
+    label: "regexp after return",
+    source: "function pattern() { return /sessionStorage.getItem('theme')/; }",
+  },
+  {
+    label: "escaped slash and character class in regexp",
+    source: String.raw`const pattern = /http:\/\/[a-z]+\/sessionStorage.getItem('theme')/;`,
+  },
+]) {
+  test("rejects inert theme bootstrap text inside " + label, async () => {
+    const html = normalPage.replace(
+      "<script>sessionStorage.getItem('theme')</script>",
+      "<script>" + source + "</script>",
+    );
+    assert.equal(await runFixture(html), 1);
+  });
+}
+
+// Regex parsing must not hide a real call later in the script or treat
+// division by a sessionStorage read as a regex literal.
+for (const source of [
+  "const pattern = /sessionStorage.getItem('theme')/; sessionStorage.getItem('theme');",
+  "const ratio = 8 / sessionStorage.getItem('theme');",
+]) {
+  test("retains executable theme bootstrap after regex or division", async () => {
+    const html = normalPage.replace(
+      "<script>sessionStorage.getItem('theme')</script>",
+      "<script>" + source + "</script>",
+    );
+    assert.equal(await runFixture(html), null);
+  });
+}
+
+// Template literal text does not run, but its interpolated expressions do.
+// Verify nested expressions without accepting escaped, commented or quoted text.
+for (const { label, source, expected } of [
+  {
+    label: "single executable interpolation",
+    source: "const saved = `${sessionStorage.getItem('theme')}`;",
+    expected: null,
+  },
+  {
+    label: "nested executable template",
+    source: "const saved = `outer ${`inner ${sessionStorage.getItem('theme')}`}`;",
+    expected: null,
+  },
+  {
+    label: "object literal inside interpolation",
+    source: "const saved = `${({ value: sessionStorage.getItem('theme') }).value}`;",
+    expected: null,
+  },
+  {
+    label: "plain template text",
+    source: "const saved = `sessionStorage.getItem('theme')`;",
+    expected: 1,
+  },
+  {
+    label: "escaped interpolation text",
+    source: "const saved = `literal \\${sessionStorage.getItem('theme')}`;",
+    expected: 1,
+  },
+  {
+    label: "comment inside interpolation",
+    source: "const saved = `${/* sessionStorage.getItem('theme') */ 'dark'}`;",
+    expected: 1,
+  },
+  {
+    label: "quoted example inside interpolation",
+    source: "const saved = `${\"sessionStorage.getItem('theme')\"}`;",
+    expected: 1,
+  },
+]) {
+  test("distinguishes executable theme reads within templates: " + label, async () => {
+    const html = normalPage.replace(
+      "<script>sessionStorage.getItem('theme')</script>",
+      "<script>" + source + "</script>",
+    );
+    assert.equal(await runFixture(html), expected);
+  });
+}
+
 test("rejects theme bootstrap only inside an inert template", async () => {
   const html = normalPage.replace(
     "<script>sessionStorage.getItem('theme')</script>",
@@ -170,6 +290,38 @@ test("accepts an explicitly typed text/css stylesheet", async () => {
     '<link rel="stylesheet" href="/assets/app.css" type="text/css">',
   );
   assert.equal(await runFixture(html), null);
+});
+
+test("accepts a real stylesheet among whitespace-separated rel tokens", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="preload stylesheet" href="/assets/app.css">',
+  );
+  assert.equal(await runFixture(html), null);
+});
+
+test("accepts a mixed-case stylesheet token after other link relations", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="preload STYLESHEET" href="/assets/app.css">',
+  );
+  assert.equal(await runFixture(html), null);
+});
+
+test("does not count alternate stylesheets as enabled app styles", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="alternate stylesheet" href="/assets/app.css">',
+  );
+  assert.equal(await runFixture(html), 1);
+});
+
+test("rejects lookalike rel tokens that are not a stylesheet relation", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="preload stylesheets" href="/assets/app.css">',
+  );
+  assert.equal(await runFixture(html), 1);
 });
 
 test("uses a valid stylesheet after a link with an incompatible type", async () => {
@@ -489,4 +641,170 @@ test("cancels rejected HTTP response streams for both routes and CSS assets", as
     assert.equal(exitCode, 1);
     assert.equal(canceled, 1, failedCss ? "CSS response body leaked" : "HTML response body leaked");
   }
+});
+
+test("decodes HTML-escaped ampersands in CSS query strings before probing", async () => {
+  for (const entity of ["&amp;", "&#38;", "&#x26;"]) {
+    const html = normalPage.replace(
+      'href="/assets/app.css"',
+      `href="/assets/app.css?version=1${entity}mode=dark"`,
+    );
+    assert.equal(
+      await runFixture(
+        html,
+        "text/html",
+        200,
+        "text/css",
+        "body {}",
+        200,
+        "https://offline.invalid/assets/app.css?version=1&mode=dark",
+      ),
+      null,
+    );
+  }
+});
+
+test("does not decode a nested ampersand HTML reference twice", async () => {
+  const html = normalPage.replace(
+    'href="/assets/app.css"',
+    'href="/assets/app.css?x=1&amp;amp;y=2"',
+  );
+  assert.equal(
+    await runFixture(
+      html,
+      "text/html",
+      200,
+      "text/css",
+      "body {}",
+      200,
+      "https://offline.invalid/assets/app.css?x=1&amp;y=2",
+    ),
+    null,
+  );
+});
+
+for (const delay of ["0", "2.5", "5"]) {
+  test(
+    "rejects an immediate HTML meta refresh (" + delay + "s) despite valid theme and CSS",
+    async () => {
+      const html = normalPage.replace(
+        "</head>",
+        '<meta http-equiv="refresh" content="' + delay + '; url=/login"></head>',
+      );
+      assert.equal(await runFixture(html), 1);
+    },
+  );
+}
+
+test("ignores fake refresh attributes inside quoted metadata", async () => {
+  const html = normalPage.replace(
+    "</head>",
+    '<meta data-note="http-equiv=refresh" content="0; url=/login"></head>',
+  );
+  assert.equal(await runFixture(html), null);
+});
+
+test("ignores a refresh tag only present in an inert template or script", async () => {
+  for (const fake of [
+    '<template><meta http-equiv="refresh" content="0; url=/login"></template>',
+    '<script>const example = "<meta http-equiv=refresh content=0>";</script>',
+  ]) {
+    assert.equal(await runFixture(normalPage.replace("</head>", fake + "</head>")), null);
+  }
+});
+
+test("does not reject a delayed periodic refresh outside the immediate redirect window", async () => {
+  const html = normalPage.replace("</head>", '<meta http-equiv="refresh" content="3600"></head>');
+  assert.equal(await runFixture(html), null);
+});
+
+test("rejects a stylesheet containing only a CSS encoding declaration", async () => {
+  assert.equal(await runFixture(normalPage, "text/html", 200, "text/css", '@charset "UTF-8";'), 1);
+});
+
+test("rejects CSS comments followed only by a charset declaration", async () => {
+  assert.equal(
+    await runFixture(
+      normalPage,
+      "text/html",
+      200,
+      "text/css",
+      '/* build header */ @charset "UTF-8"; /* no actual rules */',
+    ),
+    1,
+  );
+});
+
+test("accepts real application styles following a charset declaration", async () => {
+  assert.equal(
+    await runFixture(
+      normalPage,
+      "text/html",
+      200,
+      "text/css",
+      '@charset "UTF-8"; body { color: navy; }',
+    ),
+    null,
+  );
+});
+
+test("does not hang on a failed HTTP response whose stream cancellation never settles", async () => {
+  let exitCode = null;
+  let cancellationStarted = false;
+  const failedBody = new ReadableStream({
+    start(controller) {
+      controller.enqueue(new Uint8Array([1]));
+    },
+    cancel() {
+      cancellationStarted = true;
+      return new Promise(() => {}); // Simulate a stuck upstream body.
+    },
+  });
+  const context = vm.createContext({
+    process: {
+      env: { PRODUCTION_URL: "https://offline.invalid", ROUTES: "/", ATTEMPTS: "1" },
+      exit(code) {
+        exitCode = code;
+      },
+    },
+    console: { log() {}, error() {} },
+    AbortSignal,
+    URL,
+    async fetch() {
+      return new Response(failedBody, { status: 503 });
+    },
+  });
+  const check = new vm.Script(`(async () => {\n${executableSource}\n})()`).runInContext(context);
+  const outcome = await Promise.race([
+    check.then(() => "settled"),
+    new Promise((resolve) => setTimeout(() => resolve("hung"), 1000)),
+  ]);
+  assert.equal(outcome, "settled", "a stalled cancel must not bypass the retry deadline");
+  assert.equal(cancellationStarted, true);
+  assert.equal(exitCode, 1, "a 503 must still fail the production gate");
+});
+
+for (const [equiv, content] of [
+  ["refre&#x73;h", "0;url=/login"],
+  ["refresh", "0&#59;url=/login"],
+  ["refresh", "0&#x3b;url=/login"],
+  ["refresh", "0&semi;url=/login"],
+  ["refresh", "0&#59url=/login"],
+  ["refresh&Tab;", "0;url=/login"],
+]) {
+  test(`detects HTML-encoded meta refresh: ${equiv} / ${content}`, async () => {
+    const html = normalPage.replace(
+      "</head>",
+      `<meta http-equiv="${equiv}" content="${content}"></head>`,
+    );
+    assert.equal(await runFixture(html), 1);
+  });
+}
+
+test("does not double-decode nested refresh entities", async () => {
+  const html = normalPage.replace(
+    "</head>",
+    '<meta http-equiv="refresh" content="0&amp;semi;url=/login"></head>',
+  );
+  assert.equal(await runFixture(html), null);
 });
