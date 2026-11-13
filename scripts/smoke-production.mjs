@@ -132,7 +132,7 @@ async function chat(text, threadId, { headers = {}, timeoutMs = 60_000 } = {}) {
         // marker proves the server completed the reply stream.
         const dataLine = /^data: ?(.*)\r?$/.exec(line);
         if (!dataLine) continue;
-        if (dataLine[1] === "[DONE]") {
+        if (dataLine[1].trim() === "[DONE]") {
           streamCompleted = true;
           continue;
         }
