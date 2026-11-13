@@ -71,7 +71,10 @@ async function runFixture(options = {}) {
       const text = options.text ?? "تحقق من تصريح العمل ومعدات الوقاية قبل البدء.";
       let body = encodeEvent({ type: "text-delta", delta: text });
       if (options.event) body += encodeEvent(options.event);
-      if (!options.omitDone) body += options.doneWithoutSpace ? "data:[DONE]\n\n" : "data: [DONE]\n\n";
+      if (!options.omitDone) {
+        const terminator = options.doneWithoutSpace ? "data:[DONE]" : "data: [DONE]";
+        body += `${terminator}${options.doneCrLf ? "\r\n\r\n" : "\n\n"}`;
+      }
       const headers = { "content-type": "text/event-stream", "x-sadeed-gate": "verified" };
       if (options.source !== null) headers["x-sadeed-reply-source"] = options.source ?? "model";
       return new Response(body, { status: options.status ?? 200, headers });
@@ -101,6 +104,12 @@ test("rejects a truncated HTTP 200 SSE response with valid-looking Arabic text",
 
 test("accepts a valid SSE terminal data marker without a separating space", async () => {
   const r = await runFixture({ doneWithoutSpace: true });
+  assert.equal(r.result("C1 chat").status, "pass");
+  assert.equal(r.exitCode, 0);
+});
+
+test("accepts a CRLF-terminated SSE completion marker", async () => {
+  const r = await runFixture({ doneCrLf: true });
   assert.equal(r.result("C1 chat").status, "pass");
   assert.equal(r.exitCode, 0);
 });
