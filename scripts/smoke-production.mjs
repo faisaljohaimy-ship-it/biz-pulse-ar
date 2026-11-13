@@ -478,11 +478,14 @@ if (!c1.ok) {
   const [p, s] = await Promise.all([chat(q, thread), chat(q, thread)]);
   const statuses = [p, s].map((r) => (r.ok ? r.status : "ERR")).sort();
   const dup = [p, s].find((r) => r.ok && r.status === 429 && r.code === "duplicate_request");
-  if (dup) {
+  // A duplicate rejection alone does not prove the first request succeeded:
+  // both calls might fail with 429, or the peer might time out / return 5xx.
+  const peer = dup ? [p, s].find((r) => r !== dup) : null;
+  if (dup && peer?.ok && peer.status === 200 && !peer.code && !peer.errorText) {
     note(
       "C2 duplicate",
       "pass",
-      `أحد الطلبين 429 duplicate_request · Retry-After=${dup.retryAfter ?? "—"} · الآخر ${statuses.find((x) => x !== 429)}`,
+      `429 duplicate_request · Retry-After=${dup.retryAfter ?? "—"} · peer 200 completed`,
     );
   } else if (statuses.every((x) => x === 200)) {
     note("C2 duplicate", "warn", "كلاهما 200 — الأوّل أُنهي قبل وصول الثاني (غير حاسم، لا عيب)");
