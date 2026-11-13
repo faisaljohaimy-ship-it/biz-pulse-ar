@@ -747,3 +747,39 @@ test("accepts real application styles following a charset declaration", async ()
     null,
   );
 });
+
+test("does not hang on a failed HTTP response whose stream cancellation never settles", async () => {
+  let exitCode = null;
+  let cancellationStarted = false;
+  const failedBody = new ReadableStream({
+    start(controller) {
+      controller.enqueue(new Uint8Array([1]));
+    },
+    cancel() {
+      cancellationStarted = true;
+      return new Promise(() => {}); // Simulate a stuck upstream body.
+    },
+  });
+  const context = vm.createContext({
+    process: {
+      env: { PRODUCTION_URL: "https://offline.invalid", ROUTES: "/", ATTEMPTS: "1" },
+      exit(code) {
+        exitCode = code;
+      },
+    },
+    console: { log() {}, error() {} },
+    AbortSignal,
+    URL,
+    async fetch() {
+      return new Response(failedBody, { status: 503 });
+    },
+  });
+  const check = new vm.Script(`(async () => {\n${executableSource}\n})()`).runInContext(context);
+  const outcome = await Promise.race([
+    check.then(() => "settled"),
+    new Promise((resolve) => setTimeout(() => resolve("hung"), 1000)),
+  ]);
+  assert.equal(outcome, "settled", "a stalled cancel must not bypass the retry deadline");
+  assert.equal(cancellationStarted, true);
+  assert.equal(exitCode, 1, "a 503 must still fail the production gate");
+});

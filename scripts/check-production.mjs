@@ -64,7 +64,13 @@ async function fetchWithRetry(url) {
       if (res.status === 200) return res;
       // Failed or partial streaming responses can hold open network sockets.
       // Release their bodies before retrying another request.
-      await res.body?.cancel().catch(() => {});
+      // Do not let an uncooperative stream cancellation stall the release gate.
+      // The fetch AbortSignal still bounds the underlying network request.
+      try {
+        void res.body?.cancel().catch(() => {});
+      } catch {
+        // A locked/broken stream must not suppress the original HTTP failure.
+      }
       last = `HTTP ${res.status}`;
     } catch (e) {
       last = e instanceof Error ? e.message : String(e);
