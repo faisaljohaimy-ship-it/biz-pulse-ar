@@ -112,6 +112,7 @@ async function chat(text, threadId, { headers = {}, timeoutMs = 60_000 } = {}) {
     let shown = "";
     let code = null;
     let errorText = null;
+    let streamCompleted = false;
     if (res.headers.get("content-type")?.includes("application/json")) {
       try {
         const j = JSON.parse(raw);
@@ -127,9 +128,16 @@ async function chat(text, threadId, { headers = {}, timeoutMs = 60_000 } = {}) {
       }
     } else {
       for (const line of raw.split("\n")) {
-        if (!line.startsWith("data: ")) continue;
+        // SSE permits no space after data:. Only an explicit terminal
+        // marker proves the server completed the reply stream.
+        const dataLine = /^data: ?(.*)\r?$/.exec(line);
+        if (!dataLine) continue;
+        if (dataLine[1].trim() === "[DONE]") {
+          streamCompleted = true;
+          continue;
+        }
         try {
-          const ev = JSON.parse(line.slice(6));
+          const ev = JSON.parse(dataLine[1]);
           if (ev.type === "text-delta" && typeof ev.delta === "string") shown += ev.delta;
           // A partial Arabic answer followed by a stream failure is not a successful reply.
           if (ev.type === "error" || ev.type === "abort" || ev.finishReason === "error") {
@@ -139,6 +147,11 @@ async function chat(text, threadId, { headers = {}, timeoutMs = 60_000 } = {}) {
         } catch {
           /* سطر غير JSON ([DONE]) */
         }
+      }
+      if (!streamCompleted) {
+        // HTTP 200 with a partial Arabic delta must never pass C1.
+        code ||= "stream_incomplete";
+        errorText ||= "انتهى البثّ قبل علامة اكتمال الاستجابة";
       }
     }
     return {
@@ -439,6 +452,8 @@ if (!c1.ok) {
   const problems = [];
   if (c1.status !== 200) problems.push(`http ${c1.status} (${c1.code ?? c1.rawHead})`);
   if (!c1.gate) problems.push("لا ترويسة X-SADEED-Gate (بناءٌ أقدم من VIBE 5.1؟)");
+  if (c1.source === "model" && c1.gate !== "verified")
+    problems.push(`إجابة النموذج لا تثبت جاهزية بوابة متدهورة (gate=${c1.gate ?? "—"})`);
   if (!c1.source) problems.push("لا ترويسة X-SADEED-Reply-Source");
   if (c1.source === "model-error") problems.push("فشل النموذج (model-error)، لا إجابة ناجحة");
   if (c1.code || c1.errorText) problems.push("الاستجابة تحتوي خطأً أو بثًّا غير مكتمل");
@@ -458,6 +473,31 @@ if (!c1.ok) {
   }
 }
 
+// Date.parse accepts non-HTTP dates and normalizes impossible days; neither
+// can certify the retry guidance attached to a duplicate 429 response.
+function validDuplicateRetryAfter(value) {
+  const field = value?.trim() ?? "";
+  if (/^(?:0|[1-9]\d*)$/.test(field)) return Number.isSafeInteger(Number(field));
+
+  const imf = /^[A-Za-z]{3}, \d{2} [A-Za-z]{3} \d{4} \d{2}:\d{2}:\d{2} GMT$/.test(field);
+  const rfc850 = /^[A-Za-z]{6,9}, \d{2}-[A-Za-z]{3}-\d{2} \d{2}:\d{2}:\d{2} GMT$/.test(field);
+  const asctime = /^[A-Za-z]{3} [A-Za-z]{3} [ \d]\d \d{2}:\d{2}:\d{2} \d{4}$/.test(field);
+  if (!imf && !rfc850 && !asctime) return false;
+  const timestamp = Date.parse(field);
+  if (!Number.isFinite(timestamp) || timestamp <= Date.now()) return false;
+
+  const date = new Date(timestamp);
+  const canonical = date.toUTCString();
+  if (imf) return field === canonical;
+  if (rfc850) {
+    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const expected = `${days[date.getUTCDay()]}, ${canonical.slice(5, 7)}-${canonical.slice(8, 11)}-${canonical.slice(14, 16)} ${canonical.slice(17, 25)} GMT`;
+    return field === expected;
+  }
+  const expected = `${canonical.slice(0, 3)} ${canonical.slice(8, 11)} ${String(date.getUTCDate()).padStart(2, " ")} ${canonical.slice(17, 25)} ${canonical.slice(12, 16)}`;
+  return field === expected;
+}
+
 // ── C2 التكرار الجاري ──────────────────────────────────────────────────────────
 {
   const thread = crypto.randomUUID();
@@ -465,12 +505,20 @@ if (!c1.ok) {
   const [p, s] = await Promise.all([chat(q, thread), chat(q, thread)]);
   const statuses = [p, s].map((r) => (r.ok ? r.status : "ERR")).sort();
   const dup = [p, s].find((r) => r.ok && r.status === 429 && r.code === "duplicate_request");
-  if (dup) {
+  // A duplicate rejection alone does not prove the first request succeeded:
+  // both calls might fail with 429, or the peer might time out / return 5xx.
+  const peer = dup ? [p, s].find((r) => r !== dup) : null;
+  // Duplicate throttling is not compliant unless clients receive a usable
+  // Retry-After header (delta seconds or a future HTTP-date).
+  const validRetryAfter = validDuplicateRetryAfter(dup?.retryAfter);
+  if (dup && peer?.ok && peer.status === 200 && !peer.code && !peer.errorText && validRetryAfter) {
     note(
       "C2 duplicate",
       "pass",
-      `أحد الطلبين 429 duplicate_request · Retry-After=${dup.retryAfter ?? "—"} · الآخر ${statuses.find((x) => x !== 429)}`,
+      `429 duplicate_request · Retry-After=${dup.retryAfter ?? "—"} · peer 200 completed`,
     );
+  } else if (dup && !validRetryAfter) {
+    note("C2 duplicate", "fail", "429 duplicate_request without a valid Retry-After header");
   } else if (statuses.every((x) => x === 200)) {
     note("C2 duplicate", "warn", "كلاهما 200 — الأوّل أُنهي قبل وصول الثاني (غير حاسم، لا عيب)");
   } else {
