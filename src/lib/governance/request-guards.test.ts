@@ -76,6 +76,29 @@ describe("منع التكرار", () => {
     release!();
   });
 
+  it("يستردّ منع التكرار بعد TTL من رجوع الساعة ولا يحرّر الحجز البديل", () => {
+    const original = acquireRequest("clock-rewind", 100_000);
+    expect(original).not.toBeNull();
+    expect(acquireRequest("clock-rewind", 50_000)).toBeNull();
+    expect(acquireRequest("clock-rewind", 50_000 + REQUEST_INFLIGHT_TTL_MS - 1)).toBeNull();
+
+    const replacement = acquireRequest("clock-rewind", 50_000 + REQUEST_INFLIGHT_TTL_MS);
+    expect(replacement).not.toBeNull();
+    original!();
+    expect(acquireRequest("clock-rewind", 50_000 + REQUEST_INFLIGHT_TTL_MS + 1)).toBeNull();
+    replacement!();
+    expect(acquireRequest("clock-rewind", 50_000 + REQUEST_INFLIGHT_TTL_MS + 2)).not.toBeNull();
+  });
+
+  it("يستردّ السعة بعد TTL من رجوع الساعة دون طرد أي حجز حيّ", () => {
+    for (let i = 0; i < 5_000; i += 1) {
+      expect(acquireRequest(`rollback-${i}`, 100_000)).not.toBeNull();
+    }
+    expect(acquireRequest("fresh", 50_000)).toBeNull();
+    expect(acquireRequest("fresh", 50_000 + REQUEST_INFLIGHT_TTL_MS - 1)).toBeNull();
+    expect(acquireRequest("fresh", 50_000 + REQUEST_INFLIGHT_TTL_MS)).not.toBeNull();
+  });
+
   it("التحرير لا يمسح حجزًا أحدث بالمفتاح نفسه", () => {
     const stale = acquireRequest("k", 0)!;
     const fresh = acquireRequest("k", REQUEST_INFLIGHT_TTL_MS)!;

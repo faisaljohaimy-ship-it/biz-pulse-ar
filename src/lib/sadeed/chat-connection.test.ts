@@ -61,6 +61,25 @@ describe("connectionFromHealth — الشارة تقرأ البوّابة لا �
     expect(connectionFromHealth({ ok: true, key_present: false, gate: "blocked" })).toBe("local");
   });
 
+  it("does not infer a connected model from a malformed key flag", () => {
+    // Provider labels are not credential evidence when a flag is present.
+    for (const key_present of [null, 0, "false", [], {}]) {
+      expect(
+        connectionFromHealth({
+          ok: true,
+          key_present,
+          provider: "google-gemini",
+          gate: "verified",
+        }),
+      ).toBe("local");
+    }
+    // Older health responses may legitimately omit the field.
+    expect(connectionFromHealth({ ok: true, provider: "google-gemini" })).toBe("ready");
+    expect(connectionFromHealth({ ok: true, key_present: false, provider: "google-gemini" })).toBe(
+      "local",
+    );
+  });
+
   it("لا مزوّد ⇐ ردود محلية فقط، أيًّا كانت البوّابة", () => {
     expect(connectionFromHealth({ ok: true, key_present: false, gate: "closed" })).toBe("local");
     expect(connectionFromHealth({ ok: true, key_present: false, provider: null })).toBe("local");

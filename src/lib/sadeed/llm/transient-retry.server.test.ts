@@ -51,6 +51,14 @@ describe("isTransientOverload — الازدحام العابر يُعاد، و�
       expect(isTransientOverload(err("model unavailable for this key", s)), String(s)).toBe(false);
     }
     expect(isTransientOverload(err("403 Forbidden — service unavailable in region"))).toBe(false);
+    // Provider SDKs can attach absent/placeholder statusCode fields. A coerced
+    // 0 must not override the explicit 403 in the message and trigger a retry.
+    for (const invalid of [null, "", false, 0, Number.NaN, 503.5]) {
+      const rejected = Object.assign(err("403 Forbidden — service unavailable"), {
+        statusCode: invalid,
+      });
+      expect(isTransientOverload(rejected), String(invalid)).toBe(false);
+    }
   });
 
   it("الإلغاء والمهلة لا يُعادان", () => {

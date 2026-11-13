@@ -82,6 +82,39 @@ describe("② الاشتقاق حتميّ من العدّات", () => {
   });
 });
 
+describe("invalid or inconsistent operational observations fail closed", () => {
+  const invalid: Array<[string, BriefingSignal]> = [
+    ["NaN counts", { ...few, openIncidents: Number.NaN }],
+    ["infinite counts", { ...few, activePatrols: Number.POSITIVE_INFINITY }],
+    ["negative counts", { ...few, highRiskPermits: -1 }],
+    ["fractional counts", { ...few, openIncidents: 1.5 }],
+    ["inconsistent critical subset", { ...few, criticalIncidents: 3 }],
+    [
+      "unsafe aggregate precision",
+      { ...few, openIncidents: Number.MAX_SAFE_INTEGER, activePatrols: 1 },
+    ],
+  ];
+
+  it.each(invalid)("%s never creates a grounded executive confidence claim", (_name, signal) => {
+    const result = briefingConfidence(signal, AT);
+    expect(isMeasured(result)).toBe(false);
+    if (isMeasured(result)) return;
+    expect(result.reason).toContain("غير صالحة");
+    expect(spokenConfidenceAr(result)).toContain("غير صالحة");
+    expect(spokenConfidenceEn(result)).toContain("invalid");
+    expect(() => briefingEvidence(signal, AT)).toThrow("غير صالحة");
+  });
+
+  it("preserves zero-observation and valid-count semantics", () => {
+    expect(briefingConfidence(none, AT)).toMatchObject({ measured: false });
+    expect(spokenConfidenceEn(briefingConfidence(none, AT))).toContain(
+      "no operational observations",
+    );
+    expect(isMeasured(briefingConfidence(few, AT))).toBe(true);
+    expect(isMeasured(briefingConfidence(many, AT))).toBe(true);
+  });
+});
+
 describe("③ الدليل مُسنَد ويجتاز حارس FR-19", () => {
   it("دليلٌ صالح", () => {
     expect(hasEvidence(briefingEvidence(many, AT))).toBe(true);

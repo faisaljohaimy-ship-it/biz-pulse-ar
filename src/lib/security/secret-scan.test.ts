@@ -19,6 +19,19 @@ describe("secret guard — forbidden files", () => {
     expect(isForbiddenFile("data/pg_dump-2026.sql.gz")).toBe(true);
   });
 
+  it("blocks nested env variants that previously bypassed the file guard", () => {
+    for (const file of [
+      ".env.production.local",
+      ".env.test.local",
+      ".env.staging.backup",
+      "config/.env.preview",
+      "infra/.env.integration",
+      ".env.example.local",
+    ]) {
+      expect(isForbiddenFile(file)).toBe(true);
+    }
+  });
+
   it("allows example env files and legitimate migrations", () => {
     expect(isForbiddenFile(".env.example")).toBe(false);
     expect(isForbiddenFile(".env.sample")).toBe(false);

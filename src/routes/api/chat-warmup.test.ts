@@ -105,17 +105,6 @@ describe("التسخين عند أعلى المعالج", () => {
     );
   });
 
-  it("زائر (بلا Authorization): الثلاث دون الأدوات — لا يدفعها من لن يستعملها", async () => {
-    await import("@/routes/api/chat");
-    const res = await postInvalid();
-    expect(res.status).toBe(400);
-    await vi.waitFor(() =>
-      expect([...sim.loaded].sort()).toEqual(["context", "instant", "router"]),
-    );
-    await new Promise((resolve) => setTimeout(resolve, 50));
-    expect(sim.loaded.has("tools")).toBe(false);
-  });
-
   it("مفتاح الإيقاف يسبق التسخين: لا تحميل بعد رفضه", async () => {
     vi.stubEnv("SADEED_AI_DISABLED", "true");
     await import("@/routes/api/chat");

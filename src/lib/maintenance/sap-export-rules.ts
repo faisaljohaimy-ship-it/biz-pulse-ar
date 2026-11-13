@@ -60,7 +60,7 @@ export function sapSystem(flDescription: string | null | undefined): SapSystem |
   if (d === "physical security") return "GATE";
   if (d === "access control systems") return "ACS";
   if (d === "control room") return "CONTROL";
-  if (d.startsWith("perimeter in")) return "PIDS";
+  if (/^perimeter\s+in(?:trusion|strusion)(?:\b|$)/.test(d)) return "PIDS";
   return null;
 }
 

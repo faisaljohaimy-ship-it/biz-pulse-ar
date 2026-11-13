@@ -94,6 +94,86 @@ describe("authenticated request session lifecycle", () => {
     expect(activeHeaders.get("Authorization")).toBe("Bearer current-session-token");
   });
 
+  it("never forwards an active session bearer to an outside origin", async () => {
+    auth.getSession.mockResolvedValue({
+      data: { session: { access_token: "current-session-token" } },
+      error: null,
+    });
+    vi.stubGlobal("location", { origin: "https://app.example", href: "https://app.example/" });
+
+    await authenticatedFetch(
+      new Request("https://outside.example/collect", {
+        headers: { Authorization: "Bearer inherited-token" },
+      }),
+    );
+    // A Request created in another JS realm need not pass instanceof Request.
+    await authenticatedFetch({ url: "https://outside.example/collect" } as Request);
+    await authenticatedFetch("//outside.example/collect");
+    await authenticatedFetch("/\\outside.example/collect");
+
+    // URL parsing strips these characters, producing //outside.example.
+    await authenticatedFetch("/\t/outside.example/collect");
+    await authenticatedFetch("/\n/outside.example/collect");
+    await authenticatedFetch("/\r/outside.example/collect");
+
+    expect(http).toHaveBeenCalledTimes(7);
+    for (const [, options] of http.mock.calls) {
+      expect(new Headers((options as RequestInit).headers).has("authorization")).toBe(false);
+    }
+  });
+
+  it("does not trust control-character network paths without a browser origin", async () => {
+    auth.getSession.mockResolvedValue({
+      data: { session: { access_token: "current-session-token" } },
+      error: null,
+    });
+    await authenticatedFetch("/\t/outside.example/collect");
+    await authenticatedFetch("/\n/outside.example/collect");
+    await authenticatedFetch("/\r/outside.example/collect");
+    expect(http).toHaveBeenCalledTimes(3);
+    for (const [, options] of http.mock.calls) {
+      expect(new Headers((options as RequestInit).headers).has("authorization")).toBe(false);
+    }
+  });
+
+  it("allows the active bearer for an absolute URL on the same application origin", async () => {
+    auth.getSession.mockResolvedValue({
+      data: { session: { access_token: "current-session-token" } },
+      error: null,
+    });
+    vi.stubGlobal("location", { origin: "https://app.example", href: "https://app.example/" });
+    await authenticatedFetch("https://app.example/api/chat");
+    expect(new Headers((http.mock.calls[0][1] as RequestInit).headers).get("authorization")).toBe(
+      "Bearer current-session-token",
+    );
+  });
+
+  it("does not trust absolute URLs without a known application origin", async () => {
+    auth.getSession.mockResolvedValue({
+      data: { session: { access_token: "current-session-token" } },
+      error: null,
+    });
+    await authenticatedFetch("https://outside.example/collect");
+    expect(new Headers((http.mock.calls[0][1] as RequestInit).headers).has("authorization")).toBe(
+      false,
+    );
+  });
+
+  it("sanitizes thrown SDK session errors without sending a request", async () => {
+    auth.getSession.mockImplementationOnce(() => {
+      throw new Error("sensitive SDK detail");
+    });
+    await expect(authenticatedFetch("/api/chat")).rejects.toThrow(
+      "Authentication session unavailable.",
+    );
+    auth.getSession.mockRejectedValueOnce(new Error("sensitive async SDK detail"));
+    await expect(authenticatedFetch("/api/chat")).rejects.toThrow(
+      "Authentication session unavailable.",
+    );
+    expect(http).not.toHaveBeenCalled();
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
   it("preserves valid guest access and Request headers", async () => {
     const request = new Request("https://example.invalid/chat", { headers: { "x-test": "kept" } });
     await authenticatedFetch(request);

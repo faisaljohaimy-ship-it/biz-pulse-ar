@@ -52,14 +52,18 @@ declare global {
 
 function ringPush(entry: DiagEntry) {
   if (typeof window === "undefined") return;
-  if (!window.__nxAuthLog) window.__nxAuthLog = [];
-  window.__nxAuthLog.push(entry);
-  if (window.__nxAuthLog.length > MAX_MEM) {
-    window.__nxAuthLog.splice(0, window.__nxAuthLog.length - MAX_MEM);
-  }
+  // Reuse the ring reference rather than repeatedly reading the window slot.
+  const memory = (window.__nxAuthLog ??= []);
+  memory.push(entry);
+  if (memory.length > MAX_MEM) memory.splice(0, memory.length - MAX_MEM);
   try {
-    const raw = window.localStorage.getItem(BUF_KEY);
-    const arr: DiagEntry[] = raw ? JSON.parse(raw) : [];
+    let arr: DiagEntry[] = [];
+    try {
+      const saved: unknown = JSON.parse(window.localStorage.getItem(BUF_KEY) ?? "[]");
+      if (Array.isArray(saved)) arr = saved;
+    } catch {
+      // Corrupt storage must not prevent new auth diagnostic events.
+    }
     arr.push(entry);
     if (arr.length > MAX_PERSIST) arr.splice(0, arr.length - MAX_PERSIST);
     window.localStorage.setItem(BUF_KEY, JSON.stringify(arr));

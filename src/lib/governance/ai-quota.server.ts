@@ -109,8 +109,13 @@ export function aiDisabledResponse(surface: AiSurface): Response | null {
 
 /** سقفٌ من البيئة إن وُجد، وإلا الافتراض المكتوب. */
 function cap(envVar: string, fallback: number): number {
-  const raw = Number.parseInt(process.env[envVar] ?? "", 10);
-  return Number.isFinite(raw) && raw > 0 ? raw : fallback;
+  const raw = (process.env[envVar] ?? "").trim();
+  // parseInt("2e2") or parseInt("3junk") silently turns a malformed quota
+  // setting into a different spending limit. Only whole positive decimal
+  // integers are valid overrides; retain the documented default otherwise.
+  if (!/^\d+$/.test(raw)) return fallback;
+  const value = Number(raw);
+  return Number.isSafeInteger(value) && value > 0 ? value : fallback;
 }
 
 /**
