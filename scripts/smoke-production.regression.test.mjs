@@ -158,10 +158,7 @@ for (const [duplicateRetryAfter, label] of [
   });
 }
 
-for (const duplicateRetryAfter of [
-  "Tuesday, 06-Nov-35 08:49:37 GMT",
-  "Tue Nov  6 08:49:37 2035",
-]) {
+for (const duplicateRetryAfter of ["Tuesday, 06-Nov-35 08:49:37 GMT", "Tue Nov  6 08:49:37 2035"]) {
   test(`C2 preserves valid obsolete HTTP dates: ${duplicateRetryAfter}`, async () => {
     const r = await runFixture({ duplicateRetryAfter });
     assert.equal(r.result("C2 duplicate").status, "pass");
