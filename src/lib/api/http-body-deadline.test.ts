@@ -76,6 +76,59 @@ describe("httpJson response body deadline", () => {
     expect(pulls).toBeLessThanOrEqual(MAX_HTTP_JSON_BODY_BYTES / chunk.byteLength + 2);
   });
 
+  it.each([
+    {
+      name: "invalid continuation",
+      chunks: [
+        Uint8Array.from([
+          ...new TextEncoder().encode('{"label":"'),
+          0xc3,
+          0x28,
+          ...new TextEncoder().encode('"}'),
+        ]),
+      ],
+    },
+    {
+      name: "unfinished final character",
+      chunks: [Uint8Array.from([...new TextEncoder().encode('{"label":"'), 0xc3])],
+    },
+  ])("rejects malformed UTF-8 ($name) with a structured upstream error", async ({ chunks }) => {
+    globalThis.fetch = (async () =>
+      new Response(
+        new ReadableStream<Uint8Array>({
+          start(controller) {
+            for (const chunk of chunks) controller.enqueue(chunk);
+            controller.close();
+          },
+        }),
+        { status: 200 },
+      )) as typeof fetch;
+
+    await expect(
+      httpJson("https://example.invalid/malformed-utf8", { retries: 0 }),
+    ).rejects.toMatchObject({ code: "upstream_failed", status: 502 });
+  });
+
+  it("preserves a valid UTF-8 character split across response chunks", async () => {
+    const payload = new TextEncoder().encode('{"label":"ع"}');
+    const split = payload.indexOf(0xd8) + 1;
+    globalThis.fetch = (async () =>
+      new Response(
+        new ReadableStream<Uint8Array>({
+          start(controller) {
+            controller.enqueue(payload.subarray(0, split));
+            controller.enqueue(payload.subarray(split));
+            controller.close();
+          },
+        }),
+        { status: 200 },
+      )) as typeof fetch;
+
+    await expect(
+      httpJson<{ label: string }>("https://example.invalid/split-utf8", { retries: 0 }),
+    ).resolves.toEqual({ label: "ع" });
+  });
+
   it("preserves successful JSON parsing", async () => {
     globalThis.fetch = (async () =>
       new Response(JSON.stringify({ ok: true, count: 2 }), { status: 200 })) as typeof fetch;
