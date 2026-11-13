@@ -80,7 +80,9 @@ export function chatJsonError(
 }
 
 function parseDataUrl(url: string): { bytes: number; mediaType: string } | null {
-  const match = /^data:([^;,]+);base64,([a-z0-9+/=]+)$/i.exec(url);
+  // Base64 padding is permitted only at the end, and at most twice.
+  // Interior or excessive "=" previously passed the length check and reached the AI provider.
+  const match = /^data:([^;,]+);base64,([a-z0-9+/]+={0,2})$/i.exec(url);
   if (!match) return null;
   if (match[2].length % 4 !== 0) return null;
   const padding = match[2].endsWith("==") ? 2 : match[2].endsWith("=") ? 1 : 0;

@@ -74,6 +74,59 @@ describe("chat request guard", () => {
     expect(result.ok).toBe(true);
   });
 
+  it.each(["AA=A", "A===", "===="])(
+    "rejects a base64 file with invalid padding (%s) before provider processing",
+    async (base64) => {
+      const result = await validateChatRequest(
+        chatRequest({
+          messages: [
+            {
+              id: "m1",
+              role: "user",
+              parts: [
+                {
+                  type: "file",
+                  filename: "invalid.pdf",
+                  mediaType: "application/pdf",
+                  url: `data:application/pdf;base64,${base64}`,
+                },
+              ],
+            },
+          ],
+        }),
+      );
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.response.status).toBe(400);
+        expect(await result.response.json()).toMatchObject({
+          error: "Only base64 data URL attachments are accepted.",
+        });
+      }
+    },
+  );
+
+  it("retains valid single-padding base64 attachments", async () => {
+    const result = await validateChatRequest(
+      chatRequest({
+        messages: [
+          {
+            id: "m1",
+            role: "user",
+            parts: [
+              {
+                type: "file",
+                filename: "valid.pdf",
+                mediaType: "application/pdf",
+                url: "data:application/pdf;base64,TWE=",
+              },
+            ],
+          },
+        ],
+      }),
+    );
+    expect(result.ok).toBe(true);
+  });
+
   it("rejects an oversized stream using actual bytes even with a forged small length", async () => {
     let pulls = 0;
     const body = new ReadableStream<Uint8Array>({
