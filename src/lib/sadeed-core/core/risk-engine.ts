@@ -6,7 +6,7 @@ import type { RiskLevel, RiskSignal } from "../types/executive";
 import type { SadeedContextSnapshot } from "../types/sadeed";
 
 const CRITICAL =
-  /(breach|attack|fire(?!wall)|explosion|casualt|fatal|outage|down(?!load)|إخلاء|حريق|هجوم|اختراق|وفاة|انفجار|توقف)/i;
+  /(breach|attack|fire\b|explosion|casualt|fatal|outage|down(?!load)|إخلاء|حريق|هجوم|اختراق|وفاة|انفجار|توقف)/i;
 const HIGH = /(incident|failure|violation|leak|urgent|critical|حادث|عطل|مخالفة|تسريب|عاجل|حرج)/i;
 const MEDIUM = /(delay|risk|issue|warning|degrad|تأخير|مخاطر|مشكلة|تحذير|تدهور)/i;
 const LOW = /(monitor|watch|review|observe|مراقبة|متابعة|مراجعة|رصد)/i;
