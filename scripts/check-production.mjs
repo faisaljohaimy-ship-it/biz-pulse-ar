@@ -258,6 +258,12 @@ function decodeMetaAttribute(value) {
   );
 }
 
+// A MIME prefix is not a MIME type: text/css-invalid and text/html-login are
+// rejected by browsers despite matching a word-boundary regexp.
+function hasMimeType(value, expected) {
+  return (value || "").split(";", 1)[0].trim().toLowerCase() === expected;
+}
+
 const failures = [];
 const rows = [];
 
@@ -269,7 +275,7 @@ for (const route of ROUTES) {
     // An HTTP 200 JSON, plain-text maintenance response, or Vercel SSO wall
     // is not evidence that the requested application HTML rendered.
     const contentType = res.headers.get("content-type") || "";
-    const isHtml = /\btext\/html\b/i.test(contentType) && /<html\b/i.test(html);
+    const isHtml = hasMimeType(contentType, "text/html") && /<html\b/i.test(html);
     const isLoginWall =
       /<title\b[^>]*>\s*(?:Authentication Required|Vercel Authentication)[^<]*<\/title>/i.test(
         html,
@@ -371,7 +377,7 @@ for (const route of ROUTES) {
           const stylesheetUrl = new URL(href, documentBase);
           if (stylesheetUrl.origin !== new URL(BASE).origin) continue;
           const stylesheetRes = await fetchWithRetry(stylesheetUrl.href);
-          const isCss = /\btext\/css\b/i.test(stylesheetRes.headers.get("content-type") || "");
+          const isCss = hasMimeType(stylesheetRes.headers.get("content-type"), "text/css");
           // An empty text/css response is not application styling. Verify the
           // body rather than trusting only status and a Content-Type header.
           const cssText = isCss ? await stylesheetRes.text() : "";
