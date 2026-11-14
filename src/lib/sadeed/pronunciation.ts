@@ -70,7 +70,8 @@ function arabicUnder1000(n: number): string {
 /** A scale group (thousands/millions) with simplified executive-register
  *  agreement: dual for 2, plural for 3–10, singular for 11+. */
 function arabicScale(count: number, one: string, two: string, few: string): string {
-  return count === 1 ? one : count === 2 ? two : `${arabicUnder1000(count)} ${count <= 10 ? few : one}`;
+  if (count < 3) return count === 1 ? one : two;
+  return `${arabicUnder1000(count)} ${count <= 10 ? few : one}`;
 }
 
 /** Arabic cardinal for 0–99 (covers every HCIS directive code). */
@@ -83,7 +84,7 @@ export function arabicCardinal(n: number): string {
 export function arabicNumberWords(n: number): string {
   if (!Number.isFinite(n) || n < 0) return String(n);
   const v = Math.floor(n);
-  if (v === 0) return "صفر";
+  if (!v) return "صفر";
   const billions = Math.floor(v / 1_000_000_000);
   const millions = Math.floor(v / 1_000_000) % 1000;
   const thousands = Math.floor(v / 1000) % 1000;
@@ -158,10 +159,8 @@ export function arabicClock(hh: number, mm: number): string {
     return "";
   }
   const hourWord = HOUR_ORDINAL_F[hh % 12];
-  if (mm <= 0) return `${hourWord} تمامًا`;
-  const minWord = arabicTwoDigitFeminine(mm);
-  const minNoun = mm >= 3 && mm <= 10 ? "دقائق" : "دقيقة";
-  return `${hourWord} و${minWord} ${minNoun}`;
+  if (!mm) return `${hourWord} تمامًا`;
+  return `${hourWord} و${arabicTwoDigitFeminine(mm)} ${mm >= 3 && mm <= 10 ? "دقائق" : "دقيقة"}`;
 }
 
 /** Year in the spoken genitive: 2026 → «ألفين وستة وعشرين». 2000–2099 get
