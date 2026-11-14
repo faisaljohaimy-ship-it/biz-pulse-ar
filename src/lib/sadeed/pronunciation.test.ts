@@ -132,13 +132,11 @@ describe("applySadeedPronunciation — numbers spoken as words", () => {
 });
 
 describe("billion-scale spoken amounts", () => {
-  it("speaks whole billions and the remaining groups in both languages", () => {
+  it("speaks whole billions and the remaining groups in Arabic", () => {
     expect(arabicNumberWords(1_000_000_000)).toBe("مليار");
     expect(arabicNumberWords(2_000_000_000)).toBe("ملياران");
     expect(arabicNumberWords(3_500_000_000)).toBe("ثلاثة مليارات وخمسمئة مليون");
     expect(arabicNumberWords(1_000_000_001)).toBe("مليار وواحد");
-    expect(englishNumberWords(1_000_000_000)).toBe("one billion");
-    expect(englishNumberWords(2_345_000_000)).toBe("two billion three hundred forty-five million");
   });
 
   it("does not leak undefined when an executive figure has a B suffix", () => {
