@@ -31,6 +31,9 @@ export async function parseBoundedMultipart(
   }
   if (!request.body) return { form: null, tooLarge: false };
 
+  // Middleware may have already acquired a reader. A locked stream cannot
+  // be parsed; treat it as an invalid upload rather than leaking a 500.
+  if (request.body.locked) return { form: null, tooLarge: false };
   const reader = request.body.getReader();
   const chunks: Uint8Array[] = [];
   let byteCount = 0;
