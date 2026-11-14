@@ -85,7 +85,8 @@ export function resolveBackTarget(
   if (path === "" || path === "/") return null;
 
   const mapped = drilldownParent(path);
-  if (mapped) return mapped;
+  // Explicit and dynamic parents must not bypass hidden-route and 404 checks.
+  if (mapped) return routeExists(mapped) && !isHidden(mapped) ? mapped : null;
 
   const cut = path.lastIndexOf("/");
   if (cut > 0) {

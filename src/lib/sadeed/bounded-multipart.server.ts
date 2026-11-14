@@ -2,9 +2,13 @@
  * Bound multipart transport bytes before formData() buffers a potentially
  * unbounded upload. The audio field's own limit is checked separately.
  */
+export const MULTIPART_READ_TIMEOUT_MS = 30_000;
+const MULTIPART_READ_TIMEOUT = Symbol("multipart-read-timeout");
+
 export type BoundedMultipartResult = {
   form: FormData | null;
   tooLarge: boolean;
+  timedOut?: boolean;
 };
 
 export async function parseBoundedMultipart(
@@ -23,9 +27,20 @@ export async function parseBoundedMultipart(
   const reader = request.body.getReader();
   const chunks: Uint8Array[] = [];
   let byteCount = 0;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  // An absolute deadline also bounds a peer that trickles small chunks forever.
+  const deadline = new Promise<typeof MULTIPART_READ_TIMEOUT>((resolve) => {
+    timer = setTimeout(() => resolve(MULTIPART_READ_TIMEOUT), MULTIPART_READ_TIMEOUT_MS);
+  });
   try {
     for (;;) {
-      const { done, value } = await reader.read();
+      const next = await Promise.race([reader.read(), deadline]);
+      if (next === MULTIPART_READ_TIMEOUT) {
+        // Cancellation may never settle on a hostile source. Do not block the 408.
+        void reader.cancel().catch(() => {});
+        return { form: null, tooLarge: false, timedOut: true };
+      }
+      const { done, value } = next;
       if (done) break;
       byteCount += value.byteLength;
       if (byteCount > maxBytes) {
@@ -56,6 +71,7 @@ export async function parseBoundedMultipart(
   } catch {
     return { form: null, tooLarge: false };
   } finally {
+    if (timer !== undefined) clearTimeout(timer);
     reader.releaseLock();
   }
 }

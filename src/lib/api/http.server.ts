@@ -63,12 +63,39 @@ function delay(ms: number, signal?: AbortSignal): Promise<void> {
 }
 
 function parseRetryAfter(value: string | null): number | null {
-  if (!value) return null;
-  const seconds = Number(value);
-  if (Number.isFinite(seconds)) return Math.max(0, seconds * 1000);
-  const at = Date.parse(value);
-  if (Number.isFinite(at)) return Math.max(0, at - Date.now());
-  return null;
+  const field = value?.trim();
+  if (!field) return null;
+  // Retry-After delta-seconds is decimal DIGITs, not Number() syntax such as
+  // hex, exponent or signed numbers; the latter could suppress useful retries.
+  if (/^\d+$/.test(field)) {
+    const seconds = Number(field);
+    return Number.isSafeInteger(seconds) ? seconds * 1000 : null;
+  }
+  // Date.parse accepts non-HTTP date strings (including ISO dates). Limit this
+  // branch to IMF-fixdate and the two obsolete HTTP-date forms.
+  const isImfFixdate = /^[A-Za-z]{3}, \d{2} [A-Za-z]{3} \d{4} \d{2}:\d{2}:\d{2} GMT$/.test(field);
+  const isRfc850 = /^[A-Za-z]{6,9}, \d{2}-[A-Za-z]{3}-\d{2} \d{2}:\d{2}:\d{2} GMT$/.test(field);
+  const isAsctime = /^[A-Za-z]{3} [A-Za-z]{3} [ \d]\d \d{2}:\d{2}:\d{2} \d{4}$/.test(field);
+  if (!isImfFixdate && !isRfc850 && !isAsctime) return null;
+  const at = Date.parse(field);
+  if (!Number.isFinite(at)) return null;
+
+  // Date.parse silently normalizes impossible days (Feb 30) and may ignore an
+  // incorrect weekday. Round-trip each HTTP-date grammar before honoring a
+  // server-controlled delay that could suppress an otherwise healthy retry.
+  const date = new Date(at);
+  const canonical = date.toUTCString();
+  if (isImfFixdate && canonical !== field) return null;
+  if (isRfc850) {
+    const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const expected = `${weekdays[date.getUTCDay()]}, ${canonical.slice(5, 7)}-${canonical.slice(8, 11)}-${canonical.slice(14, 16)} ${canonical.slice(17, 25)} GMT`;
+    if (expected !== field) return null;
+  }
+  if (isAsctime) {
+    const expected = `${canonical.slice(0, 3)} ${canonical.slice(8, 11)} ${String(date.getUTCDate()).padStart(2, " ")} ${canonical.slice(17, 25)} ${canonical.slice(12, 16)}`;
+    if (expected !== field) return null;
+  }
+  return Math.max(0, at - Date.now());
 }
 
 /**
@@ -208,18 +235,37 @@ async function readResponseTextWithin(
   });
 
   const consume = (async () => {
-    const decoder = new TextDecoder();
+    // A lossy decoder silently changes invalid upstream JSON string values.
+    // Reject malformed bytes rather than accepting corrupted incident/report data.
+    const decoder = new TextDecoder("utf-8", { fatal: true });
+    const decode = (chunk?: Uint8Array, stream = false): string => {
+      try {
+        return decoder.decode(chunk, { stream });
+      } catch {
+        void reader.cancel().catch(() => {});
+        throw apiError("upstream_failed", "Invalid UTF-8 from upstream response");
+      }
+    };
     let text = "";
     let receivedBytes = 0;
     for (;;) {
-      const { done, value } = await reader.read();
-      if (done) return text + decoder.decode();
+      // A broken upstream stream can reject reader.read() with arbitrary
+      // network diagnostics. Do not surface them as an unhandled 500.
+      let read: ReadableStreamReadResult<Uint8Array>;
+      try {
+        read = await reader.read();
+      } catch {
+        void reader.cancel().catch(() => {});
+        throw apiError("upstream_failed", "Failed reading upstream JSON response body");
+      }
+      const { done, value } = read;
+      if (done) return text + decode();
       receivedBytes += value.byteLength;
       if (receivedBytes > MAX_HTTP_JSON_BODY_BYTES) {
         void reader.cancel().catch(() => {});
         throw apiError("upstream_failed", "Upstream JSON response exceeds size limit");
       }
-      text += decoder.decode(value, { stream: true });
+      text += decode(value, true);
     }
   })();
 

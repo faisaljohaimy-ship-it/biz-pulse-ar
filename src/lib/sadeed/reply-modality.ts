@@ -33,11 +33,11 @@ export function shouldSpeakSadeedReply({
  * «سِك ثمانية عشر», PTW → «تصريح العمل») instead of letter-spelled. */
 export function toSadeedSpeechText(value: string): string {
   const cleaned = value
-    .replace(/```[\s\S]*?```/g, " ")
+    // Never narrate fenced code, even if streaming truncates before its closing fence.
+    .replace(/```[\s\S]*?(?:```|$)|~~~[^\r\n]*\r?\n[\s\S]*?(?:~~~|$)/g, " ")
     .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
-    .replace(/\[([^\]]+)\]\((?:https?:\/\/|mailto:|tel:)[^)]*\)/gi, "$1")
-    // الروابط النسبية (روابط الشاشات من الموجّه بلا تكلفة): يُنطق اسمها لا مسارها.
-    .replace(/\[([^\]]+)\]\(\/[^)]*\)/g, "$1")
+    // Narrate link labels, not destination URLs, anchors, or screen paths.
+    .replace(/\[([^\]]+)\]\((?:https?:\/\/|mailto:|tel:|\/|#|\.{1,2}\/)[^)]*\)/gi, "$1")
     .replace(/https?:\/\/\S+/gi, " ")
     .replace(/\[(?:DOC|KB):[^\]]+\]/gi, " ")
     .replace(/\[(?:\d+(?:\s*[-,]\s*\d+)*)\]/g, " ")

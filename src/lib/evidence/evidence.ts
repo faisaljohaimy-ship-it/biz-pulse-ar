@@ -110,14 +110,14 @@ export function measured<T>(
   confidence: Confidence = "measured",
 ): GroundedValue<T> {
   if (evidence.length === 0) {
-    throw new Error("ادّعاءٌ مقيس بلا دليل — الإسناد شرطُ التمثيل لا تحسينُه");
+    throw new Error("ادعاء مقيس بلا دليل");
   }
   // `hasEvidence` مُحدِّدُ نوع، فنفيُه على `Evidence` يضيّق إلى `never`.
   // فيُلفّ في دالّةٍ تعيد منطقيًّا خالصًا — الفحص نفسه بلا تضييق.
   const valid = (e: Evidence): boolean => hasEvidence(e);
   const bad = evidence.find((e) => !valid(e));
   if (bad) {
-    throw new Error(`دليلٌ لا يجتاز حارس FR-19 — المصدر «${bad.source}» بلا لحظةِ رصدٍ صالحة`);
+    throw new Error(`دليل FR-19 غير صالح: ${bad.source}`);
   }
   return { measured: true, value, evidence, confidence };
 }
@@ -125,7 +125,7 @@ export function measured<T>(
 /** يبني غيابًا يحمل سببه. **يرمي على سببٍ فارغ.** */
 export function unmeasured(reason: string): UnmeasuredValue {
   if (reason.trim().length === 0) {
-    throw new Error("غيابٌ بلا سبب — «لم يُقَس» تُفقد معناها بلا بيانِ لماذا");
+    throw new Error("غياب بلا سبب");
   }
   return { measured: false, reason };
 }
