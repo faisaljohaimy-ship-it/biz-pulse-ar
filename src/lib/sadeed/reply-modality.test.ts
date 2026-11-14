@@ -24,6 +24,18 @@ describe("SADEED reply modality", () => {
     );
   });
 
+  it("never narrates code inside tilde-fenced Markdown blocks", () => {
+    expect(toSadeedSpeechText("قبل\n~~~ts\nconst DO_NOT_NARRATE = true;\n~~~\nبعد")).toBe(
+      "قبل بعد",
+    );
+  });
+
+  it("speaks Markdown anchor and relative-link labels without raw link syntax", () => {
+    expect(toSadeedSpeechText("راجع [التنبيهات](#alerts) ثم [التقرير](./report)")).toBe(
+      "راجع التنبيهات ثم التقرير",
+    );
+  });
+
   it("روابط الشاشات النسبية يُنطق اسمها لا مسارها (نقض الحارس، المادة ٢٢ النطق)", () => {
     const spoken = toSadeedSpeechText("رابط شاشة «الصيانة»: [الصيانة](/sec/maintenance)");
     expect(spoken).toContain("الصيانة");
