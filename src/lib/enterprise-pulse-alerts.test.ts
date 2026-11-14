@@ -43,6 +43,39 @@ describe("Enterprise Pulse executive risk alerts", () => {
     expect(crises.map((item) => item.id)).toEqual(["c-1", "c-2", "c-3", "c-4", "c-5", "c-6"]);
   });
 
+  it("does not let a malformed risk score displace a valid top-five alert", () => {
+    const crises = [
+      crisis("unknown", Number.NaN),
+      crisis("critical", 95),
+      crisis("high-1", 80),
+      crisis("high-2", 75),
+      crisis("medium", 60),
+      crisis("low", 45),
+    ];
+    expect(deriveAlerts(crises).map((a) => a.id)).toEqual([
+      "critical",
+      "high-1",
+      "high-2",
+      "medium",
+      "low",
+    ]);
+    expect(crises[0].riskScore).toBeNaN();
+  });
+
+  it("never renders a severity from infinite, negative, or over-100 risk measurements", () => {
+    const crises = [
+      crisis("infinite", Number.POSITIVE_INFINITY),
+      crisis("negative", -1),
+      crisis("out-of-range", 101),
+      crisis("critical-edge", 100),
+      crisis("low-edge", 0),
+    ];
+    expect(deriveAlerts(crises).map((a) => [a.id, a.severity])).toEqual([
+      ["critical-edge", "critical"],
+      ["low-edge", "low"],
+    ]);
+  });
+
   it("preserves original ordering for equal risks and does not mutate the source", () => {
     const crises = [crisis("first", 69), crisis("second", 69), crisis("third", 80)];
     expect(deriveAlerts(crises).map((alert) => alert.id)).toEqual(["third", "first", "second"]);
