@@ -186,6 +186,10 @@ export function pcm16ToWav(pcm: Uint8Array, sampleRate = 24_000, channels = 1): 
   const safeRate = positiveInteger(sampleRate, 24_000, 192_000);
   const safeChannels = positiveInteger(channels, 1, 8);
   const bytesPerSample = 2;
+  // A PCM16 frame contains one complete 16-bit sample per channel. Reject
+  // truncated frames instead of emitting a WAV with an invalid block alignment.
+  if (pcm.byteLength % (safeChannels * bytesPerSample) !== 0)
+    throw new Error("PCM payload must contain complete audio frames.");
   const wav = new Uint8Array(44 + pcm.byteLength);
   const view = new DataView(wav.buffer);
   writeAscii(view, 0, "RIFF");
