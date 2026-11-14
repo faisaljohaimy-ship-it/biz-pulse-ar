@@ -310,7 +310,8 @@ const STATIC_INTEL: PulseIntel[] = [
 export function deriveAlerts(crises: CrisisPrediction[]): PulseAlert[] {
   // Source sort_order is not severity order. Rank all crises before taking five.
   // Keep the original array intact for realtime and other operational consumers.
-  return [...crises]
+  return crises
+    .filter(({ riskScore }) => riskScore >= 0 && riskScore <= 100)
     .sort((a, b) => b.riskScore - a.riskScore)
     .slice(0, 5)
     .map((c) => ({
@@ -333,8 +334,7 @@ export function deriveAlerts(crises: CrisisPrediction[]): PulseAlert[] {
 function deriveStatus(crises: CrisisPrediction[]): { status: PulseStatus; health: number } {
   const max = crises.reduce((m, c) => Math.max(m, c.riskScore), 0);
   const status: PulseStatus = max >= 80 ? "critical" : max >= 65 ? "warning" : "healthy";
-  const health = Math.max(40, 100 - Math.round(max * 0.35));
-  return { status, health };
+  return { status, health: Math.max(40, 100 - Math.round(max * 0.35)) };
 }
 
 const EMPTY: EnterprisePulse = {
