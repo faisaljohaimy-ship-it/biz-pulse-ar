@@ -128,9 +128,9 @@ function stylesheetHref(tag) {
   const inactiveMedia = media !== "" && media.split(",").every(nonScreenQuery);
   if ("disabled" in attrs || inactiveMedia) return null;
   // HTML parses character references in href before the browser fetches CSS.
-  // Decode one layer of common ampersand references in query strings so the
-  // release probe requests the same URL as the browser, not a literal &amp;.
-  return attrs.href?.trim() ? attrs.href.replace(/&(?:amp|#0*38|#x0*26);/gi, "&") : null;
+  // Decode exactly one layer of character references, as HTML does before
+  // resolving the URL. Numeric references can encode path separators too.
+  return attrs.href?.trim() ? decodeMetaAttribute(attrs.href) : null;
 }
 
 // A textual theme call in a JS comment or string does not initialize the UI.
@@ -244,9 +244,9 @@ function hasExecutableThemeBootstrap(body) {
 // HTML decodes character references in attribute values before applying
 // http-equiv=refresh. Decode one layer to match browser redirect semantics.
 function decodeMetaAttribute(value) {
-  return value.replace(/&(?:#(x[0-9a-f]+|\d+);?|(?:semi|tab|newline);)/gi, (entity, numeric) => {
+  return value.replace(/&(?:#(x[0-9a-f]+|\d+);?|(?:amp|semi|tab|newline);)/gi, (entity, numeric) => {
     if (!numeric) {
-      const names = { semi: ";", tab: "\t", newline: "\n" };
+      const names = { amp: "&", semi: ";", tab: "\t", newline: "\n" };
       return names[entity.slice(1, -1).toLowerCase()] ?? entity;
     }
     const hex = numeric[0].toLowerCase() === "x";
@@ -344,7 +344,7 @@ for (const route of ROUTES) {
     const firstBase = [...activeMarkup.matchAll(/<base\b[^>]*>/gi)]
       .map(([tag]) => tagAttributes(tag, 5))
       .find((attrs) => "href" in attrs);
-    const baseHref = firstBase?.href?.replace(/&(?:amp|#0*38|#x0*26);/gi, "&");
+    const baseHref = firstBase?.href === undefined ? undefined : decodeMetaAttribute(firstBase.href);
     const documentBase = baseHref === undefined ? url : new URL(baseHref, url).href;
 
     if (!isHtml) failures.push(`${route}: الاستجابة ليست مستند HTML صالحًا للتطبيق`);
