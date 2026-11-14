@@ -110,4 +110,5 @@ describe("cappedDpr", () => {
     vi.stubGlobal("devicePixelRatio", 1.5);
     expect(cappedDpr(0.5)).toEqual([1, 1]);
     expect(cappedDpr(Number.NaN)).toEqual([1, 1.5]);
-  });});
+  });
+});
