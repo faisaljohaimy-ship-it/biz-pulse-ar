@@ -60,4 +60,28 @@ describe("SADEED streaming voice first-sentence latency", () => {
     expect(onSentence).toHaveBeenCalledWith("Ready", 0);
     expect(onLatencyBreach).not.toHaveBeenCalled();
   });
+
+  it("flushes a newline-delimited Arabic sentence without requiring a space", () => {
+    const onSentence = vi.fn();
+    const flusher = createSentenceFlusher({ onSentence });
+
+    flusher.pushToken("السطر الأول\nالثاني");
+
+    expect(onSentence).toHaveBeenCalledTimes(1);
+    expect(onSentence).toHaveBeenNthCalledWith(1, "السطر الأول", 0);
+    flusher.finish();
+    expect(onSentence).toHaveBeenNthCalledWith(2, "الثاني", 1);
+  });
+
+  it("flushes a trailing newline before the stream closes", () => {
+    const onSentence = vi.fn();
+    const flusher = createSentenceFlusher({ onSentence });
+
+    flusher.pushToken("Ready\n");
+
+    expect(onSentence).toHaveBeenCalledWith("Ready", 0);
+    expect(flusher.stats().sentences).toBe(1);
+    flusher.finish();
+    expect(onSentence).toHaveBeenCalledTimes(1);
+  });
 });
