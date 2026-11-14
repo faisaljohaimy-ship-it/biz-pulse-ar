@@ -127,8 +127,10 @@ describe("enterprise fabric KPI integrity", () => {
       [{ coverage: -1 }],
       [{ progress: 101, adoption: Number.NaN }],
     );
-    expect([metrics.avgSla, metrics.avgPolicyCoverage, metrics.avgProgress, metrics.avgAdoption])
-      .toEqual([0, 0, 0, 0]);
+    expect(metrics.avgSla).toBe(0);
+    expect(metrics.avgPolicyCoverage).toBe(0);
+    expect(metrics.avgProgress).toBe(0);
+    expect(metrics.avgAdoption).toBe(0);
   });
 
   it("preserves averages and rounding for healthy numeric data", () => {
