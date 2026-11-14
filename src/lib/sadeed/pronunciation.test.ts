@@ -162,6 +162,9 @@ describe("toArabicSpokenNumber — the one isolated converter", () => {
     expect(toArabicSpokenNumber("12:35", "time")).toBe("الثانية عشرة وخمس وثلاثون دقيقة");
     expect(arabicClock(9, 5)).toBe("التاسعة وخمس دقائق");
     expect(arabicClock(1, 0)).toBe("الواحدة تمامًا");
+    expect(arabicClock(0, 0)).toBe("الثانية عشرة تمامًا");
+    expect(arabicClock(12, 0)).toBe("الثانية عشرة تمامًا");
+    expect(arabicClock(23, 0)).toBe("الحادية عشرة تمامًا");
     expect(toArabicSpokenNumber("14:07", "auto")).toBe("الثانية وسبع دقائق");
   });
 
