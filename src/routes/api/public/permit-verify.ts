@@ -5,15 +5,7 @@
  * a scanned QR opens: "is this permit valid, for whom, where, until when?".
  */
 import { createFileRoute } from "@tanstack/react-router";
-import { enforceRateLimit } from "@/lib/governance/rate-limit.server";
-
-function clientKey(request: Request): string {
-  const cf = request.headers.get("cf-connecting-ip")?.trim();
-  const fwd = request.headers.get("x-forwarded-for") ?? "";
-  const ip =
-    cf || fwd.split(",")[0]?.trim() || request.headers.get("x-real-ip")?.trim() || "unknown";
-  return `permit-verify:${ip}`;
-}
+import { clientBucketKey, enforceRateLimit } from "@/lib/governance/rate-limit.server";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -21,7 +13,7 @@ export const Route = createFileRoute("/api/public/permit-verify")({
   server: {
     handlers: {
       GET: async ({ request }) => {
-        const rate = await enforceRateLimit(clientKey(request), 60, 60);
+        const rate = await enforceRateLimit(clientBucketKey(request, "permit-verify"), 60, 60);
         if (rate.unavailable || !rate.allowed) {
           return Response.json({ ok: false, error: "rate_limited" }, { status: 429 });
         }

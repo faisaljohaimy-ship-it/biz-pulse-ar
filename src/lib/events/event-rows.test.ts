@@ -31,4 +31,52 @@ describe("event stream hydration and realtime reconciliation", () => {
   it("does not emit a row when the caller's limit is zero", () => {
     expect(mergeEventRowsById([incoming], prior, 0)).toEqual([]);
   });
+
+  it("rejects malformed caps instead of draining both event snapshots", () => {
+    const rows = [incoming, { id: "newer-2" }];
+    for (const invalid of [
+      NaN,
+      Infinity,
+      -Infinity,
+      1.5,
+      0.5,
+      2 ** 31,
+      Number.MAX_SAFE_INTEGER + 1,
+    ]) {
+      expect(mergeEventRowsById(rows, prior, invalid)).toEqual([]);
+    }
+  });
+
+  it("does not iterate snapshots when the cap is invalid", () => {
+    const unused = new Proxy([incoming], {
+      get(target, property, receiver) {
+        if (property === Symbol.iterator) throw new Error("uncapped event snapshot consumed");
+        return Reflect.get(target, property, receiver);
+      },
+    });
+    expect(mergeEventRowsById(unused, unused, NaN)).toEqual([]);
+    expect(mergeEventRowsById(unused, unused, Infinity)).toEqual([]);
+  });
+
+  it("does not read stale hydration rows when the realtime cap is already filled", () => {
+    // The previous implementation spread the entire older snapshot first,
+    // even when the visible result had already reached its one-row limit.
+    const unusedSnapshot = new Proxy([{ id: "never-needed" }], {
+      get(target, property, receiver) {
+        if (property === Symbol.iterator) throw new Error("stale snapshot was consumed");
+        return Reflect.get(target, property, receiver);
+      },
+    });
+    expect(mergeEventRowsById([incoming], unusedSnapshot, 1)).toEqual([incoming]);
+  });
+
+  it("stops reading realtime rows after the cap without cloning the entire list", () => {
+    const live = new Proxy([incoming, { id: "never-needed" }], {
+      get(target, property, receiver) {
+        if (property === "1") throw new Error("event tail was consumed");
+        return Reflect.get(target, property, receiver);
+      },
+    });
+    expect(mergeEventRowsById(live, prior, 1)).toEqual([incoming]);
+  });
 });

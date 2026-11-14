@@ -10,7 +10,9 @@ export function chooseSadeedRecorderMime(supports: (mime: string) => boolean): s
 }
 
 export function recorderFileExtension(mime: string): string {
-  const base = mime.split(";", 1)[0]?.toLowerCase();
+  // MIME type tokens are case-insensitive; optional whitespace around the
+  // semicolon must not rename an MP4/OGG/WAV recording to .webm (Safari).
+  const base = mime.split(";", 1)[0]?.trim().toLowerCase();
   if (base === "audio/mp4" || base === "video/mp4" || base === "audio/x-m4a") return "m4a";
   if (base === "audio/ogg") return "ogg";
   if (base === "audio/mpeg") return "mp3";

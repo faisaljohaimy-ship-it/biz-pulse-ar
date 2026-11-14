@@ -2,6 +2,15 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_REGION_ID, getRegion, REGIONS, type RegionId } from "./regions";
 
 describe("getRegion", () => {
+  it("preserves all four Arabic labels after sharing their bundle prefix", () => {
+    expect(REGIONS.map((region) => region.labelAr)).toEqual([
+      "الأمن الصناعي — المنطقة الوسطى",
+      "الأمن الصناعي — المنطقة الغربية",
+      "الأمن الصناعي — المنطقة الشرقية",
+      "الأمن الصناعي — المنطقة الجنوبية",
+    ]);
+  });
+
   it("returns the requested region for each known ID", () => {
     for (const region of REGIONS) {
       expect(getRegion(region.id)).toBe(region);

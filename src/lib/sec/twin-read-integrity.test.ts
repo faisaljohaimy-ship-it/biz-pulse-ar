@@ -44,6 +44,21 @@ describe("twin read integrity", () => {
     expect(() => assertTwinReadsSucceeded({ ...snapshot(), sensors })).toThrow();
   });
 
+  it.each([NaN, -Infinity, 0, 199, 300, 399, "200", 200.5])(
+    "rejects malformed or non-success HTTP status %s even with rows present",
+    (status) => {
+      const sensors = { data: [{ id: "sensor-1" }], error: null, status };
+      expect(() => assertTwinReadsSucceeded({ ...snapshot(), sensors })).toThrow(
+        /^twin-read-unavailable:sensors$/,
+      );
+    },
+  );
+
+  it.each([200, 201, 206])("accepts successful HTTP status %s", (status) => {
+    const sensors = { data: [{ id: "sensor-1" }], error: null, status };
+    expect(() => assertTwinReadsSucceeded({ ...snapshot(), sensors })).not.toThrow();
+  });
+
   it("rejects a missing response", () => {
     expect(() => assertTwinReadsSucceeded({ ...snapshot(), gates: undefined })).toThrow();
   });

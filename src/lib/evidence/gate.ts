@@ -69,19 +69,35 @@ export interface Evidence {
   readonly limitation?: string;
 }
 
+/**
+ * Date.parse normalizes impossible dates (Feb 30 becomes Mar 2), which can
+ * wrongly certify a fabricated observation as LIVE. Require a complete ISO
+ * timestamp and validate its Gregorian calendar day before parsing.
+ */
 export function hasEvidence(e: Evidence | null | undefined): e is Evidence {
-  if (!e) return false;
-  if (!e.source || typeof e.source !== "string") return false;
-  if (!e.observedAt || typeof e.observedAt !== "string") return false;
-  const t = Date.parse(e.observedAt);
-  if (Number.isNaN(t)) return false;
-  return true;
+  if (!e || typeof e.source !== "string" || !e.source.trim() || typeof e.observedAt !== "string")
+    return false;
+  const value = e.observedAt;
+  const match =
+    /^(?:\d{4}|[+-]\d{6})-\d\d-(\d\d)T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d{1,9})?(?:Z|[+-]\d\d:[0-5]\d)$/.exec(
+      value,
+    );
+  return (
+    !!match &&
+    Number.isFinite(Date.parse(value)) &&
+    new Date(value.slice(0, value.indexOf("T"))).getUTCDate() === +match[1]
+  );
 }
 
-/** Freshness gate: evidence older than `maxAgeMs` is treated as stale. */
+/** Freshness gate: reject stale, invalid, and future-dated evidence. */
 export function isFresh(e: Evidence, maxAgeMs = 5 * 60_000): boolean {
+  if (!hasEvidence(e)) return false;
   const t = Date.parse(e.observedAt);
-  return Date.now() - t <= maxAgeMs;
+  const ageMs = Date.now() - t;
+  // A future timestamp previously produced a negative age, so even evidence
+  // years ahead was mistakenly treated as fresh by the status-badge gate.
+  // NaN from an invalid date fails both comparisons naturally.
+  return ageMs >= 0 && ageMs <= maxAgeMs;
 }
 
 /**
@@ -103,7 +119,8 @@ export function queryEvidence(
   value?: string | number,
   href?: string,
 ): Evidence | null {
-  if (!dataUpdatedAt || dataUpdatedAt <= 0) return null;
+  // Reject invalid or out-of-range Date timestamps before toISOString can throw.
+  if (!(dataUpdatedAt > 0 && dataUpdatedAt <= 8.64e15)) return null;
   return {
     kind: "db.query",
     source,

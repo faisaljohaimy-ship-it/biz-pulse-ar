@@ -83,9 +83,16 @@ export function isApiError(value: unknown): value is ApiError {
 
 /** Normalise any thrown value into a serialisable envelope. */
 export function toApiErrorShape(err: unknown): ApiErrorShape {
-  if (isApiError(err)) return err.toJSON();
-  if (err instanceof Error) {
-    return { code: "internal_error", message: err.message, status: 500 };
+  // Thrown values are untrusted. Object.create(null), hostile coercion hooks,
+  // and Error.message getters can throw while we are handling another error.
+  // Keep the error boundary serialisable instead of throwing a second 500.
+  try {
+    if (isApiError(err)) return err.toJSON();
+    if (err instanceof Error) {
+      return { code: "internal_error", message: err.message, status: 500 };
+    }
+    return { code: "internal_error", message: String(err ?? "Unknown error"), status: 500 };
+  } catch {
+    return { code: "internal_error", message: "Unknown error", status: 500 };
   }
-  return { code: "internal_error", message: String(err ?? "Unknown error"), status: 500 };
 }

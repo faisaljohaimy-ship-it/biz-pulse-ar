@@ -13,10 +13,10 @@ async function runFixture(options = {}) {
   let exitCode = null;
   let anonymousCalls = 0;
   const encodeEvent = (value) => `data: ${JSON.stringify(value)}\n\n`;
-  const json = (body, status = 200) =>
+  const json = (body, status = 200, extraHeaders = {}) =>
     new Response(JSON.stringify(body), {
       status,
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", ...extraHeaders },
     });
   const context = vm.createContext({
     console: {
@@ -26,6 +26,7 @@ async function runFixture(options = {}) {
     process: {
       env: {
         PRODUCTION_URL: "https://offline.invalid",
+        EXPECTED_SHA: options.expectedSha ?? "",
         STRICT: options.strict ? "1" : "0",
         EXPECT_N8N: options.expectN8n ? "1" : "",
       },
@@ -45,7 +46,7 @@ async function runFixture(options = {}) {
       assert.equal(url.origin, "https://offline.invalid", "Network access is forbidden");
       if (url.pathname === "/api/public/health") {
         const body = {
-          build: { sha: "a".repeat(40), ref: "fixture" },
+          build: { sha: options.buildSha ?? "a".repeat(40), ref: "fixture" },
           subsystems: {
             db: { status: options.db ?? "ok" },
             rate_limit_storage: { status: options.storage ?? "ok" },
@@ -63,17 +64,42 @@ async function runFixture(options = {}) {
       assert.equal(url.pathname, "/api/chat");
       if (init.headers.authorization) return json({ error: "unauthorized" }, 401);
       anonymousCalls++;
-      if (anonymousCalls > 1) {
-        return json({ code: "duplicate_request" }, 429);
+      // C1 runs first. C2 then sends a successful peer and a duplicate 429.
+      // Negative fixtures prove that a duplicate rejection cannot conceal a broken peer.
+      if (anonymousCalls === 3 || (anonymousCalls === 2 && options.duplicatePeer === "both-429")) {
+        return json(
+          { code: "duplicate_request" },
+          429,
+          options.duplicateRetryAfter === null
+            ? {}
+            : { "retry-after": options.duplicateRetryAfter ?? "2" },
+        );
       }
-      if (options.networkFailure) throw new Error("fixture network failure");
+      if (anonymousCalls === 2 && options.duplicatePeer === "http-503")
+        return json({ code: "upstream_failure" }, 503);
+      if (anonymousCalls === 2 && options.duplicatePeer === "network-error")
+        throw new Error("fixture peer timeout");
+      if (options.networkFailure && anonymousCalls === 1)
+        throw new Error("fixture network failure");
       const text = options.text ?? "تحقق من تصريح العمل ومعدات الوقاية قبل البدء.";
       let body = encodeEvent({ type: "text-delta", delta: text });
       if (options.event) body += encodeEvent(options.event);
-      body += "data: [DONE]\n\n";
-      const headers = { "content-type": "text/event-stream", "x-sadeed-gate": "verified" };
+      if (
+        !options.omitDone &&
+        !(anonymousCalls === 2 && options.duplicatePeer === "incomplete-200")
+      ) {
+        const terminator = options.doneWithoutSpace ? "data:[DONE]" : "data: [DONE]";
+        body += `${terminator}${options.doneCrLf ? "\r\n\r\n" : "\n\n"}`;
+      }
+      const headers = {
+        "content-type": "text/event-stream",
+        "x-sadeed-gate": options.gate ?? "verified",
+      };
       if (options.source !== null) headers["x-sadeed-reply-source"] = options.source ?? "model";
-      return new Response(body, { status: options.status ?? 200, headers });
+      return new Response(body, {
+        status: anonymousCalls === 1 ? (options.status ?? 200) : 200,
+        headers,
+      });
     },
   });
   await new vm.Script(`(async () => {\n${program}\n})()`).runInContext(context);
@@ -90,8 +116,100 @@ async function runFixture(options = {}) {
 test("a complete Arabic model reply passes", async () => {
   const r = await runFixture();
   assert.equal(r.result("C1 chat").status, "pass");
+  assert.equal(r.result("C2 duplicate").status, "pass");
   assert.equal(r.exitCode, 0);
 });
+
+for (const [duplicatePeer, label] of [
+  ["both-429", "both concurrent calls rejected as duplicates"],
+  ["http-503", "the supposed successful peer instead returns HTTP 503"],
+  ["network-error", "the supposed successful peer times out"],
+  ["incomplete-200", "the peer returns HTTP 200 with a truncated SSE stream"],
+]) {
+  test(`C2 fails when ${label}`, async () => {
+    const r = await runFixture({ duplicatePeer });
+    assert.equal(r.result("C1 chat").status, "pass");
+    assert.equal(r.result("C2 duplicate").status, "fail");
+    assert.equal(r.exitCode, 1);
+  });
+}
+for (const [duplicateRetryAfter, label] of [
+  [null, "missing"],
+  ["-1", "negative"],
+  ["not-a-date", "malformed"],
+  ["999999999999999999999999999999", "unsafe integer"],
+]) {
+  test(`C2 rejects a ${label} Retry-After on a duplicate rejection`, async () => {
+    const r = await runFixture({ duplicateRetryAfter });
+    assert.equal(r.result("C1 chat").status, "pass");
+    assert.equal(r.result("C2 duplicate").status, "fail");
+    assert.equal(r.exitCode, 1);
+  });
+}
+
+for (const [duplicateRetryAfter, label] of [
+  ["2099-01-01", "non-HTTP ISO date"],
+  ["Sun, 30 Feb 2099 00:00:00 GMT", "impossible calendar day"],
+  ["Sun, 01 Jan 2099 00:00:00 GMT", "incorrect weekday"],
+  ["Tuesday, 31-Nov-35 08:49:37 GMT", "invalid RFC850 day"],
+]) {
+  test(`C2 rejects a ${label} even when Date.parse accepts it`, async () => {
+    const r = await runFixture({ duplicateRetryAfter });
+    assert.equal(r.result("C1 chat").status, "pass");
+    assert.equal(r.result("C2 duplicate").status, "fail");
+    assert.equal(r.exitCode, 1);
+  });
+}
+
+for (const duplicateRetryAfter of ["Tuesday, 06-Nov-35 08:49:37 GMT", "Tue Nov  6 08:49:37 2035"]) {
+  test(`C2 preserves valid obsolete HTTP dates: ${duplicateRetryAfter}`, async () => {
+    const r = await runFixture({ duplicateRetryAfter });
+    assert.equal(r.result("C2 duplicate").status, "pass");
+    assert.equal(r.exitCode, 0);
+  });
+}
+
+test("C2 accepts a future HTTP-date Retry-After", async () => {
+  const r = await runFixture({
+    duplicateRetryAfter: new Date(Date.now() + 120_000).toUTCString(),
+  });
+  assert.equal(r.result("C2 duplicate").status, "pass");
+  assert.equal(r.exitCode, 0);
+});
+
+test("rejects a truncated HTTP 200 SSE response with valid-looking Arabic text", async () => {
+  const r = await runFixture({ omitDone: true });
+  assert.equal(r.result("C1 chat").status, "fail");
+  assert.equal(r.exitCode, 1);
+});
+
+test("accepts a valid SSE terminal data marker without a separating space", async () => {
+  const r = await runFixture({ doneWithoutSpace: true });
+  assert.equal(r.result("C1 chat").status, "pass");
+  assert.equal(r.exitCode, 0);
+});
+
+test("accepts a CRLF-terminated SSE completion marker", async () => {
+  const r = await runFixture({ doneCrLf: true });
+  assert.equal(r.result("C1 chat").status, "pass");
+  assert.equal(r.exitCode, 0);
+});
+
+for (const gate of ["degraded", "unverified", "unknown"]) {
+  test(`a model-sourced Arabic 200 reply cannot certify an unverified gate (${gate})`, async () => {
+    const r = await runFixture({ gate });
+    assert.equal(r.result("C1 chat").status, "fail");
+    assert.match(r.result("C1 chat").detail, /gate=/);
+    assert.equal(r.exitCode, 1);
+  });
+}
+
+test("a local fallback behind a degraded gate remains a warning, not model proof", async () => {
+  const r = await runFixture({ gate: "degraded", source: "local-guaranteed" });
+  assert.equal(r.result("C1 chat").status, "warn");
+  assert.equal(r.exitCode, 0);
+});
+
 test("HTTP 200 model-error must fail", async () => {
   const r = await runFixture({ source: "model-error", text: "تعذر إكمال الرد" });
   assert.equal(r.result("C1 chat").status, "fail");
@@ -303,4 +421,29 @@ test("n8n: الخلاصة تحمل صفوف N1/N2/N3", async () => {
   for (const id of ["N1 n8n public/health", "N2 n8n chat/health", "N3 n8n advisory"]) {
     assert.ok(r.markdown.includes(id), id);
   }
+});
+
+// The release gate must not accept SHA prefixes as proof of an exact deployed commit.
+test("build gate rejects a truncated deployed SHA even when it prefixes the expected commit", async () => {
+  const r = await runFixture({ expectedSha: "a".repeat(40), buildSha: "a".repeat(9) });
+  assert.equal(r.result("B1 build-id").status, "fail");
+  assert.equal(r.exitCode, 1);
+});
+
+test("build gate rejects an abbreviated expected SHA", async () => {
+  const r = await runFixture({ expectedSha: "a".repeat(9), buildSha: "a".repeat(40) });
+  assert.equal(r.result("B1 build-id").status, "fail");
+  assert.equal(r.exitCode, 1);
+});
+
+test("build gate rejects a different full SHA", async () => {
+  const r = await runFixture({ expectedSha: "b".repeat(40), buildSha: "a".repeat(40) });
+  assert.equal(r.result("B1 build-id").status, "fail");
+  assert.equal(r.exitCode, 1);
+});
+
+test("build gate accepts an exact full SHA", async () => {
+  const r = await runFixture({ expectedSha: "a".repeat(40), buildSha: "a".repeat(40) });
+  assert.equal(r.result("B1 build-id").status, "pass");
+  assert.equal(r.exitCode, 0);
 });

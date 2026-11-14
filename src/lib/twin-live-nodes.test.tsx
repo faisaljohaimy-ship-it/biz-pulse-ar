@@ -59,6 +59,24 @@ describe("digital twin signal memo — locale regression", () => {
     expect(valueOf(result.current, "data")).toBe("0");
   });
 
+  it("renders measured zero for departments, agents and integrations instead of reference counts", () => {
+    const referenceNodes = [
+      { id: "depts", value: "12 reference departments" },
+      { id: "agents", value: "47 reference agents" },
+      { id: "integ", value: "63 reference integrations" },
+    ];
+    const { result, rerender } = renderHook(
+      ({ signals }) => useLiveTwinNodes(referenceNodes, signals, false),
+      { initialProps: { signals: baseSignals } },
+    );
+    expect(result.current.map((node) => node.value)).toEqual(["12", "47", "63"]);
+
+    rerender({
+      signals: { ...baseSignals, departments: 0, agents: 0, integrations: 0 },
+    });
+    expect(result.current.map((node) => node.value)).toEqual(["0", "0", "0"]);
+  });
+
   it("leaves built-in reference nodes alone before live signals arrive", () => {
     const { result } = renderHook(() => useLiveTwinNodes(nodes, undefined, true));
     expect(result.current).toBe(nodes);
