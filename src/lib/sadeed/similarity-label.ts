@@ -33,8 +33,15 @@ export const SIMILARITY_UNMEASURED_AR = `تطابق ${UNMEASURED_AR}`;
  * 1% · نصٌّ غير رقمي ⇒ `null`. الرقم النصّي («0.82» من PostgREST) يُقبل.
  */
 export function computedSimilarityPercent(value: unknown): number | null {
+  // PostgREST decimal scores are valid. JavaScript's unary plus also accepts
+  // 0x/0b/0o strings, which are not measured cosine values and can show 100%.
+  const decimal = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i;
   const n =
-    typeof value === "number" ? value : typeof value === "string" && value.trim() ? +value : NaN;
+    typeof value === "number"
+      ? value
+      : typeof value === "string" && decimal.test(value.trim())
+        ? Number(value)
+        : NaN;
   if (!Number.isFinite(n)) return null;
   const percent = Math.round(n * 100);
   if (percent < 1) return null;
