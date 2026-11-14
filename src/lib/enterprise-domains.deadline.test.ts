@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { cleanup, renderHook } from "@testing-library/react";
 import { governanceSystems, useEnterpriseFabricAdapter } from "./enterprise-domains";
 
 const stubs = vi.hoisted(() => ({
@@ -31,6 +32,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  cleanup();
   vi.useRealTimers();
   vi.restoreAllMocks();
   stubs.from.mockReset();
@@ -89,22 +91,21 @@ describe("enterprise showcase list timers", () => {
   });
 });
 
-function renderFabricLists(
-  systems: unknown[],
-  policies: unknown[],
-  programs: unknown[],
-) {
+function renderFabricLists(systems: unknown[], policies: unknown[], programs: unknown[]) {
   // Same five independent hooks as useEnterpriseFabricAdapter, without a live database.
   for (const data of [systems, policies, programs, [], []]) {
     stubs.useQuery.mockReturnValueOnce({ data, isLoading: false });
   }
-  return useEnterpriseFabricAdapter();
+  return renderHook(() => useEnterpriseFabricAdapter()).result.current;
 }
 
 describe("enterprise fabric KPI integrity", () => {
   it("ignores malformed and out-of-range samples without diluting valid measurements", () => {
     const metrics = renderFabricLists(
-      [{ sla: 99, risk: "high" }, { sla: Number.NaN, risk: "low" }],
+      [
+        { sla: 99, risk: "high" },
+        { sla: Number.NaN, risk: "low" },
+      ],
       [{ coverage: 92 }, { coverage: 110 }, { coverage: Number.NaN }],
       [
         { progress: 60, adoption: 80 },
@@ -135,9 +136,15 @@ describe("enterprise fabric KPI integrity", () => {
 
   it("preserves averages and rounding for healthy numeric data", () => {
     const metrics = renderFabricLists(
-      [{ sla: 99.5, risk: "low" }, { sla: 98.5, risk: "low" }],
+      [
+        { sla: 99.5, risk: "low" },
+        { sla: 98.5, risk: "low" },
+      ],
       [{ coverage: 75 }, { coverage: 76 }],
-      [{ progress: 40, adoption: 60 }, { progress: 41, adoption: 61 }],
+      [
+        { progress: 40, adoption: 60 },
+        { progress: 41, adoption: 61 },
+      ],
     );
     expect(metrics).toMatchObject({
       avgSla: 99,
