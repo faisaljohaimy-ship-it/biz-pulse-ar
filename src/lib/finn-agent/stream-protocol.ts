@@ -55,17 +55,12 @@ export function createFinnEventParser() {
     // split always returns a nonempty array, even for an empty buffer.
     buffer = final ? "" : blocks.pop()!;
     for (const block of blocks) {
-      // Per the SSE spec, consecutive data: lines form ONE payload joined by LF.
-      // Parsing each line independently drops valid multiline JSON events.
-      const dataLines: string[] = [];
-      for (const line of block.split("\n")) {
-        if (!line.startsWith("data:")) continue;
-        const text = line.slice(5);
-        dataLines.push(text.startsWith(" ") ? text.slice(1) : text);
-      }
-      if (dataLines.length === 0) continue;
+      // SSE joins all data lines within a single frame with an LF.
+      // Match only data lines, excluding comment/event/id fields.
+      const lines = block.match(/^data:.*$/gm);
+      if (!lines) continue;
       try {
-        const event = asEvent(JSON.parse(dataLines.join("\n")));
+        const event = asEvent(JSON.parse(lines.join("\n").replace(/^data: ?/gm, "")));
         if (event) out.push(event);
       } catch {
         /* كتلةٌ معطوبة — تُهمَل ولا تُسقط بقية البثّ. */
