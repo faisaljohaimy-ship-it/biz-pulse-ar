@@ -331,8 +331,12 @@ export function deriveAlerts(crises: CrisisPrediction[]): PulseAlert[] {
     }));
 }
 
-function deriveStatus(crises: CrisisPrediction[]): { status: PulseStatus; health: number } {
-  const max = crises.reduce((m, c) => Math.max(m, c.riskScore), 0);
+export function deriveStatus(crises: CrisisPrediction[]): { status: PulseStatus; health: number } {
+  // Invalid telemetry must never mask a real crisis or turn health into NaN.
+  const max = crises.reduce(
+    (m, c) => (c.riskScore >= 0 && c.riskScore <= 100 ? Math.max(m, c.riskScore) : m),
+    0,
+  );
   const status: PulseStatus = max >= 80 ? "critical" : max >= 65 ? "warning" : "healthy";
   return { status, health: Math.max(40, 100 - Math.round(max * 0.35)) };
 }
