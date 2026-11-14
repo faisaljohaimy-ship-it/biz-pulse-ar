@@ -6,9 +6,9 @@ import type { RiskLevel, RiskSignal } from "../types/executive";
 import type { SadeedContextSnapshot } from "../types/sadeed";
 
 const CRITICAL =
-  /(breach|attack|fire\b|explosion|casualt|fatal|outage|down(?!load)|إخلاء|حريق|هجوم|اختراق|وفاة|انفجار|توقف)/i;
+  /(breach|attack|fire\b|explosion|casualt|fatal|outage|\bdown(?!load)|shutdown|إخلاء|حريق|هجوم|اختراق|وفاة|انفجار|توقف)/i;
 const HIGH = /(incident|failure|violation|leak|urgent|critical|حادث|عطل|مخالفة|تسريب|عاجل|حرج)/i;
-const MEDIUM = /(delay|risk|issue|warning|degrad|تأخير|مخاطر|مشكلة|تحذير|تدهور)/i;
+const MEDIUM = /(delay|\brisk|\bissue|warning|degrad|تأخير|مخاطر|مشكلة|تحذير|تدهور)/i;
 const LOW = /(monitor|watch|review|observe|مراقبة|متابعة|مراجعة|رصد)/i;
 
 function classify(text: string): { level: RiskLevel; probability: number; impact: number } {
@@ -19,7 +19,7 @@ function classify(text: string): { level: RiskLevel; probability: number; impact
   return { level: "info", probability: 0.1, impact: 0.15 };
 }
 
-const URGENCY_KEYWORDS = /(now|immediat|today|asap|الآن|عاجل|فوراً|اليوم)/i;
+const URGENCY_KEYWORDS = /(\bnow\b|immediat|today|asap|الآن|عاجل|فوراً|اليوم)/i;
 
 export const riskEngine = {
   assess(prompt: string, context: SadeedContextSnapshot): RiskSignal {
