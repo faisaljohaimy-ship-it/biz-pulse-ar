@@ -71,6 +71,50 @@ describe("sadeedAuthedFetch — saved repair method (auth-first → anon fallbac
     expect(calls[1]!.auth).toBeNull();
   });
 
+  it.each([401, 403])(
+    "releases a rejected %i response body before the anonymous fallback",
+    async (status) => {
+      let cancellations = 0;
+      const rejectedBody = new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode("rejected"));
+        },
+        cancel() {
+          cancellations += 1;
+        },
+      });
+      stubFetch((call) =>
+        call === 1
+          ? new Response(rejectedBody, { status })
+          : new Response("guest response", { status: 200 }),
+      );
+      const res = await sadeedAuthedFetch("/api/chat", { method: "POST", body: "{}" });
+      expect(res.status).toBe(200);
+      expect(await res.text()).toBe("guest response");
+      expect(cancellations).toBe(1);
+      expect(calls).toHaveLength(2);
+      expect(calls[0]!.auth).toBe("Bearer stale.invalid.jwt");
+      expect(calls[1]!.auth).toBeNull();
+    },
+  );
+
+  it("keeps the guest fallback available if discarded-body cancellation rejects", async () => {
+    const rejectedBody = new ReadableStream<Uint8Array>({
+      cancel() {
+        return Promise.reject(new Error("body cancellation failed"));
+      },
+    });
+    stubFetch((call) =>
+      call === 1
+        ? new Response(rejectedBody, { status: 401 })
+        : new Response("guest response", { status: 200 }),
+    );
+    const res = await sadeedAuthedFetch("/api/chat", { method: "POST", body: "{}" });
+    expect(res.status).toBe(200);
+    expect(calls).toHaveLength(2);
+    expect(calls[1]!.auth).toBeNull();
+  });
+
   it("does NOT retry when the authenticated request succeeds", async () => {
     stubFetch(() => new Response("ok", { status: 200 }));
     const res = await sadeedAuthedFetch("/api/chat", { method: "POST", body: "{}" });

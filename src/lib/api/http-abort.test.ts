@@ -150,6 +150,55 @@ describe("upstream Retry-After wait budget", () => {
     },
   );
 
+  it.each(["0x10", "1e2", "+500", "2099-01-01"])(
+    "ignores non-HTTP Retry-After %s instead of suppressing a healthy retry",
+    async (retryAfter) => {
+      let calls = 0;
+      globalThis.fetch = (async () => {
+        calls += 1;
+        return calls === 1
+          ? new Response("busy", { status: 429, headers: { "Retry-After": retryAfter } })
+          : new Response("ok", { status: 200 });
+      }) as typeof fetch;
+
+      const response = await httpFetch("https://example.invalid/invalid-retry-after", {
+        retries: 1,
+        timeoutMs: 100,
+        retryBaseMs: 0,
+      });
+
+      expect(calls).toBe(2);
+      expect(response.status).toBe(200);
+    },
+  );
+
+  it.each([
+    "Sun, 30 Feb 2099 00:00:00 GMT",
+    "Sun, 31 Nov 2099 00:00:00 GMT",
+    "Mon, 06 Nov 2099 00:00:00 GMT",
+    "Sunday, 31-Nov-99 00:00:00 GMT",
+  ])(
+    "does not suppress retry for an impossible or inconsistent HTTP-date: %s",
+    async (retryAfter) => {
+      let calls = 0;
+      globalThis.fetch = (async () => {
+        calls++;
+        return calls === 1
+          ? new Response("busy", { status: 429, headers: { "Retry-After": retryAfter } })
+          : new Response("recovered", { status: 200 });
+      }) as typeof fetch;
+
+      const response = await httpFetch("https://example.invalid/invalid-http-date", {
+        retries: 1,
+        timeoutMs: 100,
+        retryBaseMs: 0,
+      });
+
+      expect(response.status).toBe(200);
+      expect(calls).toBe(2);
+    },
+  );
+
   it("still retries a short Retry-After and returns a recovered response", async () => {
     let calls = 0;
     globalThis.fetch = (async () => {
