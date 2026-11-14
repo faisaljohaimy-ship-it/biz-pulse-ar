@@ -82,11 +82,21 @@ export function arabicCardinal(n: number): string {
   return n === 0 ? "صفر" : arabicTwoDigit(n);
 }
 
-/** Arabic words for any non-negative integer up to the hundred-millions. */
+/** Arabic words for non-negative integers, including billion-scale amounts. */
 export function arabicNumberWords(n: number): string {
   if (!Number.isFinite(n) || n < 0) return String(n);
   const v = Math.floor(n);
   if (v === 0) return "صفر";
+  // The existing million grouping cannot accept 1,000 million: it voices
+  // "undefined مليون" when B-scaled executive figures reach a billion.
+  if (v >= 1_000_000_000) {
+    const billions = Math.floor(v / 1_000_000_000);
+    const remainder = v % 1_000_000_000;
+    const head = billions < 1000
+      ? arabicScale(billions, "مليار", "ملياران", "مليارات")
+      : `${arabicNumberWords(billions)} مليار`;
+    return remainder ? `${head} و${arabicNumberWords(remainder)}` : head;
+  }
   if (v < 1000) return arabicUnder1000(v);
   const millions = Math.floor(v / 1_000_000);
   const thousands = Math.floor((v % 1_000_000) / 1000);
@@ -312,11 +322,17 @@ function englishUnder1000(n: number): string {
   return parts.join(" ");
 }
 
-/** English words for any non-negative integer up to the hundred-millions. */
+/** English words for non-negative integers, including billion-scale amounts. */
 export function englishNumberWords(n: number): string {
   if (!Number.isFinite(n) || n < 0) return String(n);
   const v = Math.floor(n);
   if (v === 0) return "zero";
+  if (v >= 1_000_000_000) {
+    const billions = Math.floor(v / 1_000_000_000);
+    const remainder = v % 1_000_000_000;
+    const head = `${billions < 1000 ? englishUnder1000(billions) : englishNumberWords(billions)} billion`;
+    return remainder ? `${head} ${englishNumberWords(remainder)}` : head;
+  }
   const millions = Math.floor(v / 1_000_000);
   const thousands = Math.floor((v % 1_000_000) / 1000);
   const rest = v % 1000;
