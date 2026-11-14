@@ -341,7 +341,8 @@ export function deriveStatus(crises: CrisisPrediction[]): { status: PulseStatus;
   );
   return {
     status: max >= 80 ? "critical" : max >= 65 ? "warning" : "healthy",
-    health: Math.max(40, 100 - Math.round(max * 0.35)),
+    // A validated risk maximum never exceeds 100: health is always at least 65.
+    health: 100 - Math.round(max * 0.35),
   };
 }
 
