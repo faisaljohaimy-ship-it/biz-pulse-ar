@@ -30,14 +30,24 @@ export const RETURN_REASON_MIN = 10;
 
 export const ERR_TITLE_REQUIRED = "العنوان مطلوب";
 export const ERR_FAULT_TYPE_REQUIRED = "نوع العطل مطلوب";
+export const ERR_DUE_DATE_INVALID = "تاريخ الاستحقاق غير صحيح";
 export const ERR_RETURN_REASON_REQUIRED = "سبب الإرجاع مطلوب في الملاحظات";
 
-const FAULT_KEYS: ReadonlySet<string> = new Set(FAULT_TYPES.map((f) => f.key));
+/**
+ * null denotes an invalid date, undefined an omitted date. Compare a UTC-noon
+ * ISO day before converting the valid value to the existing local end-of-day.
+ */
+function serializeDueDate(date: string): string | null | undefined {
+  if (!date) return undefined;
+  if (new Date(`${date}T12:00Z`).toJSON()?.slice(0, 10) !== date) return null;
+  return new Date(`${date}T23:59:59`).toISOString();
+}
 
 /** أوّل خطأٍ عربيّ، أو `null` إن صحّت المسوّدة. */
 export function validateWorkOrderDraft(draft: WorkOrderDraft): string | null {
   if (draft.title_ar.trim().length < 3) return ERR_TITLE_REQUIRED;
-  if (!FAULT_KEYS.has(draft.fault_type)) return ERR_FAULT_TYPE_REQUIRED;
+  if (!FAULT_TYPES.some((fault) => fault.key === draft.fault_type)) return ERR_FAULT_TYPE_REQUIRED;
+  if (serializeDueDate(draft.due_at) === null) return ERR_DUE_DATE_INVALID;
   if (draft.decision === "return" && draft.notes.trim().length < RETURN_REASON_MIN) {
     return ERR_RETURN_REASON_REQUIRED;
   }
@@ -46,9 +56,11 @@ export function validateWorkOrderDraft(draft: WorkOrderDraft): string | null {
 
 /** تسمية زرّ الإنشاء تتبع القرار — وضوحٌ تنفيذيّ قبل الضغط لا بعده. */
 export function createButtonLabel(decision: ApprovalChoice): string {
-  if (decision === "approve") return "إنشاء واعتماد";
-  if (decision === "return") return "إنشاء وإرجاع";
-  return "إنشاء";
+  return decision === "approve"
+    ? "إنشاء واعتماد"
+    : decision === "return"
+      ? "إنشاء وإرجاع"
+      : "إنشاء";
 }
 
 export type WorkOrderPayload = {
@@ -74,6 +86,10 @@ export type WorkOrderPayload = {
  * لحظة إنشائه (سلوك محفوظ من ٢٠٢٦/٠٨/٢٠).
  */
 export function buildWorkOrderPayload(draft: WorkOrderDraft): WorkOrderPayload {
+  const due_at = serializeDueDate(draft.due_at);
+  if (due_at === null) {
+    throw new RangeError(ERR_DUE_DATE_INVALID);
+  }
   return {
     title_ar: draft.title_ar.trim(),
     kind: draft.kind,
@@ -81,7 +97,7 @@ export function buildWorkOrderPayload(draft: WorkOrderDraft): WorkOrderPayload {
     fault_type: draft.fault_type,
     assignee_team: DEFAULT_ASSIGNEE_TEAM,
     contractor_name: DEFAULT_CONTRACTOR,
-    due_at: draft.due_at ? new Date(`${draft.due_at}T23:59:59`).toISOString() : undefined,
+    due_at,
     notes: draft.notes.trim() || undefined,
     decision: draft.decision,
   };
