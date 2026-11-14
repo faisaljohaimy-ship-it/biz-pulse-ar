@@ -216,7 +216,7 @@ export function pickDuplicateDocument(
   now: number = Date.now(),
   self?: { id: string; created_at: string },
 ): ExistingDocument | null {
-  const candidates = self ? rows.filter((r) => r.id !== self.id && createdBefore(r, self)) : rows;
+  const candidates = self ? rows.filter((r) => createdBefore(r, self)) : rows;
   const newestFirst = [...candidates].sort(
     (a, b) => Date.parse(b.created_at) - Date.parse(a.created_at),
   );
