@@ -82,27 +82,18 @@ export function arabicCardinal(n: number): string {
   return n === 0 ? "صفر" : arabicTwoDigit(n);
 }
 
-/** Arabic words for non-negative integers, including billion-scale amounts. */
+/** Arabic words for non-negative integers, up to 999 billion. */
 export function arabicNumberWords(n: number): string {
   if (!Number.isFinite(n) || n < 0) return String(n);
   const v = Math.floor(n);
   if (v === 0) return "صفر";
-  // The existing million grouping cannot accept 1,000 million: it voices
-  // "undefined مليون" when B-scaled executive figures reach a billion.
-  if (v >= 1_000_000_000) {
-    const billions = Math.floor(v / 1_000_000_000);
-    const remainder = v % 1_000_000_000;
-    const head =
-      billions < 1000
-        ? arabicScale(billions, "مليار", "ملياران", "مليارات")
-        : `${arabicNumberWords(billions)} مليار`;
-    return remainder ? `${head} و${arabicNumberWords(remainder)}` : head;
-  }
   if (v < 1000) return arabicUnder1000(v);
-  const millions = Math.floor(v / 1_000_000);
+  const billions = Math.floor(v / 1_000_000_000);
+  const millions = Math.floor((v % 1_000_000_000) / 1_000_000);
   const thousands = Math.floor((v % 1_000_000) / 1000);
   const rest = v % 1000;
   const parts: string[] = [];
+  if (billions) parts.push(arabicScale(billions, "مليار", "ملياران", "مليارات"));
   if (millions) parts.push(arabicScale(millions, "مليون", "مليونان", "ملايين"));
   if (thousands) parts.push(arabicScale(thousands, "ألف", "ألفان", "آلاف"));
   if (rest) parts.push(arabicUnder1000(rest));
@@ -328,16 +319,12 @@ export function englishNumberWords(n: number): string {
   if (!Number.isFinite(n) || n < 0) return String(n);
   const v = Math.floor(n);
   if (v === 0) return "zero";
-  if (v >= 1_000_000_000) {
-    const billions = Math.floor(v / 1_000_000_000);
-    const remainder = v % 1_000_000_000;
-    const head = `${billions < 1000 ? englishUnder1000(billions) : englishNumberWords(billions)} billion`;
-    return remainder ? `${head} ${englishNumberWords(remainder)}` : head;
-  }
-  const millions = Math.floor(v / 1_000_000);
+  const billions = Math.floor(v / 1_000_000_000);
+  const millions = Math.floor((v % 1_000_000_000) / 1_000_000);
   const thousands = Math.floor((v % 1_000_000) / 1000);
   const rest = v % 1000;
   const parts: string[] = [];
+  if (billions) parts.push(`${englishUnder1000(billions)} billion`);
   if (millions) parts.push(`${englishUnder1000(millions)} million`);
   if (thousands) parts.push(`${englishUnder1000(thousands)} thousand`);
   if (rest) parts.push(englishUnder1000(rest));
