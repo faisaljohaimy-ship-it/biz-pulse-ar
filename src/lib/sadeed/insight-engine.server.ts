@@ -326,37 +326,41 @@ export async function runInsightScan(orgId?: string | null): Promise<InsightBund
 
   // 8. Inactive departments (no meetings scheduled in 14d)
   try {
-    const { data: depts } = await admin
+    const { data: depts, error: departmentsError } = await admin
       .from("sim_departments")
       .select("id,name_en,status")
       .eq("status", "active")
       .eq("org_id", orgId!)
       .limit(50);
-    if (depts?.length) {
+    if (!departmentsError && Array.isArray(depts) && depts.length) {
       const iso14d = new Date(now - 14 * 86400_000).toISOString();
-      const { data: mts } = await admin
+      const { data: mts, error: meetingsError } = await admin
         .from("sim_meetings")
         .select("dept_id,scheduled_at")
         .gte("scheduled_at", iso14d)
         .eq("org_id", orgId!)
         .limit(500);
-      const active = new Set((mts ?? []).map((m) => m.dept_id).filter(Boolean));
-      const inactive = depts.filter((d) => !active.has(d.id));
-      if (inactive.length >= 2) {
-        sources.push("sim_departments", "sim_meetings");
-        insights.push({
-          kind: "inactive_department",
-          severity: inactive.length >= 5 ? "elevated" : "watch",
-          title_en: `${inactive.length} departments held no meetings in 14 days`,
-          title_ar: `${inactive.length} إدارة لم تعقد أي اجتماعات خلال ١٤ يوماً`,
-          evidence: `sim_departments: ${inactive
-            .slice(0, 3)
-            .map((d) => d.name_en)
-            .join(", ")}${inactive.length > 3 ? "…" : ""}`,
-          recommendation_en: "Ask department heads to schedule a governance review this week.",
-          recommendation_ar: "الطلب من رؤساء الإدارات جدولة مراجعة حوكمية هذا الأسبوع.",
-          confidence: 0.7,
-        });
+      // A failed, malformed or capped meeting query cannot prove inactivity.
+      // The 500-row cap is not exhaustive evidence of missing meetings.
+      if (!meetingsError && Array.isArray(mts) && mts.length < 500) {
+        const active = new Set((mts ?? []).map((m) => m.dept_id).filter(Boolean));
+        const inactive = depts.filter((d) => !active.has(d.id));
+        if (inactive.length >= 2) {
+          sources.push("sim_departments", "sim_meetings");
+          insights.push({
+            kind: "inactive_department",
+            severity: inactive.length >= 5 ? "elevated" : "watch",
+            title_en: `${inactive.length} departments held no meetings in 14 days`,
+            title_ar: `${inactive.length} إدارة لم تعقد أي اجتماعات خلال ١٤ يوماً`,
+            evidence: `sim_departments: ${inactive
+              .slice(0, 3)
+              .map((d) => d.name_en)
+              .join(", ")}${inactive.length > 3 ? "…" : ""}`,
+            recommendation_en: "Ask department heads to schedule a governance review this week.",
+            recommendation_ar: "الطلب من رؤساء الإدارات جدولة مراجعة حوكمية هذا الأسبوع.",
+            confidence: 0.7,
+          });
+        }
       }
     }
   } catch {
