@@ -307,22 +307,27 @@ const STATIC_INTEL: PulseIntel[] = [
   },
 ];
 
-function deriveAlerts(crises: CrisisPrediction[]): PulseAlert[] {
-  return crises.slice(0, 5).map((c) => ({
-    id: c.id,
-    severity:
-      c.riskScore >= 80
-        ? "critical"
-        : c.riskScore >= 65
-          ? "high"
-          : c.riskScore >= 50
-            ? "medium"
-            : "low",
-    title_ar: c.title_ar,
-    title_en: c.title_en,
-    owner: c.owner,
-    route: c.route,
-  }));
+export function deriveAlerts(crises: CrisisPrediction[]): PulseAlert[] {
+  // Source sort_order is not severity order. Rank all crises before taking five.
+  // Keep the original array intact for realtime and other operational consumers.
+  return [...crises]
+    .sort((a, b) => b.riskScore - a.riskScore)
+    .slice(0, 5)
+    .map((c) => ({
+      id: c.id,
+      severity:
+        c.riskScore >= 80
+          ? "critical"
+          : c.riskScore >= 65
+            ? "high"
+            : c.riskScore >= 50
+              ? "medium"
+              : "low",
+      title_ar: c.title_ar,
+      title_en: c.title_en,
+      owner: c.owner,
+      route: c.route,
+    }));
 }
 
 function deriveStatus(crises: CrisisPrediction[]): { status: PulseStatus; health: number } {
