@@ -140,6 +140,19 @@ describe("المفتاح: الموجز المعياري", () => {
     for (const v of variants) expect(cacheKeyOf(v)).not.toBe(k);
   });
 
+  it("محارف الفصل داخل الموجز لا تصادم مفاتيح قوائم أو حقول مختلفة", () => {
+    // كان join("\u0001") يساوي كلمة مفردة بكلمتين؛ وjoin("\u0002") يخلط الحقول.
+    expect(cacheKeyOf({ ...base, terms: ["a", "b"] })).not.toBe(
+      cacheKeyOf({ ...base, terms: ["a\u0001b"] }),
+    );
+    expect(cacheKeyOf({ ...base, codes: ["C", "D"] })).not.toBe(
+      cacheKeyOf({ ...base, codes: ["C\u0001D"] }),
+    );
+    expect(cacheKeyOf({ ...base, terms: ["1\u00022"], codes: ["3"] })).not.toBe(
+      cacheKeyOf({ ...base, terms: ["1"], codes: ["2\u00023"] }),
+    );
+  });
+
   it("المفتاح لا يحمل هوية: لا مدخل لها في النوع أصلًا", () => {
     expect(Object.keys(base).sort()).toEqual(
       ["codes", "freshness", "lang", "maxResults", "mode", "surface", "terms"].sort(),
