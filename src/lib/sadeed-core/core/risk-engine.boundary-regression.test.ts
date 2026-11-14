@@ -27,6 +27,10 @@ describe("riskEngine independent word-boundary regressions", () => {
     ["Fire near the gate", "critical"],
     ["Risk assessment needed", "medium"],
     ["Report the issue", "medium"],
+    ["Explosive material detected", "critical"],
+    ["Safety violation documented", "high"],
+    ["Report failure", "high"],
+    ["Observation note", "low"],
     ["Review the weekly log", "low"],
   ] as const)("retains the real signal in %s", (prompt, level) => {
     expect(riskEngine.assess(prompt, context).level).toBe(level);
