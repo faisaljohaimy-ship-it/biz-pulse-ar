@@ -14,13 +14,12 @@ const context: SadeedContextSnapshot = {
 };
 
 describe("riskEngine keyword boundaries", () => {
-  it.each([
-    "Download the weekly summary",
-    "Check firewall configuration",
-    "Verify download links",
-  ])("does not invent a critical incident from a routine request: %s", (prompt) => {
-    expect(riskEngine.assess(prompt, context).level).toBe("info");
-  });
+  it.each(["Download the weekly summary", "Check firewall configuration", "Verify download links"])(
+    "does not invent a critical incident from a routine request: %s",
+    (prompt) => {
+      expect(riskEngine.assess(prompt, context).level).toBe("info");
+    },
+  );
 
   it.each([
     "Power is down",
