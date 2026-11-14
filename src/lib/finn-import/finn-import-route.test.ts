@@ -719,9 +719,32 @@ describe("⑤ المعاينة: تحليلٌ في الذاكرة بلا كتاب
       buildRequest({ file: { name: sent, bytes: xlsxBytes() } }),
     );
     expect(res.status).toBe(200);
-    const text = await res.text();
-    expect((JSON.parse(text) as { file: { name: string } }).file.name).toBe(shown);
-    for (const fragment of ["Users", "etc", "..", "\\"]) expect(text).not.toContain(fragment);
+    const body = await jsonOf(res);
+    expect((body as { file: { name: string } }).file.name).toBe(shown);
+    // The preview token is opaque signed data, not a displayed filename:
+    // arbitrary base64 can include path-like substrings by coincidence.
+    const visibleMetadata = { ...body };
+    delete visibleMetadata.token;
+    const visibleText = JSON.stringify(visibleMetadata);
+    for (const fragment of ["Users", "etc", "..", "\\"]) {
+      expect(visibleText).not.toContain(fragment);
+    }
+  });
+
+  it("does not confuse arbitrary signed-token bytes with leaked filename paths", () => {
+    const body = {
+      file: { name: "c.xlsx" },
+      warnings: [],
+      token: "random-Users-etc-..-\\",
+    };
+    expect(JSON.stringify(body)).toContain("etc"); // Old whole-response assertion failed.
+    const visibleMetadata = { ...body };
+    delete (visibleMetadata as { token?: string }).token;
+    const visibleText = JSON.stringify(visibleMetadata);
+    for (const fragment of ["Users", "etc", "..", "\\"]) {
+      expect(visibleText).not.toContain(fragment);
+    }
+    expect(body.file.name).toBe("c.xlsx");
   });
 
   it("بوّابة التأكيد قبل التحليل: بلا سرّ، ملفٌّ تالف أو غير آمن يردّ confirmation_unavailable لا malformed/unsafe — معاينةً وتنفيذًا", async () => {
