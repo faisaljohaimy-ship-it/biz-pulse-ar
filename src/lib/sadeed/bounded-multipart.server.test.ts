@@ -58,6 +58,71 @@ describe("bounded voice multipart parser", () => {
     expect(result).toEqual({ form: null, tooLarge: true });
   });
 
+  it.each([
+    ["before the first byte", false],
+    ["after a partial upload", true],
+  ] as const)("returns immediately when the client disconnects %s", async (_label, partial) => {
+    const controller = new AbortController();
+    let cancelled = false;
+    const source = new ReadableStream<Uint8Array>({
+      start(stream) {
+        if (partial) stream.enqueue(new Uint8Array([1, 2, 3]));
+        // Never finish: without abort handling the read waits for 30 seconds.
+      },
+      cancel() {
+        cancelled = true;
+        return new Promise<void>(() => {});
+      },
+    });
+    const request = new Request(ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "multipart/form-data; boundary=aborted" },
+      body: source,
+      signal: controller.signal,
+      duplex: "half",
+    } as RequestInit & { duplex: "half" });
+    const pending = parseBoundedMultipart(request, 1_024);
+    controller.abort();
+
+    let watchdog: ReturnType<typeof setTimeout> | undefined;
+    try {
+      const outcome = await Promise.race([
+        pending,
+        new Promise<"hung">((resolve) => {
+          watchdog = setTimeout(() => resolve("hung"), 1_000);
+        }),
+      ]);
+      expect(outcome).toEqual({ form: null, tooLarge: false, aborted: true });
+      expect(cancelled).toBe(true);
+    } finally {
+      if (watchdog) clearTimeout(watchdog);
+    }
+  });
+
+  it("rejects pre-aborted streams without opening a reader", async () => {
+    const controller = new AbortController();
+    controller.abort();
+    let cancelled = false;
+    const body = new ReadableStream<Uint8Array>({
+      cancel() {
+        cancelled = true;
+        return new Promise<void>(() => {});
+      },
+    });
+    const request = new Request(ENDPOINT, {
+      method: "POST",
+      body,
+      signal: controller.signal,
+      duplex: "half",
+    } as RequestInit & { duplex: "half" });
+    expect(await parseBoundedMultipart(request, 1_024)).toEqual({
+      form: null,
+      tooLarge: false,
+      aborted: true,
+    });
+    expect(cancelled).toBe(true);
+  });
+
   it("rejects malformed multipart without treating it as an oversized upload", async () => {
     const request = new Request(ENDPOINT, {
       method: "POST",
