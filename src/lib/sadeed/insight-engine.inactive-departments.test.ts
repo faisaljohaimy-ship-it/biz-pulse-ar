@@ -85,7 +85,9 @@ describe("insight-engine inactive-department evidence", () => {
 
   it("retains the alert for two departments with a confirmed empty meeting list", async () => {
     const result = await runInsightScan("test-org");
-    expect(result.insights.filter((insight) => insight.kind === "inactive_department")).toHaveLength(1);
+    expect(
+      result.insights.filter((insight) => insight.kind === "inactive_department"),
+    ).toHaveLength(1);
     expect(result.sources).toContain("sim_departments");
     expect(result.sources).toContain("sim_meetings");
   });
