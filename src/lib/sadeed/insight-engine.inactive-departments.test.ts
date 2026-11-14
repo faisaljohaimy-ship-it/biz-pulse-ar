@@ -73,7 +73,7 @@ describe("insight-engine inactive-department evidence", () => {
   it("does not infer absence from a meeting result capped at 500 rows", async () => {
     state.meetings = {
       data: Array.from({ length: 500 }, () => ({
-        dept_id: "dept-a",
+        dept_id: "other-dept",
         scheduled_at: "2026-11-14T12:00:00Z",
       })),
       error: null,
