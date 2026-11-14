@@ -328,8 +328,7 @@ export function useEnterpriseFabricAdapter() {
   const programsList = programs.data ?? [];
   const outcomesList = outcomes.data ?? [];
 
-  const avgSla =
-    systemsList.reduce((s, x) => s + Number(x.sla), 0) / (systemsList.length || 1);
+  const avgSla = systemsList.reduce((s, x) => s + Number(x.sla), 0) / (systemsList.length || 1);
   const avgPolicyCoverage = Math.round(
     policiesList.reduce((s, x) => s + x.coverage, 0) / (policiesList.length || 1),
   );
