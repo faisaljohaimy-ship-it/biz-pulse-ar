@@ -20,6 +20,7 @@ async function runFixture(
   cssBody = "body {}",
   pageStatus = 200,
   expectedCssUrl = "https://offline.invalid/assets/app.css",
+  cssAssets = null,
 ) {
   let exitCode = null;
   const context = vm.createContext({
@@ -37,6 +38,14 @@ async function runFixture(
       if (input === "https://offline.invalid/") {
         return new Response(body, { status: pageStatus, headers: { "content-type": contentType } });
       }
+      if (cssAssets) {
+        const asset = cssAssets[input];
+        assert.ok(asset, `unexpected stylesheet request: ${input}`);
+        return new Response(asset.body ?? "body { color: navy; }", {
+          status: asset.status,
+          headers: { "content-type": asset.type ?? "text/css" },
+        });
+      }
       assert.equal(input, expectedCssUrl);
       return new Response(cssBody, { status: cssStatus, headers: { "content-type": cssType } });
     },
@@ -48,6 +57,39 @@ async function runFixture(
 test("accepts a real HTML document with a stylesheet link", async () => {
   assert.equal(await runFixture(normalPage), null);
 });
+
+// Every same-origin active stylesheet must load: a valid vendor CSS file
+// must not conceal a missing or unusable application CSS file.
+for (const [label, statuses, expected] of [
+  ["later application CSS missing", [200, 404], 1],
+  ["earlier vendor CSS missing", [404, 200], 1],
+  ["both local stylesheets served", [200, 200], null],
+]) {
+  test("validates every same-origin stylesheet: " + label, async () => {
+    const html = normalPage.replace(
+      '<link rel="stylesheet" href="/assets/app.css">',
+      '<link rel="stylesheet" href="/assets/vendor.css">' +
+        '<link rel="stylesheet" href="/assets/app.css">',
+    );
+    const cssAssets = {
+      "https://offline.invalid/assets/vendor.css": { status: statuses[0] },
+      "https://offline.invalid/assets/app.css": { status: statuses[1] },
+    };
+    assert.equal(
+      await runFixture(
+        html,
+        "text/html",
+        200,
+        "text/css",
+        "body {}",
+        200,
+        "https://offline.invalid/assets/app.css",
+        cssAssets,
+      ),
+      expected,
+    );
+  });
+}
 
 test("resolves numeric HTML references in stylesheet paths before probing CSS", async () => {
   const html = normalPage.replace(
