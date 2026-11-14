@@ -314,6 +314,31 @@ describe("pickDuplicateDocument", () => {
     expect(pickDuplicateDocument([], now)).toBeNull();
   });
 
+  it("ignores future-dated in-progress rows instead of blocking uploads indefinitely", () => {
+    const future = {
+      id: "future-stuck",
+      status: "processing",
+      created_at: new Date(now + 24 * 60 * 60_000).toISOString(),
+    };
+    expect(pickDuplicateDocument([future], now)).toBeNull();
+    const recent = { id: "recent", status: "pending", created_at: ago(1_000) };
+    expect(pickDuplicateDocument([recent, future], now)?.id).toBe("recent");
+  });
+
+  it("allows small clock skew without losing real in-progress deduplication", () => {
+    const slightlyFuture = {
+      id: "near-future",
+      status: "processing",
+      created_at: new Date(now + 30_000).toISOString(),
+    };
+    expect(pickDuplicateDocument([slightlyFuture], now)?.id).toBe("near-future");
+    expect(
+      pickDuplicateDocument([
+        { id: "outside-skew", status: "pending", created_at: new Date(now + 60_001).toISOString() },
+      ], now),
+    ).toBeNull();
+  });
+
   describe("with the just-inserted row as `self` (earliest wins)", () => {
     const self = { id: "m", created_at: ago(0) };
 
