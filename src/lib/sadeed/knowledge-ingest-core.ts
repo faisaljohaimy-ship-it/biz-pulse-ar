@@ -73,22 +73,24 @@ function splitLongParagraph(part: string, max: number): string[] {
   while (rest.length > max) {
     let cut = -1;
     for (let i = max; i >= Math.floor(max / 2); i -= 1) {
-      const ch = rest.charCodeAt(i);
-      if (ch === 32 || ch === 10 || ch === 9) {
+      if (" \n\t".includes(rest[i])) {
         cut = i;
         break;
       }
     }
     if (cut <= 0) {
-      pieces.push(rest.slice(0, max));
-      rest = rest.slice(max);
+      // UTF-16 slicing through a surrogate pair would send a replacement
+      // character to the embedding provider instead of the original emoji.
+      const end = max - +(rest.codePointAt(max - 1)! > 0xffff) || 2;
+      pieces.push(rest.slice(0, end));
+      rest = rest.slice(end);
     } else {
       pieces.push(rest.slice(0, cut).trimEnd());
       rest = rest.slice(cut + 1).trimStart();
     }
   }
   if (rest) pieces.push(rest);
-  return pieces.filter(Boolean);
+  return pieces;
 }
 
 export type ChunkOptions = {
@@ -121,7 +123,10 @@ export function chunkText(input: string, options: ChunkOptions = {}): string[] {
     for (const part of splitLongParagraph(trimmed, maxPiece)) {
       if (buffer && `${buffer}\n\n${part}`.length > target) {
         chunks.push(buffer);
-        const tail = buffer.slice(-overlap);
+        // The overlap is duplicate context only. If it starts on the low
+        // surrogate of an emoji, skip that code unit rather than introducing
+        // a broken Unicode character into the next chunk.
+        const tail = buffer.slice(-overlap).replace(/^\p{Cs}/u, "");
         buffer = `${tail}\n\n${part}`;
       } else {
         buffer = buffer ? `${buffer}\n\n${part}` : part;
