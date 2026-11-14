@@ -49,6 +49,52 @@ test("accepts a real HTML document with a stylesheet link", async () => {
   assert.equal(await runFixture(normalPage), null);
 });
 
+test("resolves numeric HTML references in stylesheet paths before probing CSS", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="stylesheet" href="&#x2f;assets&#47;app.css">',
+  );
+  assert.equal(await runFixture(html), null);
+});
+
+test("resolves a numerically encoded base href like a browser", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<base href="&#x2f;static&#47;"><link rel="stylesheet" href="assets/app.css">',
+  );
+  assert.equal(
+    await runFixture(
+      html,
+      "text/html",
+      200,
+      "text/css",
+      "body {}",
+      200,
+      "https://offline.invalid/static/assets/app.css",
+    ),
+    null,
+  );
+});
+
+test("decodes one HTML entity layer, not two, for stylesheet query parameters", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="stylesheet" href="/assets/app.css?next=&#38;amp;">',
+  );
+  assert.equal(
+    await runFixture(
+      html,
+      "text/html",
+      200,
+      "text/css",
+      "body {}",
+      200,
+      "https://offline.invalid/assets/app.css?next=&amp;",
+    ),
+    null,
+  );
+});
+
 test("rejects a partial HTTP 206 HTML response despite valid-looking markup", async () => {
   assert.equal(await runFixture(normalPage, "text/html", 200, "text/css", "body {}", 206), 1);
 });
