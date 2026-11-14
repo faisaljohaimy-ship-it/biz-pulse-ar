@@ -92,8 +92,12 @@ function breakerShouldSkip(now: number): boolean {
 
 /** Never write quota bucket keys (IP/user identity) or backend error payloads to logs. */
 function noteFailure(now: number, reason: string, detail: Record<string, unknown>): void {
-  if (breaker.lastFailureAt !== null && now - breaker.lastFailureAt > BREAKER_FAILURE_WINDOW_MS) {
-    // انقطعت السلسلة: الفشل السابق أقدم من نافذة الستّين ثانية.
+  if (
+    breaker.lastFailureAt !== null &&
+    (now < breaker.lastFailureAt || now - breaker.lastFailureAt > BREAKER_FAILURE_WINDOW_MS)
+  ) {
+    // A clock rollback starts a fresh failure streak; never mix failures from
+    // incompatible wall-clock epochs or spuriously open the storage breaker.
     breaker.consecutiveFailures = 0;
   }
   breaker.consecutiveFailures += 1;

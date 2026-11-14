@@ -294,7 +294,7 @@ const STATIC_INTEL: PulseIntel[] = [
   {
     id: "ai-accel",
     text_ar: "تبني AI الداخلي يتسارع 2.3x",
-    text_en: "Internal AI adoption up 2.3x",
+    text_en: "Internal AI adoption accelerating 2.3x",
     confidence: 94,
     tone: "violet",
   },
@@ -308,9 +308,8 @@ const STATIC_INTEL: PulseIntel[] = [
 ];
 
 export function deriveAlerts(crises: CrisisPrediction[]): PulseAlert[] {
-  // Database sort_order is a display order, not a severity order. Always
-  // include the highest-risk incidents in the five executive alert slots.
-  // Keep the input order intact for other consumers of the same crisis data.
+  // Source sort_order is not severity order. Rank all crises before taking five.
+  // Keep the original array intact for realtime and other operational consumers.
   return [...crises]
     .sort((a, b) => b.riskScore - a.riskScore)
     .slice(0, 5)

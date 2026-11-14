@@ -3,12 +3,13 @@ import { FileInspectionError, inspectSadeedAttachment } from "./file-inspection.
 
 const bytes = (...values: number[]) => new Uint8Array(values);
 
-function fakeOfficeZip(names: string[]) {
+function fakeOfficeZip(names: string[], unixMember?: { name: string; mode: number }) {
   const encoder = new TextEncoder();
   const localName = encoder.encode(names[0]);
   const local = new Uint8Array(30 + localName.length);
   const localView = new DataView(local.buffer);
   localView.setUint32(0, 0x04034b50, true);
+  localView.setUint16(6, 0x0800, true); // ZIP UTF-8 member names
   localView.setUint16(26, localName.length, true);
   local.set(localName, 30);
 
@@ -17,7 +18,12 @@ function fakeOfficeZip(names: string[]) {
     const entry = new Uint8Array(46 + encoded.length);
     const view = new DataView(entry.buffer);
     view.setUint32(0, 0x02014b50, true);
+    view.setUint16(8, 0x0800, true);
     view.setUint16(28, encoded.length, true);
+    if (unixMember?.name === name) {
+      entry[5] = 3; // Member created on Unix
+      view.setUint32(38, (unixMember.mode << 16) >>> 0, true);
+    }
     entry.set(encoded, 46);
     return entry;
   });
@@ -214,6 +220,77 @@ describe("SADEED attachment structural inspection", () => {
         }),
       "invalid_zip",
     );
+  });
+
+  it.each([
+    ["ANSI control characters", "word/\u001b[31mreport.xml", "invalid_zip"],
+    ["C1 control characters", "word/\u0085report.xml", "invalid_zip"],
+    ["Unicode bidi overrides", "word/\u202Ereport.xml", "invalid_zip"],
+    ["NFKC-hidden executable extensions", "word/loader．ＥＸＥ", "active_office_content"],
+    ["NFKC-equivalent aliases", "WORD/ｄocument.xml", "invalid_zip"],
+  ])("rejects %s in Office ZIP member names", (_case, member, code) => {
+    expectBlocked(
+      () =>
+        inspectSadeedAttachment({
+          bytes: fakeOfficeZip(["[Content_Types].xml", "word/document.xml", member]),
+          filename: "brief.docx",
+          claimedMime: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        }),
+      code,
+    );
+  });
+
+  it("accepts normal Unicode Office part names without direction controls", () => {
+    const result = inspectSadeedAttachment({
+      bytes: fakeOfficeZip(["[Content_Types].xml", "word/document.xml", "word/ملاحظة.xml"]),
+      filename: "brief.docx",
+      claimedMime: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    });
+    expect(result.family).toBe("office");
+  });
+
+  it.each([
+    ["symbolic link", 0xa1ff],
+    ["named pipe", 0x11a4],
+    ["socket", 0xc1ff],
+    ["block device", 0x61ff],
+  ])("blocks %s encoded as an Office ZIP member", (_kind, mode) => {
+    expectBlocked(
+      () =>
+        inspectSadeedAttachment({
+          bytes: fakeOfficeZip(["[Content_Types].xml", "word/document.xml"], {
+            name: "word/document.xml",
+            mode,
+          }),
+          filename: "brief.docx",
+          claimedMime: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        }),
+      "invalid_zip",
+    );
+  });
+
+  it("allows ordinary Unix regular-file ZIP members", () => {
+    const result = inspectSadeedAttachment({
+      bytes: fakeOfficeZip(["[Content_Types].xml", "word/document.xml"], {
+        name: "word/document.xml",
+        mode: 0x81a4,
+      }),
+      filename: "brief.docx",
+      claimedMime: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    });
+    expect(result.family).toBe("office");
+  });
+
+  it("allows ordinary Unix directory ZIP members", () => {
+    const result = inspectSadeedAttachment({
+      bytes: fakeOfficeZip(["[Content_Types].xml", "word/", "word/document.xml"], {
+        name: "word/",
+        mode: 0x41ed,
+      }),
+      filename: "brief.docx",
+      claimedMime: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    });
+    expect(result.family).toBe("office");
   });
 
   it("blocks macros embedded in an Office container", () => {

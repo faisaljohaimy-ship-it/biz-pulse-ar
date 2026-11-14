@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { parseBoundedMultipart } from "./bounded-multipart.server";
+import { describe, expect, it, vi } from "vitest";
+import { MULTIPART_READ_TIMEOUT_MS, parseBoundedMultipart } from "./bounded-multipart.server";
 
 const ENDPOINT = "https://sadeed.invalid/api/voice-stt";
 
@@ -66,5 +66,80 @@ describe("bounded voice multipart parser", () => {
     });
     const result = await parseBoundedMultipart(request, 1_024);
     expect(result).toEqual({ form: null, tooLarge: false });
+  });
+
+  it.each([
+    ["actual overflow", 1_025, undefined],
+    ["oversized declared length", 1, "99999"],
+  ] as const)(
+    "responds promptly when cancellation never settles (%s)",
+    async (_case, size, declared) => {
+      let cancelled = false;
+      const source = new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.enqueue(new Uint8Array(size));
+        },
+        cancel() {
+          cancelled = true;
+          // An untrusted upload source may never resolve cancellation.
+          return new Promise<void>(() => {});
+        },
+      });
+      const headers = new Headers({ "Content-Type": "multipart/form-data; boundary=stall" });
+      if (declared) headers.set("Content-Length", declared);
+      const request = new Request(ENDPOINT, {
+        method: "POST",
+        headers,
+        body: source,
+        duplex: "half",
+      } as RequestInit & { duplex: "half" });
+
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      try {
+        const outcome = await Promise.race([
+          parseBoundedMultipart(request, 1_024),
+          new Promise<"cancel_hung">((resolve) => {
+            timer = setTimeout(() => resolve("cancel_hung"), 1_000);
+          }),
+        ]);
+        expect(outcome).toEqual({ form: null, tooLarge: true });
+        expect(cancelled).toBe(true);
+      } finally {
+        if (timer) clearTimeout(timer);
+      }
+    },
+  );
+
+  it.each([
+    ["no first byte", false],
+    ["one byte then stalled", true],
+  ] as const)("returns a bounded timeout when upload stalls (%s)", async (_label, enqueueFirst) => {
+    vi.useFakeTimers();
+    let cancelled = false;
+    try {
+      const source = new ReadableStream<Uint8Array>({
+        start(controller) {
+          if (enqueueFirst) controller.enqueue(new Uint8Array([1]));
+          // Deliberately never close; both absent bytes and a trickle must expire.
+        },
+        cancel() {
+          cancelled = true;
+          // A malicious source may keep cancellation pending indefinitely.
+          return new Promise<void>(() => {});
+        },
+      });
+      const request = new Request(ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "multipart/form-data; boundary=stall" },
+        body: source,
+        duplex: "half",
+      } as RequestInit & { duplex: "half" });
+      const result = parseBoundedMultipart(request, 1_024);
+      await vi.advanceTimersByTimeAsync(MULTIPART_READ_TIMEOUT_MS);
+      expect(await result).toEqual({ form: null, tooLarge: false, timedOut: true });
+      expect(cancelled).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
