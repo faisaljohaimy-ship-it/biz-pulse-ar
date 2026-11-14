@@ -72,8 +72,7 @@ function arabicUnder1000(n: number): string {
 function arabicScale(count: number, one: string, two: string, few: string): string {
   if (count === 1) return one;
   if (count === 2) return two;
-  if (count >= 3 && count <= 10) return `${arabicUnder1000(count)} ${few}`;
-  return `${arabicUnder1000(count)} ${one}`;
+  return `${arabicUnder1000(count)} ${count <= 10 ? few : one}`;
 }
 
 /** Arabic cardinal for 0–99 (covers every HCIS directive code). */
@@ -314,17 +313,15 @@ function englishUnder1000(n: number): string {
   return parts.join(" ");
 }
 
-/** English words for non-negative integers, including billion-scale amounts. */
+/** English words for any non-negative integer up to the hundred-millions. */
 export function englishNumberWords(n: number): string {
   if (!Number.isFinite(n) || n < 0) return String(n);
   const v = Math.floor(n);
   if (v === 0) return "zero";
-  const billions = Math.floor(v / 1_000_000_000);
-  const millions = Math.floor((v % 1_000_000_000) / 1_000_000);
+  const millions = Math.floor(v / 1_000_000);
   const thousands = Math.floor((v % 1_000_000) / 1000);
   const rest = v % 1000;
   const parts: string[] = [];
-  if (billions) parts.push(`${englishUnder1000(billions)} billion`);
   if (millions) parts.push(`${englishUnder1000(millions)} million`);
   if (thousands) parts.push(`${englishUnder1000(thousands)} thousand`);
   if (rest) parts.push(englishUnder1000(rest));
