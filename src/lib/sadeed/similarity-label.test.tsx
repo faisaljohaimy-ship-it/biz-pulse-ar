@@ -30,6 +30,9 @@ const NOT_MEASURED: Array<[string, unknown]> = [
   ["سالب", -0.4],
   ["Infinity", Number.POSITIVE_INFINITY],
   ["نصّ غير رقمي", "abc"],
+  ["hex-form numeric text", "0x1"],
+  ["binary-form numeric text", "0b1"],
+  ["octal-form numeric text", "0o1"],
   ["نصّ فارغ", ""],
   ["كائن", {}],
 ];
@@ -47,6 +50,7 @@ describe("computedSimilarityPercent", () => {
     [1, 100],
     [1.02, 100],
     ["0.82", 82],
+    ["5e-1", 50],
   ] as const)("%j ⇒ %d", (value, expected) => {
     expect(computedSimilarityPercent(value)).toBe(expected);
   });
@@ -108,6 +112,7 @@ describe("hybridHitCosine: الكوساين المحسوب هو dense_score وح
     ["هجينة dense_score=0", { arm: "hybrid", dense_score: 0 }],
     ["هجينة dense_score=NaN", { arm: "hybrid", dense_score: Number.NaN }],
     ["هجينة dense_score=null", { arm: "hybrid", dense_score: null }],
+    ["هجينة dense_score=0x1 (invalid encoding)", { arm: "hybrid", dense_score: "0x1" }],
     ["هجينة بلا dense_score", { arm: "hybrid" }],
     ["هجينة dense_score=0.004 (يُقرَّب إلى 0%)", { arm: "hybrid", dense_score: 0.004 }],
     ["هجينة dense_score سالب", { arm: "hybrid", dense_score: -0.3 }],
