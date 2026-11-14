@@ -96,4 +96,19 @@ describe("cappedDpr", () => {
     expect(cappedDpr(2)[1]).toBe(1);
     vi.unstubAllGlobals();
   });
+
+  it("keeps the R3F interval ordered when browser zoom reduces DPR below one", () => {
+    vi.stubGlobal("devicePixelRatio", 0.75);
+    expect(cappedDpr()).toEqual([1, 1]);
+  });
+
+  it("uses finite bounds even when the DPR or caller cap is malformed", () => {
+    vi.stubGlobal("devicePixelRatio", Number.NaN);
+    expect(cappedDpr()).toEqual([1, 1]);
+    vi.stubGlobal("devicePixelRatio", Number.NEGATIVE_INFINITY);
+    expect(cappedDpr()).toEqual([1, 1]);
+    vi.stubGlobal("devicePixelRatio", 1.5);
+    expect(cappedDpr(0.5)).toEqual([1, 1]);
+    expect(cappedDpr(Number.NaN)).toEqual([1, 1.5]);
+  });
 });

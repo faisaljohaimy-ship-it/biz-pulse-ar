@@ -68,7 +68,12 @@ export function canUseWebGL(): boolean {
  */
 export function cappedDpr(max = 2): [number, number] {
   if (typeof window === "undefined") return [1, 1];
-  return [1, Math.min(window.devicePixelRatio || 1, max)];
+  // A browser zoom below 100% can report DPR < 1. Never return an
+  // inverted [minimum, maximum] interval to react-three-fiber.
+  const dpr = window.devicePixelRatio;
+  const safeDpr = Number.isFinite(dpr) ? dpr : 1;
+  const safeMax = Number.isFinite(max) ? max : 2;
+  return [1, Math.max(1, Math.min(safeDpr, safeMax))];
 }
 
 /** Test seam: forget the cached answer. Not used by application code. */
