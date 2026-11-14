@@ -338,6 +338,14 @@ for (const route of ROUTES) {
       .map(([tag]) => stylesheetHref(tag))
       .filter(Boolean);
     const hasCss = stylesheetLinks.length > 0;
+    // Browsers resolve relative link URLs against the first <base href>.
+    // Checking them against the route URL could certify a local CSS file that
+    // the browser actually fetches from a different origin (or a broken path).
+    const firstBase = [...activeMarkup.matchAll(/<base\b[^>]*>/gi)]
+      .map(([tag]) => tagAttributes(tag, 5))
+      .find((attrs) => "href" in attrs);
+    const baseHref = firstBase?.href?.replace(/&(?:amp|#0*38|#x0*26);/gi, "&");
+    const documentBase = baseHref === undefined ? url : new URL(baseHref, url).href;
 
     if (!isHtml) failures.push(`${route}: الاستجابة ليست مستند HTML صالحًا للتطبيق`);
     if (isLoginWall) failures.push(`${route}: صفحة توثيق Vercel ليست نجاحًا لمسار التطبيق`);
@@ -354,7 +362,7 @@ for (const route of ROUTES) {
       let reason = "no same-origin stylesheet";
       for (const href of stylesheetLinks) {
         try {
-          const stylesheetUrl = new URL(href, url);
+          const stylesheetUrl = new URL(href, documentBase);
           if (stylesheetUrl.origin !== new URL(BASE).origin) continue;
           const stylesheetRes = await fetchWithRetry(stylesheetUrl.href);
           const isCss = /\btext\/css\b/i.test(stylesheetRes.headers.get("content-type") || "");
