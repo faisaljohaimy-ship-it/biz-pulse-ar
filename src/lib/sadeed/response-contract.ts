@@ -194,6 +194,15 @@ const OUT_OF_SCOPE = [
 
 const normalize = (s: string) => s.toLowerCase().replace(/[أإآ]/g, "ا").replace(/\s+/g, " ").trim();
 
+/** Only ambiguous short tokens need a right word boundary: `gate` inside
+ * `aggregate` and `risk` inside `brisk`/`risky` are unrelated.
+ * Keep the original substring matching for all other signals: notably `sec`
+ * in `security` and `patrol` in `patrols`, required by regulatory queries. */
+const IN_SCOPE_MATCHERS = IN_SCOPE.map((term) => {
+  const key = normalize(term);
+  return key === "gate" || key === "risk" ? new RegExp(`\\b${key}\\b`) : key;
+});
+
 /**
  * Whole-token matcher for an off-domain term. Substring matching refused real
  * questions (DEF-14, 2026-10-18): «دين» inside «المدينة», «شعر» inside «مشعر»,
@@ -222,7 +231,9 @@ export function isInScope(message: string): boolean {
   if (!t) return true;
   // A pure greeting has no off-domain terms and passes naturally. A greeting
   // prefix must not override an explicit off-domain request (e.g. "hi football").
-  const inHit = IN_SCOPE.some((k) => t.includes(normalize(k)));
+  const inHit = IN_SCOPE_MATCHERS.some((matcher) =>
+    typeof matcher === "string" ? t.includes(matcher) : matcher.test(t),
+  );
   if (inHit) return true;
   const outHit = OUT_OF_SCOPE_RE.some((re) => re.test(t));
   return !outHit;

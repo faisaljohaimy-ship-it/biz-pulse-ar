@@ -88,6 +88,31 @@ describe("Article 22 — scope lock", () => {
     }
   });
 
+  it("does not accept sports requests because a Latin domain keyword hides inside another word", () => {
+    // Before the fix: aggregate contains gate, brisk contains risk.
+    for (const question of [
+      "football aggregate score",
+      "soccer brisk weather",
+      "football risky weather",
+    ]) {
+      expect(isInScope(question), question).toBe(false);
+    }
+    // Actual standalone domain signals still take precedence.
+    expect(isInScope("football gate incident")).toBe(true);
+    expect(isInScope("sports risk report")).toBe(true);
+    expect(isInScope("show CCTV camera status")).toBe(true);
+    expect(isInScope("ما حالة توجيه SEC-18؟")).toBe(true);
+    // The broad ASCII word-boundary attempt broke regulatory web-research
+    // contract tests by rejecting `sec` in security and `patrol` in patrols.
+    for (const q of [
+      "latest news on the Saudi personal data protection law amendments for security patrols",
+      "latest news National Cybersecurity Authority controls",
+      "news about Zakat, Tax and Customs Authority e-invoicing phase for security patrols",
+    ]) {
+      expect(isInScope(q), q).toBe(true);
+    }
+  });
+
   it("lets ambiguous text through to the model (high-precision blocking)", () => {
     // No off-domain signal, no in-domain keyword → pass to the model path.
     expect(isInScope("أعطني ملخص الوضع الحالي")).toBe(true);
