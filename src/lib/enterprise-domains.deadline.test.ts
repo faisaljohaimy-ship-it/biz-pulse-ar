@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { governanceSystems } from "./enterprise-domains";
+import { governanceSystems, useEnterpriseFabricAdapter } from "./enterprise-domains";
 
 const stubs = vi.hoisted(() => ({
   from: vi.fn(),
@@ -86,5 +86,62 @@ describe("enterprise showcase list timers", () => {
     await vi.advanceTimersByTimeAsync(1_000);
     await expect(pending).resolves.toEqual(rows);
     expect(vi.getTimerCount()).toBe(0);
+  });
+});
+
+function renderFabricLists(
+  systems: unknown[],
+  policies: unknown[],
+  programs: unknown[],
+) {
+  // Same five independent hooks as useEnterpriseFabricAdapter, without a live database.
+  for (const data of [systems, policies, programs, [], []]) {
+    stubs.useQuery.mockReturnValueOnce({ data, isLoading: false });
+  }
+  return useEnterpriseFabricAdapter();
+}
+
+describe("enterprise fabric KPI integrity", () => {
+  it("ignores malformed and out-of-range samples without diluting valid measurements", () => {
+    const metrics = renderFabricLists(
+      [{ sla: 99, risk: "high" }, { sla: Number.NaN, risk: "low" }],
+      [{ coverage: 92 }, { coverage: 110 }, { coverage: Number.NaN }],
+      [
+        { progress: 60, adoption: 80 },
+        { progress: Number.POSITIVE_INFINITY, adoption: -5 },
+      ],
+    );
+    expect(metrics).toMatchObject({
+      systemsCount: 2,
+      highRiskSystems: 1,
+      avgSla: 99,
+      avgPolicyCoverage: 92,
+      avgProgress: 60,
+      avgAdoption: 80,
+    });
+  });
+
+  it("returns finite zero fallbacks when only invalid measurements are available", () => {
+    const metrics = renderFabricLists(
+      [{ sla: Number.NEGATIVE_INFINITY, risk: "low" }],
+      [{ coverage: -1 }],
+      [{ progress: 101, adoption: Number.NaN }],
+    );
+    expect([metrics.avgSla, metrics.avgPolicyCoverage, metrics.avgProgress, metrics.avgAdoption])
+      .toEqual([0, 0, 0, 0]);
+  });
+
+  it("preserves averages and rounding for healthy numeric data", () => {
+    const metrics = renderFabricLists(
+      [{ sla: 99.5, risk: "low" }, { sla: 98.5, risk: "low" }],
+      [{ coverage: 75 }, { coverage: 76 }],
+      [{ progress: 40, adoption: 60 }, { progress: 41, adoption: 61 }],
+    );
+    expect(metrics).toMatchObject({
+      avgSla: 99,
+      avgPolicyCoverage: 76,
+      avgProgress: 41,
+      avgAdoption: 61,
+    });
   });
 });
