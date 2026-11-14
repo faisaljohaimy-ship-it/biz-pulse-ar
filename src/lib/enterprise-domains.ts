@@ -322,8 +322,9 @@ function averageFiniteMetric<T>(rows: readonly T[], key: keyof T, max = Infinity
   let sum = 0;
   let count = 0;
   for (const row of rows) {
-    const value = row[key];
-    if (typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= max) {
+    // Number.isFinite rejects non-numeric runtime values without coercion.
+    const value = row[key] as number;
+    if (Number.isFinite(value) && value >= 0 && value <= max) {
       sum += value;
       count++;
     }
