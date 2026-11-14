@@ -23,10 +23,10 @@ export function useLiveTwinNodes<T extends TwinValueNode>(
     if (!signals) return nodes;
     const fallback = (id: string) => nodes.find((n) => n.id === id)?.value ?? "";
     const values: Record<string, string> = {
-      depts: String(signals.departments || fallback("depts")),
+      depts: String(signals.departments ?? fallback("depts")),
       data: String(signals.events),
-      agents: String(signals.agents || fallback("agents")),
-      integ: String(signals.integrations || fallback("integ")),
+      agents: String(signals.agents ?? fallback("agents")),
+      integ: String(signals.integrations ?? fallback("integ")),
       flows: String(signals.automations),
       know: twinValue(signals.documents, ar),
       risk: String(signals.criticalRisks),

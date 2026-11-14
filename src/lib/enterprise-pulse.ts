@@ -141,7 +141,7 @@ async function ensureSeeded(userId: string, openTasks: number) {
     .select("id", { count: "exact", head: true })
     .eq("user_id", userId);
   if (countError) {
-    console.error("[enterprise-pulse] seed count check failed:", countError.message);
+    console.error("pulse seed count failed:", countError.message);
     return; // transient read failure — leave unseeded so it retries
   }
   if ((count ?? 0) > 0) {
@@ -164,7 +164,7 @@ async function ensureSeeded(userId: string, openTasks: number) {
   ]);
   const insertError = results.find((r) => r.error)?.error;
   if (insertError) {
-    console.error("[enterprise-pulse] seed insert failed:", insertError.message);
+    console.error("pulse seed insert failed:", insertError.message);
     return; // leave unseeded so a later call retries the seed
   }
   seeded.add(userId); // mark seeded ONLY after a fully successful seed
@@ -307,22 +307,27 @@ const STATIC_INTEL: PulseIntel[] = [
   },
 ];
 
-function deriveAlerts(crises: CrisisPrediction[]): PulseAlert[] {
-  return crises.slice(0, 5).map((c) => ({
-    id: c.id,
-    severity:
-      c.riskScore >= 80
-        ? "critical"
-        : c.riskScore >= 65
-          ? "high"
-          : c.riskScore >= 50
-            ? "medium"
-            : "low",
-    title_ar: c.title_ar,
-    title_en: c.title_en,
-    owner: c.owner,
-    route: c.route,
-  }));
+export function deriveAlerts(crises: CrisisPrediction[]): PulseAlert[] {
+  // Source sort_order is not severity order. Rank all crises before taking five.
+  // Keep the original array intact for realtime and other operational consumers.
+  return [...crises]
+    .sort((a, b) => b.riskScore - a.riskScore)
+    .slice(0, 5)
+    .map((c) => ({
+      id: c.id,
+      severity:
+        c.riskScore >= 80
+          ? "critical"
+          : c.riskScore >= 65
+            ? "high"
+            : c.riskScore >= 50
+              ? "medium"
+              : "low",
+      title_ar: c.title_ar,
+      title_en: c.title_en,
+      owner: c.owner,
+      route: c.route,
+    }));
 }
 
 function deriveStatus(crises: CrisisPrediction[]): { status: PulseStatus; health: number } {
@@ -354,8 +359,11 @@ export function useEnterprisePulse(): EnterprisePulse {
 
   useEffect(() => {
     let cancelled = false;
+    // A slow earlier Supabase read must not overwrite a newer realtime snapshot.
+    let loadGeneration = 0;
 
     async function load() {
+      const generation = ++loadGeneration;
       const { data: userData } = await supabase.auth.getUser();
       const userId = userData.user?.id;
       if (!userId) return;
@@ -382,7 +390,7 @@ export function useEnterprisePulse(): EnterprisePulse {
         supabase.from("pulse_memory").select("*").eq("user_id", userId).order("sort_order"),
       ]);
 
-      if (cancelled) return;
+      if (cancelled || generation !== loadGeneration) return;
       const crisesData = (crises.data ?? []).map(mapCrisis);
       const { status, health } = deriveStatus(crisesData);
 
@@ -420,7 +428,7 @@ export function useEnterprisePulse(): EnterprisePulse {
         .subscribe();
     } catch (err) {
       // Realtime is best-effort; page remains functional with initial load.
-      console.warn("[enterprise-pulse] realtime unavailable", err);
+      console.warn("pulse realtime unavailable", err);
     }
 
     return () => {
@@ -433,11 +441,18 @@ export function useEnterprisePulse(): EnterprisePulse {
 }
 
 export function formatRelativeTime(date: Date, locale: "ar" | "en"): string {
-  const diff = Math.floor((Date.now() - date.getTime()) / 1000);
-  if (diff < 5) return locale === "ar" ? "الآن" : "just now";
-  if (diff < 60) return locale === "ar" ? `قبل ${diff} ثانية` : `${diff}s ago`;
-  const m = Math.floor(diff / 60);
-  if (m < 60) return locale === "ar" ? `قبل ${m} دقيقة` : `${m}m ago`;
-  const h = Math.floor(m / 60);
-  return locale === "ar" ? `قبل ${h} ساعة` : `${h}h ago`;
+  let diff = Math.floor((Date.now() - date.getTime()) / 1_000);
+  if (!Number.isFinite(diff)) return "—";
+  if (diff >= -5 && diff < 5) return locale === "ar" ? "الآن" : "just now";
+
+  const future = diff < 0;
+  diff = Math.abs(diff);
+  let unit = 0;
+  while (diff >= 60 && unit < 2) {
+    diff = Math.floor((diff + (future ? 59 : 0)) / 60);
+    unit++;
+  }
+  return locale === "ar"
+    ? `${future ? "بعد" : "قبل"} ${diff} ${["ثانية", "دقيقة", "ساعة"][unit]}`
+    : `${future ? "in " : ""}${diff}${"smh"[unit]}${future ? "" : " ago"}`;
 }

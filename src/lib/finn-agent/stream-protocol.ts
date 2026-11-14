@@ -45,22 +45,25 @@ function asEvent(value: unknown): FinnStreamEvent | null {
  */
 export function createFinnEventParser() {
   let buffer = "";
+  // Undefined is equivalent to no preceding CR until the first nonempty chunk.
+  let previousEndedWithCR: boolean | undefined;
   const drain = (final: boolean): FinnStreamEvent[] => {
     const out: FinnStreamEvent[] = [];
     const blocks = buffer.split("\n\n");
     // عند الإنهاء تُحلَّل كل الكتل (الأخيرة بلا فاصلٍ ختاميّ)؛ وقبله يُحجز الذيل
     // الناقص لحين اكتماله.
-    buffer = final ? "" : (blocks.pop() ?? "");
+    // split always returns a nonempty array, even for an empty buffer.
+    buffer = final ? "" : blocks.pop()!;
     for (const block of blocks) {
-      for (const line of block.split("\n")) {
-        if (!line.startsWith("data:")) continue;
-        const payload = line.slice(5).trim();
-        if (!payload) continue;
+      // SSE joins all data lines within a single frame with an LF.
+      // Match only data lines, excluding comment/event/id fields.
+      const lines = block.match(/^data:.*/gm);
+      if (lines) {
         try {
-          const event = asEvent(JSON.parse(payload));
+          const event = asEvent(JSON.parse(lines.map((line) => line.slice(5)).join("\n")));
           if (event) out.push(event);
         } catch {
-          /* كتلةٌ معطوبة — تُهمَل. */
+          /* كتلةٌ معطوبة — تُهمَل ولا تُسقط بقية البثّ. */
         }
       }
     }
@@ -68,10 +71,12 @@ export function createFinnEventParser() {
   };
   return {
     push(chunk: string): FinnStreamEvent[] {
-      // A CRLF pair may cross the boundary between two network chunks.
-      // Normalize the accumulated fragment so the event is delivered immediately.
-      buffer += chunk;
-      buffer = buffer.replace(/\r\n/g, "\n");
+      // SSE accepts CR, LF and CRLF. Normalize bare CR immediately, even
+      // when a CRLF pair is split between network chunks, so deltas do not
+      // wait until the stream closes. Swallow only the paired leading LF.
+      const pairedLF = previousEndedWithCR && chunk[0] === "\n";
+      if (chunk) previousEndedWithCR = chunk.at(-1) === "\r";
+      buffer += chunk.slice(pairedLF ? 1 : 0).replace(/\r\n?/g, "\n");
       return drain(false);
     },
     /** ما بقي في الذاكرة عند نهاية الجسم (حدثٌ أخير بلا فاصلٍ ختاميّ). */

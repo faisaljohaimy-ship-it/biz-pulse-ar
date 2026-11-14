@@ -56,6 +56,8 @@ jobs:
         # while CPU-heavy mutation suites competed (run 42180020012).
         # Cap concurrent Vitest workers, not test timeouts or coverage.
         run: npm test -- --maxWorkers=2
+      - name: Offline production page validation regression tests
+        run: node --test scripts/check-production.regression.test.mjs
       - name: Production dependency audit
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run check:audit

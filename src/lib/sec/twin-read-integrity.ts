@@ -23,7 +23,11 @@ export function assertTwinReadsSucceeded(reads: Record<TwinReadSource, unknown>)
     if (
       result.error != null ||
       !Array.isArray(result.data) ||
-      (typeof result.status === "number" && result.status >= 400)
+      (result.status != null &&
+        (typeof result.status !== "number" ||
+          !Number.isInteger(result.status) ||
+          result.status < 200 ||
+          result.status >= 300))
     ) {
       // Deliberately omit raw database errors, credentials and row contents.
       throw new Error(`twin-read-unavailable:${source}`);

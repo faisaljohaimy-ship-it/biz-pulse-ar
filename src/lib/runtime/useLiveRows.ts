@@ -36,8 +36,11 @@ export function useLiveRows<T>(
 
   useEffect(() => {
     let alive = true;
+    // Realtime messages may trigger overlapping reads; only the newest result may update the UI.
+    let latestRunId = 0;
     setLoading(true);
     const run = () => {
+      const runId = ++latestRunId;
       // كان هذا `.then(...)` وحده: لا `catch` ولا سقف زمني. فرفضُ الوعد —
       // انقطاع شبكة، أو رفض RLS يعيد `error` بدل `data` — يعني أن
       // `setLoading(false)` لا يُنفَّذ **أبدًا**، فيبقى هيكل التحميل إلى
@@ -45,36 +48,39 @@ export function useLiveRows<T>(
       // والجديد أن الخطأ يُعاد للصفحة بدل أن يتنكّر قائمةً فارغة.
       let timer: ReturnType<typeof setTimeout> | null = null;
       Promise.race([
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (build(supabase.from(table as any)) as any).then(
-          ({ data, error }: { data: T[] | null; error: { message?: string } | null }) => {
-            if (error) throw new Error(error.message || LIVE_ROWS_ERROR_AR);
-            return data ?? [];
-          },
-        ),
+        // An async boundary also catches synchronous query-builder failures.
+        (async () => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const { data, error } = (await build(supabase.from(table as any))) as {
+            data: T[] | null;
+            error: { message?: string } | null;
+          };
+          if (error) throw new Error(error.message || LIVE_ROWS_ERROR_AR);
+          return data ?? [];
+        })(),
         new Promise<T[]>((_, reject) => {
           timer = setTimeout(() => reject(new Error(LIVE_ROWS_TIMEOUT_AR)), LIVE_ROWS_TIMEOUT_MS);
         }),
       ])
         .then((next: T[]) => {
-          if (!alive) return;
+          if (!alive || runId !== latestRunId) return;
           setRows(next);
           setError(null);
         })
         .catch((err: unknown) => {
-          console.warn(`[useLiveRows] ${table} تعذّرت قراءته`, err);
-          if (!alive) return;
+          if (!alive || runId !== latestRunId) return;
+          console.warn(table, err);
           // الصفوف السابقة تبقى إن وُجدت — خطأُ تحديثٍ عابر لا يمحو ما عُرض.
           setError(err instanceof Error ? err : new Error(LIVE_ROWS_ERROR_AR));
         })
         .finally(() => {
           if (timer) clearTimeout(timer);
-          if (alive) setLoading(false);
+          if (alive && runId === latestRunId) setLoading(false);
         });
     };
     run();
     const channel = supabase
-      .channel(`live:${table}:${Math.random().toString(36).slice(2, 8)}`)
+      .channel(`live:${table}:${Math.random()}`)
       .on(
         "postgres_changes",
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -87,32 +93,27 @@ export function useLiveRows<T>(
       void supabase.removeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [attempt, ...deps]);
+  }, [attempt, table, ...deps]);
   return { rows, loading, error, refetch };
 }
 
 export function fmtRel(iso: string | null | undefined): string {
-  if (!iso) return "—";
-  const ms = Date.now() - new Date(iso).getTime();
-  const s = Math.max(1, Math.round(ms / 1000));
+  const ms = Date.now() - Date.parse(iso ?? "");
+  if (!(ms >= 0)) return "—";
+  const s = Math.round(ms / 1000) || 1;
   if (s < 60) return `${s}s ago`;
   const m = Math.round(s / 60);
   if (m < 60) return `${m}m ago`;
   const h = Math.round(m / 60);
-  if (h < 24) return `${h}h ago`;
-  return `${Math.round(h / 24)}d ago`;
+  return h < 24 ? `${h}h ago` : `${Math.round(h / 24)}d ago`;
 }
 
 export function fmtDuration(startIso: string | null | undefined, endIso?: string | null): string {
-  if (!startIso) return "—";
-  const start = new Date(startIso).getTime();
-  const end = endIso ? new Date(endIso).getTime() : Date.now();
-  const ms = Math.max(0, end - start);
-  const s = Math.round(ms / 1000);
+  const start = Date.parse(startIso ?? "");
+  const end = endIso ? Date.parse(endIso) : Date.now();
+  if (!Number.isFinite(start + end)) return "—";
+  const s = Math.round(Math.max(0, end - start) / 1000);
   if (s < 60) return `${s}s`;
   const m = Math.floor(s / 60);
-  const rs = s % 60;
-  if (m < 60) return `${m}m ${rs}s`;
-  const h = Math.floor(m / 60);
-  return `${h}h ${m % 60}m`;
+  return m < 60 ? `${m}m ${s % 60}s` : `${Math.floor(m / 60)}h ${m % 60}m`;
 }

@@ -43,6 +43,20 @@ describe("النظام من وصف الموقع الوظيفي", () => {
     expect(sapFacilityName(d)).toBeNull();
   });
 
+  it("only maps intrusion detection descriptions to PIDS, not other perimeter facilities", () => {
+    expect(sapSystem("Perimeter Intrusion Detection System")).toBe("PIDS");
+    // SAP's recorded source also contains the 'Instrusion' spelling.
+    expect(sapSystem("Perimeter Instrusion Detection System")).toBe("PIDS");
+    for (const facility of [
+      "Perimeter Inspection Office",
+      "Perimeter Inventory Store",
+      "Perimeter in Gate",
+    ]) {
+      expect(sapSystem(facility)).toBeNull();
+      expect(sapFacilityName(facility)).toBe(facility);
+    }
+  });
+
   it("اسم منشأة مفردة ⇐ لا نظام، ويُحفظ اسمها موقعًا", () => {
     expect(sapSystem("Reference Customer Service Office")).toBeNull();
     expect(sapFacilityName("  Reference  Customer Service Office ")).toBe(

@@ -92,8 +92,12 @@ function breakerShouldSkip(now: number): boolean {
 
 /** Never write quota bucket keys (IP/user identity) or backend error payloads to logs. */
 function noteFailure(now: number, reason: string, detail: Record<string, unknown>): void {
-  if (breaker.lastFailureAt !== null && now - breaker.lastFailureAt > BREAKER_FAILURE_WINDOW_MS) {
-    // انقطعت السلسلة: الفشل السابق أقدم من نافذة الستّين ثانية.
+  if (
+    breaker.lastFailureAt !== null &&
+    (now < breaker.lastFailureAt || now - breaker.lastFailureAt > BREAKER_FAILURE_WINDOW_MS)
+  ) {
+    // A clock rollback starts a fresh failure streak; never mix failures from
+    // incompatible wall-clock epochs or spuriously open the storage breaker.
     breaker.consecutiveFailures = 0;
   }
   breaker.consecutiveFailures += 1;
@@ -173,9 +177,11 @@ export async function enforceRateLimit(
         _window_seconds: windowSeconds,
       }),
     )
-    .catch((thrown: unknown) => ({
+    .catch(() => ({
+      // Never coerce an opaque rejection: even String(thrown) can throw.
+      // The error payload is not used; any truthy value fails the gate closed.
       data: null,
-      error: { message: thrown instanceof Error ? thrown.message : String(thrown) },
+      error: true,
     }));
   const outcome = await Promise.race([
     call,
@@ -242,6 +248,9 @@ export function degradedAllowance(
   const cap = Math.max(1, Math.floor(maxRequests * DEGRADED_FRACTION));
   const windowMs = Math.max(1, windowSeconds) * 1000;
   let bucket = degradedBuckets.get(bucketKey);
+  // A clock rollback must not stretch an active quota window by the clock offset.
+  // Keep the consumed count and restrictive cap; only rebase its expiry clock.
+  if (bucket && now < bucket.windowStart) bucket.windowStart = now;
   if (bucket && now - bucket.windowStart >= bucket.windowMs) {
     degradedBuckets.delete(bucketKey);
     bucket = undefined;
@@ -250,7 +259,9 @@ export function degradedAllowance(
   if (!bucket) {
     if (degradedBuckets.size >= DEGRADED_MAX_KEYS) {
       for (const [key, entry] of degradedBuckets) {
-        if (now - entry.windowStart >= entry.windowMs) degradedBuckets.delete(key);
+        // Rebase even untouched buckets at capacity, without freeing quota early.
+        if (now < entry.windowStart) entry.windowStart = now;
+        else if (now - entry.windowStart >= entry.windowMs) degradedBuckets.delete(key);
       }
     }
     if (degradedBuckets.size >= DEGRADED_MAX_KEYS) {

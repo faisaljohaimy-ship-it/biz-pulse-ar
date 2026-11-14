@@ -84,6 +84,12 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Unit tests
         run: npm test
+      - name: Offline production smoke regression tests
+        run: node --test scripts/smoke-production.regression.test.mjs
+      - name: Offline production page validation regression tests
+        run: node --test scripts/check-production.regression.test.mjs
+      - name: Integration PostgreSQL 16 provisioning regression
+        run: node --test tests/integration/postgres-provisioning.regression.test.mjs
       # الأمر نفسه الذي تشغّله السلسلة المحلّية (`npm run check`) — لا نسخة ثانية.
       - name: Production dependency audit
         run: npm run check:audit
@@ -163,6 +169,15 @@ jobs:
         with:
           path: ~/.cache/sadeed-integration
           key: postgrest-v12.2.3-linux-static-x64
+      - name: Provision PostgreSQL 16 toolchain
+        run: |
+          if [ ! -x /usr/lib/postgresql/16/bin/initdb ] || [ ! -x /usr/lib/postgresql/16/bin/pg_ctl ]; then
+            sudo apt-get update -qq
+            sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends postgresql-16 postgresql-client-16
+          fi
+          test -x /usr/lib/postgresql/16/bin/initdb
+          test -x /usr/lib/postgresql/16/bin/pg_ctl
+          command -v psql >/dev/null
       - name: Bring up the stack (initdb → shim → migrations → fixtures → PostgREST → gateway)
         run: npm run integration:up
       - name: Typecheck the integration tier

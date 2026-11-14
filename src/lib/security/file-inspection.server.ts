@@ -116,9 +116,28 @@ function u32(bytes: Uint8Array, offset: number): number {
   );
 }
 
+const BIDI_CONTROLS = /[\u061c\u200e\u200f\u202a-\u202e\u2066-\u2069]/;
+
+function containsControlCharacter(value: string): boolean {
+  for (let i = 0; i < value.length; i++) {
+    const code = value.charCodeAt(i);
+    if (code < 0x20 || (code >= 0x7f && code <= 0x9f)) return true;
+  }
+  return false;
+}
+
 function assertFilename(filename: string, claimedMime: SadeedAttachmentMime) {
   const normalized = filename.normalize("NFKC").trim();
-  if (!normalized || normalized.startsWith(".") || /[\0\r\n/\\]/.test(normalized)) {
+  // Invisible direction controls can visually disguise a harmless extension as a
+  // different file type in RTL/LTR evidence lists. Preserve ordinary Arabic
+  // letters while rejecting bidi overrides, isolates and direction marks.
+  if (
+    !normalized ||
+    normalized.startsWith(".") ||
+    /[/\\]/.test(normalized) ||
+    containsControlCharacter(normalized) ||
+    BIDI_CONTROLS.test(normalized)
+  ) {
     throw new FileInspectionError("unsafe_filename", "Attachment filename is unsafe.");
   }
   if (DANGEROUS_EXTENSION.test(normalized)) {
@@ -157,6 +176,7 @@ type ZipSummary = { names: string[]; totalUncompressed: number; entries: number 
 
 function inspectZip(bytes: Uint8Array): ZipSummary {
   const names: string[] = [];
+  const seenNames = new Set<string>();
   let totalUncompressed = 0;
   let entries = 0;
 
@@ -176,9 +196,47 @@ function inspectZip(bytes: Uint8Array): ZipSummary {
       throw new FileInspectionError("encrypted_archive", "Encrypted Office archives are blocked.");
     }
 
-    const name = ascii(bytes, offset + 46, offset + 46 + nameLength).replace(/\\/g, "/");
-    const lower = name.toLowerCase();
-    if (name.startsWith("/") || lower.includes("../") || lower.includes("\0")) {
+    // POSIX links, sockets, pipes and devices must never leave quarantine
+    // disguised as Office ZIP parts. Unix mode is stored in the upper half
+    // of the central-directory external attributes for Unix/macOS creators.
+    const unixHost = bytes[offset + 5] === 3 || bytes[offset + 5] === 19;
+    if (unixHost) {
+      const fileType = (u32(bytes, offset + 38) >>> 16) & 0xf000;
+      if (fileType !== 0 && fileType !== 0x8000 && fileType !== 0x4000) {
+        throw new FileInspectionError(
+          "invalid_zip",
+          "Office archive contains an unsafe Unix file type.",
+        );
+      }
+    }
+
+    const nameBytes = bytes.subarray(offset + 46, offset + 46 + nameLength);
+    let name: string;
+    if ((flags & 0x0800) !== 0) {
+      try {
+        name = new TextDecoder("utf-8", { fatal: true }).decode(nameBytes);
+      } catch {
+        throw new FileInspectionError("invalid_zip", "Office archive filename is not valid UTF-8.");
+      }
+    } else {
+      name = ascii(nameBytes);
+    }
+    name = name.replace(/\\/g, "/");
+    // Normalization and bidi/control checks prevent ZIP members from hiding
+    // active extensions or colliding with another member after extraction.
+    if (containsControlCharacter(name) || BIDI_CONTROLS.test(name)) {
+      throw new FileInspectionError("invalid_zip", "Office archive filename is unsafe.");
+    }
+    const canonicalName = name.normalize("NFKC");
+    const lower = canonicalName.toLowerCase();
+    const pathSegments = canonicalName.split("/");
+    if (
+      canonicalName.startsWith("/") ||
+      /^[a-z]:\//i.test(canonicalName) ||
+      pathSegments.includes("..") ||
+      lower.includes("../") ||
+      lower.includes("\0")
+    ) {
       throw new FileInspectionError(
         "archive_traversal",
         "Unsafe Office archive paths are blocked.",
@@ -202,6 +260,13 @@ function inspectZip(bytes: Uint8Array): ZipSummary {
     if (compressed === 0 ? uncompressed > 0 : uncompressed / compressed > 100) {
       throw new FileInspectionError("archive_ratio", "Office archive compression ratio is unsafe.");
     }
+    // Duplicate ZIP members can make Office readers and the quarantine scanner
+    // disagree about which payload a part name resolves to. Fail closed even
+    // when aliases differ only by case or Windows path separators.
+    if (seenNames.has(lower)) {
+      throw new FileInspectionError("invalid_zip", "Office archive contains duplicate part names.");
+    }
+    seenNames.add(lower);
     names.push(lower);
     offset = end - 1;
   }

@@ -79,6 +79,48 @@ describe("SADEED adaptive preferences", () => {
     ).toEqual([{ key: "response_format", value: "no_tables", confidence: 0.95 }]);
   });
 
+  it("learns explicit durable English requests to avoid tables", () => {
+    for (const request of [
+      "Always respond without tables.",
+      "From now on, never use tables.",
+      "From now on, do not use tables.",
+      "From now on, don't use tables.",
+      "Always answer without any tables.",
+    ]) {
+      expect(extractSadeedAdaptivePreferences(request)).toEqual([
+        { key: "response_format", value: "no_tables", confidence: 0.95 },
+      ]);
+    }
+
+    expect(extractSadeedAdaptivePreferences("Always reply in English without any tables.")).toEqual(
+      [
+        { key: "response_language", value: "en", confidence: 0.95 },
+        { key: "response_format", value: "no_tables", confidence: 0.95 },
+      ],
+    );
+  });
+
+  it("does not learn a negated detailed preference over an affirmative concise one", () => {
+    expect(
+      extractSadeedAdaptivePreferences("Always keep your replies concise, not detailed."),
+    ).toEqual([{ key: "response_length", value: "concise", confidence: 0.95 }]);
+    expect(extractSadeedAdaptivePreferences("From now on, never use detailed replies.")).toEqual(
+      [],
+    );
+    expect(
+      extractSadeedAdaptivePreferences("From now on, keep your replies detailed, not concise."),
+    ).toEqual([{ key: "response_length", value: "detailed", confidence: 0.95 }]);
+  });
+
+  it("retains a positive Arabic request for detail while excluding negated elaboration", () => {
+    expect(extractSadeedAdaptivePreferences("من الآن فصاعدا لا تختصر ردودك.")).toEqual([
+      { key: "response_length", value: "detailed", confidence: 0.95 },
+    ]);
+    expect(extractSadeedAdaptivePreferences("اجعل ردودك باختصار، لا أريد شرحاً وافياً.")).toEqual([
+      { key: "response_length", value: "concise", confidence: 0.95 },
+    ]);
+  });
+
   it("maps only approved enum pairs into prompt hints", () => {
     expect(sadeedPreferencePromptLine("response_length", "concise")).toContain("concise");
     expect(sadeedPreferencePromptLine("recipient", "someone@example.com")).toBe(null);
