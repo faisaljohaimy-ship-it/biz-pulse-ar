@@ -226,10 +226,7 @@ export function pickDuplicateDocument(
     newestFirst.find((r) => {
       if (r.status !== "pending" && r.status !== "processing") return false;
       const ageMs = now - Date.parse(r.created_at);
-      return (
-        ageMs >= -IN_PROGRESS_DEDUPE_CLOCK_SKEW_MS &&
-        ageMs <= IN_PROGRESS_DEDUPE_WINDOW_MS
-      );
+      return ageMs >= -IN_PROGRESS_DEDUPE_CLOCK_SKEW_MS && ageMs <= IN_PROGRESS_DEDUPE_WINDOW_MS;
     }) ?? null
   );
 }
