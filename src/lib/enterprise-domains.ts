@@ -318,9 +318,17 @@ export const briefingOpportunities = makeHooks<
 // ============================================================
 // Malformed realtime/database values must never poison an executive KPI or
 // dilute a valid sample. Percentage fields also require their actual 0–100 range.
-function averageFiniteMetric(values: readonly number[], max = Number.POSITIVE_INFINITY): number {
-  const valid = values.filter((value) => Number.isFinite(value) && value >= 0 && value <= max);
-  return valid.reduce((sum, value) => sum + value, 0) / (valid.length || 1);
+function averageFiniteMetric<T>(rows: readonly T[], key: keyof T, max = Infinity): number {
+  let sum = 0;
+  let count = 0;
+  for (const row of rows) {
+    const value = row[key];
+    if (typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= max) {
+      sum += value;
+      count++;
+    }
+  }
+  return sum / (count || 1);
 }
 
 export function useEnterpriseFabricAdapter() {
@@ -335,16 +343,10 @@ export function useEnterpriseFabricAdapter() {
   const programsList = programs.data ?? [];
   const outcomesList = outcomes.data ?? [];
 
-  const avgSla = averageFiniteMetric(systemsList.map((system) => system.sla));
-  const avgPolicyCoverage = Math.round(
-    averageFiniteMetric(policiesList.map((policy) => policy.coverage), 100),
-  );
-  const avgProgress = Math.round(
-    averageFiniteMetric(programsList.map((program) => program.progress), 100),
-  );
-  const avgAdoption = Math.round(
-    averageFiniteMetric(programsList.map((program) => program.adoption), 100),
-  );
+  const avgSla = averageFiniteMetric(systemsList, "sla");
+  const avgPolicyCoverage = Math.round(averageFiniteMetric(policiesList, "coverage", 100));
+  const avgProgress = Math.round(averageFiniteMetric(programsList, "progress", 100));
+  const avgAdoption = Math.round(averageFiniteMetric(programsList, "adoption", 100));
 
   return {
     systemsCount: systemsList.length,
