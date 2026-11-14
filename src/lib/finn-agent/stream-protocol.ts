@@ -55,15 +55,15 @@ export function createFinnEventParser() {
     // split always returns a nonempty array, even for an empty buffer.
     buffer = final ? "" : blocks.pop()!;
     for (const block of blocks) {
-      for (const line of block.split("\n")) {
-        if (/^data:/.test(line)) {
-          try {
-            // JSON.parse accepts whitespace and rejects malformed or empty data.
-            const event = asEvent(JSON.parse(line.slice(5)));
-            if (event) out.push(event);
-          } catch {
-            /* كتلةٌ معطوبة — تُهمَل. */
-          }
+      // SSE joins all data lines within a single frame with an LF.
+      // Match only data lines, excluding comment/event/id fields.
+      const lines = block.match(/^data:.*/gm);
+      if (lines) {
+        try {
+          const event = asEvent(JSON.parse(lines.map((line) => line.slice(5)).join("\n")));
+          if (event) out.push(event);
+        } catch {
+          /* كتلةٌ معطوبة — تُهمَل ولا تُسقط بقية البثّ. */
         }
       }
     }
