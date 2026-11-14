@@ -27,11 +27,23 @@ function git(args) {
 }
 
 const env = process.env;
+// A Vercel build can inherit GitHub metadata from an unrelated process.
+// Its platform-owned commit must win to avoid publishing a misleading SHA.
+const isVercelBuild = env.VERCEL === "1" || env.VERCEL === "true";
+const platformCandidates = isVercelBuild
+  ? [
+      ["VERCEL_GIT_COMMIT_SHA", env.VERCEL_GIT_COMMIT_SHA],
+      ["GITHUB_SHA", env.GITHUB_SHA],
+      ["CF_PAGES_COMMIT_SHA", env.CF_PAGES_COMMIT_SHA],
+    ]
+  : [
+      ["GITHUB_SHA", env.GITHUB_SHA],
+      ["CF_PAGES_COMMIT_SHA", env.CF_PAGES_COMMIT_SHA],
+      ["VERCEL_GIT_COMMIT_SHA", env.VERCEL_GIT_COMMIT_SHA],
+    ];
 const candidates = [
   ["SADEED_BUILD_SHA", env.SADEED_BUILD_SHA],
-  ["GITHUB_SHA", env.GITHUB_SHA],
-  ["CF_PAGES_COMMIT_SHA", env.CF_PAGES_COMMIT_SHA],
-  ["VERCEL_GIT_COMMIT_SHA", env.VERCEL_GIT_COMMIT_SHA],
+  ...platformCandidates,
   ["COMMIT_SHA", env.COMMIT_SHA],
   ["git", git("rev-parse HEAD")],
 ];
@@ -41,9 +53,9 @@ const [source, sha] = candidates.find(([, v]) => v && /^[0-9a-f]{7,40}$/i.test(v
 ];
 const ref =
   env.SADEED_BUILD_REF ||
-  env.GITHUB_REF_NAME ||
-  env.CF_PAGES_BRANCH ||
-  env.VERCEL_GIT_COMMIT_REF ||
+  (isVercelBuild
+    ? env.VERCEL_GIT_COMMIT_REF || env.GITHUB_REF_NAME || env.CF_PAGES_BRANCH
+    : env.GITHUB_REF_NAME || env.CF_PAGES_BRANCH || env.VERCEL_GIT_COMMIT_REF) ||
   git("rev-parse --abbrev-ref HEAD") ||
   "unknown";
 // «معدَّل» يعني تغييرًا في ملفٍّ متعقَّب؛ الملفّات غير المتعقَّبة (مسودّة، ناتج أداة)
