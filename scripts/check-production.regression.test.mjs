@@ -54,6 +54,25 @@ async function runFixture(
   return exitCode;
 }
 
+
+// MIME sniffing must not certify a page or stylesheet with an invalid
+// MIME subtype merely because it starts with text/html or text/css.
+test("rejects an HTML-looking document served as text/html-invalid", async () => {
+  assert.equal(await runFixture(normalPage, "text/html-invalid"), 1);
+});
+
+test("rejects an app stylesheet served as text/css-invalid", async () => {
+  assert.equal(await runFixture(normalPage, "text/html", 200, "text/css-invalid"), 1);
+});
+
+test("accepts exact text/html with a charset parameter", async () => {
+  assert.equal(await runFixture(normalPage, "text/html; charset=utf-8"), null);
+});
+
+test("accepts exact text/css with a charset parameter", async () => {
+  assert.equal(await runFixture(normalPage, "text/html", 200, "text/css; charset=utf-8"), null);
+});
+
 test("accepts a real HTML document with a stylesheet link", async () => {
   assert.equal(await runFixture(normalPage), null);
 });
