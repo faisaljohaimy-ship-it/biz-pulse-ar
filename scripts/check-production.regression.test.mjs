@@ -824,8 +824,15 @@ test("resolves a relative app stylesheet using the first same-origin base", asyn
     '<base href="/dashboard/"><link rel="stylesheet" href="assets/app.css">',
   );
   assert.equal(
-    await runFixture(html, "text/html", 200, "text/css", "body {}", 200,
-      "https://offline.invalid/dashboard/assets/app.css"),
+    await runFixture(
+      html,
+      "text/html",
+      200,
+      "text/css",
+      "body {}",
+      200,
+      "https://offline.invalid/dashboard/assets/app.css",
+    ),
     null,
   );
 });
