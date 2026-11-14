@@ -178,11 +178,13 @@ const isRecord = (v: unknown): v is Record<string, unknown> =>
   typeof v === "object" && v !== null && !Array.isArray(v);
 
 const asCount = (v: unknown): number | null => {
-  if (typeof v === "number" && Number.isFinite(v) && v >= 0) return Math.floor(v);
   if (Array.isArray(v)) return v.length;
-  if (isRecord(v) && typeof v.count === "number" && Number.isFinite(v.count))
-    return Math.max(0, Math.floor(v.count));
-  return null;
+  // Accept both numeric and {count} shapes. Invalid/unsafe values are absent,
+  // not zero: combining huge finite counts must not yield Infinity.
+  const raw = isRecord(v) ? v.count : v;
+  if (typeof raw !== "number" || raw < 0) return null;
+  const count = Math.floor(raw);
+  return Number.isSafeInteger(count) ? count : null;
 };
 
 /**
@@ -210,7 +212,9 @@ export function toolFailureCount(auditJson: unknown): number | null {
     const failed = typeof v.failed === "number" ? asCount(v.failed) : null;
     const rejected = typeof v.rejected === "number" ? asCount(v.rejected) : null;
     if (failed === null && rejected === null) return null;
-    return (failed ?? 0) + (rejected ?? 0);
+    const total = (failed ?? 0) + (rejected ?? 0);
+    // A finite sum can still exceed the safe-integer range.
+    return Number.isSafeInteger(total) ? total : null;
   }
   return asCount(v);
 }
