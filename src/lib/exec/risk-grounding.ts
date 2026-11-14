@@ -79,10 +79,11 @@ function normalizeDigits(text: string): string {
 export function numbersIn(text: string): readonly number[] {
   const out: number[] = [];
   // A negative value must not inherit the grounding of its positive magnitude.
-  // Accept both ASCII minus and the mathematical minus used in Arabic reports.
-  for (const m of normalizeDigits(text).matchAll(/[-−]?\d+(?:[.,٫]\d+)?/g)) {
-    const n = Number(m[0].replace("−", "-").replace(/[,٫]/, "."));
-    if (Number.isFinite(n)) out.push(n);
+  // Accept mathematical minus and scientific notation as one whole number.
+  // Never discard overflow: Infinity must fail grounding rather than disappear.
+  for (const m of normalizeDigits(text).matchAll(/[-−]?\d+(?:[.,٫]\d+)?(?:[eE][+−-]?\d+)?/g)) {
+    const n = Number(m[0].replace(/−/g, "-").replace(/[,٫]/, "."));
+    if (!Number.isNaN(n)) out.push(n);
   }
   return out;
 }
