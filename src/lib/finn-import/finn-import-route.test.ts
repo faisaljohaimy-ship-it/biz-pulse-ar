@@ -720,7 +720,7 @@ describe("⑤ المعاينة: تحليلٌ في الذاكرة بلا كتاب
     );
     expect(res.status).toBe(200);
     const body = await jsonOf(res);
-    expect(body.file.name).toBe(shown);
+    expect((body as { file: { name: string } }).file.name).toBe(shown);
     // The preview token is opaque signed data, not a displayed filename:
     // arbitrary base64 can include path-like substrings by coincidence.
     const visibleMetadata = { ...body };
