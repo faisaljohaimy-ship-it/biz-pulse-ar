@@ -244,15 +244,18 @@ function hasExecutableThemeBootstrap(body) {
 // HTML decodes character references in attribute values before applying
 // http-equiv=refresh. Decode one layer to match browser redirect semantics.
 function decodeMetaAttribute(value) {
-  return value.replace(/&(?:#(x[0-9a-f]+|\d+);?|(?:amp|semi|tab|newline);)/gi, (entity, numeric) => {
-    if (!numeric) {
-      const names = { amp: "&", semi: ";", tab: "\t", newline: "\n" };
-      return names[entity.slice(1, -1).toLowerCase()] ?? entity;
-    }
-    const hex = numeric[0].toLowerCase() === "x";
-    const code = Number.parseInt(hex ? numeric.slice(1) : numeric, hex ? 16 : 10);
-    return code > 0 && code <= 0x10ffff ? String.fromCodePoint(code) : entity;
-  });
+  return value.replace(
+    /&(?:#(x[0-9a-f]+|\d+);?|(?:amp|semi|tab|newline);)/gi,
+    (entity, numeric) => {
+      if (!numeric) {
+        const names = { amp: "&", semi: ";", tab: "\t", newline: "\n" };
+        return names[entity.slice(1, -1).toLowerCase()] ?? entity;
+      }
+      const hex = numeric[0].toLowerCase() === "x";
+      const code = Number.parseInt(hex ? numeric.slice(1) : numeric, hex ? 16 : 10);
+      return code > 0 && code <= 0x10ffff ? String.fromCodePoint(code) : entity;
+    },
+  );
 }
 
 const failures = [];
@@ -344,7 +347,8 @@ for (const route of ROUTES) {
     const firstBase = [...activeMarkup.matchAll(/<base\b[^>]*>/gi)]
       .map(([tag]) => tagAttributes(tag, 5))
       .find((attrs) => "href" in attrs);
-    const baseHref = firstBase?.href === undefined ? undefined : decodeMetaAttribute(firstBase.href);
+    const baseHref =
+      firstBase?.href === undefined ? undefined : decodeMetaAttribute(firstBase.href);
     const documentBase = baseHref === undefined ? url : new URL(baseHref, url).href;
 
     if (!isHtml) failures.push(`${route}: الاستجابة ليست مستند HTML صالحًا للتطبيق`);
