@@ -57,13 +57,14 @@ export function createFinnEventParser() {
     for (const block of blocks) {
       // SSE joins all data lines within a single frame with an LF.
       // Match only data lines, excluding comment/event/id fields.
-      const lines = block.match(/^data:.*$/gm);
-      if (!lines) continue;
-      try {
-        const event = asEvent(JSON.parse(lines.join("\n").replace(/^data: ?/gm, "")));
-        if (event) out.push(event);
-      } catch {
-        /* كتلةٌ معطوبة — تُهمَل ولا تُسقط بقية البثّ. */
+      const lines = block.match(/^data:.*/gm);
+      if (lines) {
+        try {
+          const event = asEvent(JSON.parse(lines.join("\n").replace(/^data: ?/gm, "")));
+          if (event) out.push(event);
+        } catch {
+          /* كتلةٌ معطوبة — تُهمَل ولا تُسقط بقية البثّ. */
+        }
       }
     }
     return out;
