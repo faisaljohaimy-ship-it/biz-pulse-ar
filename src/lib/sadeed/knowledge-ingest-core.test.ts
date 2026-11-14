@@ -333,9 +333,16 @@ describe("pickDuplicateDocument", () => {
     };
     expect(pickDuplicateDocument([slightlyFuture], now)?.id).toBe("near-future");
     expect(
-      pickDuplicateDocument([
-        { id: "outside-skew", status: "pending", created_at: new Date(now + 60_001).toISOString() },
-      ], now),
+      pickDuplicateDocument(
+        [
+          {
+            id: "outside-skew",
+            status: "pending",
+            created_at: new Date(now + 60_001).toISOString(),
+          },
+        ],
+        now,
+      ),
     ).toBeNull();
   });
 
