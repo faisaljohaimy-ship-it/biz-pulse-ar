@@ -34,7 +34,7 @@ describe("Finn SSE multiline data frame regression", () => {
 
   it("discards a malformed multiline frame without losing the next valid event", () => {
     const parser = createFinnEventParser();
-    const broken = ['data: {', 'data: "type": not-json', "data: }", "", ""].join("\n");
+    const broken = ["data: {", 'data: "type": not-json', "data: }", "", ""].join("\n");
     expect(parser.push(broken + encodeFinnEvent({ type: "delta", text: "سليم" }))).toEqual([
       { type: "delta", text: "سليم" },
     ]);
