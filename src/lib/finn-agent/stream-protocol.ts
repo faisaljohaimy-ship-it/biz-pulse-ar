@@ -60,7 +60,7 @@ export function createFinnEventParser() {
       const lines = block.match(/^data:.*/gm);
       if (lines) {
         try {
-          const event = asEvent(JSON.parse(lines.join("\n").replace(/^data: ?/gm, "")));
+          const event = asEvent(JSON.parse(lines.map((line) => line.slice(5)).join("\n")));
           if (event) out.push(event);
         } catch {
           /* كتلةٌ معطوبة — تُهمَل ولا تُسقط بقية البثّ. */
