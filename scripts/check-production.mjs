@@ -364,6 +364,8 @@ for (const route of ROUTES) {
       // Font CDNs may precede the application's own CSS. Never count an
       // external link as proof, but do inspect later same-origin stylesheets.
       let reason = "no same-origin stylesheet";
+      // One valid vendor stylesheet cannot certify a later broken app stylesheet.
+      let brokenCss = false;
       for (const href of stylesheetLinks) {
         try {
           const stylesheetUrl = new URL(href, documentBase);
@@ -383,14 +385,16 @@ for (const route of ROUTES) {
             .trim();
           if (isCss && effectiveCss.length > 0) {
             cssLoaded = true;
-            break;
+            continue;
           }
+          brokenCss = true;
           reason = isCss ? "stylesheet response is empty" : "stylesheet response is not text/css";
         } catch (error) {
+          brokenCss = true;
           reason = error instanceof Error ? error.message : String(error);
         }
       }
-      if (!cssLoaded) failures.push(route + ": تعذّر تحميل ملف الأنماط — " + reason);
+      if (!cssLoaded || brokenCss) failures.push(route + ": تعذّر تحميل ملف الأنماط — " + reason);
     }
 
     rows.push({
