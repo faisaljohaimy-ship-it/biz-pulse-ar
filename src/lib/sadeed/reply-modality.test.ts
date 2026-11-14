@@ -30,6 +30,13 @@ describe("SADEED reply modality", () => {
     );
   });
 
+  it.each([
+    ["backtick", "```ts"],
+    ["tilde", "~~~ts"],
+  ])("does not narrate truncated %s fenced code", (_kind, fence) => {
+    expect(toSadeedSpeechText(`قبل\n${fence}\nconst PRIVATE_CODE = true;`)).toBe("قبل");
+  });
+
   it("speaks Markdown anchor and relative-link labels without raw link syntax", () => {
     expect(toSadeedSpeechText("راجع [التنبيهات](#alerts) ثم [التقرير](./report)")).toBe(
       "راجع التنبيهات ثم التقرير",
