@@ -344,10 +344,11 @@ export function useEnterpriseFabricAdapter() {
   const programsList = programs.data ?? [];
   const outcomesList = outcomes.data ?? [];
 
+  const round = Math.round;
   const avgSla = averageFiniteMetric(systemsList, "sla");
-  const avgPolicyCoverage = Math.round(averageFiniteMetric(policiesList, "coverage", 100));
-  const avgProgress = Math.round(averageFiniteMetric(programsList, "progress", 100));
-  const avgAdoption = Math.round(averageFiniteMetric(programsList, "adoption", 100));
+  const avgPolicyCoverage = round(averageFiniteMetric(policiesList, "coverage", 100));
+  const avgProgress = round(averageFiniteMetric(programsList, "progress", 100));
+  const avgAdoption = round(averageFiniteMetric(programsList, "adoption", 100));
 
   return {
     systemsCount: systemsList.length,
