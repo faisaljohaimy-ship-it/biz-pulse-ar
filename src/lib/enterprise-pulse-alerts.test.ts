@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { deriveAlerts, type CrisisPrediction } from "./enterprise-pulse";
+import { deriveAlerts, deriveStatus, type CrisisPrediction } from "./enterprise-pulse";
 
 function crisis(id: string, riskScore: number): CrisisPrediction {
   return {
@@ -80,5 +80,35 @@ describe("Enterprise Pulse executive risk alerts", () => {
     const crises = [crisis("first", 69), crisis("second", 69), crisis("third", 80)];
     expect(deriveAlerts(crises).map((alert) => alert.id)).toEqual(["third", "first", "second"]);
     expect(crises.map((item) => item.id)).toEqual(["first", "second", "third"]);
+  });
+});
+
+describe("Enterprise Pulse overall risk status", () => {
+  it("ignores NaN telemetry without hiding a valid critical crisis", () => {
+    const crises = [crisis("malformed", Number.NaN), crisis("critical", 90)];
+    expect(deriveStatus(crises)).toEqual({ status: "critical", health: 69 });
+    expect(crises[0].riskScore).toBeNaN();
+  });
+
+  it("rejects infinite and out-of-range risk scores without corrupting health", () => {
+    const crises = [
+      crisis("infinite", Number.POSITIVE_INFINITY),
+      crisis("negative", -1),
+      crisis("oversized", 101),
+      crisis("warning", 65),
+    ];
+    expect(deriveStatus(crises)).toEqual({ status: "warning", health: 77 });
+  });
+
+  it("keeps existing healthy fallback and valid 0/100 boundaries", () => {
+    expect(deriveStatus([crisis("invalid", Number.NaN)])).toEqual({
+      status: "healthy",
+      health: 100,
+    });
+    expect(deriveStatus([crisis("zero", 0)])).toEqual({ status: "healthy", health: 100 });
+    expect(deriveStatus([crisis("hundred", 100)])).toEqual({
+      status: "critical",
+      health: 65,
+    });
   });
 });
