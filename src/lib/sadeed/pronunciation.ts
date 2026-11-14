@@ -92,9 +92,10 @@ export function arabicNumberWords(n: number): string {
   if (v >= 1_000_000_000) {
     const billions = Math.floor(v / 1_000_000_000);
     const remainder = v % 1_000_000_000;
-    const head = billions < 1000
-      ? arabicScale(billions, "مليار", "ملياران", "مليارات")
-      : `${arabicNumberWords(billions)} مليار`;
+    const head =
+      billions < 1000
+        ? arabicScale(billions, "مليار", "ملياران", "مليارات")
+        : `${arabicNumberWords(billions)} مليار`;
     return remainder ? `${head} و${arabicNumberWords(remainder)}` : head;
   }
   if (v < 1000) return arabicUnder1000(v);
