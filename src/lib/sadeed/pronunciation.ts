@@ -70,9 +70,7 @@ function arabicUnder1000(n: number): string {
 /** A scale group (thousands/millions) with simplified executive-register
  *  agreement: dual for 2, plural for 3–10, singular for 11+. */
 function arabicScale(count: number, one: string, two: string, few: string): string {
-  if (count === 1) return one;
-  if (count === 2) return two;
-  return `${arabicUnder1000(count)} ${count <= 10 ? few : one}`;
+  return count === 1 ? one : count === 2 ? two : `${arabicUnder1000(count)} ${count <= 10 ? few : one}`;
 }
 
 /** Arabic cardinal for 0–99 (covers every HCIS directive code). */
@@ -127,7 +125,6 @@ const HOUR_ORDINAL_F = [
   "التاسعة",
   "العاشرة",
   "الحادية عشرة",
-  "الثانية عشرة",
 ];
 
 /** Feminine 0–59 cardinal (minutes): «خمس وثلاثون», «خمس عشرة», «عشرون». */
@@ -160,8 +157,7 @@ export function arabicClock(hh: number, mm: number): string {
   if (!Number.isInteger(hh) || !Number.isInteger(mm) || hh < 0 || hh > 23 || mm < 0 || mm > 59) {
     return "";
   }
-  const hour12 = hh % 12;
-  const hourWord = HOUR_ORDINAL_F[hour12];
+  const hourWord = HOUR_ORDINAL_F[hh % 12];
   if (mm <= 0) return `${hourWord} تمامًا`;
   const minWord = arabicTwoDigitFeminine(mm);
   const minNoun = mm >= 3 && mm <= 10 ? "دقائق" : "دقيقة";
