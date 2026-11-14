@@ -72,7 +72,9 @@ export interface MakkahMoment {
 /** ISO مع إزاحة مكة الصريحة (بدل Z) */
 function toMakkahISO(d: Date): string {
   const shifted = new Date(d.getTime() + MAKKAH_UTC_OFFSET_MIN * 60_000);
-  return shifted.toISOString().replace(/\.\d{3}Z$/, "+03:00");
+  // Preserve fractional seconds when present; the injected ISO must represent
+  // the same instant as epoch_ms. Keep the existing second-only shape for .000.
+  return shifted.toISOString().replace(/(?:\.000)?Z$/, "+03:00");
 }
 
 export function buildMakkahMoment(d: Date = new Date()): MakkahMoment {
