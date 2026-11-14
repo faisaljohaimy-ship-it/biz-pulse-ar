@@ -86,10 +86,9 @@ export function arabicNumberWords(n: number): string {
   if (!Number.isFinite(n) || n < 0) return String(n);
   const v = Math.floor(n);
   if (v === 0) return "صفر";
-  if (v < 1000) return arabicUnder1000(v);
   const billions = Math.floor(v / 1_000_000_000);
-  const millions = Math.floor((v % 1_000_000_000) / 1_000_000);
-  const thousands = Math.floor((v % 1_000_000) / 1000);
+  const millions = Math.floor(v / 1_000_000) % 1000;
+  const thousands = Math.floor(v / 1000) % 1000;
   const rest = v % 1000;
   const parts: string[] = [];
   if (billions) parts.push(arabicScale(billions, "مليار", "ملياران", "مليارات"));
