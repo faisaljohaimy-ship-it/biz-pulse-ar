@@ -14,13 +14,12 @@ const context: SadeedContextSnapshot = {
 };
 
 describe("riskEngine independent word-boundary regressions", () => {
-  it.each([
-    "Open countdown timer",
-    "Perform brisk inspection",
-    "Restock tissues",
-  ])("does not invent a risk from ordinary words: %s", (prompt) => {
-    expect(riskEngine.assess(prompt, context).level).toBe("info");
-  });
+  it.each(["Open countdown timer", "Perform brisk inspection", "Restock tissues"])(
+    "does not invent a risk from ordinary words: %s",
+    (prompt) => {
+      expect(riskEngine.assess(prompt, context).level).toBe("info");
+    },
+  );
 
   it.each([
     ["Power is down", "critical"],
