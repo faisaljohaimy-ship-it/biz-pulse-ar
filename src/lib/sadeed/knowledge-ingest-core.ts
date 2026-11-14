@@ -182,6 +182,9 @@ export type ExistingDocument = {
  * allowed instead of being blocked forever by a stuck row.
  */
 export const IN_PROGRESS_DEDUPE_WINDOW_MS = 30 * 60 * 1000;
+// PostgreSQL and application clocks may differ briefly; a row hours into the
+// future is not proof that an ingestion job is still active.
+const IN_PROGRESS_DEDUPE_CLOCK_SKEW_MS = 60_000;
 
 /**
  * Total order on documents by creation: `created_at` (ms), then `id`. Every
@@ -220,11 +223,14 @@ export function pickDuplicateDocument(
   const ready = newestFirst.find((r) => r.status === "ready");
   if (ready) return ready;
   return (
-    newestFirst.find(
-      (r) =>
-        (r.status === "pending" || r.status === "processing") &&
-        now - Date.parse(r.created_at) <= IN_PROGRESS_DEDUPE_WINDOW_MS,
-    ) ?? null
+    newestFirst.find((r) => {
+      if (r.status !== "pending" && r.status !== "processing") return false;
+      const ageMs = now - Date.parse(r.created_at);
+      return (
+        ageMs >= -IN_PROGRESS_DEDUPE_CLOCK_SKEW_MS &&
+        ageMs <= IN_PROGRESS_DEDUPE_WINDOW_MS
+      );
+    }) ?? null
   );
 }
 
