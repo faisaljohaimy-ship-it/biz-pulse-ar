@@ -220,14 +220,17 @@ export function pickDuplicateDocument(
   const newestFirst = [...candidates].sort(
     (a, b) => Date.parse(b.created_at) - Date.parse(a.created_at),
   );
-  const ready = newestFirst.find((r) => r.status === "ready");
-  if (ready) return ready;
   return (
+    newestFirst.find((r) => r.status === "ready") ??
     newestFirst.find((r) => {
-      if (r.status !== "pending" && r.status !== "processing") return false;
       const ageMs = now - Date.parse(r.created_at);
-      return ageMs >= -IN_PROGRESS_DEDUPE_CLOCK_SKEW_MS && ageMs <= IN_PROGRESS_DEDUPE_WINDOW_MS;
-    }) ?? null
+      return (
+        (r.status === "pending" || r.status === "processing") &&
+        ageMs >= -IN_PROGRESS_DEDUPE_CLOCK_SKEW_MS &&
+        ageMs <= IN_PROGRESS_DEDUPE_WINDOW_MS
+      );
+    }) ??
+    null
   );
 }
 
