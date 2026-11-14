@@ -131,6 +131,22 @@ describe("applySadeedPronunciation — numbers spoken as words", () => {
   });
 });
 
+describe("billion-scale spoken amounts", () => {
+  it("speaks whole billions and the remaining groups in Arabic", () => {
+    expect(arabicNumberWords(1_000_000_000)).toBe("مليار");
+    expect(arabicNumberWords(2_000_000_000)).toBe("ملياران");
+    expect(arabicNumberWords(3_500_000_000)).toBe("ثلاثة مليارات وخمسمئة مليون");
+    expect(arabicNumberWords(1_000_000_001)).toBe("مليار وواحد");
+  });
+
+  it("does not leak undefined when an executive figure has a B suffix", () => {
+    expect(toArabicSpokenNumber("1B", "scaled")).toBe("مليار");
+    expect(toArabicSpokenNumber("3.5B", "auto")).toBe("ثلاثة مليارات وخمسمئة مليون");
+    expect(toArabicSpokenNumber("1B SAR", "riyal")).toBe("مليار ريال");
+    expect(applySadeedPronunciation("الإجمالي 1B SAR")).toBe("الإجمالي مليار ريال");
+  });
+});
+
 describe("toArabicSpokenNumber — the one isolated converter", () => {
   it("percentages", () => {
     expect(toArabicSpokenNumber("97", "percent")).toBe("سبعة وتسعون بالمئة");
@@ -146,6 +162,9 @@ describe("toArabicSpokenNumber — the one isolated converter", () => {
     expect(toArabicSpokenNumber("12:35", "time")).toBe("الثانية عشرة وخمس وثلاثون دقيقة");
     expect(arabicClock(9, 5)).toBe("التاسعة وخمس دقائق");
     expect(arabicClock(1, 0)).toBe("الواحدة تمامًا");
+    expect(arabicClock(0, 0)).toBe("الثانية عشرة تمامًا");
+    expect(arabicClock(12, 0)).toBe("الثانية عشرة تمامًا");
+    expect(arabicClock(23, 0)).toBe("الحادية عشرة تمامًا");
     expect(toArabicSpokenNumber("14:07", "auto")).toBe("الثانية وسبع دقائق");
   });
 
