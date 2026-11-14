@@ -100,6 +100,27 @@ describe("SADEED adaptive preferences", () => {
     );
   });
 
+  it("does not learn a negated detailed preference over an affirmative concise one", () => {
+    expect(
+      extractSadeedAdaptivePreferences("Always keep your replies concise, not detailed."),
+    ).toEqual([{ key: "response_length", value: "concise", confidence: 0.95 }]);
+    expect(extractSadeedAdaptivePreferences("From now on, never use detailed replies.")).toEqual(
+      [],
+    );
+    expect(
+      extractSadeedAdaptivePreferences("From now on, keep your replies detailed, not concise."),
+    ).toEqual([{ key: "response_length", value: "detailed", confidence: 0.95 }]);
+  });
+
+  it("retains a positive Arabic request for detail while excluding negated elaboration", () => {
+    expect(extractSadeedAdaptivePreferences("من الآن فصاعدا لا تختصر ردودك.")).toEqual([
+      { key: "response_length", value: "detailed", confidence: 0.95 },
+    ]);
+    expect(extractSadeedAdaptivePreferences("اجعل ردودك باختصار، لا أريد شرحاً وافياً.")).toEqual([
+      { key: "response_length", value: "concise", confidence: 0.95 },
+    ]);
+  });
+
   it("maps only approved enum pairs into prompt hints", () => {
     expect(sadeedPreferencePromptLine("response_length", "concise")).toContain("concise");
     expect(sadeedPreferencePromptLine("recipient", "someone@example.com")).toBe(null);
