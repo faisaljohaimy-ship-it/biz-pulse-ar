@@ -297,14 +297,18 @@ export async function runInsightScan(orgId?: string | null): Promise<InsightBund
 
   // 7. Missing reports (no reports in last 24h)
   try {
-    const { data: rpt } = await admin
+    const { data: rpt, error } = await admin
       .from("sec_reports")
       .select("kind,created_at")
       .gte("created_at", iso24h)
       .eq("org_id", orgId!)
       .limit(50);
-    sources.push("sec_reports");
-    if (!rpt || rpt.length === 0) {
+    // A failed or malformed database read is unknown, not evidence of zero
+    // reports. Avoid inventing an operational alert during an outage.
+    if (!error && Array.isArray(rpt)) {
+      sources.push("sec_reports");
+    }
+    if (!error && Array.isArray(rpt) && rpt.length === 0) {
       insights.push({
         kind: "missing_reports",
         severity: "elevated",
