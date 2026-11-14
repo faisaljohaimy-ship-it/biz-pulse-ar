@@ -123,6 +123,20 @@ describe("bounded voice multipart parser", () => {
     expect(cancelled).toBe(true);
   });
 
+  it("rejects a body locked by an earlier reader instead of throwing a 500", async () => {
+    const request = audioRequest(350);
+    const priorReader = request.body!.getReader();
+    try {
+      await expect(parseBoundedMultipart(request, 1_024)).resolves.toEqual({
+        form: null,
+        tooLarge: false,
+      });
+    } finally {
+      await priorReader.cancel();
+      priorReader.releaseLock();
+    }
+  });
+
   it("rejects malformed multipart without treating it as an oversized upload", async () => {
     const request = new Request(ENDPOINT, {
       method: "POST",
