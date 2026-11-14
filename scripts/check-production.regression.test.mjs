@@ -808,3 +808,33 @@ test("does not double-decode nested refresh entities", async () => {
   );
   assert.equal(await runFixture(html), null);
 });
+
+test("rejects a relative app stylesheet redirected off-origin by HTML base", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<base href="https://outside.invalid/"><link rel="stylesheet" href="assets/app.css">',
+  );
+  // The old checker fetched /assets/app.css locally and falsely passed.
+  assert.equal(await runFixture(html), 1);
+});
+
+test("resolves a relative app stylesheet using the first same-origin base", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<base href="/dashboard/"><link rel="stylesheet" href="assets/app.css">',
+  );
+  assert.equal(
+    await runFixture(html, "text/html", 200, "text/css", "body {}", 200,
+      "https://offline.invalid/dashboard/assets/app.css"),
+    null,
+  );
+});
+
+test("honors the first base href rather than a later safe override", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<base href="https://outside.invalid/"><base href="/dashboard/">' +
+      '<link rel="stylesheet" href="assets/app.css">',
+  );
+  assert.equal(await runFixture(html), 1);
+});
