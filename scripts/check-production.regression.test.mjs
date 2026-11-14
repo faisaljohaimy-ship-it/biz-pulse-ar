@@ -109,6 +109,58 @@ for (const [label, statuses, expected] of [
   });
 }
 
+// HTML parses named character references too. An un-decoded href can
+// certify a decoy stylesheet while the browser requests a broken real asset.
+test("resolves named &sol; references in stylesheet paths", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="stylesheet" href="&sol;assets&sol;app.css">',
+  );
+  assert.equal(await runFixture(html), null);
+});
+
+test("resolves named references in base URLs and relative stylesheet paths", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<base href="&sol;static&sol;"><link rel="stylesheet" href="assets&sol;app.css">',
+  );
+  assert.equal(
+    await runFixture(
+      html,
+      "text/html",
+      200,
+      "text/css",
+      "body {}",
+      200,
+      "https://offline.invalid/static/assets/app.css",
+    ),
+    null,
+  );
+});
+
+test("resolves &colon; and &period; in absolute stylesheet links", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="stylesheet" href="https&colon;&sol;&sol;offline&period;invalid&sol;assets&sol;app&period;css">',
+  );
+  assert.equal(await runFixture(html), null);
+});
+
+test("rejects a named-entity stylesheet when the real asset is missing but a decoy responds", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="stylesheet" href="&sol;assets&sol;app.css">',
+  );
+  const cssAssets = {
+    "https://offline.invalid/&sol;assets&sol;app.css": { status: 200 },
+    "https://offline.invalid/assets/app.css": { status: 404 },
+  };
+  assert.equal(
+    await runFixture(html, "text/html", 200, "text/css", "body {}", 200, undefined, cssAssets),
+    1,
+  );
+});
+
 test("resolves numeric HTML references in stylesheet paths before probing CSS", async () => {
   const html = normalPage.replace(
     '<link rel="stylesheet" href="/assets/app.css">',

@@ -245,10 +245,18 @@ function hasExecutableThemeBootstrap(body) {
 // http-equiv=refresh. Decode one layer to match browser redirect semantics.
 function decodeMetaAttribute(value) {
   return value.replace(
-    /&(?:#(x[0-9a-f]+|\d+);?|(?:amp|semi|tab|newline);)/gi,
+    /&(?:#(x[0-9a-f]+|\d+);?|(?:amp|semi|tab|newline|sol|colon|period);)/gi,
     (entity, numeric) => {
       if (!numeric) {
-        const names = { amp: "&", semi: ";", tab: "\t", newline: "\n" };
+        const names = {
+          amp: "&",
+          semi: ";",
+          tab: "\t",
+          newline: "\n",
+          sol: "/",
+          colon: ":",
+          period: ".",
+        };
         return names[entity.slice(1, -1).toLowerCase()] ?? entity;
       }
       const hex = numeric[0].toLowerCase() === "x";
