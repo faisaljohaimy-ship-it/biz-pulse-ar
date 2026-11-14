@@ -54,7 +54,6 @@ async function runFixture(
   return exitCode;
 }
 
-
 // MIME sniffing must not certify a page or stylesheet with an invalid
 // MIME subtype merely because it starts with text/html or text/css.
 test("rejects an HTML-looking document served as text/html-invalid", async () => {
