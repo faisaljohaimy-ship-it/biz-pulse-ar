@@ -333,12 +333,16 @@ export function deriveAlerts(crises: CrisisPrediction[]): PulseAlert[] {
 
 export function deriveStatus(crises: CrisisPrediction[]): { status: PulseStatus; health: number } {
   // Invalid telemetry must never mask a real crisis or turn health into NaN.
+  // The accumulator starts at 0: the greater-than check excludes negatives/NaN;
+  // the upper bound also excludes Infinity, with no extra Math.max allocation.
   const max = crises.reduce(
-    (m, c) => (c.riskScore >= 0 && c.riskScore <= 100 ? Math.max(m, c.riskScore) : m),
+    (m, { riskScore }) => (riskScore > m && riskScore <= 100 ? riskScore : m),
     0,
   );
-  const status: PulseStatus = max >= 80 ? "critical" : max >= 65 ? "warning" : "healthy";
-  return { status, health: Math.max(40, 100 - Math.round(max * 0.35)) };
+  return {
+    status: max >= 80 ? "critical" : max >= 65 ? "warning" : "healthy",
+    health: Math.max(40, 100 - Math.round(max * 0.35)),
+  };
 }
 
 const EMPTY: EnterprisePulse = {
