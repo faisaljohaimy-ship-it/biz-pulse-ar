@@ -88,12 +88,27 @@ function providerId(raw: string): string {
   return id.length > 0 ? id : "unknown";
 }
 
-const ISO_DATE_PREFIX = /^\d{4}-\d{2}-\d{2}/;
+// Do not let Date.parse silently roll impossible dates into the next month,
+// or interpret non-ISO suffixes (e.g. "2026-10-30junk") as unrelated dates.
+const ISO_DATE_SHAPE =
+  /^(\d{4})-(\d{2})-(\d{2})(?:[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})?)?$/;
 const ONE_DAY_MS = 86_400_000;
 
-/** ISO معياري أو `null`. تاريخٌ بعد الغد يُعدّ مختلَقًا فيُسقط. */
+/** ISO معياري أو `null`. تاريخٌ مستحيل أو بعد الغد يُعدّ مختلَقًا فيُسقط. */
 export function normalizePublishedAt(raw: string | null, nowMs: number): string | null {
-  if (raw === null || !ISO_DATE_PREFIX.test(raw)) return null;
+  if (raw === null) return null;
+  const match = raw.match(ISO_DATE_SHAPE);
+  if (!match) return null;
+  const [, year, month, day] = match;
+  const calendar = new Date(`${year}-${month}-${day}T00:00:00Z`);
+  if (
+    !Number.isFinite(calendar.getTime()) ||
+    calendar.getUTCFullYear() !== Number(year) ||
+    calendar.getUTCMonth() + 1 !== Number(month) ||
+    calendar.getUTCDate() !== Number(day)
+  ) {
+    return null;
+  }
   const ms = Date.parse(raw);
   if (!Number.isFinite(ms) || ms > nowMs + ONE_DAY_MS) return null;
   return new Date(ms).toISOString();
