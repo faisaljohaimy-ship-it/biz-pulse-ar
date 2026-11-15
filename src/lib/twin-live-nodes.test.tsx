@@ -116,9 +116,10 @@ describe("digital twin signal memo — locale regression", () => {
   });
 
   it("keeps null optional-node reference fallbacks and measured zero counts", () => {
-    const allNodes = ["depts", "agents", "integ", "flows", "risk", "board", "intel"].map(
-      (id) => ({ id, value: "reference" }),
-    );
+    const allNodes = ["depts", "agents", "integ", "flows", "risk", "board", "intel"].map((id) => ({
+      id,
+      value: "reference",
+    }));
     const { result } = renderHook(() =>
       useLiveTwinNodes(
         allNodes,
