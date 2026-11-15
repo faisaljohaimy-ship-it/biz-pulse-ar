@@ -379,8 +379,13 @@ export function useEnterprisePulse(): EnterprisePulse {
     async function load() {
       const generation = ++loadGeneration;
       const { data: userData } = await supabase.auth.getUser();
+      if (cancelled || generation !== loadGeneration) return;
       const userId = userData.user?.id;
-      if (!userId) return;
+      if (!userId) {
+        // A signed-out session must not retain the previous user's private pulse.
+        setPulse(EMPTY);
+        return;
+      }
 
       // counts (live)
       const [tasks, threads, docs] = await Promise.all([
@@ -424,6 +429,16 @@ export function useEnterprisePulse(): EnterprisePulse {
 
     load();
 
+    // Auth changes do not necessarily produce postgres_changes events. Clear
+    // account-scoped data immediately so it cannot survive logout or a switch.
+    const authListener = supabase.auth.onAuthStateChange?.((event) => {
+      if (event !== "SIGNED_OUT" && event !== "SIGNED_IN") return;
+      ++loadGeneration; // invalidate in-flight reads from the previous session
+      setPulse(EMPTY);
+      // Re-enter Supabase auth APIs after its synchronous auth callback returns.
+      if (event === "SIGNED_IN") queueMicrotask(load);
+    });
+
     // Unique channel topic per hook instance to avoid collisions in
     // React StrictMode / multi-mount scenarios. Reusing the same topic
     // returns an already-joined channel, and adding postgres_changes
@@ -432,14 +447,18 @@ export function useEnterprisePulse(): EnterprisePulse {
     const topic = `enterprise-pulse-live:${Math.random().toString(36).slice(2)}`;
     let channel: ReturnType<typeof supabase.channel> | null = null;
     try {
-      channel = supabase
-        .channel(topic)
-        .on("postgres_changes", { event: "*", schema: "public", table: "pulse_kpis" }, load)
-        .on("postgres_changes", { event: "*", schema: "public", table: "pulse_crises" }, load)
-        .on("postgres_changes", { event: "*", schema: "public", table: "pulse_execution" }, load)
-        .on("postgres_changes", { event: "*", schema: "public", table: "pulse_memory" }, load)
-        .on("postgres_changes", { event: "*", schema: "public", table: "tasks" }, load)
-        .subscribe();
+      const tables = [
+        "pulse_kpis",
+        "pulse_crises",
+        "pulse_execution",
+        "pulse_memory",
+        "tasks",
+      ] as const;
+      const subscription = supabase.channel(topic);
+      for (const table of tables) {
+        subscription.on("postgres_changes", { event: "*", schema: "public", table }, load);
+      }
+      channel = subscription.subscribe();
     } catch (err) {
       // Realtime is best-effort; page remains functional with initial load.
       console.warn("pulse realtime unavailable", err);
@@ -447,6 +466,7 @@ export function useEnterprisePulse(): EnterprisePulse {
 
     return () => {
       cancelled = true;
+      authListener?.data.subscription.unsubscribe();
       if (channel) supabase.removeChannel(channel);
     };
   }, []);
