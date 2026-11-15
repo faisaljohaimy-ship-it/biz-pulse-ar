@@ -54,21 +54,24 @@ export function advanceSadeedVoiceActivity(input: {
   decision: SadeedVoiceActivityDecision;
 } {
   const config = input.config ?? SADEED_VOICE_ACTIVITY_DEFAULTS;
-  const now = Math.max(input.state.startedAt, input.now);
-  const elapsed = now - input.state.startedAt;
+  const previous = input.state;
+  const startedAt = previous.startedAt;
+  const now = Math.max(startedAt, input.now);
+  const elapsed = now - startedAt;
+  const noSpeechAt = startedAt + config.noSpeechMs;
   // Late first samples must not create speech after the initial timeout.
   // Pre-deadline speech candidates still receive their voice qualification grace.
   if (
-    !input.state.heardVoice &&
-    elapsed >= config.noSpeechMs &&
-    (input.state.candidateVoiceAt ?? now) - input.state.startedAt >= config.noSpeechMs
+    !previous.heardVoice &&
+    now >= noSpeechAt &&
+    (previous.candidateVoiceAt ?? now) >= noSpeechAt
   ) {
-    return { state: input.state, decision: "no-speech" };
+    return { state: previous, decision: "no-speech" };
   }
 
-  let candidateVoiceAt = input.state.candidateVoiceAt;
-  let lastVoiceAt = input.state.lastVoiceAt;
-  let heardVoice = input.state.heardVoice;
+  let candidateVoiceAt = previous.candidateVoiceAt;
+  let lastVoiceAt = previous.lastVoiceAt;
+  let heardVoice = previous.heardVoice;
 
   if (Number.isFinite(input.rms) && Math.max(0, input.rms) >= config.rmsThreshold) {
     candidateVoiceAt ??= now;
@@ -81,7 +84,7 @@ export function advanceSadeedVoiceActivity(input: {
   }
 
   const state = {
-    startedAt: input.state.startedAt,
+    startedAt,
     candidateVoiceAt,
     lastVoiceAt,
     heardVoice,
@@ -91,7 +94,7 @@ export function advanceSadeedVoiceActivity(input: {
   let decision: SadeedVoiceActivityDecision = "continue";
   if (elapsed >= config.maximumCaptureMs) {
     decision = heardVoice ? "complete" : "no-speech";
-  } else if (!heardVoice && elapsed >= config.noSpeechMs && candidateVoiceAt === null) {
+  } else if (!heardVoice && now >= noSpeechAt && candidateVoiceAt === null) {
     decision = "no-speech";
   } else if (heardVoice && lastVoiceAt !== null && now - lastVoiceAt >= config.silenceMs) {
     decision = "complete";
