@@ -67,9 +67,7 @@ describe("Enterprise Pulse first-use seeding", () => {
     const countGate = new Promise<void>((resolve) => {
       releaseCount = resolve;
     });
-    harness.countKpis.mockImplementation(() =>
-      countGate.then(() => ({ count: 0, error: null })),
-    );
+    harness.countKpis.mockImplementation(() => countGate.then(() => ({ count: 0, error: null })));
 
     const first = renderHook(() => useEnterprisePulse());
     const second = renderHook(() => useEnterprisePulse());
