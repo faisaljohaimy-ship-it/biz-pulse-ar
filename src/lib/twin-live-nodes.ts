@@ -22,16 +22,19 @@ export function useLiveTwinNodes<T extends TwinValueNode>(
   return useMemo(() => {
     if (!signals) return nodes;
     const fallback = (id: string) => nodes.find((n) => n.id === id)?.value ?? "";
+    // Preserve historical null fallbacks, but never display NaN/Infinity as live telemetry.
+    const optional = (value: number | null | undefined, id: string) =>
+      value == null ? fallback(id) : twinValue(value, ar);
     const values: Record<string, string> = {
-      depts: String(signals.departments ?? fallback("depts")),
-      data: String(signals.events),
-      agents: String(signals.agents ?? fallback("agents")),
-      integ: String(signals.integrations ?? fallback("integ")),
-      flows: String(signals.automations),
+      depts: optional(signals.departments, "depts"),
+      data: twinValue(signals.events, ar),
+      agents: optional(signals.agents, "agents"),
+      integ: optional(signals.integrations, "integ"),
+      flows: twinValue(signals.automations, ar),
       know: twinValue(signals.documents, ar),
-      risk: String(signals.criticalRisks),
-      board: String(signals.boardActions),
-      intel: String(signals.intelligenceSignals),
+      risk: twinValue(signals.criticalRisks, ar),
+      board: twinValue(signals.boardActions, ar),
+      intel: twinValue(signals.intelligenceSignals, ar),
       exec: twinValue(signals.executionVelocity, ar, "%"),
     };
     return nodes.map((n) => ({ ...n, value: values[n.id] ?? n.value }));
