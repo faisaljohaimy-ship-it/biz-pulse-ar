@@ -115,6 +115,35 @@ describe("digital twin signal memo — locale regression", () => {
     }
   });
 
+  it("does not present negative live counts as measured events in either locale", () => {
+    const countIds = ["depts", "data", "agents", "integ", "flows", "know", "risk", "board", "intel"];
+    const allNodes = [...countIds, "exec"].map((id) => ({ id, value: "reference" }));
+    const corrupt: TwinSignals = {
+      ...baseSignals,
+      departments: -1,
+      events: -7,
+      agents: -3,
+      integrations: -4,
+      automations: -2,
+      documents: -6,
+      criticalRisks: -1,
+      boardActions: -1,
+      intelligenceSignals: -5,
+      executionVelocity: -12,
+    };
+    const { result, rerender } = renderHook(
+      ({ ar }) => useLiveTwinNodes(allNodes, corrupt, ar),
+      { initialProps: { ar: true } },
+    );
+    for (const ar of [true, false]) {
+      rerender({ ar });
+      expect(result.current.slice(0, countIds.length).map((node) => node.value)).toEqual(
+        countIds.map(() => unmeasuredLabel(ar)),
+      );
+      expect(result.current.at(-1)?.value).toBe("-12%");
+    }
+  });
+
   it("keeps null optional-node reference fallbacks and measured zero counts", () => {
     const allNodes = ["depts", "agents", "integ", "flows", "risk", "board", "intel"].map((id) => ({
       id,
