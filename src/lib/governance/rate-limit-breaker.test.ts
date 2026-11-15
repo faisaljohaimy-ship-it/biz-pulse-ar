@@ -246,6 +246,12 @@ describe("الحصّة المحدودة في الذاكرة", () => {
     [Number.MAX_VALUE, 60],
     [12, Number.POSITIVE_INFINITY],
     [12, Number.MAX_VALUE],
+    [0, 60],
+    [-4, 60],
+    [0.5, 60],
+    [12, 0],
+    [12, -1],
+    [12, 0.5],
   ])("fails closed for non-finite or unsafe degraded quotas (%s, %s)", (max, window) => {
     const decision = degradedAllowance("invalid-parameters", max, window, 1_000);
     expect(decision).toEqual({ allowed: false, cap: 0, remaining: 0, retryAfterSeconds: 60 });
@@ -253,6 +259,27 @@ describe("الحصّة المحدودة في الذاكرة", () => {
     expect(degradedAllowance("invalid-parameters", 2, 60, 1_000)).toMatchObject({
       allowed: true,
       cap: 1,
+    });
+  });
+
+  it("keeps an exhausted live bucket closed after zero and sub-unit parameters", () => {
+    expect(degradedAllowance("existing-zero", 2, 60, 1_000).allowed).toBe(true);
+    for (const [max, window] of [
+      [0, 60],
+      [2, 0],
+      [0.5, 60],
+      [2, 0.5],
+    ]) {
+      expect(degradedAllowance("existing-zero", max, window, 1_000)).toMatchObject({
+        allowed: false,
+        cap: 0,
+        remaining: 0,
+      });
+    }
+    expect(degradedAllowance("existing-zero", 2, 60, 1_000)).toMatchObject({
+      allowed: false,
+      cap: 1,
+      remaining: 0,
     });
   });
 
