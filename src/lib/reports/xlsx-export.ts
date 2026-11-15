@@ -77,16 +77,24 @@ const CHART_TYPE_AR: Record<ChartBlock["chartType"], string> = {
  * ويرفض التكرار — وأيٌّ من الثلاثة يُفشل فتح الملف لا مجرّد يُشوّه اسمًا.
  * والقطع يقع **قبل** التفريد كي لا تتساوى ورقتان بعد القطع.
  */
+// Excel's 31-character ceiling is counted in UTF-16 code units. Never cut
+// between a valid surrogate pair: lone halves are replaced in worksheet XML.
+function truncateSheetName(value: string, maxLength: number): string {
+  return value.slice(0, maxLength).replace(/[\uD800-\uDBFF]$/, "");
+}
+
 function sanitizeSheetName(raw: string): string {
   const cleaned = raw
     .replace(/[[\]:*?/\\]/g, " ")
     // C0/C1 controls can survive whitespace normalization and corrupt worksheet XML.
     .replace(/\p{Cc}/gu, " ")
+    // Keep complete astral characters, but reject already-unpaired surrogates.
+    .replace(/\p{Cs}/gu, " ")
     .replace(/\s+/g, " ")
     .replace(/^'+|'+$/g, "")
     .trim();
   // Cutting to Excel’s 31-character limit may expose an internal trailing apostrophe.
-  const truncated = cleaned.slice(0, 31).trim();
+  const truncated = truncateSheetName(cleaned, 31).trim();
   return truncated.replace(/^'+|'+$/g, "").trim() || "ورقة";
 }
 
@@ -105,7 +113,7 @@ function makeNameAllocator(): (raw: string) => string {
     if (reserve(base)) return base;
     for (let n = 2; n < 1000; n++) {
       const suffix = `~${n}`;
-      const candidate = `${base.slice(0, 31 - suffix.length)}${suffix}`;
+      const candidate = `${truncateSheetName(base, 31 - suffix.length)}${suffix}`;
       if (reserve(candidate)) return candidate;
     }
     /* عمليًّا لا يُبلَغ: ٩٩٨ ورقة بالاسم نفسه. */
