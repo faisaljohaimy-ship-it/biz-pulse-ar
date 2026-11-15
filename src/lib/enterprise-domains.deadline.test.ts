@@ -134,6 +134,19 @@ describe("enterprise fabric KPI integrity", () => {
     expect(metrics.avgAdoption).toBe(0);
   });
 
+  it("keeps the SLA KPI finite when individually finite large samples overflow a sum", () => {
+    const metrics = renderFabricLists(
+      [
+        { sla: Number.MAX_VALUE, risk: "low" },
+        { sla: Number.MAX_VALUE, risk: "low" },
+      ],
+      [],
+      [],
+    );
+    expect(metrics.avgSla).toBe(Number.MAX_VALUE);
+    expect(Number.isFinite(metrics.avgSla)).toBe(true);
+  });
+
   it("preserves averages and rounding for healthy numeric data", () => {
     const metrics = renderFabricLists(
       [
