@@ -22,19 +22,22 @@ export function useLiveTwinNodes<T extends TwinValueNode>(
   return useMemo(() => {
     if (!signals) return nodes;
     const fallback = (id: string) => nodes.find((n) => n.id === id)?.value ?? "";
-    // Preserve historical null fallbacks, but never display NaN/Infinity as live telemetry.
+    // Counts cannot be negative; do not publish corrupt telemetry as a measured value.
+    // Keep signed execution velocity separate: a decline can be a meaningful percentage.
+    const measuredCount = (value: number | null | undefined) =>
+      value != null && value < 0 ? unmeasuredLabel(ar) : twinValue(value, ar);
     const optional = (value: number | null | undefined, id: string) =>
-      value == null ? fallback(id) : twinValue(value, ar);
+      value == null ? fallback(id) : measuredCount(value);
     const values: Record<string, string> = {
       depts: optional(signals.departments, "depts"),
-      data: twinValue(signals.events, ar),
+      data: measuredCount(signals.events),
       agents: optional(signals.agents, "agents"),
       integ: optional(signals.integrations, "integ"),
-      flows: twinValue(signals.automations, ar),
-      know: twinValue(signals.documents, ar),
-      risk: twinValue(signals.criticalRisks, ar),
-      board: twinValue(signals.boardActions, ar),
-      intel: twinValue(signals.intelligenceSignals, ar),
+      flows: measuredCount(signals.automations),
+      know: measuredCount(signals.documents),
+      risk: measuredCount(signals.criticalRisks),
+      board: measuredCount(signals.boardActions),
+      intel: measuredCount(signals.intelligenceSignals),
       exec: twinValue(signals.executionVelocity, ar, "%"),
     };
     return nodes.map((n) => ({ ...n, value: values[n.id] ?? n.value }));
