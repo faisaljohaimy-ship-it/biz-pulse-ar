@@ -17,7 +17,7 @@ export function trustedClientIp(
 ): string {
   const headers = request.headers;
   const ip =
-    env.VERCEL === "1"
+    env.VERCEL === "1" || env.VERCEL === "true"
       ? (firstIp(headers.get("x-vercel-forwarded-for")) ?? firstIp(headers.get("x-forwarded-for")))
       : (firstIp(headers.get("cf-connecting-ip")) ??
         firstIp(headers.get("x-forwarded-for")) ??
