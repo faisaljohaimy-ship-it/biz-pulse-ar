@@ -55,6 +55,17 @@ export function advanceSadeedVoiceActivity(input: {
 } {
   const config = input.config ?? SADEED_VOICE_ACTIVITY_DEFAULTS;
   const now = Math.max(input.state.startedAt, input.now);
+  const elapsed = now - input.state.startedAt;
+  // Late first samples must not create speech after the initial timeout.
+  // Pre-deadline speech candidates still receive their voice qualification grace.
+  if (
+    !input.state.heardVoice &&
+    elapsed >= config.noSpeechMs &&
+    (input.state.candidateVoiceAt === null ||
+      input.state.candidateVoiceAt - input.state.startedAt >= config.noSpeechMs)
+  ) {
+    return { state: input.state, decision: "no-speech" };
+  }
 
   let candidateVoiceAt = input.state.candidateVoiceAt;
   let lastVoiceAt = input.state.lastVoiceAt;
@@ -76,19 +87,12 @@ export function advanceSadeedVoiceActivity(input: {
     lastVoiceAt,
     heardVoice,
   };
-  const elapsed = now - state.startedAt;
 
-  // The absolute maximum capture cap takes precedence over both silence
-  // deadlines. Fresh post-deadline onset never revives an expired capture;
-  // an existing pre-deadline candidate retains its voice qualification grace.
+  // The absolute capture cap still takes precedence for established speech.
   let decision: SadeedVoiceActivityDecision = "continue";
   if (elapsed >= config.maximumCaptureMs) {
     decision = heardVoice ? "complete" : "no-speech";
-  } else if (
-    !input.state.heardVoice &&
-    elapsed >= config.noSpeechMs &&
-    (candidateVoiceAt === null || candidateVoiceAt - state.startedAt >= config.noSpeechMs)
-  ) {
+  } else if (!heardVoice && elapsed >= config.noSpeechMs && candidateVoiceAt === null) {
     decision = "no-speech";
   } else if (heardVoice && lastVoiceAt !== null && now - lastVoiceAt >= config.silenceMs) {
     decision = "complete";
