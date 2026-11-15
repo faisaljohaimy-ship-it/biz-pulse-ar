@@ -123,7 +123,8 @@ describe("SADEED streaming voice first-sentence latency", () => {
     flusher.pushToken("هل وصل البلاغ");
     clock = 180;
     flusher.pushToken("؟");
-    expect(onSentence).toHaveBeenCalledExactlyOnceWith("هل وصل البلاغ؟", 0);
+    expect(onSentence).toHaveBeenCalledTimes(1);
+    expect(onSentence).toHaveBeenNthCalledWith(1, "هل وصل البلاغ؟", 0);
     expect(flusher.stats().latencyToFirstSentence).toBe(80);
     expect(onLatencyBreach).not.toHaveBeenCalled();
 
@@ -138,7 +139,8 @@ describe("SADEED streaming voice first-sentence latency", () => {
       const onSentence = vi.fn();
       const flusher = createSentenceFlusher({ onSentence });
       flusher.pushToken(sentence);
-      expect(onSentence).toHaveBeenCalledExactlyOnceWith(sentence, 0);
+      expect(onSentence).toHaveBeenCalledTimes(1);
+      expect(onSentence).toHaveBeenNthCalledWith(1, sentence, 0);
       flusher.finish();
       expect(onSentence).toHaveBeenCalledTimes(1);
     },
@@ -151,7 +153,8 @@ describe("SADEED streaming voice first-sentence latency", () => {
     expect(onSentence).not.toHaveBeenCalled();
     flusher.pushToken("14 متر");
     flusher.finish();
-    expect(onSentence).toHaveBeenCalledExactlyOnceWith("القياس 3.14 متر", 0);
+    expect(onSentence).toHaveBeenCalledTimes(1);
+    expect(onSentence).toHaveBeenNthCalledWith(1, "القياس 3.14 متر", 0);
   });
 
 });
