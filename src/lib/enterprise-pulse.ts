@@ -379,8 +379,13 @@ export function useEnterprisePulse(): EnterprisePulse {
     async function load() {
       const generation = ++loadGeneration;
       const { data: userData } = await supabase.auth.getUser();
+      if (cancelled || generation !== loadGeneration) return;
       const userId = userData.user?.id;
-      if (!userId) return;
+      if (!userId) {
+        // A signed-out session must not retain the previous user's private pulse.
+        setPulse({ ...EMPTY, lastRefreshed: new Date() });
+        return;
+      }
 
       // counts (live)
       const [tasks, threads, docs] = await Promise.all([
@@ -424,6 +429,21 @@ export function useEnterprisePulse(): EnterprisePulse {
 
     load();
 
+    // Auth changes do not necessarily produce postgres_changes events. Clear
+    // account-scoped data immediately so it cannot survive logout or a switch.
+    const authListener = supabase.auth.onAuthStateChange?.((event) => {
+      if (event === "SIGNED_OUT" || event === "SIGNED_IN" || event === "USER_UPDATED") {
+        ++loadGeneration; // invalidate in-flight reads from the previous session
+        setPulse({ ...EMPTY, lastRefreshed: new Date() });
+        if (event !== "SIGNED_OUT") {
+          // Do not invoke async auth APIs synchronously inside Supabase's listener.
+          queueMicrotask(() => {
+            if (!cancelled) void load();
+          });
+        }
+      }
+    });
+
     // Unique channel topic per hook instance to avoid collisions in
     // React StrictMode / multi-mount scenarios. Reusing the same topic
     // returns an already-joined channel, and adding postgres_changes
@@ -447,6 +467,7 @@ export function useEnterprisePulse(): EnterprisePulse {
 
     return () => {
       cancelled = true;
+      authListener?.data.subscription.unsubscribe();
       if (channel) supabase.removeChannel(channel);
     };
   }, []);

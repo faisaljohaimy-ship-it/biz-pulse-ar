@@ -5,6 +5,8 @@ const harness = vi.hoisted(() => ({
   getUser: vi.fn(),
   readKpis: vi.fn(),
   onChange: null as null | (() => void),
+  onAuthChange: null as null | ((event: "SIGNED_IN" | "SIGNED_OUT") => void),
+  unsubscribeAuth: vi.fn(),
   removeChannel: vi.fn(),
 }));
 
@@ -20,7 +22,13 @@ vi.mock("@/integrations/supabase/client", () => {
   };
   return {
     supabase: {
-      auth: { getUser: harness.getUser },
+      auth: {
+        getUser: harness.getUser,
+        onAuthStateChange(callback: (event: "SIGNED_IN" | "SIGNED_OUT") => void) {
+          harness.onAuthChange = callback;
+          return { data: { subscription: { unsubscribe: harness.unsubscribeAuth } } };
+        },
+      },
       from(table: string) {
         if (table === "tasks") {
           return { select: () => ({ neq: async () => ({ count: 0, error: null }) }) };
@@ -71,6 +79,7 @@ beforeEach(() => {
   harness.getUser.mockReset().mockResolvedValue({ data: { user: { id: "mock-user" } } });
   harness.readKpis.mockReset();
   harness.onChange = null;
+  harness.onAuthChange = null;
 });
 afterEach(() => {
   cleanup();
@@ -98,5 +107,56 @@ describe("Enterprise Pulse realtime ordering", () => {
       resolveOld({ data: [kpi("stale")], error: null });
     });
     expect(result.current.kpis.map((entry) => entry.id)).toEqual(["latest"]);
+  });
+});
+
+describe("Enterprise Pulse auth isolation", () => {
+  it("clears private KPIs immediately on sign-out without waiting for realtime", async () => {
+    harness.readKpis.mockResolvedValue({ data: [kpi("private-account")], error: null });
+    const { result } = renderHook(() => useEnterprisePulse());
+    await waitFor(() => expect(result.current.kpis.map((entry) => entry.id)).toEqual(["private-account"]));
+
+    act(() => {
+      harness.onAuthChange?.("SIGNED_OUT");
+    });
+    expect(result.current.kpis).toEqual([]);
+    expect(result.current.memory).toEqual([]);
+    expect(result.current.counts).toEqual({ openTasks: 0, conversations: 0, docs: 0 });
+  });
+
+  it("discards an in-flight old-user response after sign-out", async () => {
+    let resolvePending!: (value: { data: ReturnType<typeof kpi>[]; error: null }) => void;
+    harness.readKpis.mockReturnValue(
+      new Promise((resolve) => {
+        resolvePending = resolve;
+      }),
+    );
+    const { result } = renderHook(() => useEnterprisePulse());
+    await waitFor(() => expect(harness.readKpis).toHaveBeenCalledTimes(1));
+
+    act(() => {
+      harness.onAuthChange?.("SIGNED_OUT");
+    });
+    await act(async () => {
+      resolvePending({ data: [kpi("late-private-account")], error: null });
+    });
+    expect(result.current.kpis).toEqual([]);
+  });
+
+  it("clears old-account data before reloading a new signed-in account", async () => {
+    harness.getUser
+      .mockResolvedValueOnce({ data: { user: { id: "old-account" } } })
+      .mockResolvedValueOnce({ data: { user: { id: "new-account" } } });
+    harness.readKpis
+      .mockResolvedValueOnce({ data: [kpi("old-private")], error: null })
+      .mockResolvedValueOnce({ data: [kpi("new-private")], error: null });
+    const { result } = renderHook(() => useEnterprisePulse());
+    await waitFor(() => expect(result.current.kpis.map((entry) => entry.id)).toEqual(["old-private"]));
+
+    act(() => {
+      harness.onAuthChange?.("SIGNED_IN");
+    });
+    expect(result.current.kpis).toEqual([]);
+    await waitFor(() => expect(result.current.kpis.map((entry) => entry.id)).toEqual(["new-private"]));
   });
 });
