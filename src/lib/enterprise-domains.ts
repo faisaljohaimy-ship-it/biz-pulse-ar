@@ -327,8 +327,7 @@ function averageFiniteMetric<T>(rows: readonly T[], key: keyof T, max = Infinity
     if (Number.isFinite(value) && value >= 0 && value <= max) {
       // An ordinary sum can overflow even though every sample is finite.
       // An online mean stays finite for nonnegative finite measurements.
-      count++;
-      mean += (value - mean) / count;
+      mean += (value - mean) / ++count;
     }
   }
   return mean;
@@ -359,8 +358,8 @@ export function useEnterpriseFabricAdapter() {
     outcomesCount: outcomesList.length,
     briefingsCount: briefings.data?.length ?? 0,
     // Avoid overflowing the intermediate percentage-scale multiplication.
-    // At this magnitude fractional hundredths are below floating-point precision.
-    avgSla: avgSla <= Number.MAX_VALUE / 100 ? Math.round(avgSla * 100) / 100 : avgSla,
+    // Above 1e16, binary64 cannot encode fractional hundredths.
+    avgSla: avgSla < 1e16 ? Math.round(avgSla * 100) / 100 : avgSla,
     avgPolicyCoverage,
     avgProgress,
     avgAdoption,
