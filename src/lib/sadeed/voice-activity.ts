@@ -55,12 +55,12 @@ export function advanceSadeedVoiceActivity(input: {
 } {
   const config = input.config ?? SADEED_VOICE_ACTIVITY_DEFAULTS;
   const now = Math.max(input.state.startedAt, input.now);
-  const rms = Number.isFinite(input.rms) ? Math.max(0, input.rms) : 0;
+
   let candidateVoiceAt = input.state.candidateVoiceAt;
   let lastVoiceAt = input.state.lastVoiceAt;
   let heardVoice = input.state.heardVoice;
 
-  if (rms >= config.rmsThreshold) {
+  if (Number.isFinite(input.rms) && Math.max(0, input.rms) >= config.rmsThreshold) {
     candidateVoiceAt ??= now;
     if (heardVoice || now - candidateVoiceAt >= config.minimumVoiceMs) {
       heardVoice = true;
@@ -78,24 +78,20 @@ export function advanceSadeedVoiceActivity(input: {
   };
   const elapsed = now - state.startedAt;
 
+  // The absolute maximum capture cap takes precedence over both silence
+  // deadlines. Fresh post-deadline onset never revives an expired capture;
+  // an existing pre-deadline candidate retains its voice qualification grace.
+  let decision: SadeedVoiceActivityDecision = "continue";
   if (elapsed >= config.maximumCaptureMs) {
-    return { state, decision: heardVoice ? "complete" : "no-speech" };
-  }
-  // A user may start speaking just before the initial silence deadline.
-  // Give that in-progress candidate its existing minimumVoiceMs to qualify;
-  // a dropped spike still returns no-speech as soon as the deadline is reached.
-  // The absolute maximumCaptureMs above remains authoritative.
-  // Only a candidate already audible BEFORE the deadline may use the
-  // existing grace period. Delayed first frames cannot revive a timed-out turn.
-  if (
+    decision = heardVoice ? "complete" : "no-speech";
+  } else if (
     !input.state.heardVoice &&
     elapsed >= config.noSpeechMs &&
     (candidateVoiceAt === null || candidateVoiceAt - state.startedAt >= config.noSpeechMs)
   ) {
-    return { state, decision: "no-speech" };
+    decision = "no-speech";
+  } else if (heardVoice && lastVoiceAt !== null && now - lastVoiceAt >= config.silenceMs) {
+    decision = "complete";
   }
-  if (heardVoice && lastVoiceAt !== null && now - lastVoiceAt >= config.silenceMs) {
-    return { state, decision: "complete" };
-  }
-  return { state, decision: "continue" };
+  return { state, decision };
 }
