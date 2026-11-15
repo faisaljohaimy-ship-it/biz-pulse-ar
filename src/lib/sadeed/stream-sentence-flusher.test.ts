@@ -113,4 +113,45 @@ describe("SADEED streaming voice first-sentence latency", () => {
     expect(onSentence).toHaveBeenCalledWith("Done", 0);
     expect(flusher.stats().sentences).toBe(1);
   });
+  it("speaks a question as soon as its final punctuation token arrives", () => {
+    let clock = 100;
+    vi.spyOn(performance, "now").mockImplementation(() => clock);
+    const onSentence = vi.fn();
+    const onLatencyBreach = vi.fn();
+    const flusher = createSentenceFlusher({ onSentence, onLatencyBreach });
+
+    flusher.pushToken("هل وصل البلاغ");
+    clock = 180;
+    flusher.pushToken("؟");
+    expect(onSentence).toHaveBeenCalledExactlyOnceWith("هل وصل البلاغ؟", 0);
+    expect(flusher.stats().latencyToFirstSentence).toBe(80);
+    expect(onLatencyBreach).not.toHaveBeenCalled();
+
+    flusher.pushToken(" تم الإغلاق");
+    flusher.finish();
+    expect(onSentence).toHaveBeenNthCalledWith(2, "تم الإغلاق", 1);
+  });
+
+  it.each(["Ready!", "Are you there?", "مكتمل！"])(
+    "flushes terminal unambiguous punctuation immediately: %s",
+    (sentence) => {
+      const onSentence = vi.fn();
+      const flusher = createSentenceFlusher({ onSentence });
+      flusher.pushToken(sentence);
+      expect(onSentence).toHaveBeenCalledExactlyOnceWith(sentence, 0);
+      flusher.finish();
+      expect(onSentence).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it("keeps a final period buffered until decimal continuation is known", () => {
+    const onSentence = vi.fn();
+    const flusher = createSentenceFlusher({ onSentence });
+    flusher.pushToken("القياس 3.");
+    expect(onSentence).not.toHaveBeenCalled();
+    flusher.pushToken("14 متر");
+    flusher.finish();
+    expect(onSentence).toHaveBeenCalledExactlyOnceWith("القياس 3.14 متر", 0);
+  });
+
 });
