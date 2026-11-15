@@ -27,8 +27,29 @@ const BASE = (process.env.PRODUCTION_URL || "").replace(/\/$/, "");
 const ROUTES = (process.env.ROUTES ?? "/,/sec,/sec/governance")
   .split(",")
   .map((route) => route.trim());
-if (ROUTES.some((route) => !route.startsWith("/") || route.startsWith("//"))) {
-  console.error("ROUTES must contain nonempty same-site paths beginning with '/'.");
+// A route with a fragment or dot-segment traversal can silently probe a
+// different pathname (often just "/") while falsely certifying a critical page.
+// Require the requested URL path to survive WHATWG URL normalization unchanged.
+// Valid query strings remain supported because they are transmitted to the server.
+const ROUTE_VALIDATION_ORIGIN = "https://sadeed-route-validation.invalid";
+if (
+  ROUTES.some((route) => {
+    if (!route.startsWith("/") || route.startsWith("//")) return true;
+    try {
+      const resolved = new URL(route, ROUTE_VALIDATION_ORIGIN);
+      return (
+        resolved.origin !== ROUTE_VALIDATION_ORIGIN ||
+        resolved.hash !== "" ||
+        resolved.pathname + resolved.search !== route
+      );
+    } catch {
+      return true;
+    }
+  })
+) {
+  console.error(
+    "ROUTES must contain nonempty, unambiguous same-site paths without fragments or traversal.",
+  );
   process.exit(1);
 }
 // An invalid or unbounded retry count must not hang production release checks.

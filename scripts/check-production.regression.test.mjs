@@ -1199,6 +1199,10 @@ for (const routeSetting of [
   "/,,/sec",
   "https://outside.invalid/",
   "//outside.invalid/",
+  "/#/sec/twin", // A fragment never reaches the HTTP server; only "/" is probed.
+  "/sec/twin#overview", // Fragment silently drops the expected route suffix.
+  "/sec/twin/../..", // URL normalization makes this a probe of "/".
+  "/sec/%2e%2e/", // Percent-encoded dot segments also normalize to "/".
 ]) {
   test(`rejects empty or unsafe production ROUTES=${JSON.stringify(routeSetting)} before requests`, async () => {
     const halt = new Error("invalid route configuration");
