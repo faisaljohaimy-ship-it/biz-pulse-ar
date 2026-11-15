@@ -1160,7 +1160,6 @@ test("rejects encoded-quote stylesheet decoy when the browser asset is missing",
   );
 });
 
-
 // Invalid retry configuration must never turn a failed deployment probe into
 // an endless sequence of 503 fetches (e.g. Number("Infinity") => Infinity).
 for (const attemptSetting of ["Infinity", "1e309", "-1", "0", "2.5", "100000000"]) {
@@ -1190,4 +1189,3 @@ for (const attemptSetting of ["Infinity", "1e309", "-1", "0", "2.5", "100000000"
     assert.equal(fetchCalls, 0, "invalid retry settings must not probe the network");
   });
 }
-
