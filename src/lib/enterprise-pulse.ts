@@ -134,13 +134,11 @@ const seeded = new Set<string>();
 // Share initial first-use seed work across concurrent views; failures remain retryable.
 const seeding = new Map<string, Promise<void>>();
 
-function ensureSeeded(userId: string, openTasks: number): Promise<void> {
-  if (seeded.has(userId)) return Promise.resolve();
+async function ensureSeeded(userId: string, openTasks: number) {
+  if (seeded.has(userId)) return;
   let pending = seeding.get(userId);
   if (!pending) {
-    pending = seedUserIfMissing(userId, openTasks).finally(() => {
-      seeding.delete(userId);
-    });
+    pending = seedUserIfMissing(userId, openTasks).finally(() => seeding.delete(userId));
     seeding.set(userId, pending);
   }
   return pending;
