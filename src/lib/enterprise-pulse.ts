@@ -447,14 +447,18 @@ export function useEnterprisePulse(): EnterprisePulse {
     const topic = `enterprise-pulse-live:${Math.random().toString(36).slice(2)}`;
     let channel: ReturnType<typeof supabase.channel> | null = null;
     try {
-      channel = supabase
-        .channel(topic)
-        .on("postgres_changes", { event: "*", schema: "public", table: "pulse_kpis" }, load)
-        .on("postgres_changes", { event: "*", schema: "public", table: "pulse_crises" }, load)
-        .on("postgres_changes", { event: "*", schema: "public", table: "pulse_execution" }, load)
-        .on("postgres_changes", { event: "*", schema: "public", table: "pulse_memory" }, load)
-        .on("postgres_changes", { event: "*", schema: "public", table: "tasks" }, load)
-        .subscribe();
+      const tables = [
+        "pulse_kpis",
+        "pulse_crises",
+        "pulse_execution",
+        "pulse_memory",
+        "tasks",
+      ] as const;
+      const subscription = supabase.channel(topic);
+      for (const table of tables) {
+        subscription.on("postgres_changes", { event: "*", schema: "public", table }, load);
+      }
+      channel = subscription.subscribe();
     } catch (err) {
       // Realtime is best-effort; page remains functional with initial load.
       console.warn("pulse realtime unavailable", err);
