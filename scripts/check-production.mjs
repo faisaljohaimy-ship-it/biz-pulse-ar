@@ -47,7 +47,9 @@ if (
     }
   })
 ) {
-  console.error("ROUTES must contain nonempty, unambiguous same-site paths without fragments or traversal.");
+  console.error(
+    "ROUTES must contain nonempty, unambiguous same-site paths without fragments or traversal.",
+  );
   process.exit(1);
 }
 // An invalid or unbounded retry count must not hang production release checks.
