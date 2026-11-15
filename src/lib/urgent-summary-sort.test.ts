@@ -62,9 +62,7 @@ describe("urgent-summary critical-task ordering", () => {
       [
         { id: "latest-valid", priority, due_at: "2026-11-08T23:59:59Z" },
         { id: "earliest-valid", priority, due_at: "2026-11-08T00:00:00Z" },
-      ]
-        .sort(compareUrgentTasks)
-        .map((r) => r.id),
+      ].sort(compareUrgentTasks).map((r) => r.id),
     ).toEqual(["earliest-valid", "latest-valid"]);
   });
 
