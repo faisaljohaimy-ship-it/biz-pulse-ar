@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { advanceDueReportScheduleClock, assertValidReportScheduleClock, computeNextRun } from "./report-schedule-time";
+import {
+  advanceDueReportScheduleClock,
+  assertValidReportScheduleClock,
+  computeNextRun,
+} from "./report-schedule-time";
 
 const NOW = new Date("2026-11-15T12:00:00.000Z"); // Sunday, 12:00 UTC
 
@@ -111,8 +115,8 @@ describe("cron report schedule advancement", () => {
   });
 
   it("validates persisted hour before shifting the cron clock", () => {
-    expect(() =>
-      advanceDueReportScheduleClock({ frequency: "daily", hour_utc: 24 }, NOW),
-    ).toThrow("hour_utc must be 0–23");
+    expect(() => advanceDueReportScheduleClock({ frequency: "daily", hour_utc: 24 }, NOW)).toThrow(
+      "hour_utc must be 0–23",
+    );
   });
 });
