@@ -1003,3 +1003,46 @@ test("honors the first base href rather than a later safe override", async () =>
   );
   assert.equal(await runFixture(html), 1);
 });
+
+// The HTML parser decodes common named references in quoted href values.
+// Probe the browser's actual URL, not an encoded decoy with a different asset.
+for (const [entity, encoded] of [
+  ["quot", "%22"],
+  ["apos", "%27"],
+  ["lt", "%3C"],
+  ["gt", "%3E"],
+]) {
+  test(`resolves named &${entity}; references in stylesheet URLs`, async () => {
+    const html = normalPage.replace(
+      'href="/assets/app.css"',
+      `href="/assets/app.css?marker=&${entity};safe"`,
+    );
+    assert.equal(
+      await runFixture(
+        html,
+        "text/html",
+        200,
+        "text/css",
+        "body {}",
+        200,
+        `https://offline.invalid/assets/app.css?marker=${encoded}safe`,
+      ),
+      null,
+    );
+  });
+}
+
+test("rejects encoded-quote stylesheet decoy when the browser asset is missing", async () => {
+  const html = normalPage.replace(
+    'href="/assets/app.css"',
+    'href="/assets/app.css?marker=&quot;safe"',
+  );
+  const cssAssets = {
+    "https://offline.invalid/assets/app.css?marker=&quot;safe": { status: 200 },
+    "https://offline.invalid/assets/app.css?marker=%22safe": { status: 404 },
+  };
+  assert.equal(
+    await runFixture(html, "text/html", 200, "text/css", "body {}", 200, undefined, cssAssets),
+    1,
+  );
+});
