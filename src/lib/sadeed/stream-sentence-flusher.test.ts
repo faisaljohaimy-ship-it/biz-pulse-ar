@@ -84,4 +84,33 @@ describe("SADEED streaming voice first-sentence latency", () => {
     flusher.finish();
     expect(onSentence).toHaveBeenCalledTimes(1);
   });
+
+  it("ignores late streamed tokens after the final flush", () => {
+    const onSentence = vi.fn();
+    const flusher = createSentenceFlusher({ onSentence });
+
+    flusher.pushToken("التقرير مكتمل");
+    flusher.finish();
+    flusher.pushToken("نص متأخر\\n");
+    flusher.finish();
+
+    expect(onSentence).toHaveBeenCalledTimes(1);
+    expect(onSentence).toHaveBeenCalledWith("التقرير مكتمل", 0);
+    expect(flusher.stats().sentences).toBe(1);
+  });
+
+  it("marks the stream finished before the final-sentence callback runs", () => {
+    const onSentence = vi.fn(() => {
+      flusher.pushToken("Late text");
+      flusher.finish();
+    });
+    const flusher = createSentenceFlusher({ onSentence });
+
+    flusher.pushToken("Done");
+    flusher.finish();
+
+    expect(onSentence).toHaveBeenCalledTimes(1);
+    expect(onSentence).toHaveBeenCalledWith("Done", 0);
+    expect(flusher.stats().sentences).toBe(1);
+  });
 });

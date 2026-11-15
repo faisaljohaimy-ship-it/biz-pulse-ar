@@ -41,6 +41,8 @@ export function createSentenceFlusher(opts: SentenceFlusherOptions) {
   let firstTokenAt: number | null = null;
   let sentenceCount = 0;
   let breachReported = false;
+  // finish() is terminal: late network tokens must never resume a completed utterance.
+  let finished = false;
 
   // All first-sentence delivery paths must share the same latency check:
   // punctuation, soft flush, and the final fragment on stream close.
@@ -80,12 +82,14 @@ export function createSentenceFlusher(opts: SentenceFlusherOptions) {
 
   return {
     pushToken(chunk: string) {
-      if (!chunk) return;
+      if (finished || !chunk) return;
       if (firstTokenAt === null) firstTokenAt = performance.now();
       buffer += chunk;
       drain();
     },
     finish() {
+      if (finished) return;
+      finished = true;
       const remainder = buffer.trim();
       buffer = "";
       emitSentence(remainder);
