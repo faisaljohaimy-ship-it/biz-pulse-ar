@@ -21,6 +21,7 @@ async function runFixture(
   pageStatus = 200,
   expectedCssUrl = "https://offline.invalid/assets/app.css",
   cssAssets = null,
+  pageDisposition = null,
 ) {
   let exitCode = null;
   const context = vm.createContext({
@@ -36,7 +37,13 @@ async function runFixture(
     async fetch(input, options) {
       assert.equal(options.redirect, "manual");
       if (input === "https://offline.invalid/") {
-        return new Response(body, { status: pageStatus, headers: { "content-type": contentType } });
+        return new Response(body, {
+          status: pageStatus,
+          headers: {
+            "content-type": contentType,
+            ...(pageDisposition === null ? {} : { "content-disposition": pageDisposition }),
+          },
+        });
       }
       if (cssAssets) {
         const asset = cssAssets[input];
@@ -74,6 +81,57 @@ test("accepts exact text/css with a charset parameter", async () => {
 
 test("accepts a real HTML document with a stylesheet link", async () => {
   assert.equal(await runFixture(normalPage), null);
+});
+
+test("rejects a downloadable HTML attachment despite healthy markup and CSS", async () => {
+  assert.equal(
+    await runFixture(
+      normalPage,
+      "text/html",
+      200,
+      "text/css",
+      "body {}",
+      200,
+      "https://offline.invalid/assets/app.css",
+      null,
+      'attachment; filename="app.html"',
+    ),
+    1,
+  );
+});
+
+test("rejects case-insensitive attachment response headers", async () => {
+  assert.equal(
+    await runFixture(
+      normalPage,
+      "text/html",
+      200,
+      "text/css",
+      "body {}",
+      200,
+      "https://offline.invalid/assets/app.css",
+      null,
+      "ATTACHMENT",
+    ),
+    1,
+  );
+});
+
+test("accepts inline HTML content disposition", async () => {
+  assert.equal(
+    await runFixture(
+      normalPage,
+      "text/html",
+      200,
+      "text/css",
+      "body {}",
+      200,
+      "https://offline.invalid/assets/app.css",
+      null,
+      'inline; filename="app.html"',
+    ),
+    null,
+  );
 });
 
 // Every same-origin active stylesheet must load: a valid vendor CSS file
