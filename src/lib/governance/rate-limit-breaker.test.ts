@@ -240,6 +240,35 @@ describe("القاطع", () => {
 });
 
 describe("الحصّة المحدودة في الذاكرة", () => {
+  it.each([
+    [Number.POSITIVE_INFINITY, 60],
+    [Number.NaN, 60],
+    [Number.MAX_VALUE, 60],
+    [12, Number.POSITIVE_INFINITY],
+    [12, Number.MAX_VALUE],
+  ])("fails closed for non-finite or unsafe degraded quotas (%s, %s)", (max, window) => {
+    const decision = degradedAllowance("invalid-parameters", max, window, 1_000);
+    expect(decision).toEqual({ allowed: false, cap: 0, remaining: 0, retryAfterSeconds: 60 });
+    // Invalid calls must not consume a normal quota slot or poison its TTL.
+    expect(degradedAllowance("invalid-parameters", 2, 60, 1_000)).toMatchObject({
+      allowed: true,
+      cap: 1,
+    });
+  });
+
+  it("does not relax an existing quota after an unsafe parameter call", () => {
+    expect(degradedAllowance("existing-cap", 2, 60, 1_000).allowed).toBe(true);
+    expect(degradedAllowance("existing-cap", Number.POSITIVE_INFINITY, 60, 1_000)).toMatchObject({
+      allowed: false,
+      cap: 0,
+    });
+    expect(degradedAllowance("existing-cap", 2, 60, 1_000)).toMatchObject({
+      allowed: false,
+      cap: 1,
+      remaining: 0,
+    });
+  });
+
   it("نصف السقف: 12 في 300 ث ⇐ ستٌّ تمرّ والسابعة تُرفض بـRetry-After ضمن النافذة", () => {
     for (let i = 1; i <= 6; i++) {
       const d = degradedAllowance("chat:ip:1", 12, 300);
