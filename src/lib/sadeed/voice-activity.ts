@@ -61,8 +61,7 @@ export function advanceSadeedVoiceActivity(input: {
   if (
     !input.state.heardVoice &&
     elapsed >= config.noSpeechMs &&
-    (input.state.candidateVoiceAt === null ||
-      input.state.candidateVoiceAt - input.state.startedAt >= config.noSpeechMs)
+    (input.state.candidateVoiceAt ?? now) - input.state.startedAt >= config.noSpeechMs
   ) {
     return { state: input.state, decision: "no-speech" };
   }
