@@ -43,6 +43,48 @@ on:
 # verify»، ويقصّر زمن الحائط لأنها تجري معًا. و`timeout-minutes: 13` تجعل
 # التعليق يفشل فشلًا صريحًا قبل القطع الخارجي الصامت.
 jobs:
+  # Regression for the public readiness contract; runs even without backend
+  # credentials and keeps Safari/WebKit coverage for fail-closed HTTP 503.
+  # The full secret-dependent security E2E gate below is not altered.
+  public-health-e2e:
+    name: public readiness HTTP E2E (Chromium + WebKit)
+    runs-on: ubuntu-latest
+    timeout-minutes: 13
+    permissions:
+      contents: read
+    env:
+      PLAYWRIGHT_BASE_URL: http://localhost:8080
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci --no-audit --no-fund
+      - name: Install Playwright chromium + webkit
+        run: npx playwright install --with-deps chromium webkit
+      - name: Start isolated dev server
+        run: |
+          npm run dev -- --host 127.0.0.1 --port 8080 --strictPort > /tmp/public-health-dev.log 2>&1 &
+          echo $! > /tmp/public-health-dev.pid
+          for i in $(seq 1 60); do
+            if curl -sf http://127.0.0.1:8080/ > /dev/null; then
+              echo "dev server ready"; exit 0
+            fi
+            sleep 2
+          done
+          tail -n 80 /tmp/public-health-dev.log
+          exit 1
+      - name: Assert public health and liveness across desktop + Safari
+        run: npx playwright test tests/e2e/07-health-endpoint.spec.ts --project=desktop --project=mobile
+      - name: Stop isolated dev server
+        if: always()
+        run: |
+          if [ -f /tmp/public-health-dev.pid ]; then
+            kill "$(cat /tmp/public-health-dev.pid)" 2>/dev/null || true
+          fi
+
   static:
     name: static (types · lint · dead code)
     runs-on: ubuntu-latest
