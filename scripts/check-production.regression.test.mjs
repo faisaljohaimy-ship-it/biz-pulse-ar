@@ -1159,3 +1159,33 @@ test("rejects encoded-quote stylesheet decoy when the browser asset is missing",
     1,
   );
 });
+
+// Invalid retry configuration must never turn a failed deployment probe into
+// an endless sequence of 503 fetches (e.g. Number("Infinity") => Infinity).
+for (const attemptSetting of ["Infinity", "1e309", "-1", "0", "2.5", "100000000"]) {
+  test(`rejects unbounded or malformed ATTEMPTS=${attemptSetting} before network I/O`, async () => {
+    const halt = new Error("configuration rejected");
+    let fetchCalls = 0;
+    const context = vm.createContext({
+      process: {
+        env: { PRODUCTION_URL: "https://offline.invalid", ROUTES: "/", ATTEMPTS: attemptSetting },
+        exit(code) {
+          assert.equal(code, 1);
+          throw halt;
+        },
+      },
+      console: { log() {}, error() {} },
+      AbortSignal,
+      URL,
+      async fetch() {
+        fetchCalls++;
+        return new Response("unavailable", { status: 503 });
+      },
+    });
+    await assert.rejects(
+      new vm.Script(`(async () => {\n${executableSource}\n})()`).runInContext(context),
+      (error) => error === halt,
+    );
+    assert.equal(fetchCalls, 0, "invalid retry settings must not probe the network");
+  });
+}
