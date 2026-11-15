@@ -57,12 +57,12 @@ export function advanceSadeedVoiceActivity(input: {
   const previous = input.state;
   const startedAt = previous.startedAt;
   const now = Math.max(startedAt, input.now);
-  const elapsed = now - startedAt;
   const noSpeechAt = startedAt + config.noSpeechMs;
+  let heardVoice = previous.heardVoice;
   // Late first samples must not create speech after the initial timeout.
   // Pre-deadline speech candidates still receive their voice qualification grace.
   if (
-    !previous.heardVoice &&
+    !heardVoice &&
     now >= noSpeechAt &&
     (previous.candidateVoiceAt ?? now) >= noSpeechAt
   ) {
@@ -71,7 +71,6 @@ export function advanceSadeedVoiceActivity(input: {
 
   let candidateVoiceAt = previous.candidateVoiceAt;
   let lastVoiceAt = previous.lastVoiceAt;
-  let heardVoice = previous.heardVoice;
 
   if (Number.isFinite(input.rms) && Math.max(0, input.rms) >= config.rmsThreshold) {
     candidateVoiceAt ??= now;
@@ -92,7 +91,7 @@ export function advanceSadeedVoiceActivity(input: {
 
   // The absolute capture cap still takes precedence for established speech.
   let decision: SadeedVoiceActivityDecision = "continue";
-  if (elapsed >= config.maximumCaptureMs) {
+  if (now - startedAt >= config.maximumCaptureMs) {
     decision = heardVoice ? "complete" : "no-speech";
   } else if (!heardVoice && now >= noSpeechAt && candidateVoiceAt === null) {
     decision = "no-speech";
