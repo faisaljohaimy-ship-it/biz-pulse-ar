@@ -25,7 +25,7 @@ export function useLiveTwinNodes<T extends TwinValueNode>(
     // Counts cannot be negative; do not publish corrupt telemetry as a measured value.
     // Keep signed execution velocity separate: a decline can be a meaningful percentage.
     const measuredCount = (value: number | null | undefined) =>
-      value != null && value < 0 ? unmeasuredLabel(ar) : twinValue(value, ar);
+      twinValue(value < 0 ? null : value, ar);
     const optional = (value: number | null | undefined, id: string) =>
       value == null ? fallback(id) : measuredCount(value);
     const values: Record<string, string> = {
