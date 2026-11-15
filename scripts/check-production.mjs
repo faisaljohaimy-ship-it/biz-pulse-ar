@@ -42,7 +42,9 @@ try {
   }
   BASE = parsedBase.origin;
 } catch {
-  console.error("PRODUCTION_URL must be an HTTP(S) origin without a path, query, fragment or credentials.");
+  console.error(
+    "PRODUCTION_URL must be an HTTP(S) origin without a path, query, fragment or credentials.",
+  );
   process.exit(1);
 }
 // A misconfigured empty route list must never report a successful release
