@@ -165,9 +165,16 @@ vi.mock("@/lib/exec/agent-runtime.server", () => ({
     state.agentRuns.push({ client, params });
     if (state.runAgentBehaviour === "never") return new Promise(() => undefined);
     if (state.runAgentBehaviour === "cancel-on-abort") {
-      await new Promise<void>((resolve) =>
-        (params.signal as AbortSignal).addEventListener("abort", () => resolve(), { once: true }),
-      );
+      const signal = params.signal as AbortSignal;
+      await new Promise<void>((resolve) => {
+        // An abort may precede the runner's first async step. A late listener
+        // never receives that event; model the runner's cancellation explicitly.
+        if (signal.aborted) {
+          resolve();
+          return;
+        }
+        signal.addEventListener("abort", () => resolve(), { once: true });
+      });
       return { runId: "run-0002", status: "cancelled", summary: "Cancelled by operator", steps: 1 };
     }
     return {
@@ -1053,6 +1060,34 @@ describe("dispatch_agent — the chat can start an agent run, behind the same ga
     await new Promise((r) => setTimeout(r, 20));
     turn.abort();
     const done = (await pending) as ToolResult;
+    expect(done).toMatchObject({
+      ok: true,
+      executed: true,
+      run: {
+        id: "run-0002",
+        status: "cancelled",
+        note: "انتهت مهلة الدور؛ تابع بـexecution_status",
+      },
+    });
+    expect(state.agentRuns).toHaveLength(1);
+    expect((state.agentRuns[0]!.params.signal as AbortSignal).aborted).toBe(true);
+  });
+
+  it("an already-aborted turn returns the cancelled run rather than hanging", async () => {
+    state.runAgentBehaviour = "cancel-on-abort";
+    const rls = fakeRls();
+    await call(await request(rls, "شغّل وكيل الإحاطات"), "dispatch_agent", DISPATCH);
+    const turn = new AbortController();
+    turn.abort();
+    const tools = await request(rls, "نعم");
+    const t = tools.dispatch_agent as unknown as {
+      execute: (a: unknown, o: unknown) => Promise<unknown>;
+    };
+    const done = (await t.execute(DISPATCH, {
+      toolCallId: "call-dispatch",
+      messages: [],
+      abortSignal: turn.signal,
+    })) as ToolResult;
     expect(done).toMatchObject({
       ok: true,
       executed: true,
