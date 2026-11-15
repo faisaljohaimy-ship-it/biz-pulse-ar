@@ -155,7 +155,7 @@ async function seedUserIfMissing(userId: string, openTasks: number) {
     console.error("pulse seed count failed:", countError.message);
     return; // transient read failure — leave unseeded so it retries
   }
-  if ((count ?? 0) > 0) {
+  if (count && count > 0) {
     seeded.add(userId); // already has data — no seeding needed
     return;
   }
