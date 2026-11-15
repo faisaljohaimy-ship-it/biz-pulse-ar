@@ -146,6 +146,61 @@ test("resolves &colon; and &period; in absolute stylesheet links", async () => {
   assert.equal(await runFixture(html), null);
 });
 
+// Browsers decode other standard named references, too. In particular,
+// a decoy &copy; path must never certify the actual %C2%A9 asset.
+test("resolves copyright-named HTML references in stylesheet URLs", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="stylesheet" href="/assets/app&copy;.css">',
+  );
+  assert.equal(
+    await runFixture(
+      html,
+      "text/html",
+      200,
+      "text/css",
+      "body {}",
+      200,
+      "https://offline.invalid/assets/app%C2%A9.css",
+    ),
+    null,
+  );
+});
+
+test("rejects a named copyright reference when only a decoy stylesheet responds", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="stylesheet" href="/assets/app&copy;.css">',
+  );
+  const cssAssets = {
+    "https://offline.invalid/assets/app&copy;.css": { status: 200 },
+    "https://offline.invalid/assets/app%C2%A9.css": { status: 404 },
+  };
+  assert.equal(
+    await runFixture(html, "text/html", 200, "text/css", "body {}", 200, undefined, cssAssets),
+    1,
+  );
+});
+
+test("resolves registered-sign references in a stylesheet base href", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<base href="/assets&reg;/"><link rel="stylesheet" href="app.css">',
+  );
+  assert.equal(
+    await runFixture(
+      html,
+      "text/html",
+      200,
+      "text/css",
+      "body {}",
+      200,
+      "https://offline.invalid/assets%C2%AE/app.css",
+    ),
+    null,
+  );
+});
+
 test("rejects a named-entity stylesheet when the real asset is missing but a decoy responds", async () => {
   const html = normalPage.replace(
     '<link rel="stylesheet" href="/assets/app.css">',

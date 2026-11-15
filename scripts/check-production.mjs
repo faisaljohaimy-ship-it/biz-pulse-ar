@@ -245,7 +245,7 @@ function hasExecutableThemeBootstrap(body) {
 // http-equiv=refresh. Decode one layer to match browser redirect semantics.
 function decodeMetaAttribute(value) {
   return value.replace(
-    /&(?:#(x[0-9a-f]+|\d+);?|(?:amp|semi|tab|newline|sol|colon|period|quot|apos|lt|gt);)/gi,
+    /&(?:#(x[0-9a-f]+|\d+);?|(?:amp|semi|tab|newline|sol|colon|period|quot|apos|lt|gt|copy|reg|nbsp);)/gi,
     (entity, numeric) => {
       if (!numeric) {
         const names = {
@@ -262,6 +262,11 @@ function decodeMetaAttribute(value) {
           apos: "'",
           lt: "<",
           gt: ">",
+          // Valid named HTML references in URLs must be fetched as decoded by browsers.
+          // Otherwise a decoy /app&copy;.css can pass while /app%C2%A9.css is missing.
+          copy: "©",
+          reg: "®",
+          nbsp: "\u00a0",
         };
         return names[entity.slice(1, -1).toLowerCase()] ?? entity;
       }
