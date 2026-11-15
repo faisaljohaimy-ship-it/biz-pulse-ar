@@ -7,6 +7,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { httpFetch } from "@/lib/api/http.server";
 import { isApiError } from "@/lib/api";
 import { verifyCronHookSecret } from "@/lib/hook-auth.server";
+import { advanceDueReportScheduleClock } from "@/lib/reports/report-schedule-time";
 
 export const Route = createFileRoute("/api/public/hooks/executive-reports-run")({
   server: {
@@ -46,7 +47,19 @@ export const Route = createFileRoute("/api/public/hooks/executive-reports-run")(
           // Two overlapping cron invocations read the same due row, but only
           // one UPDATE matches — the other gets zero rows back and leaves the
           // schedule alone, so a report is never generated or emailed twice.
-          const nextRunAt = advance(s.frequency, s.hour_utc, s.weekday);
+          let nextRunAt: string;
+          try {
+            nextRunAt = advanceDueReportScheduleClock({
+              frequency: s.frequency as "daily" | "weekly",
+              hour_utc: s.hour_utc,
+              weekday: s.weekday,
+            });
+          } catch {
+            // A corrupt persisted schedule must not hang or abort the whole batch.
+            // Leave the row unchanged for correction; never claim or send a report.
+            results.push({ id: s.id, status: "failed", detail: "invalid_schedule_clock" });
+            continue;
+          }
           const { data: claimed, error: claimError } = await supabaseAdmin
             .from("report_schedules")
             .update({ next_run_at: nextRunAt })
@@ -228,19 +241,6 @@ function safe(name: string, ext: string): string {
 
 function b64(bytes: Uint8Array): string {
   return Buffer.from(bytes).toString("base64");
-}
-
-function advance(frequency: string, hour: number, weekday: number | null): string {
-  const next = new Date();
-  next.setUTCHours(hour, 0, 0, 0);
-  if (frequency === "weekly" && weekday != null) {
-    do {
-      next.setUTCDate(next.getUTCDate() + 1);
-    } while (next.getUTCDay() !== weekday);
-  } else {
-    next.setUTCDate(next.getUTCDate() + 1);
-  }
-  return next.toISOString();
 }
 
 async function spUpload(
