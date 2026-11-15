@@ -295,6 +295,10 @@ for (const route of ROUTES) {
     // is not evidence that the requested application HTML rendered.
     const contentType = res.headers.get("content-type") || "";
     const isHtml = hasMimeType(contentType, "text/html") && /<html\b/i.test(html);
+    // An attachment downloads instead of rendering, even when its HTTP status,
+    // HTML markup, theme bootstrap, and stylesheets all look healthy.
+    const contentDisposition = res.headers.get("content-disposition") || "";
+    const isAttachment = /^\s*attachment\s*(?:;|$)/i.test(contentDisposition);
     const isLoginWall =
       /<title\b[^>]*>\s*(?:Authentication Required|Vercel Authentication)[^<]*<\/title>/i.test(
         html,
@@ -377,6 +381,7 @@ for (const route of ROUTES) {
     const documentBase = baseHref === undefined ? url : new URL(baseHref, url).href;
 
     if (!isHtml) failures.push(`${route}: الاستجابة ليست مستند HTML صالحًا للتطبيق`);
+    if (isAttachment) failures.push(`${route}: HTML يُرسَل كمرفق للتنزيل بدل عرض الصفحة`);
     if (isLoginWall) failures.push(`${route}: صفحة توثيق Vercel ليست نجاحًا لمسار التطبيق`);
     if (!themeScript) failures.push(`${route}: سكربت الثيم المانع غائب من HTML المُقدَّم`);
     if (retired.length) failures.push(`${route}: اسم متقاعد ظاهر — ${retired.join(" · ")}`);
