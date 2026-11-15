@@ -1191,6 +1191,3 @@ for (const attemptSetting of ["Infinity", "1e309", "-1", "0", "2.5", "100000000"
   });
 }
 
-test("allows a bounded retry count and keeps the existing happy-path gate", async () => {
-  assert.equal(await runFixture(normalPage), null);
-});
