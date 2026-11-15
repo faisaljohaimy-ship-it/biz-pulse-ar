@@ -114,7 +114,9 @@ describe("Enterprise Pulse auth isolation", () => {
   it("clears private KPIs immediately on sign-out without waiting for realtime", async () => {
     harness.readKpis.mockResolvedValue({ data: [kpi("private-account")], error: null });
     const { result } = renderHook(() => useEnterprisePulse());
-    await waitFor(() => expect(result.current.kpis.map((entry) => entry.id)).toEqual(["private-account"]));
+    await waitFor(() =>
+      expect(result.current.kpis.map((entry) => entry.id)).toEqual(["private-account"]),
+    );
 
     act(() => {
       harness.onAuthChange?.("SIGNED_OUT");
@@ -151,12 +153,16 @@ describe("Enterprise Pulse auth isolation", () => {
       .mockResolvedValueOnce({ data: [kpi("old-private")], error: null })
       .mockResolvedValueOnce({ data: [kpi("new-private")], error: null });
     const { result } = renderHook(() => useEnterprisePulse());
-    await waitFor(() => expect(result.current.kpis.map((entry) => entry.id)).toEqual(["old-private"]));
+    await waitFor(() =>
+      expect(result.current.kpis.map((entry) => entry.id)).toEqual(["old-private"]),
+    );
 
     act(() => {
       harness.onAuthChange?.("SIGNED_IN");
     });
     expect(result.current.kpis).toEqual([]);
-    await waitFor(() => expect(result.current.kpis.map((entry) => entry.id)).toEqual(["new-private"]));
+    await waitFor(() =>
+      expect(result.current.kpis.map((entry) => entry.id)).toEqual(["new-private"]),
+    );
   });
 });
