@@ -116,7 +116,17 @@ describe("digital twin signal memo — locale regression", () => {
   });
 
   it("does not present negative live counts as measured events in either locale", () => {
-    const countIds = ["depts", "data", "agents", "integ", "flows", "know", "risk", "board", "intel"];
+    const countIds = [
+      "depts",
+      "data",
+      "agents",
+      "integ",
+      "flows",
+      "know",
+      "risk",
+      "board",
+      "intel",
+    ];
     const allNodes = [...countIds, "exec"].map((id) => ({ id, value: "reference" }));
     const corrupt: TwinSignals = {
       ...baseSignals,
@@ -131,10 +141,9 @@ describe("digital twin signal memo — locale regression", () => {
       intelligenceSignals: -5,
       executionVelocity: -12,
     };
-    const { result, rerender } = renderHook(
-      ({ ar }) => useLiveTwinNodes(allNodes, corrupt, ar),
-      { initialProps: { ar: true } },
-    );
+    const { result, rerender } = renderHook(({ ar }) => useLiveTwinNodes(allNodes, corrupt, ar), {
+      initialProps: { ar: true },
+    });
     for (const ar of [true, false]) {
       rerender({ ar });
       expect(result.current.slice(0, countIds.length).map((node) => node.value)).toEqual(
