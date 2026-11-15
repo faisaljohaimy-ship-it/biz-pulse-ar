@@ -31,7 +31,10 @@ export interface SentenceFlusherOptions {
 }
 
 // Sentence terminators: . ! ? ؟ ۔ 。 ！ ？ newline
-const SENTENCE_TERMINATOR = /([.!?؟۔。！？](?=\s)|\n)/;
+// A streamed question/exclamation may end its chunk without whitespace. Flush it
+// immediately rather than waiting for the next token or stream close. Keep a
+// trailing ASCII period buffered: it may be the start of a decimal (e.g. 3.14).
+const SENTENCE_TERMINATOR = /([!?؟۔。！？](?=\s|$)|\.(?=\s)|\n)/;
 
 export function createSentenceFlusher(opts: SentenceFlusherOptions) {
   const budget = opts.firstSentenceBudgetMs ?? 250;
