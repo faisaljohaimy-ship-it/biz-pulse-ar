@@ -1004,7 +1004,6 @@ test("honors the first base href rather than a later safe override", async () =>
   assert.equal(await runFixture(html), 1);
 });
 
-
 // The HTML parser decodes common named references in quoted href values.
 // Probe the browser's actual URL, not an encoded decoy with a different asset.
 for (const [entity, encoded] of [
@@ -1020,7 +1019,12 @@ for (const [entity, encoded] of [
     );
     assert.equal(
       await runFixture(
-        html, "text/html", 200, "text/css", "body {}", 200,
+        html,
+        "text/html",
+        200,
+        "text/css",
+        "body {}",
+        200,
         `https://offline.invalid/assets/app.css?marker=${encoded}safe`,
       ),
       null,
