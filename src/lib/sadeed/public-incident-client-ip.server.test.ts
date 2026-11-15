@@ -13,6 +13,26 @@ describe("public incident source-IP quotas", () => {
     expect(clientBucketKey(b, { VERCEL: "1" })).toBe(clientBucketKey(a, { VERCEL: "1" }));
   });
 
+  it("treats VERCEL=true as Vercel and rejects spoofed Cloudflare quota keys", () => {
+    const a = request({
+      "x-vercel-forwarded-for": "203.0.113.42",
+      "cf-connecting-ip": "192.0.2.11",
+    });
+    const b = request({
+      "x-vercel-forwarded-for": "203.0.113.42",
+      "cf-connecting-ip": "192.0.2.12",
+    });
+    expect(clientBucketKey(a, { VERCEL: "true" })).toBe("aria-incident:203.0.113.42");
+    expect(clientBucketKey(b, { VERCEL: "true" })).toBe(clientBucketKey(a, { VERCEL: "true" }));
+  });
+
+  it("uses a shared unknown bucket for VERCEL=true without platform-owned IP headers", () => {
+    const a = request({ "cf-connecting-ip": "192.0.2.11" });
+    const b = request({ "cf-connecting-ip": "192.0.2.12" });
+    expect(clientBucketKey(a, { VERCEL: "true" })).toBe("aria-incident:unknown");
+    expect(clientBucketKey(b, { VERCEL: "true" })).toBe("aria-incident:unknown");
+  });
+
   it("falls back to Vercel-overwritten XFF, not a client-supplied CF header", () => {
     const req = request({
       "x-forwarded-for": "203.0.113.43",
