@@ -2084,9 +2084,16 @@ export function buildSadeedTools(
                     ?.abortSignal;
                   const signal = turnSignal ? AbortSignal.any([turnSignal, budget]) : budget;
                   const budgetNote = "انتهت مهلة الدور؛ تابع بـexecution_status";
-                  const aborted = new Promise<null>((resolve) =>
-                    signal.addEventListener("abort", () => resolve(null), { once: true }),
-                  );
+                  // AbortSignal.any() is already aborted when the caller's turn
+                  // ended before this confirmed tool started. A listener added
+                  // after that event never fires; the grace path must still run.
+                  const aborted = new Promise<null>((resolve) => {
+                    if (signal.aborted) {
+                      resolve(null);
+                      return;
+                    }
+                    signal.addEventListener("abort", () => resolve(null), { once: true });
+                  });
                   // عميل المستخدم (RLS) للمنفّذين — كما `runAgentFn`؛ التنسيق بمفتاح الخدمة داخلًا.
                   const runPromise = runAgent(supabase, {
                     agentId,
