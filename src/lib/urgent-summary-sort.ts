@@ -11,7 +11,7 @@ function dueDateRank(value: string | null): number {
   // Date.parse accepts malformed strings such as "2026-11-08junk" as a
   // completely different valid date. Database deadlines must be ISO-shaped.
   const match = value?.match(
-    /^(\d{4}-\d{2}-\d{2})(?:[T ](\d{2}:\d{2}:\d{2}(?:\.\d+)?)(Z|[+-]\d{2}(?::?\d{2})?)?)?$/,
+    /^(\d{4}-\d{2}-\d{2})(?:[T ]((?:[01]\d|2[0-3]):\d{2}:\d{2}(?:\.\d+)?)(Z|[+-]\d{2}(?::?\d{2})?)?)?$/,
   );
   if (!match) return Number.MAX_SAFE_INTEGER;
   const calendarDate = new Date(`${match[1]}T00:00:00Z`);
@@ -21,6 +21,7 @@ function dueDateRank(value: string | null): number {
   ) {
     return Number.MAX_SAFE_INTEGER;
   }
+  // RFC 3339 hours stop at 23; Date.parse silently rolls 24:00 into the next day.
   // Offset-free timestamps must not be interpreted in the host local zone.
   // Keep the same instant regardless of where the app or CI runner executes.
   const normalized = match[2] ? `${match[1]}T${match[2]}${match[3] ?? "Z"}` : match[1];

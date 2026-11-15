@@ -43,6 +43,29 @@ describe("urgent-summary critical-task ordering", () => {
     ]);
   });
 
+  it("rejects rolled-over 24:00 deadlines instead of giving them valid urgency", () => {
+    const priority = "عاجل";
+    const valid = { id: "valid", priority, due_at: "2026-11-10T00:00:00Z" };
+    const invalidUtc = { id: "invalid-utc", priority, due_at: "2026-11-08T24:00:00Z" };
+    const invalidOffset = {
+      id: "invalid-offset",
+      priority,
+      due_at: "2026-11-08 24:00:00+03:00",
+    };
+    const invalidNaive = { id: "invalid-naive", priority, due_at: "2026-11-08T24:00:00" };
+    expect(
+      [invalidUtc, invalidOffset, valid, invalidNaive].sort(compareUrgentTasks).map((r) => r.id),
+    ).toEqual(["valid", "invalid-utc", "invalid-offset", "invalid-naive"]);
+    expect(
+      [
+        { id: "latest-valid", priority, due_at: "2026-11-08T23:59:59Z" },
+        { id: "earliest-valid", priority, due_at: "2026-11-08T00:00:00Z" },
+      ]
+        .sort(compareUrgentTasks)
+        .map((r) => r.id),
+    ).toEqual(["earliest-valid", "latest-valid"]);
+  });
+
   it("orders offset-free and explicit-zone deadlines consistently in Riyadh and UTC", () => {
     const previous = process.env.TZ;
     try {
