@@ -131,8 +131,25 @@ export type EnterprisePulse = {
 // ─── Seed payload (built in ./enterprise-pulse.seed, inserted once per user) ──
 
 const seeded = new Set<string>();
+// Two mounted Pulse views can start the same first-use seed concurrently.
+// Share the in-flight read/insert sequence per user, without hiding failures
+// or marking an unsuccessful seed as complete.
+const seeding = new Map<string, Promise<void>>();
 
 async function ensureSeeded(userId: string, openTasks: number) {
+  if (seeded.has(userId)) return;
+  const inFlight = seeding.get(userId);
+  if (inFlight) return inFlight;
+  const pending = seedUserIfMissing(userId, openTasks);
+  seeding.set(userId, pending);
+  try {
+    await pending;
+  } finally {
+    if (seeding.get(userId) === pending) seeding.delete(userId);
+  }
+}
+
+async function seedUserIfMissing(userId: string, openTasks: number) {
   if (seeded.has(userId)) return;
   // Do NOT mark seeded up-front: a failed count/insert must be retryable on a
   // later call, otherwise the user is stranded with a permanently empty pulse.
