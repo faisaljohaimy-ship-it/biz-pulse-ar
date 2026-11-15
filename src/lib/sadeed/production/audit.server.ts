@@ -48,7 +48,10 @@ export const audit = {
 };
 
 export function listAudits(limit = 200): AuditEntry[] {
-  return BUFFER.slice(-limit);
+  // slice(-0) / slice(-Infinity) returns every audit entry, not none.
+  // Reject malformed paging limits instead of disclosing the entire buffer.
+  if (!Number.isSafeInteger(limit) || limit <= 0) return [];
+  return BUFFER.slice(-Math.min(limit, BUFFER_MAX));
 }
 
 export function auditCount(): number {
