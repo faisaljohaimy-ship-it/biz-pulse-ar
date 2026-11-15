@@ -54,13 +54,21 @@ export function advanceSadeedVoiceActivity(input: {
   decision: SadeedVoiceActivityDecision;
 } {
   const config = input.config ?? SADEED_VOICE_ACTIVITY_DEFAULTS;
-  const now = Math.max(input.state.startedAt, input.now);
-  const rms = Number.isFinite(input.rms) ? Math.max(0, input.rms) : 0;
-  let candidateVoiceAt = input.state.candidateVoiceAt;
-  let lastVoiceAt = input.state.lastVoiceAt;
-  let heardVoice = input.state.heardVoice;
+  const previous = input.state;
+  const startedAt = previous.startedAt;
+  const now = Math.max(startedAt, input.now);
+  const noSpeechAt = startedAt + config.noSpeechMs;
+  let heardVoice = previous.heardVoice;
+  // Late first samples must not create speech after the initial timeout.
+  // Pre-deadline speech candidates still receive their voice qualification grace.
+  if (!heardVoice && now >= noSpeechAt && (previous.candidateVoiceAt ?? now) >= noSpeechAt) {
+    return { state: previous, decision: "no-speech" };
+  }
 
-  if (rms >= config.rmsThreshold) {
+  let candidateVoiceAt = previous.candidateVoiceAt;
+  let lastVoiceAt = previous.lastVoiceAt;
+
+  if (Number.isFinite(input.rms) && Math.max(0, input.rms) >= config.rmsThreshold) {
     candidateVoiceAt ??= now;
     if (heardVoice || now - candidateVoiceAt >= config.minimumVoiceMs) {
       heardVoice = true;
@@ -71,25 +79,20 @@ export function advanceSadeedVoiceActivity(input: {
   }
 
   const state = {
-    startedAt: input.state.startedAt,
+    startedAt,
     candidateVoiceAt,
     lastVoiceAt,
     heardVoice,
   };
-  const elapsed = now - state.startedAt;
 
-  if (elapsed >= config.maximumCaptureMs) {
-    return { state, decision: heardVoice ? "complete" : "no-speech" };
+  // The absolute capture cap still takes precedence for established speech.
+  let decision: SadeedVoiceActivityDecision = "continue";
+  if (now - startedAt >= config.maximumCaptureMs) {
+    decision = heardVoice ? "complete" : "no-speech";
+  } else if (!heardVoice && now >= noSpeechAt && candidateVoiceAt === null) {
+    decision = "no-speech";
+  } else if (heardVoice && lastVoiceAt !== null && now - lastVoiceAt >= config.silenceMs) {
+    decision = "complete";
   }
-  // A user may start speaking just before the initial silence deadline.
-  // Give that in-progress candidate its existing minimumVoiceMs to qualify;
-  // a dropped spike still returns no-speech as soon as the deadline is reached.
-  // The absolute maximumCaptureMs above remains authoritative.
-  if (!heardVoice && candidateVoiceAt === null && elapsed >= config.noSpeechMs) {
-    return { state, decision: "no-speech" };
-  }
-  if (heardVoice && lastVoiceAt !== null && now - lastVoiceAt >= config.silenceMs) {
-    return { state, decision: "complete" };
-  }
-  return { state, decision: "continue" };
+  return { state, decision };
 }
