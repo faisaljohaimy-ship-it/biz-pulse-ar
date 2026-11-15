@@ -82,8 +82,12 @@ export function subscribeLogs(cb: (e: StructuredLogEntry) => void): () => void {
 
 export function tailLogs(limit = 200, minLevel: Severity = "info"): StructuredLogEntry[] {
   const order: Severity[] = ["info", "notice", "warn", "error", "critical"];
+  // slice(-0) and slice(-Infinity) both expose the entire ring. A read
+  // requesting no entries must never disclose buffered operational logs.
+  if (!Number.isSafeInteger(limit) || limit <= 0) return [];
   const minIx = order.indexOf(minLevel);
-  return RING.filter((e) => order.indexOf(e.level) >= minIx).slice(-limit);
+  if (minIx < 0) return []; // Unknown severity must also fail closed.
+  return RING.filter((e) => order.indexOf(e.level) >= minIx).slice(-Math.min(limit, RING_MAX));
 }
 
 export function countLogs(): number {
