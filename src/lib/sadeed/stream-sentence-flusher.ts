@@ -40,6 +40,8 @@ export function createSentenceFlusher(opts: SentenceFlusherOptions) {
   let buffer = "";
   let firstTokenAt: number | null = null;
   let sentenceCount = 0;
+  // Record the actual first delivery delay; stats must not keep increasing later.
+  let firstSentenceLatencyMs: number | null = null;
   let breachReported = false;
   // finish() is terminal: late network tokens must never resume a completed utterance.
   let finished = false;
@@ -51,6 +53,7 @@ export function createSentenceFlusher(opts: SentenceFlusherOptions) {
     const index = sentenceCount++;
     if (index === 0 && firstTokenAt !== null) {
       const latency = performance.now() - firstTokenAt;
+      firstSentenceLatencyMs = latency;
       if (latency > budget && !breachReported) {
         breachReported = true;
         opts.onLatencyBreach?.("first_sentence_slow", latency);
@@ -98,8 +101,7 @@ export function createSentenceFlusher(opts: SentenceFlusherOptions) {
       return {
         sentences: sentenceCount,
         firstTokenAt,
-        latencyToFirstSentence:
-          firstTokenAt !== null && sentenceCount > 0 ? performance.now() - firstTokenAt : null,
+        latencyToFirstSentence: firstSentenceLatencyMs,
       };
     },
   };
