@@ -1190,10 +1190,16 @@ for (const attemptSetting of ["Infinity", "1e309", "-1", "0", "2.5", "100000000"
   });
 }
 
-
 // Never turn a mistyped release gate ROUTES setting into a green result
 // without probing any application page.
-for (const routeSetting of ["", ",", " , ", "/,,/sec", "https://outside.invalid/", "//outside.invalid/"]) {
+for (const routeSetting of [
+  "",
+  ",",
+  " , ",
+  "/,,/sec",
+  "https://outside.invalid/",
+  "//outside.invalid/",
+]) {
   test(`rejects empty or unsafe production ROUTES=${JSON.stringify(routeSetting)} before requests`, async () => {
     const halt = new Error("invalid route configuration");
     let fetchCalls = 0;
@@ -1214,7 +1220,7 @@ for (const routeSetting of ["", ",", " , ", "/,,/sec", "https://outside.invalid/
       },
     });
     await assert.rejects(
-      new vm.Script(`(async () => {\\n${executableSource}\\n})()`).runInContext(context),
+      new vm.Script(`(async () => {\n${executableSource}\n})()`).runInContext(context),
       (error) => error === halt,
     );
     assert.equal(fetchCalls, 0);
@@ -1244,7 +1250,7 @@ test("accepts whitespace around one valid same-origin route and still checks its
       throw new Error(`unexpected URL ${input}`);
     },
   });
-  await new vm.Script(`(async () => {\\n${executableSource}\\n})()`).runInContext(context);
+  await new vm.Script(`(async () => {\n${executableSource}\n})()`).runInContext(context);
   assert.deepEqual(seenUrls, [
     "https://offline.invalid/",
     "https://offline.invalid/assets/app.css",
