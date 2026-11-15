@@ -54,15 +54,15 @@ describe("urgent-summary critical-task ordering", () => {
     };
     const invalidNaive = { id: "invalid-naive", priority, due_at: "2026-11-08T24:00:00" };
     expect(
-      [invalidUtc, invalidOffset, valid, invalidNaive]
-        .sort(compareUrgentTasks)
-        .map((r) => r.id),
+      [invalidUtc, invalidOffset, valid, invalidNaive].sort(compareUrgentTasks).map((r) => r.id),
     ).toEqual(["valid", "invalid-utc", "invalid-offset", "invalid-naive"]);
     expect(
       [
         { id: "latest-valid", priority, due_at: "2026-11-08T23:59:59Z" },
         { id: "earliest-valid", priority, due_at: "2026-11-08T00:00:00Z" },
-      ].sort(compareUrgentTasks).map((r) => r.id),
+      ]
+        .sort(compareUrgentTasks)
+        .map((r) => r.id),
     ).toEqual(["earliest-valid", "latest-valid"]);
   });
 
