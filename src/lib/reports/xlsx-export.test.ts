@@ -300,6 +300,32 @@ describe("بنية المصنّف", () => {
     expect(actual.SheetNames).toEqual(names);
   });
 
+  it("keeps complete emoji and never writes half a surrogate after truncation or deduplication", async () => {
+    const report: ReportDocument = {
+      ...doc(),
+      sections: [
+        { id: "cut", title: "A".repeat(30) + "😀", blocks: [] },
+        { id: "same", title: "A".repeat(30), blocks: [] },
+        { id: "emoji", title: "B".repeat(28) + "😀", blocks: [] },
+        { id: "duplicate-emoji", title: "B".repeat(28) + "😀", blocks: [] },
+        { id: "broken-source", title: "\uD83DRisk", blocks: [] },
+      ],
+    };
+    const names = planReportWorkbook(report).map((plan) => plan.name);
+    expect(names.slice(1)).toEqual([
+      "A".repeat(30),
+      "A".repeat(29) + "~2",
+      "B".repeat(28) + "😀",
+      "B".repeat(28) + "~2",
+      "Risk",
+    ]);
+    expect(names.every((name) => name.length <= 31 && !/\\p{Cs}/u.test(name))).toBe(true);
+
+    const XLSX = await import("xlsx");
+    const actual = XLSX.read(await buildReportXlsx(report), { type: "array" });
+    expect(actual.SheetNames).toEqual(names);
+  });
+
   it("reserves Excel sheet names case-insensitively across sections and chart sheets", async () => {
     const original = doc();
     const report: ReportDocument = {
