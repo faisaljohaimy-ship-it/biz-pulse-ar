@@ -131,26 +131,22 @@ export type EnterprisePulse = {
 // ─── Seed payload (built in ./enterprise-pulse.seed, inserted once per user) ──
 
 const seeded = new Set<string>();
-// Two mounted Pulse views can start the same first-use seed concurrently.
-// Share the in-flight read/insert sequence per user, without hiding failures
-// or marking an unsuccessful seed as complete.
+// Share initial first-use seed work across concurrent views; failures remain retryable.
 const seeding = new Map<string, Promise<void>>();
 
-async function ensureSeeded(userId: string, openTasks: number) {
-  if (seeded.has(userId)) return;
-  const inFlight = seeding.get(userId);
-  if (inFlight) return inFlight;
-  const pending = seedUserIfMissing(userId, openTasks);
-  seeding.set(userId, pending);
-  try {
-    await pending;
-  } finally {
-    if (seeding.get(userId) === pending) seeding.delete(userId);
+function ensureSeeded(userId: string, openTasks: number): Promise<void> {
+  if (seeded.has(userId)) return Promise.resolve();
+  let pending = seeding.get(userId);
+  if (!pending) {
+    pending = seedUserIfMissing(userId, openTasks).finally(() => {
+      seeding.delete(userId);
+    });
+    seeding.set(userId, pending);
   }
+  return pending;
 }
 
 async function seedUserIfMissing(userId: string, openTasks: number) {
-  if (seeded.has(userId)) return;
   // Do NOT mark seeded up-front: a failed count/insert must be retryable on a
   // later call, otherwise the user is stranded with a permanently empty pulse.
   const { count, error: countError } = await supabase
@@ -165,19 +161,13 @@ async function seedUserIfMissing(userId: string, openTasks: number) {
     seeded.add(userId); // already has data — no seeding needed
     return;
   }
+  const stamped = <T extends object>(rows: T[]) =>
+    rows.map((r, i) => ({ ...r, user_id: userId, sort_order: i }));
   const results = await Promise.all([
-    supabase
-      .from("pulse_kpis")
-      .insert(seedKpis(openTasks).map((r, i) => ({ ...r, user_id: userId, sort_order: i }))),
-    supabase
-      .from("pulse_crises")
-      .insert(seedCrises().map((r, i) => ({ ...r, user_id: userId, sort_order: i }))),
-    supabase
-      .from("pulse_execution")
-      .insert(seedExecution().map((r, i) => ({ ...r, user_id: userId, sort_order: i }))),
-    supabase
-      .from("pulse_memory")
-      .insert(seedMemory().map((r, i) => ({ ...r, user_id: userId, sort_order: i }))),
+    supabase.from("pulse_kpis").insert(stamped(seedKpis(openTasks))),
+    supabase.from("pulse_crises").insert(stamped(seedCrises())),
+    supabase.from("pulse_execution").insert(stamped(seedExecution())),
+    supabase.from("pulse_memory").insert(stamped(seedMemory())),
   ]);
   const insertError = results.find((r) => r.error)?.error;
   if (insertError) {
