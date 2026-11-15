@@ -156,5 +156,4 @@ describe("SADEED streaming voice first-sentence latency", () => {
     expect(onSentence).toHaveBeenCalledTimes(1);
     expect(onSentence).toHaveBeenNthCalledWith(1, "القياس 3.14 متر", 0);
   });
-
 });
