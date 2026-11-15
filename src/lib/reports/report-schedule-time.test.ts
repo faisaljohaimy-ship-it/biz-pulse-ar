@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { assertValidReportScheduleClock, computeNextRun } from "./report-schedule-time";
+import { advanceDueReportScheduleClock, assertValidReportScheduleClock, computeNextRun } from "./report-schedule-time";
 
 const NOW = new Date("2026-11-15T12:00:00.000Z"); // Sunday, 12:00 UTC
 
@@ -66,5 +66,53 @@ describe("UTC executive report schedules", () => {
     expect(computeNextRun({ frequency: "daily", hour_utc: 13, weekday: null }, NOW)).toBe(
       "2026-11-15T13:00:00.000Z",
     );
+  });
+});
+
+describe("cron report schedule advancement", () => {
+  it.each(["hourly", "WEEKLY", "", null, undefined])(
+    "rejects unknown persisted frequencies instead of silently scheduling daily (%s)",
+    (frequency) => {
+      const schedule = { frequency, hour_utc: 10, weekday: 1 } as unknown as Parameters<
+        typeof advanceDueReportScheduleClock
+      >[0];
+      expect(() => advanceDueReportScheduleClock(schedule, NOW)).toThrow(
+        "frequency must be daily or weekly",
+      );
+      expect(() => computeNextRun(schedule, NOW)).toThrow("frequency must be daily or weekly");
+    },
+  );
+
+  it.each([Number.NaN, Infinity, -Infinity, -1, 7, 1.5, null, undefined])(
+    "rejects invalid persisted weekly weekdays without an unbounded search (%s)",
+    (weekday) => {
+      expect(() =>
+        advanceDueReportScheduleClock(
+          { frequency: "weekly", hour_utc: 10, weekday: weekday as number },
+          NOW,
+        ),
+      ).toThrow("weekday required");
+    },
+  );
+
+  it("keeps the existing next-day behavior for a due daily report", () => {
+    expect(advanceDueReportScheduleClock({ frequency: "daily", hour_utc: 23 }, NOW)).toBe(
+      "2026-11-16T23:00:00.000Z",
+    );
+  });
+
+  it("keeps the existing strictly-next-weekday behavior, including same weekday", () => {
+    expect(
+      advanceDueReportScheduleClock({ frequency: "weekly", hour_utc: 10, weekday: 1 }, NOW),
+    ).toBe("2026-11-16T10:00:00.000Z");
+    expect(
+      advanceDueReportScheduleClock({ frequency: "weekly", hour_utc: 10, weekday: 0 }, NOW),
+    ).toBe("2026-11-22T10:00:00.000Z");
+  });
+
+  it("validates persisted hour before shifting the cron clock", () => {
+    expect(() =>
+      advanceDueReportScheduleClock({ frequency: "daily", hour_utc: 24 }, NOW),
+    ).toThrow("hour_utc must be 0–23");
   });
 });
