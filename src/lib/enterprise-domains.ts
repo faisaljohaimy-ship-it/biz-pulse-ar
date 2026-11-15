@@ -360,8 +360,7 @@ export function useEnterpriseFabricAdapter() {
     briefingsCount: briefings.data?.length ?? 0,
     // Avoid overflowing the intermediate percentage-scale multiplication.
     // At this magnitude fractional hundredths are below floating-point precision.
-    avgSla:
-      avgSla <= Number.MAX_VALUE / 100 ? Math.round(avgSla * 100) / 100 : avgSla,
+    avgSla: avgSla <= Number.MAX_VALUE / 100 ? Math.round(avgSla * 100) / 100 : avgSla,
     avgPolicyCoverage,
     avgProgress,
     avgAdoption,
