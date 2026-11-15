@@ -249,6 +249,8 @@ export function degradedAllowance(
   // Infinity would grant unlimited degraded requests and an infinite TTL
   // could hold a capacity slot forever. Fail closed without creating a bucket.
   if (
+    !Number.isFinite(now) ||
+    !Number.isSafeInteger(Math.trunc(now)) ||
     !Number.isFinite(maxRequests) ||
     maxRequests < 1 ||
     !Number.isSafeInteger(Math.floor(maxRequests)) ||
