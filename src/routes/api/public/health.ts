@@ -1,8 +1,9 @@
 /**
  * GET /api/public/health
- * Enterprise health probe — load balancers, uptime monitors, /status page.
- * Returns 200 whenever the worker itself can answer; individual subsystem
- * failures are reported in the JSON body so ops can alert without flapping.
+ * Dependency readiness probe — load balancers, uptime monitors, /status page.
+ * Returns 503 if any required subsystem is down, otherwise 200. Subsystem
+ * states are also reported in JSON; /api/public/live separately reports
+ * worker liveness without depending on its backends.
  */
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
