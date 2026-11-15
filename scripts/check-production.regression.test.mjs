@@ -1260,3 +1260,77 @@ test("accepts whitespace around one valid same-origin route and still checks its
     "https://offline.invalid/assets/app.css",
   ]);
 });
+
+// An ambiguous base URL can redirect every route probe to "/" or a query
+// parameter while the report still names /sec/twin as healthy.
+for (const productionUrl of [
+  "",
+  "not-a-url",
+  "//offline.invalid",
+  "ftp://offline.invalid",
+  "https://offline.invalid/#/sec/twin",
+  "https://offline.invalid/?route=/",
+  "https://offline.invalid/admin",
+  "https://offline.invalid/admin/",
+  "https://user:password@offline.invalid",
+  "https://offline.invalid/?",
+  "https://offline.invalid/#",
+]) {
+  test(`rejects ambiguous PRODUCTION_URL=${JSON.stringify(productionUrl)} before requests`, async () => {
+    const halt = new Error("invalid production target");
+    let fetchCalls = 0;
+    const context = vm.createContext({
+      process: {
+        env: { PRODUCTION_URL: productionUrl, ROUTES: "/sec/twin", ATTEMPTS: "1" },
+        exit(code) {
+          assert.equal(code, 1);
+          throw halt;
+        },
+      },
+      console: { log() {}, error() {} },
+      AbortSignal,
+      URL,
+      async fetch() {
+        fetchCalls++;
+        throw new Error("an invalid target must not be fetched");
+      },
+    });
+    await assert.rejects(
+      new vm.Script(`(async () => {\n${executableSource}\n})()`).runInContext(context),
+      (error) => error === halt,
+    );
+    assert.equal(fetchCalls, 0);
+  });
+}
+
+for (const productionUrl of ["https://offline.invalid/", "https://offline.invalid:443"]) {
+  test(`normalizes a valid production origin ${productionUrl} without changing route`, async () => {
+    const seenUrls = [];
+    const context = vm.createContext({
+      process: {
+        env: { PRODUCTION_URL: productionUrl, ROUTES: "/", ATTEMPTS: "1" },
+        exit(code) {
+          throw new Error(`unexpected exit ${code}`);
+        },
+      },
+      console: { log() {}, error() {} },
+      AbortSignal,
+      URL,
+      async fetch(input) {
+        seenUrls.push(input);
+        if (input === "https://offline.invalid/") {
+          return new Response(normalPage, { headers: { "content-type": "text/html" } });
+        }
+        if (input === "https://offline.invalid/assets/app.css") {
+          return new Response("body {}", { headers: { "content-type": "text/css" } });
+        }
+        throw new Error(`unexpected URL ${input}`);
+      },
+    });
+    await new vm.Script(`(async () => {\n${executableSource}\n})()`).runInContext(context);
+    assert.deepEqual(seenUrls, [
+      "https://offline.invalid/",
+      "https://offline.invalid/assets/app.css",
+    ]);
+  });
+}
