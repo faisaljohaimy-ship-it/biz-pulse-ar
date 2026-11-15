@@ -245,6 +245,17 @@ export function degradedAllowance(
   windowSeconds: number,
   now = Date.now(),
 ): DegradedAllowance {
+  // A non-finite or imprecise quota cannot be enforced safely. In particular,
+  // Infinity would grant unlimited degraded requests and an infinite TTL
+  // could hold a capacity slot forever. Fail closed without creating a bucket.
+  if (
+    !Number.isFinite(maxRequests) ||
+    !Number.isSafeInteger(Math.floor(maxRequests)) ||
+    !Number.isFinite(windowSeconds) ||
+    !Number.isSafeInteger(Math.ceil(Math.max(1, windowSeconds) * 1000))
+  ) {
+    return { allowed: false, cap: 0, remaining: 0, retryAfterSeconds: 60 };
+  }
   const cap = Math.max(1, Math.floor(maxRequests * DEGRADED_FRACTION));
   const windowMs = Math.max(1, windowSeconds) * 1000;
   let bucket = degradedBuckets.get(bucketKey);
