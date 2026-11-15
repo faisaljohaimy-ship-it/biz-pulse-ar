@@ -21,7 +21,30 @@
  *
  * رمز الخروج: 0 إن صمد كل حدّ، 1 إن سقط واحد.
  */
-const BASE = (process.env.PRODUCTION_URL || "").replace(/\/$/, "");
+// Resolve the release target as an origin, never by appending a path to an
+// unchecked URL. A hash, query or subpath can silently make /sec/twin probe
+// "/" (or an unrelated location) and falsely certify production readiness.
+const requestedBase = (process.env.PRODUCTION_URL ?? "").trim();
+let BASE;
+try {
+  const parsedBase = new URL(requestedBase);
+  if (
+    !["https:", "http:"].includes(parsedBase.protocol) ||
+    parsedBase.username !== "" ||
+    parsedBase.password !== "" ||
+    parsedBase.pathname !== "/" ||
+    parsedBase.search !== "" ||
+    parsedBase.hash !== "" ||
+    requestedBase.includes("?") ||
+    requestedBase.includes("#")
+  ) {
+    throw new Error("not an origin");
+  }
+  BASE = parsedBase.origin;
+} catch {
+  console.error("PRODUCTION_URL must be an HTTP(S) origin without a path, query, fragment or credentials.");
+  process.exit(1);
+}
 // A misconfigured empty route list must never report a successful release
 // after probing zero pages. Also reject off-site or malformed path entries.
 const ROUTES = (process.env.ROUTES ?? "/,/sec,/sec/governance")
@@ -58,11 +81,6 @@ if (
 const ATTEMPTS = Number(process.env.ATTEMPTS ?? 5);
 if (!Number.isSafeInteger(ATTEMPTS) || ATTEMPTS < 1 || ATTEMPTS > 10) {
   console.error("ATTEMPTS must be a whole number from 1 to 10.");
-  process.exit(1);
-}
-
-if (!BASE) {
-  console.error("PRODUCTION_URL غير محدَّد — لا شيء يُفحص.");
   process.exit(1);
 }
 
