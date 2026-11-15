@@ -22,7 +22,15 @@
  * رمز الخروج: 0 إن صمد كل حدّ، 1 إن سقط واحد.
  */
 const BASE = (process.env.PRODUCTION_URL || "").replace(/\/$/, "");
-const ROUTES = (process.env.ROUTES || "/,/sec,/sec/governance").split(",").filter(Boolean);
+// A misconfigured empty route list must never report a successful release
+// after probing zero pages. Also reject off-site or malformed path entries.
+const ROUTES = (process.env.ROUTES ?? "/,/sec,/sec/governance")
+  .split(",")
+  .map((route) => route.trim());
+if (ROUTES.some((route) => !route.startsWith("/") || route.startsWith("//"))) {
+  console.error("ROUTES must contain nonempty same-site paths beginning with '/'.");
+  process.exit(1);
+}
 // An invalid or unbounded retry count must not hang production release checks.
 // Keep the default of five attempts; cap explicitly configured retries without
 // changing per-request deadlines or weakening the production gate.
