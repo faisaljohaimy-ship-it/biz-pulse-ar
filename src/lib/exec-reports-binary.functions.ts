@@ -9,6 +9,7 @@ import { optionalSupabaseAuth } from "@/integrations/supabase/optional-auth-midd
 import { httpFetch } from "@/lib/api/http.server";
 import { isApiError } from "@/lib/api";
 import { hasPlatformRole } from "@/lib/authz.server";
+import { assertValidReportScheduleClock, computeNextRun } from "@/lib/reports/report-schedule-time";
 import type { PublishErrorEnvelope, PublishStage } from "./exec-reports.functions";
 
 const SP_GW = "https://connector-gateway.lovable.dev/microsoft_sharepoint";
@@ -431,30 +432,12 @@ export type UpsertScheduleInput = {
   enabled: boolean;
 };
 
-function computeNextRun(s: {
-  frequency: "daily" | "weekly";
-  hour_utc: number;
-  weekday?: number | null;
-}): string {
-  const now = new Date();
-  const next = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), s.hour_utc, 0, 0),
-  );
-  if (next.getTime() <= now.getTime()) next.setUTCDate(next.getUTCDate() + 1);
-  if (s.frequency === "weekly" && typeof s.weekday === "number") {
-    while (next.getUTCDay() !== s.weekday) next.setUTCDate(next.getUTCDate() + 1);
-  }
-  return next.toISOString();
-}
-
 export const upsertReportSchedule = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: UpsertScheduleInput) => {
     if (!d?.name || d.name.length > 120) throw new Error("Invalid name");
     if (!["daily", "weekly"].includes(d.frequency)) throw new Error("Invalid frequency");
-    if (d.hour_utc < 0 || d.hour_utc > 23) throw new Error("hour_utc must be 0–23");
-    if (d.frequency === "weekly" && (d.weekday == null || d.weekday < 0 || d.weekday > 6))
-      throw new Error("weekday required");
+    assertValidReportScheduleClock(d);
     if (!["24h", "7d", "30d"].includes(d.range_window)) throw new Error("Invalid range");
     if (!d.site_id) throw new Error("site_id required");
     if (!Array.isArray(d.recipients) || d.recipients.length === 0 || d.recipients.length > 25)
