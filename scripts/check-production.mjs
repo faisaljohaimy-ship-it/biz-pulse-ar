@@ -380,7 +380,6 @@ for (const route of ROUTES) {
         return sources?.length === 1 && sources[0].toLowerCase() === "'none'";
       });
 
-
     // الاختيار في `sessionStorage` منذ ٢٠٢٦/١٠/٢٤ (الداكن افتراضًا دائمًا): السكربت المانع يقرؤه منه لا من `localStorage`.
     // Only executable script elements count as theme-bootstrap evidence.
     // Comments, templates and textarea content are inert, even when they quote JS.
