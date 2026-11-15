@@ -17,9 +17,9 @@ test.describe("Health endpoint", () => {
     expect(body.subsystems).toHaveProperty("rate_limit_storage");
     expect(body.subsystems.web.status).toBe("ok");
 
-    const statuses = Object.values(
-      body.subsystems as Record<string, { status: string }>,
-    ).map((subsystem) => subsystem.status);
+    const statuses = Object.values(body.subsystems as Record<string, { status: string }>).map(
+      (subsystem) => subsystem.status,
+    );
     for (const status of statuses) {
       expect(["ok", "degraded", "down", "unknown"]).toContain(status);
     }
