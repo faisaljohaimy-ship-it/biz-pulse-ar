@@ -77,6 +77,76 @@ describe("digital twin signal memo — locale regression", () => {
     expect(result.current.map((node) => node.value)).toEqual(["0", "0", "0"]);
   });
 
+  it("labels all non-finite live counters as unmeasured in both locales", () => {
+    const allNodes = [
+      "depts",
+      "data",
+      "agents",
+      "integ",
+      "flows",
+      "know",
+      "risk",
+      "board",
+      "intel",
+      "exec",
+    ].map((id) => ({ id, value: "reference" }));
+    const invalid: TwinSignals = {
+      ...baseSignals,
+      departments: Infinity,
+      events: NaN,
+      agents: NaN,
+      integrations: -Infinity,
+      automations: Infinity,
+      documents: NaN,
+      criticalRisks: Infinity,
+      boardActions: NaN,
+      intelligenceSignals: -Infinity,
+      executionVelocity: Infinity,
+    };
+    const { result, rerender } = renderHook(
+      ({ ar, signals }) => useLiveTwinNodes(allNodes, signals, ar),
+      { initialProps: { ar: true, signals: invalid } },
+    );
+    for (const ar of [true, false]) {
+      rerender({ ar, signals: invalid });
+      expect(result.current.map((node) => node.value)).toEqual(
+        allNodes.map(() => unmeasuredLabel(ar)),
+      );
+    }
+  });
+
+  it("keeps null optional-node reference fallbacks and measured zero counts", () => {
+    const allNodes = ["depts", "agents", "integ", "flows", "risk", "board", "intel"].map((id) => ({
+      id,
+      value: "reference",
+    }));
+    const { result } = renderHook(() =>
+      useLiveTwinNodes(
+        allNodes,
+        {
+          ...baseSignals,
+          departments: null as unknown as number,
+          agents: null as unknown as number,
+          integrations: null as unknown as number,
+          automations: 0,
+          criticalRisks: 0,
+          boardActions: 0,
+          intelligenceSignals: 0,
+        },
+        false,
+      ),
+    );
+    expect(result.current.map((node) => node.value)).toEqual([
+      "reference",
+      "reference",
+      "reference",
+      "0",
+      "0",
+      "0",
+      "0",
+    ]);
+  });
+
   it("leaves built-in reference nodes alone before live signals arrive", () => {
     const { result } = renderHook(() => useLiveTwinNodes(nodes, undefined, true));
     expect(result.current).toBe(nodes);
