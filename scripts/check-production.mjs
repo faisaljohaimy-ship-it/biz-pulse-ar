@@ -23,7 +23,14 @@
  */
 const BASE = (process.env.PRODUCTION_URL || "").replace(/\/$/, "");
 const ROUTES = (process.env.ROUTES || "/,/sec,/sec/governance").split(",").filter(Boolean);
-const ATTEMPTS = Number(process.env.ATTEMPTS || 5);
+// An invalid or unbounded retry count must not hang production release checks.
+// Keep the default of five attempts; cap explicitly configured retries without
+// changing per-request deadlines or weakening the production gate.
+const ATTEMPTS = Number(process.env.ATTEMPTS ?? 5);
+if (!Number.isSafeInteger(ATTEMPTS) || ATTEMPTS < 1 || ATTEMPTS > 10) {
+  console.error("ATTEMPTS must be a whole number from 1 to 10.");
+  process.exit(1);
+}
 
 if (!BASE) {
   console.error("PRODUCTION_URL غير محدَّد — لا شيء يُفحص.");
