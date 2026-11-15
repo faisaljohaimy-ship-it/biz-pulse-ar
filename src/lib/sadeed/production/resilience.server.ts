@@ -62,5 +62,9 @@ export function evaluateResilience(): ResilienceReport {
 }
 
 export function listResiliencePolicies(): Array<{ subsystem: string; flags: PolicyFlags }> {
-  return [...REGISTRATIONS.entries()].map(([subsystem, flags]) => ({ subsystem, flags }));
+  // Return a snapshot: callers must not mutate the registered release-gate policies.
+  return [...REGISTRATIONS.entries()].map(([subsystem, flags]) => ({
+    subsystem,
+    flags: { ...flags },
+  }));
 }
