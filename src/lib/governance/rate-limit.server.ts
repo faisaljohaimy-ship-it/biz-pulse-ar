@@ -245,13 +245,15 @@ export function degradedAllowance(
   windowSeconds: number,
   now = Date.now(),
 ): DegradedAllowance {
-  // A non-finite or imprecise quota cannot be enforced safely. In particular,
+  // A non-positive/sub-unit or imprecise quota cannot be enforced safely.
   // Infinity would grant unlimited degraded requests and an infinite TTL
   // could hold a capacity slot forever. Fail closed without creating a bucket.
   if (
     !Number.isFinite(maxRequests) ||
+    maxRequests < 1 ||
     !Number.isSafeInteger(Math.floor(maxRequests)) ||
     !Number.isFinite(windowSeconds) ||
+    windowSeconds < 1 ||
     !Number.isSafeInteger(Math.ceil(Math.max(1, windowSeconds) * 1000))
   ) {
     return { allowed: false, cap: 0, remaining: 0, retryAfterSeconds: 60 };
