@@ -1337,22 +1337,42 @@ for (const productionUrl of ["https://offline.invalid/", "https://offline.invali
   });
 }
 
- 
+
 // A page with correct markup is not usable if the browser refuses to execute
 // the inline bootstrap. Test enforced (not report-only) CSP using real Headers.
 for (const [name, policy, expected] of [
   ["script-src forbids all script execution", "script-src 'none'", 1],
-  ["script-src-elem overrides permissive script-src", "script-src 'unsafe-inline'; script-src-elem 'none'", 1],
+  [
+    "script-src-elem overrides permissive script-src",
+    "script-src 'unsafe-inline'; script-src-elem 'none'",
+    1,
+  ],
   ["default-src forbids scripts when no script directive exists", "default-src 'none'", 1],
-  ["second enforced policy still blocks the bootstrap", "default-src 'self', script-src 'none'", 1],
-  ["script-src-elem overrides restrictive script-src", "script-src 'none'; script-src-elem 'unsafe-inline'", null],
+  [
+    "second enforced policy still blocks the bootstrap",
+    "default-src 'self', script-src 'none'",
+    1,
+  ],
+  [
+    "script-src-elem overrides restrictive script-src",
+    "script-src 'none'; script-src-elem 'unsafe-inline'",
+    null,
+  ],
   ["unrelated CSP does not block the bootstrap", "img-src 'none'", null],
 ]) {
   test("production theme CSP guard: " + name, async () => {
     assert.equal(
       await runFixture(
-        normalPage, "text/html", 200, "text/css", "body {}", 200,
-        "https://offline.invalid/assets/app.css", null, null, policy,
+        normalPage,
+        "text/html",
+        200,
+        "text/css",
+        "body {}",
+        200,
+        "https://offline.invalid/assets/app.css",
+        null,
+        null,
+        policy,
       ),
       expected,
     );
