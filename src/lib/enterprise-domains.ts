@@ -319,17 +319,18 @@ export const briefingOpportunities = makeHooks<
 // Malformed realtime/database values must never poison an executive KPI or
 // dilute a valid sample. Percentage fields also require their actual 0–100 range.
 function averageFiniteMetric<T>(rows: readonly T[], key: keyof T, max = Infinity): number {
-  let sum = 0;
+  let mean = 0;
   let count = 0;
   for (const row of rows) {
     // Number.isFinite rejects non-numeric runtime values without coercion.
     const value = row[key] as number;
     if (Number.isFinite(value) && value >= 0 && value <= max) {
-      sum += value;
-      count++;
+      // An ordinary sum can overflow even though every sample is finite.
+      // An online mean stays finite for nonnegative finite measurements.
+      mean += (value - mean) / ++count;
     }
   }
-  return sum / (count || 1);
+  return mean;
 }
 
 export function useEnterpriseFabricAdapter() {
@@ -356,7 +357,9 @@ export function useEnterpriseFabricAdapter() {
     programsCount: programsList.length,
     outcomesCount: outcomesList.length,
     briefingsCount: briefings.data?.length ?? 0,
-    avgSla: Math.round(avgSla * 100) / 100,
+    // Avoid overflowing the intermediate percentage-scale multiplication.
+    // Above 1e16, binary64 cannot encode fractional hundredths.
+    avgSla: avgSla < 1e16 ? Math.round(avgSla * 100) / 100 : avgSla,
     avgPolicyCoverage,
     avgProgress,
     avgAdoption,
