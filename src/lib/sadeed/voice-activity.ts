@@ -61,11 +61,7 @@ export function advanceSadeedVoiceActivity(input: {
   let heardVoice = previous.heardVoice;
   // Late first samples must not create speech after the initial timeout.
   // Pre-deadline speech candidates still receive their voice qualification grace.
-  if (
-    !heardVoice &&
-    now >= noSpeechAt &&
-    (previous.candidateVoiceAt ?? now) >= noSpeechAt
-  ) {
+  if (!heardVoice && now >= noSpeechAt && (previous.candidateVoiceAt ?? now) >= noSpeechAt) {
     return { state: previous, decision: "no-speech" };
   }
 
