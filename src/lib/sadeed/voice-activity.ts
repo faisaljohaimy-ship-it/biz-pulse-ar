@@ -81,7 +81,11 @@ export function advanceSadeedVoiceActivity(input: {
   if (elapsed >= config.maximumCaptureMs) {
     return { state, decision: heardVoice ? "complete" : "no-speech" };
   }
-  if (!heardVoice && elapsed >= config.noSpeechMs) {
+  // A user may start speaking just before the initial silence deadline.
+  // Give that in-progress candidate its existing minimumVoiceMs to qualify;
+  // a dropped spike still returns no-speech as soon as the deadline is reached.
+  // The absolute maximumCaptureMs above remains authoritative.
+  if (!heardVoice && candidateVoiceAt === null && elapsed >= config.noSpeechMs) {
     return { state, decision: "no-speech" };
   }
   if (heardVoice && lastVoiceAt !== null && now - lastVoiceAt >= config.silenceMs) {
