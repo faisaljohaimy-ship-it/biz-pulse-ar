@@ -1189,3 +1189,64 @@ for (const attemptSetting of ["Infinity", "1e309", "-1", "0", "2.5", "100000000"
     assert.equal(fetchCalls, 0, "invalid retry settings must not probe the network");
   });
 }
+
+
+// Never turn a mistyped release gate ROUTES setting into a green result
+// without probing any application page.
+for (const routeSetting of ["", ",", " , ", "/,,/sec", "https://outside.invalid/", "//outside.invalid/"]) {
+  test(`rejects empty or unsafe production ROUTES=${JSON.stringify(routeSetting)} before requests`, async () => {
+    const halt = new Error("invalid route configuration");
+    let fetchCalls = 0;
+    const context = vm.createContext({
+      process: {
+        env: { PRODUCTION_URL: "https://offline.invalid", ROUTES: routeSetting, ATTEMPTS: "1" },
+        exit(code) {
+          assert.equal(code, 1);
+          throw halt;
+        },
+      },
+      console: { log() {}, error() {} },
+      AbortSignal,
+      URL,
+      async fetch() {
+        fetchCalls++;
+        throw new Error("invalid routes must not make network requests");
+      },
+    });
+    await assert.rejects(
+      new vm.Script(`(async () => {\\n${executableSource}\\n})()`).runInContext(context),
+      (error) => error === halt,
+    );
+    assert.equal(fetchCalls, 0);
+  });
+}
+
+test("accepts whitespace around one valid same-origin route and still checks its stylesheet", async () => {
+  const seenUrls = [];
+  const context = vm.createContext({
+    process: {
+      env: { PRODUCTION_URL: "https://offline.invalid", ROUTES: " / ", ATTEMPTS: "1" },
+      exit(code) {
+        throw new Error(`unexpected exit ${code}`);
+      },
+    },
+    console: { log() {}, error() {} },
+    AbortSignal,
+    URL,
+    async fetch(input) {
+      seenUrls.push(input);
+      if (input === "https://offline.invalid/") {
+        return new Response(normalPage, { headers: { "content-type": "text/html" } });
+      }
+      if (input === "https://offline.invalid/assets/app.css") {
+        return new Response("body {}", { headers: { "content-type": "text/css" } });
+      }
+      throw new Error(`unexpected URL ${input}`);
+    },
+  });
+  await new vm.Script(`(async () => {\\n${executableSource}\\n})()`).runInContext(context);
+  assert.deepEqual(seenUrls, [
+    "https://offline.invalid/",
+    "https://offline.invalid/assets/app.css",
+  ]);
+});
