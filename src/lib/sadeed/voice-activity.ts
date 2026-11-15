@@ -55,17 +55,6 @@ export function advanceSadeedVoiceActivity(input: {
 } {
   const config = input.config ?? SADEED_VOICE_ACTIVITY_DEFAULTS;
   const now = Math.max(input.state.startedAt, input.now);
-  // A delayed recording frame must not start a NEW speech candidate after
-  // the initial no-speech deadline. Preserve a candidate that was already
-  // audible before the deadline (including its minimumVoiceMs grace period).
-  if (
-    !input.state.heardVoice &&
-    now - input.state.startedAt >= config.noSpeechMs &&
-    (input.state.candidateVoiceAt === null ||
-      input.state.candidateVoiceAt - input.state.startedAt >= config.noSpeechMs)
-  ) {
-    return { state: input.state, decision: "no-speech" };
-  }
   const rms = Number.isFinite(input.rms) ? Math.max(0, input.rms) : 0;
   let candidateVoiceAt = input.state.candidateVoiceAt;
   let lastVoiceAt = input.state.lastVoiceAt;
@@ -96,7 +85,13 @@ export function advanceSadeedVoiceActivity(input: {
   // Give that in-progress candidate its existing minimumVoiceMs to qualify;
   // a dropped spike still returns no-speech as soon as the deadline is reached.
   // The absolute maximumCaptureMs above remains authoritative.
-  if (!heardVoice && candidateVoiceAt === null && elapsed >= config.noSpeechMs) {
+  // Only a candidate already audible BEFORE the deadline may use the
+  // existing grace period. Delayed first frames cannot revive a timed-out turn.
+  if (
+    !input.state.heardVoice &&
+    elapsed >= config.noSpeechMs &&
+    (candidateVoiceAt === null || candidateVoiceAt - state.startedAt >= config.noSpeechMs)
+  ) {
     return { state, decision: "no-speech" };
   }
   if (heardVoice && lastVoiceAt !== null && now - lastVoiceAt >= config.silenceMs) {
