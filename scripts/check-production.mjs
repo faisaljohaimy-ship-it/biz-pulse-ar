@@ -360,6 +360,26 @@ for (const route of ROUTES) {
         html,
       );
 
+    // The HTML may contain a valid inline theme bootstrap that browsers are
+    // forbidden to execute. An enforced CSP with the effective script source
+    // list set to 'none' is decisive; report-only CSP is not enforced.
+    // script-src-elem overrides script-src, which overrides default-src.
+    const cspBlocksTheme = (res.headers.get("content-security-policy") || "")
+      .split(",")
+      .some((policy) => {
+        const directives = new Map();
+        for (const directive of policy.split(";")) {
+          const [rawName, ...sources] = directive.trim().split(/\s+/);
+          const name = rawName?.toLowerCase();
+          if (name && !directives.has(name)) directives.set(name, sources);
+        }
+        const sources =
+          directives.get("script-src-elem") ??
+          directives.get("script-src") ??
+          directives.get("default-src");
+        return sources?.length === 1 && sources[0].toLowerCase() === "'none'";
+      });
+
     // الاختيار في `sessionStorage` منذ ٢٠٢٦/١٠/٢٤ (الداكن افتراضًا دائمًا): السكربت المانع يقرؤه منه لا من `localStorage`.
     // Only executable script elements count as theme-bootstrap evidence.
     // Comments, templates and textarea content are inert, even when they quote JS.
@@ -439,6 +459,9 @@ for (const route of ROUTES) {
     if (!isHtml) failures.push(`${route}: الاستجابة ليست مستند HTML صالحًا للتطبيق`);
     if (isAttachment) failures.push(`${route}: HTML يُرسَل كمرفق للتنزيل بدل عرض الصفحة`);
     if (isLoginWall) failures.push(`${route}: صفحة توثيق Vercel ليست نجاحًا لمسار التطبيق`);
+    if (cspBlocksTheme) {
+      failures.push(`${route}: سياسة Content-Security-Policy تمنع تشغيل سكربت الثيم`);
+    }
     if (!themeScript) failures.push(`${route}: سكربت الثيم المانع غائب من HTML المُقدَّم`);
     if (retired.length) failures.push(`${route}: اسم متقاعد ظاهر — ${retired.join(" · ")}`);
     if (!hasCss) failures.push(`${route}: لا ورقة أنماط في الصفحة المُقدَّمة`);
