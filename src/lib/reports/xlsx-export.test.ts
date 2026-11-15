@@ -319,7 +319,7 @@ describe("بنية المصنّف", () => {
       "B".repeat(28) + "~2",
       "Risk",
     ]);
-    expect(names.every((name) => name.length <= 31 && !/\\p{Cs}/u.test(name))).toBe(true);
+    expect(names.every((name) => name.length <= 31 && !/\p{Cs}/u.test(name))).toBe(true);
 
     const XLSX = await import("xlsx");
     const actual = XLSX.read(await buildReportXlsx(report), { type: "array" });
