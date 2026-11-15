@@ -1337,7 +1337,6 @@ for (const productionUrl of ["https://offline.invalid/", "https://offline.invali
   });
 }
 
-
 // A page with correct markup is not usable if the browser refuses to execute
 // the inline bootstrap. Test enforced (not report-only) CSP using real Headers.
 for (const [name, policy, expected] of [
@@ -1348,11 +1347,7 @@ for (const [name, policy, expected] of [
     1,
   ],
   ["default-src forbids scripts when no script directive exists", "default-src 'none'", 1],
-  [
-    "second enforced policy still blocks the bootstrap",
-    "default-src 'self', script-src 'none'",
-    1,
-  ],
+  ["second enforced policy still blocks the bootstrap", "default-src 'self', script-src 'none'", 1],
   [
     "script-src-elem overrides restrictive script-src",
     "script-src 'none'; script-src-elem 'unsafe-inline'",
