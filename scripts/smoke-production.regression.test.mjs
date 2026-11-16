@@ -83,7 +83,26 @@ async function runFixture(options = {}) {
         throw new Error("fixture network failure");
       const text = options.text ?? "تحقق من تصريح العمل ومعدات الوقاية قبل البدء.";
       let body = encodeEvent({ type: "text-delta", delta: text });
-      if (options.event) body += encodeEvent(options.event);
+      if (options.multilineSse) {
+        // A single valid SSE event can span multiple data: lines.
+        const newline = options.multilineCrLf ? "\r\n" : "\n";
+        body = [
+          'data: {"type":"text-delta",',
+          'data: "delta":' + JSON.stringify(text) + "}",
+          "",
+          "",
+        ].join(newline);
+      }
+      if (options.event) {
+        const serialized = JSON.stringify(options.event);
+        const split = serialized.indexOf(",");
+        if (options.multilineError && split >= 0) {
+          const fragments = [serialized.slice(0, split + 1), serialized.slice(split + 1)];
+          body += fragments.map((line) => `data: ${line}`).join("\n") + "\n\n";
+        } else {
+          body += encodeEvent(options.event);
+        }
+      }
       if (
         !options.omitDone &&
         !(anonymousCalls === 2 && options.duplicatePeer === "incomplete-200")
@@ -446,4 +465,27 @@ test("build gate accepts an exact full SHA", async () => {
   const r = await runFixture({ expectedSha: "a".repeat(40), buildSha: "a".repeat(40) });
   assert.equal(r.result("B1 build-id").status, "pass");
   assert.equal(r.exitCode, 0);
+});
+
+test("C1 and C2 accept a complete SSE event split over multiple data fields", async () => {
+  const r = await runFixture({ multilineSse: true });
+  assert.equal(r.result("C1 chat").status, "pass");
+  assert.equal(r.result("C2 duplicate").status, "pass");
+  assert.equal(r.exitCode, 0);
+});
+
+test("C1 accepts CRLF-delimited multiline SSE data fields", async () => {
+  const r = await runFixture({ multilineSse: true, multilineCrLf: true });
+  assert.equal(r.result("C1 chat").status, "pass");
+  assert.equal(r.exitCode, 0);
+});
+
+test("C1 rejects a multiline SSE error after Arabic text even with DONE", async () => {
+  const r = await runFixture({
+    multilineSse: true,
+    multilineError: true,
+    event: { type: "error", errorText: "upstream error" },
+  });
+  assert.equal(r.result("C1 chat").status, "fail");
+  assert.equal(r.exitCode, 1);
 });
