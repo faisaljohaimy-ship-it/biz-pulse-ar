@@ -180,7 +180,8 @@ const isRecord = (v: unknown): v is Record<string, unknown> =>
 const asCount = (v: unknown): number | null => {
   if (Array.isArray(v)) return v.length;
   const count = isRecord(v) ? v.count : v;
-  return typeof count === "number" && count >= 0 && count <= Number.MAX_SAFE_INTEGER
+  // IEEE-754 safely represents whole counts below 2^53.
+  return typeof count === "number" && count >= 0 && count < 2 ** 53
     ? Math.floor(count)
     : null;
 };
@@ -213,7 +214,7 @@ export function toolFailureCount(auditJson: unknown): number | null {
     // Individually valid counters can still exceed JavaScript's exact integer range.
     // Never display a rounded execution count as a measured audit value.
     const total = (failed ?? 0) + (rejected ?? 0);
-    return total <= Number.MAX_SAFE_INTEGER ? total : null;
+    return Number.isSafeInteger(total) ? total : null;
   }
   return asCount(v);
 }
