@@ -360,25 +360,26 @@ for (const route of ROUTES) {
         html,
       );
 
-    // The HTML may contain a valid inline theme bootstrap that browsers are
-    // forbidden to execute. An enforced CSP with the effective script source
-    // list set to 'none' is decisive; report-only CSP is not enforced.
-    // script-src-elem overrides script-src, which overrides default-src.
-    const cspBlocksTheme = (res.headers.get("content-security-policy") || "")
+    // Browsers block inline scripts under script-src 'self', not just 'none'.
+    // Enforced script-src-elem overrides script-src, which overrides default-src.
+    // Multiple CSP policies intersect: the inline bootstrap must satisfy each.
+    const enforcedScriptSources = (res.headers.get("content-security-policy") || "")
       .split(",")
-      .some((policy) => {
+      .map((policy) => {
         const directives = new Map();
         for (const directive of policy.split(";")) {
           const [rawName, ...sources] = directive.trim().split(/\s+/);
           const name = rawName?.toLowerCase();
           if (name && !directives.has(name)) directives.set(name, sources);
         }
-        const sources =
+        return (
           directives.get("script-src-elem") ??
           directives.get("script-src") ??
-          directives.get("default-src");
-        return sources?.length === 1 && sources[0].toLowerCase() === "'none'";
-      });
+          directives.get("default-src") ??
+          null
+        );
+      })
+      .filter((sources) => sources !== null);
 
     // الاختيار في `sessionStorage` منذ ٢٠٢٦/١٠/٢٤ (الداكن افتراضًا دائمًا): السكربت المانع يقرؤه منه لا من `localStorage`.
     // Only executable script elements count as theme-bootstrap evidence.
@@ -390,14 +391,12 @@ for (const route of ROUTES) {
       /<(template|textarea|noscript)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,
       "",
     );
-    const themeScript = [
+    const inlineBootstrapCandidates = [
       ...nonInertHtml.matchAll(/(<script\b[^>]*>)([\s\S]*?)<\/script\s*>/gi),
-    ].some(([, openingTag, body]) => {
-      // A script data block (e.g. JSON-LD, importmap or text/plain) is inert.
-      // Requiring a runnable script avoids a false production-ready result.
+    ].flatMap(([, openingTag, body]) => {
+      // Only executable inline scripts can initialize the theme.
       const scriptAttrs = scriptAttributes(openingTag);
-      // Modern browsers skip nomodule fallbacks; they cannot prove theme initialization.
-      if ("nomodule" in scriptAttrs) return false;
+      if ("nomodule" in scriptAttrs) return [];
       const type = (scriptAttrs.type ?? "").trim().toLowerCase();
       const executable =
         !("type" in scriptAttrs) ||
@@ -406,8 +405,25 @@ for (const route of ROUTES) {
         /^(?:text|application)\/(?:java|ecma)script(?:\s*;.*)?$/.test(type) ||
         type === "text/x-javascript" ||
         type === "application/x-javascript";
-      return executable && !("src" in scriptAttrs) && hasExecutableThemeBootstrap(body);
+      return executable && !("src" in scriptAttrs) && hasExecutableThemeBootstrap(body)
+        ? [scriptAttrs]
+        : [];
     });
+    const themeScript = inlineBootstrapCandidates.length > 0;
+    const cspBlocksTheme =
+      themeScript &&
+      !inlineBootstrapCandidates.some((attrs) =>
+        enforcedScriptSources.every((sources) => {
+          // CSP3 ignores 'unsafe-inline' when a nonce/hash source is present.
+          // Match a real nonce; fail closed on hash-only policies unless the
+          // bootstrap can be proven executable in a future hash-aware check.
+          if (attrs.nonce && sources.includes(`'nonce-${attrs.nonce}'`)) return true;
+          if (sources.some((source) => /^'(?:nonce-|sha(?:256|384|512)-)/i.test(source))) {
+            return false;
+          }
+          return sources.some((source) => source.toLowerCase() === "'unsafe-inline'");
+        }),
+      );
     // النطاق `neexios.com` معرّف تقني (رابط · بريد · بيانات منظَّمة) لا اسم
     // معروض، وهو مُستثنى صراحةً في حارس العلامة على المصدر. يُنزع قبل المسح
     // وإلا رسب كل مسار على ذكر رابطه القانوني. أما `NEEXIOS` في نصّ مرئي
