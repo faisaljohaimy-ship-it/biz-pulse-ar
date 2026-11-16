@@ -435,7 +435,7 @@ for (const route of ROUTES) {
       .some((policy) => {
         const directives = new Map();
         for (const directive of policy.split(";")) {
-          const [rawName, ...sources] = directive.trim().split(/\\s+/);
+          const [rawName, ...sources] = directive.trim().split(/\s+/);
           const name = rawName?.toLowerCase();
           if (name && !directives.has(name)) directives.set(name, sources);
         }
