@@ -194,13 +194,9 @@ describe("⑥ المطابقة بالهويّة — لا بالترتيب", () =
 
   it("normalizes own names in narration without falsely attributing another site", () => {
     const own = ["محطة الرياض", "Riyadh Plant"];
-    expect(
-      namesOtherSite(
-        ["متابعة في محطة   الرياض", "At Riyadh\tPlant"],
-        own,
-        [...own, "محطة جدة", "Jeddah Plant"],
-      ),
-    ).toBe(false);
+    const narration = ["متابعة في محطة   الرياض", "At Riyadh\tPlant"];
+    const others = [...own, "محطة جدة", "Jeddah Plant"];
+    expect(namesOtherSite(narration, own, others)).toBe(false);
   });
 
   it("ونصٌّ يذكر موقعه وحده يمرّ", () => {
