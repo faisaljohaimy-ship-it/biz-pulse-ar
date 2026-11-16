@@ -29,8 +29,8 @@
  * مباشرةً بلا حسابٍ للإزاحة.
  */
 
-/** الإزاحة الثابتة للرياض — لا توقيت صيفي في السعودية. */
-const RIYADH_OFFSET = "+03:00";
+/** الإزاحة الثابتة للرياض بالمللي ثانية — لا توقيت صيفي. */
+const RIYADH_OFFSET_MS = 3 * 60 * 60 * 1000;
 
 /** مفتاح دورة: `2026-H1` أو `2026-H2`. */
 export type PeriodKey = `${number}-H${1 | 2}`;
@@ -75,14 +75,10 @@ export function currentPeriod(now: Date = new Date()): AccessPeriod {
 }
 
 export function buildPeriod(year: number, half: 1 | 2): AccessPeriod {
-  const startMonth = half === 1 ? "01" : "07";
-  const start = new Date(`${year}-${startMonth}-01T00:00:00${RIYADH_OFFSET}`);
-  // النهاية غير شاملة = بداية الدورة التالية. وبذلك لا تسقط لحظةٌ بين
-  // دورتين ولا تُحسب مرّتين — وهو ما يقع حين تُكتب النهاية «آخر ثانية».
-  const end =
-    half === 1
-      ? new Date(`${year}-07-01T00:00:00${RIYADH_OFFSET}`)
-      : new Date(`${year + 1}-01-01T00:00:00${RIYADH_OFFSET}`);
+  // UTC constructors avoid duplicating date-parser strings in the client bundle.
+  // Both boundaries remain midnight Riyadh (UTC+03), with an exclusive end.
+  const start = new Date(Date.UTC(year, half === 1 ? 0 : 6, 1) - RIYADH_OFFSET_MS);
+  const end = new Date(Date.UTC(year, half === 1 ? 6 : 12, 1) - RIYADH_OFFSET_MS);
   return {
     key: `${year}-H${half}`,
     startIso: start.toISOString(),
