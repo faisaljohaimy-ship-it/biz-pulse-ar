@@ -32,6 +32,19 @@ describe("دورة نصف السنة — الحدود بتوقيت الرياض"
     expect(h2.endIso).toBe("2026-12-31T21:00:00.000Z");
   });
 
+  it("يحافظ حساب UTC الأخف على حدود الرياض في السنوات الكبيسة وعلى طرف السجل", () => {
+    for (const [year, half] of [[1000, 1], [2024, 1], [2024, 2], [9999, 1]] as const) {
+      const period = buildPeriod(year, half);
+      const month = half === 1 ? "01" : "07";
+      const endYear = year + (half === 2 ? 1 : 0);
+      const endMonth = half === 1 ? "07" : "01";
+      expect(period.startIso).toBe(new Date(`${year}-${month}-01T00:00:00+03:00`).toISOString());
+      expect(period.endIso).toBe(
+        new Date(`${endYear}-${endMonth}-01T00:00:00+03:00`).toISOString(),
+      );
+    }
+  });
+
   it("**الساعات الثلاث الحرجة**: أول يوليو ٠١:٠٠ بالرياض في النصف الثاني", () => {
     // هذه هي اللحظة التي يخطئ فيها حسابُ UTC: بـUTC هي ٣٠ يونيو 22:00
     // فتُنسب إلى النصف الأول، وهي عند من في الرياض أوّل يوليو.
