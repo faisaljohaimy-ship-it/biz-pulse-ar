@@ -424,6 +424,30 @@ for (const route of ROUTES) {
           return sources.some((source) => source.toLowerCase() === "'unsafe-inline'");
         }),
       );
+    // A real HTTP 200 stylesheet can still be unusable in the browser when
+    // enforced CSP blocks all external stylesheets. A source list containing
+    // only 'none' (or no sources) is unambiguously blocking. Keep the check
+    // conservative: other host/scheme source lists need browser-level evidence.
+    // style-src-elem overrides style-src, which overrides default-src; separate
+    // policies intersect, so any blocking policy makes the CSS unusable.
+    const cspBlocksStylesheet = (res.headers.get("content-security-policy") || "")
+      .split(",")
+      .some((policy) => {
+        const directives = new Map();
+        for (const directive of policy.split(";")) {
+          const [rawName, ...sources] = directive.trim().split(/\s+/);
+          const name = rawName?.toLowerCase();
+          if (name && !directives.has(name)) directives.set(name, sources);
+        }
+        const sources =
+          directives.get("style-src-elem") ??
+          directives.get("style-src") ??
+          directives.get("default-src");
+        return (
+          sources !== undefined &&
+          (sources.length === 0 || (sources.length === 1 && sources[0].toLowerCase() === "'none'"))
+        );
+      });
     // النطاق `neexios.com` معرّف تقني (رابط · بريد · بيانات منظَّمة) لا اسم
     // معروض، وهو مُستثنى صراحةً في حارس العلامة على المصدر. يُنزع قبل المسح
     // وإلا رسب كل مسار على ذكر رابطه القانوني. أما `NEEXIOS` في نصّ مرئي
@@ -481,6 +505,9 @@ for (const route of ROUTES) {
     if (!themeScript) failures.push(`${route}: سكربت الثيم المانع غائب من HTML المُقدَّم`);
     if (retired.length) failures.push(`${route}: اسم متقاعد ظاهر — ${retired.join(" · ")}`);
     if (!hasCss) failures.push(`${route}: لا ورقة أنماط في الصفحة المُقدَّمة`);
+    if (hasCss && cspBlocksStylesheet) {
+      failures.push(`${route}: سياسة Content-Security-Policy تمنع تحميل ملفات الأنماط`);
+    }
 
     // A link tag is not proof its referenced stylesheet is actually served.
     // Probe the same-origin asset without following redirects or sending credentials.
@@ -528,7 +555,7 @@ for (const route of ROUTES) {
       bytes: html.length,
       theme: themeScript ? "✓" : "✗",
       brand: retired.length ? "✗" : "✓",
-      css: cssLoaded ? "✓" : "✗",
+      css: cssLoaded && !cspBlocksStylesheet ? "✓" : "✗",
     });
   } catch (e) {
     failures.push(`${route}: تعذّر الوصول — ${e instanceof Error ? e.message : e}`);
