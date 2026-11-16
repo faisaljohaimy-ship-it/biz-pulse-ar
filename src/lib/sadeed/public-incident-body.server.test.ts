@@ -164,4 +164,63 @@ describe("public incident bounded JSON parsing", () => {
       vi.useRealTimers();
     }
   });
+
+  it("rejects an already-aborted anonymous request without reading its body", async () => {
+    const controller = new AbortController();
+    const body = new ReadableStream<Uint8Array>({ start() {} });
+    const req = new Request(url, {
+      method: "POST",
+      body,
+      signal: controller.signal,
+      duplex: "half",
+    } as RequestInit & { duplex: "half" });
+    controller.abort();
+    expect(await readPublicIncidentBody(req)).toEqual({
+      ok: false,
+      status: 408,
+      message: "request timeout",
+    });
+    expect(req.bodyUsed).toBe(false);
+  });
+
+  it.each([
+    ["before the first byte", false],
+    ["after a partial JSON body", true],
+  ] as const)("stops waiting when an anonymous client disconnects %s", async (_case, partial) => {
+    const controller = new AbortController();
+    let cancelled = false;
+    const body = new ReadableStream<Uint8Array>({
+      start(stream) {
+        if (partial) stream.enqueue(new TextEncoder().encode('{"kind":'));
+        // The client may disconnect without closing the source stream.
+      },
+      cancel() {
+        cancelled = true;
+        return new Promise<void>(() => {});
+      },
+    });
+    const req = new Request(url, {
+      method: "POST",
+      body,
+      signal: controller.signal,
+      duplex: "half",
+    } as RequestInit & { duplex: "half" });
+    const pending = readPublicIncidentBody(req);
+    controller.abort();
+
+    let watchdog: ReturnType<typeof setTimeout> | undefined;
+    try {
+      const result = await Promise.race([
+        pending,
+        new Promise<"stalled">((resolve) => {
+          watchdog = setTimeout(() => resolve("stalled"), 1_000);
+        }),
+      ]);
+      expect(result).toEqual({ ok: false, status: 408, message: "request timeout" });
+      expect(cancelled).toBe(true);
+    } finally {
+      if (watchdog) clearTimeout(watchdog);
+    }
+  });
+
 });
