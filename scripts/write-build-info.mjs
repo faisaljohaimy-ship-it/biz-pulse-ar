@@ -51,8 +51,10 @@ const [source, sha] = candidates.find(([, v]) => v && /^[0-9a-f]{7,40}$/i.test(v
   "none",
   "unknown",
 ];
+// A ref override belongs to its explicitly overridden SHA. Without the
+// corresponding SHA, a stale ref must not mislabel a platform-identified build.
 const ref =
-  env.SADEED_BUILD_REF ||
+  (source === "SADEED_BUILD_SHA" ? env.SADEED_BUILD_REF : undefined) ||
   (isVercelBuild
     ? env.VERCEL_GIT_COMMIT_REF || env.GITHUB_REF_NAME || env.CF_PAGES_BRANCH
     : env.GITHUB_REF_NAME || env.CF_PAGES_BRANCH || env.VERCEL_GIT_COMMIT_REF) ||
