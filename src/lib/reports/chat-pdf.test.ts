@@ -99,6 +99,32 @@ describe("buildChatPdf — تصدير المحادثة", () => {
 });
 
 describe("تبسيط المحتوى", () => {
+  it.each(["| :---: | ---: |", "| :-- | --: |", " :--- | ---: "])(
+    "omits a GFM alignment delimiter instead of printing it as report data (%s)",
+    (separator) => {
+      expect(markdownToLines(`| Site | Incidents |\n${separator}\n| Jeddah | 12 |`)).toEqual([
+        { kind: "row", text: "Site  |  Incidents" },
+        { kind: "row", text: "Jeddah  |  12" },
+      ]);
+    },
+  );
+
+  it.each(["| --- incident | 12 |", "| --- | value |", "| ---x | --- |"])(
+    "preserves table data resembling an alignment row (%s)",
+    (row) => {
+      expect(markdownToLines(row)).toEqual([
+        {
+          kind: "row",
+          text: row
+            .slice(1, -1)
+            .split("|")
+            .map((cell) => cell.trim())
+            .join("  |  "),
+        },
+      ]);
+    },
+  );
+
   it("sanitizePdfText يحذف ما لا يُرسم ويحوّل الأرقام الهندية", () => {
     expect(sanitizePdfText("أ 🚀 ب → ج ١٠")).toBe("أ ب ج 10");
     expect(sanitizePdfText("من الهدف 🎯. راجع")).toBe("من الهدف. راجع");

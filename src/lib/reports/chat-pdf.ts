@@ -97,7 +97,7 @@ export function markdownToLines(md: string): ChatPdfLine[] {
         lines.push({ kind: "gap", text: "" });
       continue;
     }
-    if (/^\|?\s*:?-{2,}/.test(t) && /-\|/.test(t.replace(/\s/g, ""))) continue; // فاصل الجدول
+    if (/^\|?\s*:?-+:?\s*(?:\|\s*:?-+:?\s*)+\|?$/.test(t)) continue; // فاصل الجدول الحقيقي
     let m: RegExpMatchArray | null;
     if ((m = t.match(/^#{1,6}\s+(.*)$/))) lines.push({ kind: "h", text: stripInline(m[1]) });
     else if ((m = t.match(/^(?:[-*+•]|\d+[.)])\s+(.*)$/)))
