@@ -1536,3 +1536,44 @@ test("ignores meta CSP inside the document body", async () => {
   );
   assert.equal(await runFixture(html), null);
 });
+
+// A head meta CSP takes effect at its parse position, not globally across the
+// document. Earlier resources remain valid; subsequent assets must obey it.
+test("does not retroactively block a theme script that ran before head meta CSP", async () => {
+  const html = normalPage.replace(
+    "</script>",
+    '</script><meta http-equiv="Content-Security-Policy" content="script-src \'none\'">',
+  );
+  assert.equal(await runFixture(html), null);
+});
+
+test("blocks a later theme script even when a stylesheet appeared before head meta CSP", async () => {
+  const html = normalPage.replace(
+    '<script>sessionStorage.getItem(\'theme\')</script>\n<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="stylesheet" href="/assets/app.css"><meta http-equiv="Content-Security-Policy" content="script-src \'none\'"><script>sessionStorage.getItem(\'theme\')</script>',
+  );
+  assert.equal(await runFixture(html), 1);
+});
+
+test("enforces head meta CSP inserted after the first stylesheet on the second stylesheet", async () => {
+  const html = normalPage.replace(
+    "</head>",
+    '<meta http-equiv="Content-Security-Policy" content="style-src \'none\'"><link rel="stylesheet" href="/assets/second.css"></head>',
+  );
+  assert.equal(
+    await runFixture(
+      html,
+      "text/html",
+      200,
+      "text/css",
+      "body {}",
+      200,
+      "https://offline.invalid/assets/app.css",
+      {
+        "https://offline.invalid/assets/app.css": { status: 200, body: "body { color: blue; }" },
+        "https://offline.invalid/assets/second.css": { status: 200, body: "h1 { color: red; }" },
+      },
+    ),
+    1,
+  );
+});
