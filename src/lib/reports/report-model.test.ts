@@ -262,6 +262,22 @@ describe("المادة ٢٧ — الصدق العددي", () => {
     expect(formatMeasure(measured(87), "en", { percent: true })).toBe("87%");
     expect(formatMeasure(measured(12), "ar", { unit: AR_EN("دقيقة", "min") })).toBe("12 دقيقة");
   });
+
+  it.each([-1, 101, Infinity, -Infinity, NaN, 1.5])(
+    "invalid decimal precision %s never crashes report formatting or invents an unmeasured value",
+    (digits) => {
+      expect(formatMeasure(measured(12.345), "ar", { digits })).toBe("12.345");
+      expect(formatMeasure(unmeasured(), "en", { digits })).toBe(UNMEASURED_EN);
+    },
+  );
+
+  it("still rounds valid boundary precision and preserves the unit", () => {
+    expect(formatMeasure(measured(12.345), "en", { digits: 0 })).toBe("12");
+    expect(formatMeasure(measured(12.345), "en", { digits: 100 })).toBe("12.345");
+    expect(formatMeasure(measured(12.345), "en", { digits: 2, percent: true })).toBe(
+      "12.35%",
+    );
+  });
 });
 
 /* ─────────────────── ② المحاكاة إلزامية لا اختيارية ──────────────────── */
