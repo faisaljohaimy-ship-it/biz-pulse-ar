@@ -7,8 +7,8 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 const SCRIPT = fileURLToPath(new URL("../../scripts/write-build-info.mjs", import.meta.url));
-const DEPLOY_SHA = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-const STALE_SHA = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
+const PLATFORM_SHA = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+const OVERRIDE_SHA = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
 
 function runBuildInfo(vars: Record<string, string>) {
   const cwd = mkdtempSync(join(tmpdir(), "sadeed-build-info-"));
@@ -16,8 +16,10 @@ function runBuildInfo(vars: Record<string, string>) {
     const child = spawnSync(process.execPath, [SCRIPT], {
       cwd,
       encoding: "utf8",
+      timeout: 10_000,
       env: { PATH: process.env.PATH ?? "", ...vars },
     });
+    expect(child.error).toBeUndefined();
     expect(child.status, child.stderr).toBe(0);
     return JSON.parse(readFileSync(join(cwd, "public", "build-info.json"), "utf8")) as {
       sha: string;
@@ -29,57 +31,61 @@ function runBuildInfo(vars: Record<string, string>) {
   }
 }
 
-describe("build-info deployment provenance", () => {
-  it("uses Vercel's actual Git SHA and branch over stale optional overrides", () => {
+describe("build-info ref and SHA provenance must agree", () => {
+  it("does not attach an orphaned manual ref to an actual Vercel commit", () => {
     const info = runBuildInfo({
       VERCEL: "1",
-      VERCEL_GIT_COMMIT_SHA: DEPLOY_SHA,
+      VERCEL_GIT_COMMIT_SHA: PLATFORM_SHA,
       VERCEL_GIT_COMMIT_REF: "main",
-      SADEED_BUILD_SHA: STALE_SHA,
-      SADEED_BUILD_REF: "old-release",
-      GITHUB_SHA: STALE_SHA,
+      SADEED_BUILD_REF: "stale-release",
     });
     expect(info).toMatchObject({
-      sha: DEPLOY_SHA,
+      sha: PLATFORM_SHA,
       ref: "main",
       source: "VERCEL_GIT_COMMIT_SHA",
     });
   });
 
-  it("preserves explicit override semantics outside Vercel", () => {
+  it("does not attach an orphaned manual ref to a GitHub Actions commit", () => {
     const info = runBuildInfo({
-      VERCEL: "0",
-      GITHUB_SHA: DEPLOY_SHA,
-      SADEED_BUILD_SHA: STALE_SHA,
-      SADEED_BUILD_REF: "release-test",
+      GITHUB_SHA: PLATFORM_SHA,
+      GITHUB_REF_NAME: "ci-branch",
+      SADEED_BUILD_REF: "stale-release",
     });
     expect(info).toMatchObject({
-      sha: STALE_SHA,
-      ref: "release-test",
-      source: "SADEED_BUILD_SHA",
+      sha: PLATFORM_SHA,
+      ref: "ci-branch",
+      source: "GITHUB_SHA",
     });
   });
 
-  it("falls back safely when Vercel does not supply a Git SHA", () => {
+  it("preserves an explicit, paired owner SHA and ref override on Vercel", () => {
     const info = runBuildInfo({
       VERCEL: "1",
-      SADEED_BUILD_SHA: STALE_SHA,
-      SADEED_BUILD_REF: "fallback",
+      VERCEL_GIT_COMMIT_SHA: PLATFORM_SHA,
+      VERCEL_GIT_COMMIT_REF: "main",
+      SADEED_BUILD_SHA: OVERRIDE_SHA,
+      SADEED_BUILD_REF: "approved-ref",
     });
     expect(info).toMatchObject({
-      sha: STALE_SHA,
-      ref: "fallback",
+      sha: OVERRIDE_SHA,
+      ref: "approved-ref",
       source: "SADEED_BUILD_SHA",
     });
   });
 
-  it("ignores malformed platform SHAs instead of claiming them", () => {
+  it("ignores a stale ref when the manual SHA override is malformed", () => {
     const info = runBuildInfo({
       VERCEL: "true",
-      VERCEL_GIT_COMMIT_SHA: "not-a-commit",
-      SADEED_BUILD_SHA: STALE_SHA,
+      VERCEL_GIT_COMMIT_SHA: PLATFORM_SHA,
+      VERCEL_GIT_COMMIT_REF: "main",
+      SADEED_BUILD_SHA: "not-a-sha",
+      SADEED_BUILD_REF: "stale-release",
     });
-    expect(info.sha).toBe(STALE_SHA);
-    expect(info.source).toBe("SADEED_BUILD_SHA");
+    expect(info).toMatchObject({
+      sha: PLATFORM_SHA,
+      ref: "main",
+      source: "VERCEL_GIT_COMMIT_SHA",
+    });
   });
 });
