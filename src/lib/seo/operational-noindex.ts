@@ -44,7 +44,16 @@ export const OPERATIONAL_PREFIXES: readonly string[] = [
 
 /** المسار بلا مائلة ختامية — `/sec/` و`/sec` مكانٌ واحد. */
 function normalize(pathname: string): string {
-  return pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
+  // URL.pathname retains percent escapes; decode them before checking route
+  // prefixes so /%73ec/twin or /sec%2Fmaintenance cannot evade noindex.
+  // Malformed escapes must not crash the root renderer.
+  let path = pathname;
+  try {
+    path = decodeURIComponent(pathname);
+  } catch {
+    // Keep the original spelling and still check literal prefixes.
+  }
+  return path.length > 1 ? path.replace(/\/+$/, "") : path;
 }
 
 /**
