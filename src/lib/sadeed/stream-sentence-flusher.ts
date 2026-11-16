@@ -59,7 +59,12 @@ export function createSentenceFlusher(opts: SentenceFlusherOptions) {
       firstSentenceLatencyMs = latency;
       if (latency > budget && !breachReported) {
         breachReported = true;
-        opts.onLatencyBreach?.("first_sentence_slow", latency);
+        // Monitoring is best-effort: a broken beacon must never silence a reply.
+        try {
+          opts.onLatencyBreach?.("first_sentence_slow", latency);
+        } catch {
+          // Do not let telemetry interrupt the real-time TTS sentence pipeline.
+        }
       }
     }
     opts.onSentence(sentence, index);
