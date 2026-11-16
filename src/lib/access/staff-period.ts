@@ -121,8 +121,9 @@ export function recentPeriods(count: number, now: Date = new Date()): AccessPeri
   // Stop before enumerating years older than parsePeriodKey accepts.
   do {
     out.push(p);
+    if (p.key === "1000-H1") break;
     p = previousPeriod(p);
-  } while (Number.isFinite(count) && --count > 0 && p.year >= 1000);
+  } while (Number.isFinite(count) && --count > 0);
   return out;
 }
 
