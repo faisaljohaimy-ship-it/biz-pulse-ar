@@ -381,6 +381,31 @@ describe("بنية المصنّف", () => {
     expect(actual.SheetNames).toEqual(names);
   });
 
+  it("preserves ambiguous comma-grouped counts instead of exporting fractional values", async () => {
+    expect(toSheetCell("1,234", true)).toBe("1,234");
+    expect(toSheetCell("12,500", true)).toBe("12,500");
+    expect(toSheetCell("١,٢٣٤", true)).toBe("١,٢٣٤");
+    expect(toSheetCell("-1,000", true)).toBe("-1,000");
+    expect(toSheetCell("1,2", true)).toBe(1.2);
+    expect(toSheetCell("12,25", true)).toBe(12.25);
+    expect(toSheetCell("1.234", true)).toBe(1.234);
+
+    const report = doc();
+    const block = report.sections[1].blocks.find((item) => item.kind === "table");
+    if (!block || block.kind !== "table") throw new Error("expected incidents table");
+    block.rows[0].count = "1,234";
+    block.rows[1].count = "١,٢٣٤";
+
+    const planned = planReportWorkbook(report).find((plan) => plan.name.startsWith("البلاغات"))!;
+    const firstRow = planned.rows.findIndex((cells) => cells[0] === "حرجة") + 1;
+    const secondRow = planned.rows.findIndex((cells) => cells[0] === "عالية") + 1;
+    const XLSX = await import("xlsx");
+    const wb = XLSX.read(await buildReportXlsx(report), { type: "array" });
+    const ws = wb.Sheets[planned.name];
+    expect(ws[`B${firstRow}`]).toMatchObject({ t: "s", v: "1,234" });
+    expect(ws[`B${secondRow}`]).toMatchObject({ t: "s", v: "١,٢٣٤" });
+  });
+
   it("writes Arabic-Indic and Persian numeric table values as actual XLSX numbers", async () => {
     expect(toSheetCell("١٢٫٥", true)).toBe(12.5);
     expect(toSheetCell("۱۲٫۵", true)).toBe(12.5);

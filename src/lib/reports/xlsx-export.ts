@@ -156,6 +156,9 @@ export function toSheetCell(value: ReportCellValue, numeric = false): SheetCell 
      يبدو رقمًا ويُفشل كل `SUM`. والتحويل يقع على المطابقة التامّة وحدها. */
   if (numeric) {
     const normalized = normalizeLocalizedNumeric(text);
+    // A comma followed by three digits can mean thousands grouping or a decimal.
+    // Do not silently turn a measured count such as "1,234" into 1.234.
+    if (/^-?\d{1,3},\d{3}$/.test(normalized)) return text;
     if (NUMERIC_TEXT.test(normalized)) {
       const parsed = Number(normalized.replace(",", "."));
       // Excel and JavaScript cannot represent integers beyond this precision.
