@@ -1537,7 +1537,6 @@ test("ignores meta CSP inside the document body", async () => {
   assert.equal(await runFixture(html), null);
 });
 
-
 // A head meta CSP takes effect at its parse position, not globally across the
 // document. Earlier resources remain valid; subsequent assets must obey it.
 test("does not retroactively block a theme script that ran before head meta CSP", async () => {
@@ -1550,7 +1549,7 @@ test("does not retroactively block a theme script that ran before head meta CSP"
 
 test("blocks a later theme script even when a stylesheet appeared before head meta CSP", async () => {
   const html = normalPage.replace(
-    "<script>sessionStorage.getItem('theme')</script>\n<link rel=\"stylesheet\" href=\"/assets/app.css\">",
+    '<script>sessionStorage.getItem(\'theme\')</script>\n<link rel="stylesheet" href="/assets/app.css">',
     '<link rel="stylesheet" href="/assets/app.css"><meta http-equiv="Content-Security-Policy" content="script-src \'none\'"><script>sessionStorage.getItem(\'theme\')</script>',
   );
   assert.equal(await runFixture(html), 1);
