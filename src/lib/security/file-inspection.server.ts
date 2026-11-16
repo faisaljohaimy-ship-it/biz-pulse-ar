@@ -242,6 +242,15 @@ function inspectZip(bytes: Uint8Array): ZipSummary {
         "Unsafe Office archive paths are blocked.",
       );
     }
+    // Windows ZIP extraction folds trailing spaces and dots in path segments.
+    // Reject these ambiguous names before trusting their apparent extension or
+    // comparing archive member identities (e.g. "loader.js " or "word/.. ").
+    if (pathSegments.some((segment) => /[ .]$/.test(segment))) {
+      throw new FileInspectionError(
+        "invalid_zip",
+        "Office archive contains a path segment with an ambiguous trailing space or dot.",
+      );
+    }
     if (DANGEROUS_EXTENSION.test(lower) || lower.includes("vbaproject.bin")) {
       throw new FileInspectionError(
         "active_office_content",

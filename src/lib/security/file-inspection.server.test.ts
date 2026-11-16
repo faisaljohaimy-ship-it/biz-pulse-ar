@@ -293,6 +293,22 @@ describe("SADEED attachment structural inspection", () => {
     expect(result.family).toBe("office");
   });
 
+  it.each([
+    ["script extension hidden by a trailing space", "word/loader.js "],
+    ["Windows-normalized directory dot", "word/reports./document.xml"],
+    ["parent traversal disguised with a trailing space", "word/.. /document.xml"],
+  ])("blocks %s in portable Office ZIP paths", (_case, member) => {
+    expectBlocked(
+      () =>
+        inspectSadeedAttachment({
+          bytes: fakeOfficeZip(["[Content_Types].xml", "word/document.xml", member]),
+          filename: "brief.docx",
+          claimedMime: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        }),
+      "invalid_zip",
+    );
+  });
+
   it("blocks macros embedded in an Office container", () => {
     expectBlocked(
       () =>
