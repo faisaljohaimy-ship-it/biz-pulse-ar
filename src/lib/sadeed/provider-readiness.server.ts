@@ -126,10 +126,7 @@ export function inspectSadeedProviderReadiness(
       "RESEND_WEBHOOK_SECRET",
       emailProvider !== "resend" || configured(env.RESEND_WEBHOOK_SECRET, 20),
     ],
-    [
-      "TWILIO_STATUS_CALLBACK_URL",
-      validHttpsEndpoint(env.TWILIO_STATUS_CALLBACK_URL),
-    ],
+    ["TWILIO_STATUS_CALLBACK_URL", validHttpsEndpoint(env.TWILIO_STATUS_CALLBACK_URL)],
   ]);
 
   const result = {
