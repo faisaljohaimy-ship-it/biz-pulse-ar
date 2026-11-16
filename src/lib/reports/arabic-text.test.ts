@@ -54,6 +54,21 @@ describe("layoutArabicLine — presentation forms + visual segment layout", () =
     expect(flat.codePointAt(0)).toBe(0xfee7);
   });
 
+  it("shapes long Arabic report fields without exceeding the argument limit", () => {
+    const line = "م".repeat(140_000);
+    const segments = layoutArabicLine(line);
+    expect(segments).toHaveLength(1);
+    expect(segments[0]!.ar).toBe(true);
+    expect(segments[0]!.text).toHaveLength(line.length);
+  });
+
+  it("preserves long Latin text within Arabic reports without a large splice", () => {
+    const appendix = "X".repeat(140_000);
+    const segments = layoutArabicLine(`تقرير ${appendix}`);
+    const latin = segments.find((segment) => !segment.ar && segment.text.includes("X"));
+    expect(latin?.text).toBe(appendix);
+  });
+
   it("converts western digits to Arabic-Indic on demand", () => {
     expect(toArabicDigits("2026/07/20")).toBe("٢٠٢٦/٠٧/٢٠");
   });
