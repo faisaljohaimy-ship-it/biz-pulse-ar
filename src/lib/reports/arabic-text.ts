@@ -113,7 +113,13 @@ function shapeWord(word: string): string {
     out.push(form);
     i += 1;
   }
-  return String.fromCodePoint(...out);
+  // A single report field can exceed V8's maximum call argument count.
+  // Chunk shaping output so long Arabic lines cannot crash PDF export.
+  const chunks: string[] = [];
+  for (let start = 0; start < out.length; start += 8192) {
+    chunks.push(String.fromCodePoint(...out.slice(start, start + 8192)));
+  }
+  return chunks.join("");
 }
 
 const AR_RUN = /[ء-يـ]+/g;
@@ -225,8 +231,13 @@ export function layoutArabicLine(input: string): ArabicSegment[] {
     if (levels[order[i]!] < 2) continue;
     let j = i;
     while (j < order.length && levels[order[j]!]! >= 2) j++;
-    const run = order.slice(i, j).reverse();
-    order.splice(i, j - i, ...run);
+    // Reverse in place: spreading a long Latin run into splice can exceed
+    // V8's argument limit even when the text itself is valid.
+    for (let left = i, right = j - 1; left < right; left++, right--) {
+      const previous = order[left]!;
+      order[left] = order[right]!;
+      order[right] = previous;
+    }
     i = j - 1;
   }
   order.reverse();
