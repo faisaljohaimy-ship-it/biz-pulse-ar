@@ -76,6 +76,27 @@ describe("التنقّل بين الدورات", () => {
   it("وتعيد دورةً واحدة على الأقل مهما كان العدد", () => {
     expect(recentPeriods(0).length).toBe(1);
   });
+
+  it("ترفض NaN وInfinity دون أن تعلق الواجهة أو تسقط الدورة الجارية", () => {
+    const now = new Date("2026-09-20T12:00:00+03:00");
+    for (const invalid of [NaN, Infinity, -Infinity]) {
+      expect(recentPeriods(invalid, now).map((p) => p.key)).toEqual(["2026-H2"]);
+    }
+  });
+
+  it("تحافظ على دلالة تقريب العدد الكسري إلى الأعلى", () => {
+    const now = new Date("2026-09-20T12:00:00+03:00");
+    expect(recentPeriods(1.5, now).map((p) => p.key)).toEqual(["2026-H2", "2026-H1"]);
+  });
+
+  it("تقيّد الطلب الهائل بسنوات السجل الصالحة بدلاً من استنفاد الذاكرة أو رمي RangeError", () => {
+    const now = new Date("2026-09-20T12:00:00+03:00");
+    const all = recentPeriods(Number.MAX_VALUE, now);
+    expect(all).toHaveLength((2026 - 1000) * 2 + 2);
+    expect(all[0].key).toBe("2026-H2");
+    expect(all.at(-1)?.key).toBe("1000-H1");
+    expect(all.every((p) => parsePeriodKey(p.key) !== null)).toBe(true);
+  });
 });
 
 describe("قراءة المفاتيح", () => {
