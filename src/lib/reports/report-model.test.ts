@@ -274,9 +274,7 @@ describe("المادة ٢٧ — الصدق العددي", () => {
   it("still rounds valid boundary precision and preserves the unit", () => {
     expect(formatMeasure(measured(12.345), "en", { digits: 0 })).toBe("12");
     expect(formatMeasure(measured(12.345), "en", { digits: 100 })).toBe("12.345");
-    expect(formatMeasure(measured(12.345), "en", { digits: 2, percent: true })).toBe(
-      "12.35%",
-    );
+    expect(formatMeasure(measured(12.345), "en", { digits: 2, percent: true })).toBe("12.35%");
   });
 });
 
