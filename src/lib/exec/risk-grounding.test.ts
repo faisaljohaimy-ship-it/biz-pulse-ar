@@ -183,21 +183,22 @@ describe("⑥ المطابقة بالهويّة — لا بالترتيب", () =
 
   it.each([
     "ضغط متصاعد في محطة   جدة",
-    "بلاغات من محطة\\nجدة".replace("\\\\n", "\\n"),
-    "ارتفاع المخاطر في محطة\\tجدة".replace("\\\\t", "\\t"),
-    "Rising pressure at Jeddah\\u00a0Plant".replace("\\\\u00a0", "\\u00a0"),
+    "بلاغات من محطة\nجدة",
+    "ارتفاع المخاطر في محطة\tجدة",
+    "Rising pressure at Jeddah\u00a0Plant",
   ])("rejects mentions of another site with noncanonical whitespace (%s)", (narration) => {
     const own = ["محطة الرياض", "Riyadh Plant"];
     const others = [...own, "محطة جدة", "Jeddah Plant"];
     expect(namesOtherSite([narration], own, others)).toBe(true);
   });
 
-  it("normalizes owner names in narration without falsely attributing another site", () => {
+  it("normalizes own names in narration without falsely attributing another site", () => {
+    const own = ["محطة الرياض", "Riyadh Plant"];
     expect(
       namesOtherSite(
-        ["متابعة في محطة   الرياض", "At Riyadh\\tPlant".replace("\\\\t", "\\t")],
-        ["محطة الرياض", "Riyadh Plant"],
-        ["محطة الرياض", "Riyadh Plant", "محطة جدة", "Jeddah Plant"],
+        ["متابعة في محطة   الرياض", "At Riyadh\tPlant"],
+        own,
+        [...own, "محطة جدة", "Jeddah Plant"],
       ),
     ).toBe(false);
   });
