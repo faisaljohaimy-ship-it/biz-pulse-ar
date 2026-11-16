@@ -1371,11 +1371,7 @@ for (const [name, policy, expected] of [
     "script-src 'sha256-unmatched'",
     1,
   ],
-  [
-    "nonce sources override unsafe-inline in CSP3",
-    "script-src 'unsafe-inline' 'nonce-other'",
-    1,
-  ],
+  ["nonce sources override unsafe-inline in CSP3", "script-src 'unsafe-inline' 'nonce-other'", 1],
   ["unrelated CSP does not block the bootstrap", "img-src 'none'", null],
 ]) {
   test("production theme CSP guard: " + name, async () => {
