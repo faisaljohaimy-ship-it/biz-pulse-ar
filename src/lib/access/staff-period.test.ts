@@ -32,6 +32,24 @@ describe("دورة نصف السنة — الحدود بتوقيت الرياض"
     expect(h2.endIso).toBe("2026-12-31T21:00:00.000Z");
   });
 
+  it("يحافظ حساب UTC الأخف على حدود الرياض في السنوات الكبيسة وعلى طرف السجل", () => {
+    for (const [year, half] of [
+      [1000, 1],
+      [2024, 1],
+      [2024, 2],
+      [9999, 1],
+    ] as const) {
+      const period = buildPeriod(year, half);
+      const month = half === 1 ? "01" : "07";
+      const endYear = year + (half === 2 ? 1 : 0);
+      const endMonth = half === 1 ? "07" : "01";
+      expect(period.startIso).toBe(new Date(`${year}-${month}-01T00:00:00+03:00`).toISOString());
+      expect(period.endIso).toBe(
+        new Date(`${endYear}-${endMonth}-01T00:00:00+03:00`).toISOString(),
+      );
+    }
+  });
+
   it("**الساعات الثلاث الحرجة**: أول يوليو ٠١:٠٠ بالرياض في النصف الثاني", () => {
     // هذه هي اللحظة التي يخطئ فيها حسابُ UTC: بـUTC هي ٣٠ يونيو 22:00
     // فتُنسب إلى النصف الأول، وهي عند من في الرياض أوّل يوليو.
@@ -75,6 +93,27 @@ describe("التنقّل بين الدورات", () => {
 
   it("وتعيد دورةً واحدة على الأقل مهما كان العدد", () => {
     expect(recentPeriods(0).length).toBe(1);
+  });
+
+  it("ترفض NaN وInfinity دون أن تعلق الواجهة أو تسقط الدورة الجارية", () => {
+    const now = new Date("2026-09-20T12:00:00+03:00");
+    for (const invalid of [NaN, Infinity, -Infinity]) {
+      expect(recentPeriods(invalid, now).map((p) => p.key)).toEqual(["2026-H2"]);
+    }
+  });
+
+  it("تحافظ على دلالة تقريب العدد الكسري إلى الأعلى", () => {
+    const now = new Date("2026-09-20T12:00:00+03:00");
+    expect(recentPeriods(1.5, now).map((p) => p.key)).toEqual(["2026-H2", "2026-H1"]);
+  });
+
+  it("تقيّد الطلب الهائل بسنوات السجل الصالحة بدلاً من استنفاد الذاكرة أو رمي RangeError", () => {
+    const now = new Date("2026-09-20T12:00:00+03:00");
+    const all = recentPeriods(Number.MAX_VALUE, now);
+    expect(all).toHaveLength((2026 - 1000) * 2 + 2);
+    expect(all[0].key).toBe("2026-H2");
+    expect(all.at(-1)?.key).toBe("1000-H1");
+    expect(all.every((p) => parsePeriodKey(p.key) !== null)).toBe(true);
   });
 });
 
