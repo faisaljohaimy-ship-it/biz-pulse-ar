@@ -28,6 +28,42 @@ describe("SADEED provider readiness", () => {
     expect(JSON.stringify(status)).not.toContain(COMPLETE.GEMINI_API_KEY);
   });
 
+  it.each([
+    "https://",
+    "https://?missing-host=yes",
+    "https://user:pass@example.com",
+    "http://project.supabase.co",
+    "not-a-url",
+  ])("rejects malformed database HTTPS endpoint %s", (url) => {
+    const status = inspectSadeedProviderReadiness({ ...COMPLETE, SUPABASE_URL: url });
+    expect(status.database.ready).toBe(false);
+    expect(status.database.missing).toContain("SUPABASE_URL");
+    expect(status.deliveryTracking.ready).toBe(true);
+  });
+
+  it.each([
+    "https://",
+    "https://?missing-host=yes",
+    "https://user:pass@example.com",
+    "http://neexios.com/api/webhooks/twilio",
+    "not-a-url",
+  ])("rejects malformed webhook HTTPS endpoint %s", (url) => {
+    const status = inspectSadeedProviderReadiness({ ...COMPLETE, TWILIO_STATUS_CALLBACK_URL: url });
+    expect(status.database.ready).toBe(true);
+    expect(status.deliveryTracking.ready).toBe(false);
+    expect(status.deliveryTracking.missing).toContain("TWILIO_STATUS_CALLBACK_URL");
+  });
+
+  it("accepts trimmed HTTPS endpoints with valid hosts and webhook paths", () => {
+    const status = inspectSadeedProviderReadiness({
+      ...COMPLETE,
+      SUPABASE_URL: "  https://project.supabase.co  ",
+      TWILIO_STATUS_CALLBACK_URL: "  https://neexios.com/api/webhooks/twilio  ",
+    });
+    expect(status.database.ready).toBe(true);
+    expect(status.deliveryTracking.ready).toBe(true);
+  });
+
   it("rejects placeholders and reports exact missing variable names", () => {
     const status = inspectSadeedProviderReadiness({
       GEMINI_API_KEY: "replace_me",
