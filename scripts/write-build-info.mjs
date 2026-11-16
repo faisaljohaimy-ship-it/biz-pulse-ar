@@ -41,12 +41,9 @@ const platformCandidates = isVercelBuild
       ["CF_PAGES_COMMIT_SHA", env.CF_PAGES_COMMIT_SHA],
       ["VERCEL_GIT_COMMIT_SHA", env.VERCEL_GIT_COMMIT_SHA],
     ];
-// In a Git-linked Vercel build, the platform's Git commit is authoritative.
-// An optional SADEED_BUILD_SHA from an older build must not mask deployed code.
 const candidates = [
-  ...(isVercelBuild ? [["VERCEL_GIT_COMMIT_SHA", env.VERCEL_GIT_COMMIT_SHA]] : []),
   ["SADEED_BUILD_SHA", env.SADEED_BUILD_SHA],
-  ...platformCandidates.filter(([name]) => !isVercelBuild || name !== "VERCEL_GIT_COMMIT_SHA"),
+  ...platformCandidates,
   ["COMMIT_SHA", env.COMMIT_SHA],
   ["git", git("rev-parse HEAD")],
 ];
@@ -54,11 +51,12 @@ const [source, sha] = candidates.find(([, v]) => v && /^[0-9a-f]{7,40}$/i.test(v
   "none",
   "unknown",
 ];
+// A ref override belongs to its explicitly overridden SHA. Without the
+// corresponding SHA, a stale ref must not mislabel a platform-identified build.
 const ref =
-  (isVercelBuild ? env.VERCEL_GIT_COMMIT_REF : undefined) ||
-  env.SADEED_BUILD_REF ||
+  (source === "SADEED_BUILD_SHA" ? env.SADEED_BUILD_REF : undefined) ||
   (isVercelBuild
-    ? env.GITHUB_REF_NAME || env.CF_PAGES_BRANCH
+    ? env.VERCEL_GIT_COMMIT_REF || env.GITHUB_REF_NAME || env.CF_PAGES_BRANCH
     : env.GITHUB_REF_NAME || env.CF_PAGES_BRANCH || env.VERCEL_GIT_COMMIT_REF) ||
   git("rev-parse --abbrev-ref HEAD") ||
   "unknown";
