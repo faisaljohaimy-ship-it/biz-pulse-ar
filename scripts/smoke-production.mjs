@@ -127,17 +127,20 @@ async function chat(text, threadId, { headers = {}, timeoutMs = 60_000 } = {}) {
         /* جسم غير JSON */
       }
     } else {
-      for (const line of raw.split("\n")) {
-        // SSE permits no space after data:. Only an explicit terminal
-        // marker proves the server completed the reply stream.
-        const dataLine = /^data: ?(.*)\r?$/.exec(line);
-        if (!dataLine) continue;
-        if (dataLine[1].trim() === "[DONE]") {
+      // SSE permits multiple data: fields per event; their values are joined
+      // with newlines before JSON parsing. Parsing each line separately can
+      // misclassify a complete, valid model response as empty.
+      let dataLines = [];
+      const consumeEvent = () => {
+        if (!dataLines.length) return;
+        const payload = dataLines.join("\n");
+        dataLines = [];
+        if (payload.trim() === "[DONE]") {
           streamCompleted = true;
-          continue;
+          return;
         }
         try {
-          const ev = JSON.parse(dataLine[1]);
+          const ev = JSON.parse(payload);
           if (ev.type === "text-delta" && typeof ev.delta === "string") shown += ev.delta;
           // A partial Arabic answer followed by a stream failure is not a successful reply.
           if (ev.type === "error" || ev.type === "abort" || ev.finishReason === "error") {
@@ -145,9 +148,19 @@ async function chat(text, threadId, { headers = {}, timeoutMs = 60_000 } = {}) {
             errorText = "فشل البثّ أو أُوقف قبل اكتمال الردّ";
           }
         } catch {
-          /* سطر غير JSON ([DONE]) */
+          /* Event payload is not JSON; the full stream still needs [DONE]. */
         }
+      };
+      for (const line of raw.split(/\r\n|\r|\n/)) {
+        if (line === "") {
+          consumeEvent();
+          continue;
+        }
+        // Comments and other SSE metadata are not part of the data payload.
+        const dataLine = /^data: ?(.*)$/.exec(line);
+        if (dataLine) dataLines.push(dataLine[1]);
       }
+      consumeEvent();
       if (!streamCompleted) {
         // HTTP 200 with a partial Arabic delta must never pass C1.
         code ||= "stream_incomplete";
