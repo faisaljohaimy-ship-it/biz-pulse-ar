@@ -1465,3 +1465,74 @@ test("rejects a theme bootstrap with a nonmatching CSP nonce", async () => {
     1,
   );
 });
+
+// Early head meta CSP is enforced in browsers even without an HTTP CSP header.
+test("rejects an early head meta CSP that blocks the inline theme bootstrap", async () => {
+  const html = normalPage.replace(
+    "<script>",
+    '<meta http-equiv="Content-Security-Policy" content="script-src \'none\'"><script>',
+  );
+  assert.equal(await runFixture(html), 1);
+});
+
+test("rejects an early head meta CSP that disables application CSS", async () => {
+  const html = normalPage.replace(
+    "<script>",
+    '<meta http-equiv="content-security-policy" content="style-src \'none\'"><script>',
+  );
+  assert.equal(await runFixture(html), 1);
+});
+
+test("honors restrictive head meta CSP despite a permissive HTTP policy", async () => {
+  const html = normalPage.replace(
+    "<script>",
+    '<meta http-equiv="Content-Security-Policy" content="script-src \'none\'"><script>',
+  );
+  assert.equal(
+    await runFixture(
+      html,
+      "text/html",
+      200,
+      "text/css",
+      "body {}",
+      200,
+      "https://offline.invalid/assets/app.css",
+      null,
+      null,
+      "script-src 'unsafe-inline'; style-src 'self'",
+    ),
+    1,
+  );
+});
+
+test("accepts early head meta CSP allowing theme and CSS", async () => {
+  const html = normalPage.replace(
+    "<script>",
+    "<meta http-equiv=\"Content-Security-Policy\" content=\"script-src 'unsafe-inline'; style-src 'self'\"><script>",
+  );
+  assert.equal(await runFixture(html), null);
+});
+
+test("does not retroactively enforce late head meta CSP on earlier resources", async () => {
+  const html = normalPage.replace(
+    "</head>",
+    "<meta http-equiv=\"Content-Security-Policy\" content=\"script-src 'none'; style-src 'none'\"></head>",
+  );
+  assert.equal(await runFixture(html), null);
+});
+
+test("ignores a commented-out head CSP declaration", async () => {
+  const html = normalPage.replace(
+    "<script>",
+    '<!-- <meta http-equiv="Content-Security-Policy" content="style-src \'none\'"> --><script>',
+  );
+  assert.equal(await runFixture(html), null);
+});
+
+test("ignores meta CSP inside the document body", async () => {
+  const html = normalPage.replace(
+    "<body>",
+    '<body><meta http-equiv="Content-Security-Policy" content="script-src \'none\'">',
+  );
+  assert.equal(await runFixture(html), null);
+});

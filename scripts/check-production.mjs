@@ -363,8 +363,45 @@ for (const route of ROUTES) {
     // Browsers block inline scripts under script-src 'self', not just 'none'.
     // Enforced script-src-elem overrides script-src, which overrides default-src.
     // Multiple CSP policies intersect: the inline bootstrap must satisfy each.
+    const uncommentedHtml = html.replace(/<!--[\s\S]*?-->/g, "");
+    // A noscript fallback does not style the JavaScript-enabled app.
+    // Count only stylesheets that are active when the theme bootstrap runs.
+    const nonInertHtml = uncommentedHtml.replace(
+      /<(template|textarea|noscript)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,
+      "",
+    );
+    // A CSP supplied by an early <meta http-equiv> in the document head
+    // is enforced by browsers even without a Content-Security-Policy header.
+    // Only count meta policies before all required script/stylesheet resources:
+    // later policies cannot retroactively block earlier elements.
+    const headBoundary = /<\/head\s*>|<body\b/i.exec(nonInertHtml);
+    const headMarkup = nonInertHtml
+      .slice(0, headBoundary?.index ?? nonInertHtml.length)
+      .replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, (tag) => " ".repeat(tag.length));
+    const resourcePositions = [
+      ...[...headMarkup.matchAll(/<script\b[^>]*>/gi)].map((match) => match.index),
+      ...[...headMarkup.matchAll(/<link\b[^>]*>/gi)]
+        .filter((match) => stylesheetHref(match[0]))
+        .map((match) => match.index),
+    ];
+    const firstResourceAt = resourcePositions.reduce((first, at) => Math.min(first, at), Infinity);
+    const headMetaPolicies = [...headMarkup.matchAll(/<meta\b[^>]*>/gi)]
+      .filter((match) => match.index < firstResourceAt)
+      .flatMap((match) => {
+        const attrs = tagAttributes(match[0], 5);
+        if (
+          decodeMetaAttribute(attrs["http-equiv"] || "")
+            .trim()
+            .toLowerCase() !== "content-security-policy" ||
+          !attrs.content
+        )
+          return [];
+        return [decodeMetaAttribute(attrs.content)];
+      });
+
     const enforcedScriptSources = (res.headers.get("content-security-policy") || "")
       .split(",")
+      .concat(headMetaPolicies)
       .map((policy) => {
         const directives = new Map();
         for (const directive of policy.split(";")) {
@@ -384,13 +421,6 @@ for (const route of ROUTES) {
     // الاختيار في `sessionStorage` منذ ٢٠٢٦/١٠/٢٤ (الداكن افتراضًا دائمًا): السكربت المانع يقرؤه منه لا من `localStorage`.
     // Only executable script elements count as theme-bootstrap evidence.
     // Comments, templates and textarea content are inert, even when they quote JS.
-    const uncommentedHtml = html.replace(/<!--[\s\S]*?-->/g, "");
-    // A noscript fallback does not style the JavaScript-enabled app.
-    // Count only stylesheets that are active when the theme bootstrap runs.
-    const nonInertHtml = uncommentedHtml.replace(
-      /<(template|textarea|noscript)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,
-      "",
-    );
     const inlineBootstrapCandidates = [
       ...nonInertHtml.matchAll(/(<script\b[^>]*>)([\s\S]*?)<\/script\s*>/gi),
     ].flatMap(([, openingTag, body]) => {
@@ -432,6 +462,7 @@ for (const route of ROUTES) {
     // policies intersect, so any blocking policy makes the CSS unusable.
     const cspBlocksStylesheet = (res.headers.get("content-security-policy") || "")
       .split(",")
+      .concat(headMetaPolicies)
       .some((policy) => {
         const directives = new Map();
         for (const directive of policy.split(";")) {
