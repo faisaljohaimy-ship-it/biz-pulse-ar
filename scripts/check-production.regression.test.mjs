@@ -240,6 +240,62 @@ test("cannot certify broken CSS through a decoy C1 numeric-reference URL", async
   );
 });
 
+// HTML named references are case-sensitive. A mixed-case spelling that is
+// not in the HTML entity table remains literal in the browser's asset URL.
+test("cannot certify missing CSS via a mixed-case pseudo-entity decoy", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="stylesheet" href="/assets/app&CoPy;.css">',
+  );
+  const actualBrowserUrl = "https://offline.invalid/assets/app&CoPy;.css";
+  const decoyCheckerUrl = "https://offline.invalid/assets/app%C2%A9.css";
+  assert.equal(
+    await runFixture(html, "text/html", 200, "text/css", "body {}", 200, actualBrowserUrl, {
+      [actualBrowserUrl]: { status: 404 },
+      [decoyCheckerUrl]: { status: 200 },
+    }),
+    1,
+  );
+});
+
+test("accepts real CSS whose URL contains a literal mixed-case pseudo-entity", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="stylesheet" href="/assets/app&CoPy;.css">',
+  );
+  assert.equal(
+    await runFixture(
+      html,
+      "text/html",
+      200,
+      "text/css",
+      "body {}",
+      200,
+      "https://offline.invalid/assets/app&CoPy;.css",
+    ),
+    null,
+  );
+});
+
+test("decodes valid uppercase COPY references in stylesheet URLs", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="stylesheet" href="/assets/app&COPY;.css">',
+  );
+  assert.equal(
+    await runFixture(
+      html,
+      "text/html",
+      200,
+      "text/css",
+      "body {}",
+      200,
+      "https://offline.invalid/assets/app%C2%A9.css",
+    ),
+    null,
+  );
+});
+
 test("resolves named &sol; references in stylesheet paths", async () => {
   const html = normalPage.replace(
     '<link rel="stylesheet" href="/assets/app.css">',

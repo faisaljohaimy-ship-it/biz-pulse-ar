@@ -301,7 +301,10 @@ function hasExecutableThemeBootstrap(body) {
 // http-equiv=refresh. Decode one layer to match browser redirect semantics.
 function decodeMetaAttribute(value) {
   return value.replace(
-    /&(?:#(x[0-9a-f]+|\d+);?|(?:amp|semi|tab|newline|sol|colon|period|quot|apos|lt|gt|copy|reg|nbsp);)/gi,
+    // Named HTML character references are case-sensitive. Only explicitly
+    // supported spellings must be decoded: &CoPy; stays literal in browsers,
+    // while &copy; and &COPY; both decode to the copyright sign.
+    /&(?:#([xX][0-9a-fA-F]+|\d+);?|(?:amp|AMP|semi|Tab|NewLine|sol|colon|period|quot|QUOT|apos|lt|LT|gt|GT|copy|COPY|reg|REG|nbsp);)/g,
     (entity, numeric) => {
       if (!numeric) {
         const names = {
