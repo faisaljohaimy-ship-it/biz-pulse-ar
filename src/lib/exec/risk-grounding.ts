@@ -139,7 +139,9 @@ export function namesOtherSite(
   ownNames: readonly string[],
   otherNames: readonly string[],
 ): boolean {
-  // Apply the same whitespace and case normalization to narration as site names.\n  // Model-produced tabs/newlines/repeated spaces must not hide a cross-site mention.\n  const hay = siteKey(texts.join(" "));
+  // Apply identical whitespace and case normalization to the narration and site names.
+  // Multiple spaces, tabs, and line breaks must not hide a cross-site mention.
+  const hay = siteKey(texts.join(" "));
   const own = new Set(ownNames.map((n) => siteKey(n)).filter((n) => n.length > 0));
   return otherNames
     .map((n) => siteKey(n))
