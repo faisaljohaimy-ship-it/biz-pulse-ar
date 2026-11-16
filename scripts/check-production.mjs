@@ -373,12 +373,14 @@ for (const route of ROUTES) {
     // A CSP supplied by an early <meta http-equiv> in the document head
     // is enforced by browsers even without a Content-Security-Policy header.
     // A head-delivered meta CSP applies only to resources parsed after that declaration.
-    const headBoundary = /<\/head\s*>|<body\b/i.exec(nonInertHtml);
     // Keep source offsets stable while ignoring decoy markup inside scripts/styles.
     const markupWithoutScriptBodies = nonInertHtml.replace(
       /<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,
       (tag) => " ".repeat(tag.length),
     );
+    // Script and style text may contain literal </head> or <body tokens. Those
+    // strings cannot close the document head or disable a later meta CSP.
+    const headBoundary = /<\/head\s*>|<body\b/i.exec(markupWithoutScriptBodies);
     const headMarkup = markupWithoutScriptBodies.slice(
       0,
       headBoundary?.index ?? markupWithoutScriptBodies.length,
