@@ -1356,10 +1356,26 @@ for (const [name, policy, expected] of [
   ["script-src self blocks inline scripts", "script-src 'self'", 1],
   ["default-src self blocks inline scripts", "default-src 'self'", 1],
   ["unsafe-eval does not authorize inline scripts", "script-src 'self' 'unsafe-eval'", 1],
-  ["unsafe-inline permits an otherwise restricted inline script", "script-src 'self' 'unsafe-inline'", null],
-  ["a nonce source without matching script nonce blocks inline code", "script-src 'nonce-missing'", 1],
-  ["hash-only policy cannot certify an unverified theme script", "script-src 'sha256-unmatched'", 1],
-  ["nonce sources override unsafe-inline in CSP3", "script-src 'unsafe-inline' 'nonce-other'", 1],
+  [
+    "unsafe-inline permits an otherwise restricted inline script",
+    "script-src 'self' 'unsafe-inline'",
+    null,
+  ],
+  [
+    "a nonce source without matching script nonce blocks inline code",
+    "script-src 'nonce-missing'",
+    1,
+  ],
+  [
+    "hash-only policy cannot certify an unverified theme script",
+    "script-src 'sha256-unmatched'",
+    1,
+  ],
+  [
+    "nonce sources override unsafe-inline in CSP3",
+    "script-src 'unsafe-inline' 'nonce-other'",
+    1,
+  ],
   ["unrelated CSP does not block the bootstrap", "img-src 'none'", null],
 ]) {
   test("production theme CSP guard: " + name, async () => {
