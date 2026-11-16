@@ -33,7 +33,12 @@ describe("دورة نصف السنة — الحدود بتوقيت الرياض"
   });
 
   it("يحافظ حساب UTC الأخف على حدود الرياض في السنوات الكبيسة وعلى طرف السجل", () => {
-    for (const [year, half] of [[1000, 1], [2024, 1], [2024, 2], [9999, 1]] as const) {
+    for (const [year, half] of [
+      [1000, 1],
+      [2024, 1],
+      [2024, 2],
+      [9999, 1],
+    ] as const) {
       const period = buildPeriod(year, half);
       const month = half === 1 ? "01" : "07";
       const endYear = year + (half === 2 ? 1 : 0);
