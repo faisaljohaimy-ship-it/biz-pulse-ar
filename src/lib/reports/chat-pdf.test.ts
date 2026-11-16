@@ -113,7 +113,14 @@ describe("تبسيط المحتوى", () => {
     "preserves table data resembling an alignment row (%s)",
     (row) => {
       expect(markdownToLines(row)).toEqual([
-        { kind: "row", text: row.slice(1, -1).split("|").map((cell) => cell.trim()).join("  |  ") },
+        {
+          kind: "row",
+          text: row
+            .slice(1, -1)
+            .split("|")
+            .map((cell) => cell.trim())
+            .join("  |  "),
+        },
       ]);
     },
   );
