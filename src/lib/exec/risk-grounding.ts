@@ -139,7 +139,9 @@ export function namesOtherSite(
   ownNames: readonly string[],
   otherNames: readonly string[],
 ): boolean {
-  const hay = texts.join(" ").toLowerCase();
+  // The narration may split a site name with newlines or repeated whitespace.
+  // Apply the same normalization to the text as to the known site names.
+  const hay = siteKey(texts.join(" "));
   const own = new Set(ownNames.map((n) => siteKey(n)).filter((n) => n.length > 0));
   return otherNames
     .map((n) => siteKey(n))
