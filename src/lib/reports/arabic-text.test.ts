@@ -69,6 +69,14 @@ describe("layoutArabicLine — presentation forms + visual segment layout", () =
     expect(latin?.text.trim()).toBe(appendix);
   });
 
+  it("handles long numeric fields after Arabic without quadratic bidi scanning", () => {
+    const numeric = "3".repeat(120_000);
+    const segments = layoutArabicLine(`الإجمالي ${numeric}`);
+    expect(segments.some((segment) => segment.ar)).toBe(true);
+    const digitSegment = segments.find((segment) => !segment.ar && segment.text.includes("3"));
+    expect(digitSegment?.text.trim()).toBe(numeric);
+  });
+
   it("converts western digits to Arabic-Indic on demand", () => {
     expect(toArabicDigits("2026/07/20")).toBe("٢٠٢٦/٠٧/٢٠");
   });

@@ -164,10 +164,6 @@ const MIRROR: Record<string, string> = {
 function resolveLevels(chars: string[]): number[] {
   const t: BidiClass[] = chars.map(bidiClass);
   const n = t.length;
-  const strongBefore = (i: number): "R" | "L" => {
-    for (let k = i - 1; k >= 0; k--) if (t[k] === "R" || t[k] === "L") return t[k] as "R" | "L";
-    return "R"; // sos = paragraph direction
-  };
   // W4: one ES/CS between two EN joins the number (1-2, 3.5, 10:30).
   for (let i = 1; i < n - 1; i++) {
     if ((t[i] === "ES" || t[i] === "CS") && t[i - 1] === "EN" && t[i + 1] === "EN") t[i] = "EN";
@@ -184,7 +180,14 @@ function resolveLevels(chars: string[]): number[] {
   }
   // W6: leftover separators are neutral. W7: EN after an L is L (SEC-18).
   for (let i = 0; i < n; i++) if (t[i] === "ES" || t[i] === "ET" || t[i] === "CS") t[i] = "ON";
-  for (let i = 0; i < n; i++) if (t[i] === "EN" && strongBefore(i) === "L") t[i] = "L";
+  // W7: carry the previous strong direction forward in one pass. Scanning
+  // backwards for every digit made Arabic-prefixed, digit-heavy report fields
+  // quadratic (a single long register number could stall PDF rendering).
+  let previousStrong: "R" | "L" = "R"; // sos = paragraph direction
+  for (let i = 0; i < n; i++) {
+    if (t[i] === "EN" && previousStrong === "L") t[i] = "L";
+    if (t[i] === "R" || t[i] === "L") previousStrong = t[i] as "R" | "L";
+  }
   // N1/N2: a neutral run takes the direction of its neighbours when they
   // agree (EN counts as R), otherwise the paragraph's (R).
   const dir = (c: BidiClass) => (c === "L" ? "L" : "R");
