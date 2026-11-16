@@ -45,14 +45,12 @@ describe("① المسارات التشغيلية تُمنع، والجذر يب
     expect(isOperationalRoute("/settings/")).toBe(true);
   });
 
-  it.each([
-    "/%73ec/twin",
-    "/sec%2Fmaintenance",
-    "/nx%2Dops",
-    "/%6Cogin",
-  ])("percent-encoded operational path %s must remain noindex", (path) => {
-    expect(isOperationalRoute(path)).toBe(true);
-  });
+  it.each(["/%73ec/twin", "/sec%2Fmaintenance", "/nx%2Dops", "/%6Cogin"])(
+    "percent-encoded operational path %s must remain noindex",
+    (path) => {
+      expect(isOperationalRoute(path)).toBe(true);
+    },
+  );
 
   it("preserves marketing paths and handles malformed percent escapes safely", () => {
     expect(isOperationalRoute("/cont%61ct")).toBe(false);
