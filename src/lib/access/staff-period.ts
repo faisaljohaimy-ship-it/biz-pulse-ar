@@ -117,14 +117,12 @@ export function previousPeriod(p: AccessPeriod): AccessPeriod {
 export function recentPeriods(count: number, now: Date = new Date()): AccessPeriod[] {
   const out: AccessPeriod[] = [];
   let p = currentPeriod(now);
-  // A finite historical ceiling prevents Infinity from hanging the UI or
-  // huge counts from walking beyond the oldest parseable period (1000-H1).
-  // The do/while preserves the existing minimum of one and fractional counts.
-  let remaining = Math.min(Number.isFinite(count) ? count : 1, (p.year - 1000) * 2 + p.half);
+  // Always include at least one period, even for NaN or infinities.
+  // Stop before enumerating years older than parsePeriodKey accepts.
   do {
     out.push(p);
     p = previousPeriod(p);
-  } while (--remaining > 0);
+  } while (Number.isFinite(count) && --count > 0 && p.year >= 1000);
   return out;
 }
 
