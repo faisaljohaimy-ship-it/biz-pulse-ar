@@ -86,7 +86,12 @@ async function runFixture(options = {}) {
       if (options.multilineSse) {
         // A single valid SSE event can span multiple data: lines.
         const newline = options.multilineCrLf ? "\r\n" : "\n";
-        body = ['data: {"type":"text-delta",', 'data: "delta":' + JSON.stringify(text) + '}', "", ""].join(newline);
+        body = [
+          'data: {"type":"text-delta",',
+          'data: "delta":' + JSON.stringify(text) + "}",
+          "",
+          "",
+        ].join(newline);
       }
       if (options.event) {
         const serialized = JSON.stringify(options.event);
@@ -473,7 +478,11 @@ test("C1 accepts CRLF-delimited multiline SSE data fields", async () => {
 });
 
 test("C1 rejects a multiline SSE error after Arabic text even with DONE", async () => {
-  const r = await runFixture({ multilineSse: true, multilineError: true, event: { type: "error", errorText: "upstream error" } });
+  const r = await runFixture({
+    multilineSse: true,
+    multilineError: true,
+    event: { type: "error", errorText: "upstream error" },
+  });
   assert.equal(r.result("C1 chat").status, "fail");
   assert.equal(r.exitCode, 1);
 });
