@@ -45,4 +45,28 @@ describe("runtime execution health", () => {
   it("keeps an explicit failure as warning despite an invalid freshness limit", () => {
     expect(recentExecutionHealth(2, "failed", Number.NaN)).toBe("warning");
   });
+  it.each([
+    "queued",
+    "pending",
+    "scheduled",
+    "paused",
+    "waiting_approval",
+    "awaiting_approval",
+    "approval_pending",
+    "unrecognized",
+  ])("does not claim %s is healthy without execution evidence", (status) => {
+    expect(recentExecutionHealth(2, status, 24 * 60)).toBe("unknown");
+    expect(recentExecutionHealth(24 * 60, status, 24 * 60)).toBe("unknown");
+  });
+
+  it.each(["blocked", "rejected"])("reports a recent terminal %s run as warning", (status) => {
+    expect(recentExecutionHealth(2, status, 24 * 60)).toBe("warning");
+  });
+
+  it.each(["success", "completed", "done"])(
+    "keeps a recent explicitly successful %s run healthy",
+    (status) => {
+      expect(recentExecutionHealth(2, status, 24 * 60)).toBe("healthy");
+    },
+  );
 });
