@@ -445,8 +445,7 @@ for (const route of ROUTES) {
           directives.get("default-src");
         return (
           sources !== undefined &&
-          (sources.length === 0 ||
-            (sources.length === 1 && sources[0].toLowerCase() === "'none'"))
+          (sources.length === 0 || (sources.length === 1 && sources[0].toLowerCase() === "'none'"))
         );
       });
     // النطاق `neexios.com` معرّف تقني (رابط · بريد · بيانات منظَّمة) لا اسم
