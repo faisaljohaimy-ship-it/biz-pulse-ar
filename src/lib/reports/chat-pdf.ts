@@ -88,6 +88,14 @@ const stripInline = (s: string) =>
     .replace(/~~(.+?)~~/g, "$1")
     .trim();
 
+/** Only a full GFM alignment row is a table delimiter. Incident IDs and
+ * table values beginning with dashes must never be silently discarded. */
+function isMarkdownTableDelimiter(line: string): boolean {
+  if (!line.includes("|")) return false;
+  const cells = line.replace(/^\|/, "").replace(/\|$/, "").split("|");
+  return cells.length >= 2 && cells.every((cell) => /^\s*:?-+:?\s*$/.test(cell));
+}
+
 export function markdownToLines(md: string): ChatPdfLine[] {
   const lines: ChatPdfLine[] = [];
   for (const raw of sanitizePdfText(md).split("\n")) {
@@ -97,7 +105,7 @@ export function markdownToLines(md: string): ChatPdfLine[] {
         lines.push({ kind: "gap", text: "" });
       continue;
     }
-    if (/^\|?\s*:?-{2,}/.test(t) && /-\|/.test(t.replace(/\s/g, ""))) continue; // فاصل الجدول
+    if (isMarkdownTableDelimiter(t)) continue; // فاصل الجدول الحقيقي
     let m: RegExpMatchArray | null;
     if ((m = t.match(/^#{1,6}\s+(.*)$/))) lines.push({ kind: "h", text: stripInline(m[1]) });
     else if ((m = t.match(/^(?:[-*+•]|\d+[.)])\s+(.*)$/)))
