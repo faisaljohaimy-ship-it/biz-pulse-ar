@@ -206,6 +206,40 @@ for (const [label, statuses, expected] of [
 
 // HTML parses named character references too. An un-decoded href can
 // certify a decoy stylesheet while the browser requests a broken real asset.
+// Browser HTML parsing replaces invalid numeric references and remaps
+// legacy Windows-1252 character references before requesting CSS assets.
+for (const [label, encodedHref, expectedUrl] of [
+  ["C1 euro sign", "/assets/app&#x80;.css", "https://offline.invalid/assets/app%E2%82%AC.css"],
+  ["null replacement", "/assets/app&#0;.css", "https://offline.invalid/assets/app%EF%BF%BD.css"],
+]) {
+  test("resolves HTML numeric character references in CSS URLs: " + label, async () => {
+    const html = normalPage.replace(
+      '<link rel="stylesheet" href="/assets/app.css">',
+      '<link rel="stylesheet" href="' + encodedHref + '">',
+    );
+    assert.equal(
+      await runFixture(html, "text/html", 200, "text/css", "body {}", 200, expectedUrl),
+      null,
+    );
+  });
+}
+
+test("cannot certify broken CSS through a decoy C1 numeric-reference URL", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="stylesheet" href="/assets/app&#x80;.css">',
+  );
+  const actualBrowserUrl = "https://offline.invalid/assets/app%E2%82%AC.css";
+  const decoyCheckerUrl = "https://offline.invalid/assets/app%C2%80.css";
+  assert.equal(
+    await runFixture(html, "text/html", 200, "text/css", "body {}", 200, actualBrowserUrl, {
+      [actualBrowserUrl]: { status: 404 },
+      [decoyCheckerUrl]: { status: 200 },
+    }),
+    1,
+  );
+});
+
 test("resolves named &sol; references in stylesheet paths", async () => {
   const html = normalPage.replace(
     '<link rel="stylesheet" href="/assets/app.css">',

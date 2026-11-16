@@ -328,7 +328,44 @@ function decodeMetaAttribute(value) {
       }
       const hex = numeric[0].toLowerCase() === "x";
       const code = Number.parseInt(hex ? numeric.slice(1) : numeric, hex ? 16 : 10);
-      return code > 0 && code <= 0x10ffff ? String.fromCodePoint(code) : entity;
+      // The HTML tokenizer remaps legacy C1 numeric references to printable
+      // Unicode characters; e.g. &#x80; means EURO SIGN, not U+0080.
+      // A decoy CSS URL must not certify an asset the browser cannot load.
+      const htmlC1Remap = {
+        0x80: 0x20ac,
+        0x82: 0x201a,
+        0x83: 0x0192,
+        0x84: 0x201e,
+        0x85: 0x2026,
+        0x86: 0x2020,
+        0x87: 0x2021,
+        0x88: 0x02c6,
+        0x89: 0x2030,
+        0x8a: 0x0160,
+        0x8b: 0x2039,
+        0x8c: 0x0152,
+        0x8e: 0x017d,
+        0x91: 0x2018,
+        0x92: 0x2019,
+        0x93: 0x201c,
+        0x94: 0x201d,
+        0x95: 0x2022,
+        0x96: 0x2013,
+        0x97: 0x2014,
+        0x98: 0x02dc,
+        0x99: 0x2122,
+        0x9a: 0x0161,
+        0x9b: 0x203a,
+        0x9c: 0x0153,
+        0x9e: 0x017e,
+        0x9f: 0x0178,
+      };
+      const scalar = htmlC1Remap[code] ?? code;
+      // HTML emits U+FFFD for null, surrogates and out-of-range references.
+      if (scalar === 0 || scalar > 0x10ffff || (scalar >= 0xd800 && scalar <= 0xdfff)) {
+        return "\ufffd";
+      }
+      return String.fromCodePoint(scalar);
     },
   );
 }
