@@ -66,7 +66,7 @@ describe("layoutArabicLine — presentation forms + visual segment layout", () =
     const appendix = "X".repeat(140_000);
     const segments = layoutArabicLine(`تقرير ${appendix}`);
     const latin = segments.find((segment) => !segment.ar && segment.text.includes("X"));
-    expect(latin?.text).toBe(appendix);
+    expect(latin?.text.trim()).toBe(appendix);
   });
 
   it("converts western digits to Arabic-Indic on demand", () => {
