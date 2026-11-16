@@ -183,12 +183,7 @@ const asCount = (v: unknown): number | null => {
     return Number.isSafeInteger(count) ? count : null;
   }
   if (Array.isArray(v)) return v.length;
-  if (
-    isRecord(v) &&
-    typeof v.count === "number" &&
-    Number.isFinite(v.count) &&
-    v.count >= 0
-  ) {
+  if (isRecord(v) && typeof v.count === "number" && Number.isFinite(v.count) && v.count >= 0) {
     const count = Math.floor(v.count);
     return Number.isSafeInteger(count) ? count : null;
   }
