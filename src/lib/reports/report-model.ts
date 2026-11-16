@@ -160,7 +160,15 @@ export function formatMeasure(
   if (m.state === "unmeasured") {
     return lang === "ar" ? m.unmeasuredLabelAr : m.unmeasuredLabelEn;
   }
-  const n = opts.digits === undefined ? m.value : Number(m.value.toFixed(opts.digits));
+  // Persisted or caller-supplied precision must not crash PDF/Excel generation.
+  // Ignore invalid precision rather than discarding a genuinely measured value.
+  const n =
+    opts.digits !== undefined &&
+    Number.isInteger(opts.digits) &&
+    opts.digits >= 0 &&
+    opts.digits <= 100
+      ? Number(m.value.toFixed(opts.digits))
+      : m.value;
   const base = opts.percent ? `${n}%` : String(n);
   return opts.unit ? `${base} ${t(opts.unit, lang)}` : base;
 }
