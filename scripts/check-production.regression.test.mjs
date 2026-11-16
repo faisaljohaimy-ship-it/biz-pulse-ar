@@ -1577,3 +1577,31 @@ test("enforces head meta CSP inserted after the first stylesheet on the second s
     1,
   );
 });
+
+// Script and style raw text cannot terminate the real HTML head. A deceptive
+// closing-head/opening-body token must not hide later enforced head meta CSP.
+for (const [label, decoy] of [
+  ["a closing head token in a JS string", "</head>"],
+  ["an opening body token in a JS string", "<body class=decoy>"],
+]) {
+  test("enforces meta CSP after " + label, async () => {
+    const html = normalPage
+      .replace(
+        "sessionStorage.getItem('theme')",
+        `const marker = ${JSON.stringify(decoy)}; sessionStorage.getItem('theme')`,
+      )
+      .replace(
+        '<link rel="stylesheet"',
+        '<meta http-equiv="Content-Security-Policy" content="style-src \u0027none\u0027"><link rel="stylesheet"',
+      );
+    assert.equal(await runFixture(html), 1);
+  });
+}
+
+test("enforces head meta CSP after fake closing head token in style text", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet"',
+    '<style>body::after { content: "</head>"; }</style><meta http-equiv="Content-Security-Policy" content="style-src \u0027none\u0027"><link rel="stylesheet"',
+  );
+  assert.equal(await runFixture(html), 1);
+});
