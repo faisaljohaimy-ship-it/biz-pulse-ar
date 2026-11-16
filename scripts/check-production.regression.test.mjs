@@ -1696,7 +1696,6 @@ test("enforces head meta CSP after fake closing head token in style text", async
   assert.equal(await runFixture(html), 1);
 });
 
-
 // A quoted '>' is attribute data, not the end of an HTML opening tag.
 // The old matcher truncated the tag before "disabled" and could certify
 // disabled CSS as a production-ready active stylesheet.
