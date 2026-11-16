@@ -113,7 +113,9 @@ function shapeWord(word: string): string {
     out.push(form);
     i += 1;
   }
-  return String.fromCodePoint(...out);
+  // The Arabic letters and presentation forms above are all BMP code points.
+  // Mapping avoids V8's argument limit without allocating a giant call frame.
+  return out.map((cp) => String.fromCharCode(cp)).join("");
 }
 
 const AR_RUN = /[ء-يـ]+/g;
@@ -225,8 +227,13 @@ export function layoutArabicLine(input: string): ArabicSegment[] {
     if (levels[order[i]!] < 2) continue;
     let j = i;
     while (j < order.length && levels[order[j]!]! >= 2) j++;
-    const run = order.slice(i, j).reverse();
-    order.splice(i, j - i, ...run);
+    // Reverse in place: spreading a long Latin run into splice can exceed
+    // V8's argument limit even when the text itself is valid.
+    for (let left = i, right = j - 1; left < right; left++, right--) {
+      const previous = order[left]!;
+      order[left] = order[right]!;
+      order[right] = previous;
+    }
     i = j - 1;
   }
   order.reverse();
