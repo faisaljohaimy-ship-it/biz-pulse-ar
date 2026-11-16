@@ -181,9 +181,7 @@ const asCount = (v: unknown): number | null => {
   if (Array.isArray(v)) return v.length;
   const count = isRecord(v) ? v.count : v;
   // IEEE-754 safely represents whole counts below 2^53.
-  return typeof count === "number" && count >= 0 && count < 2 ** 53
-    ? Math.floor(count)
-    : null;
+  return typeof count === "number" && count >= 0 && count < 2 ** 53 ? Math.floor(count) : null;
 };
 
 /**
