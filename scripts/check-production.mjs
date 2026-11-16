@@ -504,7 +504,9 @@ for (const route of ROUTES) {
     // conservative: other host/scheme source lists need browser-level evidence.
     // style-src-elem overrides style-src, which overrides default-src; separate
     // policies intersect, so any blocking policy makes the CSS unusable.
-    const stylesheetPositions = [...markupWithoutScriptBodies.matchAll(/<link\b[^>]*>/gi)]
+    // Respect `>` inside quoted HTML attributes; otherwise a disabled link
+    // can be misread as active CSS evidence, or a real href can disappear.
+    const stylesheetPositions = [...markupWithoutScriptBodies.matchAll(/<link\b(?:[^>"']|"[^"]*"|'[^']*')*>/gi)]
       .filter(([tag]) => stylesheetHref(tag))
       .map((match) => match.index);
     const cspBlocksStylesheet = stylesheetPositions.some((position) =>
@@ -564,7 +566,7 @@ for (const route of ROUTES) {
     if (immediateMetaRefresh) {
       failures.push(route + ": الصفحة تحوّل أو تعيد التحميل تلقائيًا عبر meta refresh");
     }
-    const stylesheetLinks = [...activeMarkup.matchAll(/<link\b[^>]*>/gi)]
+    const stylesheetLinks = [...activeMarkup.matchAll(/<link\b(?:[^>"']|"[^"]*"|'[^']*')*>/gi)]
       .map(([tag]) => stylesheetHref(tag))
       .filter(Boolean);
     const hasCss = stylesheetLinks.length > 0;
