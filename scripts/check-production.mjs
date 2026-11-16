@@ -372,8 +372,7 @@ for (const route of ROUTES) {
     );
     // A CSP supplied by an early <meta http-equiv> in the document head
     // is enforced by browsers even without a Content-Security-Policy header.
-    // Only count meta policies before all required script/stylesheet resources:
-    // later policies cannot retroactively block earlier elements.
+    // A head-delivered meta CSP applies only to resources parsed after that declaration.
     const headBoundary = /<\/head\s*>|<body\b/i.exec(nonInertHtml);
     // Keep source offsets stable while ignoring decoy markup inside scripts/styles.
     const markupWithoutScriptBodies = nonInertHtml.replace(
@@ -484,7 +483,8 @@ for (const route of ROUTES) {
             directives.get("default-src");
           return (
             sources !== undefined &&
-            (sources.length === 0 || (sources.length === 1 && sources[0].toLowerCase() === "'none'"))
+            (sources.length === 0 ||
+              (sources.length === 1 && sources[0].toLowerCase() === "'none'"))
           );
         }),
     );
