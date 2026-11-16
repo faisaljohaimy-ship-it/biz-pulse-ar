@@ -222,5 +222,4 @@ describe("public incident bounded JSON parsing", () => {
       if (watchdog) clearTimeout(watchdog);
     }
   });
-
 });
