@@ -178,10 +178,20 @@ const isRecord = (v: unknown): v is Record<string, unknown> =>
   typeof v === "object" && v !== null && !Array.isArray(v);
 
 const asCount = (v: unknown): number | null => {
-  if (typeof v === "number" && Number.isFinite(v) && v >= 0) return Math.floor(v);
+  if (typeof v === "number" && Number.isFinite(v) && v >= 0) {
+    const count = Math.floor(v);
+    return Number.isSafeInteger(count) ? count : null;
+  }
   if (Array.isArray(v)) return v.length;
-  if (isRecord(v) && typeof v.count === "number" && Number.isFinite(v.count))
-    return Math.max(0, Math.floor(v.count));
+  if (
+    isRecord(v) &&
+    typeof v.count === "number" &&
+    Number.isFinite(v.count) &&
+    v.count >= 0
+  ) {
+    const count = Math.floor(v.count);
+    return Number.isSafeInteger(count) ? count : null;
+  }
   return null;
 };
 
@@ -210,7 +220,10 @@ export function toolFailureCount(auditJson: unknown): number | null {
     const failed = typeof v.failed === "number" ? asCount(v.failed) : null;
     const rejected = typeof v.rejected === "number" ? asCount(v.rejected) : null;
     if (failed === null && rejected === null) return null;
-    return (failed ?? 0) + (rejected ?? 0);
+    // Individually valid counters can still exceed JavaScript's exact integer range.
+    // Never display a rounded execution count as a measured audit value.
+    const total = (failed ?? 0) + (rejected ?? 0);
+    return Number.isSafeInteger(total) ? total : null;
   }
   return asCount(v);
 }
