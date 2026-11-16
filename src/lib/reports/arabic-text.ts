@@ -113,13 +113,9 @@ function shapeWord(word: string): string {
     out.push(form);
     i += 1;
   }
-  // A single report field can exceed V8's maximum call argument count.
-  // Chunk shaping output so long Arabic lines cannot crash PDF export.
-  const chunks: string[] = [];
-  for (let start = 0; start < out.length; start += 8192) {
-    chunks.push(String.fromCodePoint(...out.slice(start, start + 8192)));
-  }
-  return chunks.join("");
+  // The Arabic letters and presentation forms above are all BMP code points.
+  // Mapping avoids V8's argument limit without allocating a giant call frame.
+  return out.map((cp) => String.fromCharCode(cp)).join("");
 }
 
 const AR_RUN = /[ء-يـ]+/g;
