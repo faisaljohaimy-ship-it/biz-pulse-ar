@@ -40,6 +40,18 @@ function configured(value: string | undefined, minLength = 1): boolean {
   );
 }
 
+/** Require a real HTTPS endpoint, not a string that merely starts with "https://". */
+function validHttpsEndpoint(value: string | undefined): boolean {
+  if (!value?.trim()) return false;
+  try {
+    const url = new URL(value.trim());
+    // Userinfo in an operational endpoint is not a valid configuration.
+    return url.protocol === "https:" && !!url.hostname && !url.username && !url.password;
+  } catch {
+    return false;
+  }
+}
+
 function capability(
   provider: string | null,
   required: Array<[name: string, valid: boolean]>,
@@ -52,7 +64,7 @@ export function inspectSadeedProviderReadiness(
   env: Record<string, string | undefined> = process.env,
 ): SadeedProviderReadiness {
   const database = capability("supabase", [
-    ["SUPABASE_URL", /^https:\/\//i.test(env.SUPABASE_URL?.trim() ?? "")],
+    ["SUPABASE_URL", validHttpsEndpoint(env.SUPABASE_URL)],
     ["SUPABASE_PUBLISHABLE_KEY", configured(env.SUPABASE_PUBLISHABLE_KEY, 20)],
     ["SUPABASE_SERVICE_ROLE_KEY", configured(env.SUPABASE_SERVICE_ROLE_KEY, 20)],
   ]);
@@ -116,7 +128,7 @@ export function inspectSadeedProviderReadiness(
     ],
     [
       "TWILIO_STATUS_CALLBACK_URL",
-      /^https:\/\//i.test(env.TWILIO_STATUS_CALLBACK_URL?.trim() ?? ""),
+      validHttpsEndpoint(env.TWILIO_STATUS_CALLBACK_URL),
     ],
   ]);
 
