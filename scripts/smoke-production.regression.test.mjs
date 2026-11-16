@@ -96,9 +96,12 @@ async function runFixture(options = {}) {
       if (options.event) {
         const serialized = JSON.stringify(options.event);
         const split = serialized.indexOf(",");
-        body += options.multilineError && split >= 0
-          ? "data: " + serialized.slice(0, split + 1) + "\ndata: " + serialized.slice(split + 1) + "\n\n"
-          : encodeEvent(options.event);
+        if (options.multilineError && split >= 0) {
+          const fragments = [serialized.slice(0, split + 1), serialized.slice(split + 1)];
+          body += fragments.map((line) => `data: ${line}`).join("\n") + "\n\n";
+        } else {
+          body += encodeEvent(options.event);
+        }
       }
       if (
         !options.omitDone &&
