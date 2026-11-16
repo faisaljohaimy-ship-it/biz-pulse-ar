@@ -161,6 +161,24 @@ describe("UI-2 — الحالة المشتقّة من audit_json", () => {
     expect(excludedToolCount({})).toBeNull();
     expect(toolFailureCount({ toolFailures: [{}] })).toBe(1);
   });
+  it("rejects unsafe audit counters rather than showing fabricated precise totals", () => {
+    expect(toolFailureCount({ toolFailures: Number.MAX_SAFE_INTEGER + 1 })).toBeNull();
+    expect(toolFailureCount({ toolFailures: { count: Number.MAX_SAFE_INTEGER + 1 } })).toBeNull();
+    expect(
+      toolFailureCount({ toolFailures: { failed: Number.MAX_SAFE_INTEGER, rejected: 1 } }),
+    ).toBeNull();
+    expect(
+      toolFailureCount({ toolFailures: { failed: Number.MAX_SAFE_INTEGER + 1, rejected: 2 } }),
+    ).toBe(2);
+    expect(toolFailureCount({ toolFailures: { failed: 2, rejected: 1 } })).toBe(3);
+  });
+
+  it("does not translate malformed negative stored counts into observed zero", () => {
+    expect(toolFailureCount({ toolFailures: { count: -4 } })).toBeNull();
+    expect(excludedToolCount({ excludedTools: { count: -2 } })).toBeNull();
+    expect(toolFailureCount({ toolFailures: { count: 0 } })).toBe(0);
+  });
+
   it("does not let invalid/negative failure components mask the other count", () => {
     expect(toolFailureCount({ toolFailures: { failed: -4, rejected: 3 } })).toBe(3);
     expect(toolFailureCount({ toolFailures: { failed: Number.NaN, rejected: 2 } })).toBe(2);
