@@ -1695,3 +1695,30 @@ test("enforces head meta CSP after fake closing head token in style text", async
   );
   assert.equal(await runFixture(html), 1);
 });
+
+// A quoted '>' is attribute data, not the end of an HTML opening tag.
+// The old matcher truncated the tag before "disabled" and could certify
+// disabled CSS as a production-ready active stylesheet.
+test("rejects disabled CSS after a quoted angle bracket attribute", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="stylesheet" href="/assets/app.css" data-note=">" disabled>',
+  );
+  assert.equal(await runFixture(html), 1);
+});
+
+test("rejects disabled single-quoted CSS after a quoted angle bracket", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    `<link rel='stylesheet' href='/assets/app.css' data-note='>' disabled>`,
+  );
+  assert.equal(await runFixture(html), 1);
+});
+
+test("retains a working stylesheet href after a quoted angle bracket", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="stylesheet" data-note=">" href="/assets/app.css">',
+  );
+  assert.equal(await runFixture(html), null);
+});
