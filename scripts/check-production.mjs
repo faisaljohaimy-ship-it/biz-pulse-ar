@@ -375,55 +375,58 @@ for (const route of ROUTES) {
     // Only count meta policies before all required script/stylesheet resources:
     // later policies cannot retroactively block earlier elements.
     const headBoundary = /<\/head\s*>|<body\b/i.exec(nonInertHtml);
-    const headMarkup = nonInertHtml
-      .slice(0, headBoundary?.index ?? nonInertHtml.length)
-      .replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, (tag) => " ".repeat(tag.length));
-    const resourcePositions = [
-      ...[...headMarkup.matchAll(/<script\b[^>]*>/gi)].map((match) => match.index),
-      ...[...headMarkup.matchAll(/<link\b[^>]*>/gi)]
-        .filter((match) => stylesheetHref(match[0]))
-        .map((match) => match.index),
-    ];
-    const firstResourceAt = resourcePositions.reduce((first, at) => Math.min(first, at), Infinity);
-    const headMetaPolicies = [...headMarkup.matchAll(/<meta\b[^>]*>/gi)]
-      .filter((match) => match.index < firstResourceAt)
-      .flatMap((match) => {
-        const attrs = tagAttributes(match[0], 5);
-        if (
-          decodeMetaAttribute(attrs["http-equiv"] || "")
-            .trim()
-            .toLowerCase() !== "content-security-policy" ||
-          !attrs.content
+    // Keep source offsets stable while ignoring decoy markup inside scripts/styles.
+    const markupWithoutScriptBodies = nonInertHtml.replace(
+      /<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,
+      (tag) => " ".repeat(tag.length),
+    );
+    const headMarkup = markupWithoutScriptBodies.slice(
+      0,
+      headBoundary?.index ?? markupWithoutScriptBodies.length,
+    );
+    // Unlike HTTP CSP, a meta policy starts applying only after its tag is
+    // parsed. A policy between two resources must not retroactively block
+    // the first, but must still be enforced on the second.
+    const headMetaPolicies = [...headMarkup.matchAll(/<meta\b[^>]*>/gi)].flatMap((match) => {
+      const attrs = tagAttributes(match[0], 5);
+      if (
+        decodeMetaAttribute(attrs["http-equiv"] || "")
+          .trim()
+          .toLowerCase() !== "content-security-policy" ||
+        !attrs.content
+      )
+        return [];
+      return [{ position: match.index, policy: decodeMetaAttribute(attrs.content) }];
+    });
+    const headerPolicies = (res.headers.get("content-security-policy") || "").split(",");
+    const scriptSourcesAt = (position) =>
+      headerPolicies
+        .concat(
+          headMetaPolicies.filter((meta) => meta.position < position).map(({ policy }) => policy),
         )
-          return [];
-        return [decodeMetaAttribute(attrs.content)];
-      });
-
-    const enforcedScriptSources = (res.headers.get("content-security-policy") || "")
-      .split(",")
-      .concat(headMetaPolicies)
-      .map((policy) => {
-        const directives = new Map();
-        for (const directive of policy.split(";")) {
-          const [rawName, ...sources] = directive.trim().split(/\s+/);
-          const name = rawName?.toLowerCase();
-          if (name && !directives.has(name)) directives.set(name, sources);
-        }
-        return (
-          directives.get("script-src-elem") ??
-          directives.get("script-src") ??
-          directives.get("default-src") ??
-          null
-        );
-      })
-      .filter((sources) => sources !== null);
+        .map((policy) => {
+          const directives = new Map();
+          for (const directive of policy.split(";")) {
+            const [rawName, ...sources] = directive.trim().split(/\s+/);
+            const name = rawName?.toLowerCase();
+            if (name && !directives.has(name)) directives.set(name, sources);
+          }
+          return (
+            directives.get("script-src-elem") ??
+            directives.get("script-src") ??
+            directives.get("default-src") ??
+            null
+          );
+        })
+        .filter((sources) => sources !== null);
 
     // الاختيار في `sessionStorage` منذ ٢٠٢٦/١٠/٢٤ (الداكن افتراضًا دائمًا): السكربت المانع يقرؤه منه لا من `localStorage`.
     // Only executable script elements count as theme-bootstrap evidence.
     // Comments, templates and textarea content are inert, even when they quote JS.
     const inlineBootstrapCandidates = [
       ...nonInertHtml.matchAll(/(<script\b[^>]*>)([\s\S]*?)<\/script\s*>/gi),
-    ].flatMap(([, openingTag, body]) => {
+    ].flatMap((match) => {
+      const [, openingTag, body] = match;
       // Only executable inline scripts can initialize the theme.
       const scriptAttrs = scriptAttributes(openingTag);
       if ("nomodule" in scriptAttrs) return [];
@@ -436,14 +439,14 @@ for (const route of ROUTES) {
         type === "text/x-javascript" ||
         type === "application/x-javascript";
       return executable && !("src" in scriptAttrs) && hasExecutableThemeBootstrap(body)
-        ? [scriptAttrs]
+        ? [{ attrs: scriptAttrs, position: match.index }]
         : [];
     });
     const themeScript = inlineBootstrapCandidates.length > 0;
     const cspBlocksTheme =
       themeScript &&
-      !inlineBootstrapCandidates.some((attrs) =>
-        enforcedScriptSources.every((sources) => {
+      !inlineBootstrapCandidates.some(({ attrs, position }) =>
+        scriptSourcesAt(position).every((sources) => {
           // CSP3 ignores 'unsafe-inline' when a nonce/hash source is present.
           // Match a real nonce; fail closed on hash-only policies unless the
           // bootstrap can be proven executable in a future hash-aware check.
@@ -460,25 +463,31 @@ for (const route of ROUTES) {
     // conservative: other host/scheme source lists need browser-level evidence.
     // style-src-elem overrides style-src, which overrides default-src; separate
     // policies intersect, so any blocking policy makes the CSS unusable.
-    const cspBlocksStylesheet = (res.headers.get("content-security-policy") || "")
-      .split(",")
-      .concat(headMetaPolicies)
-      .some((policy) => {
-        const directives = new Map();
-        for (const directive of policy.split(";")) {
-          const [rawName, ...sources] = directive.trim().split(/\s+/);
-          const name = rawName?.toLowerCase();
-          if (name && !directives.has(name)) directives.set(name, sources);
-        }
-        const sources =
-          directives.get("style-src-elem") ??
-          directives.get("style-src") ??
-          directives.get("default-src");
-        return (
-          sources !== undefined &&
-          (sources.length === 0 || (sources.length === 1 && sources[0].toLowerCase() === "'none'"))
-        );
-      });
+    const stylesheetPositions = [...markupWithoutScriptBodies.matchAll(/<link\b[^>]*>/gi)]
+      .filter(([tag]) => stylesheetHref(tag))
+      .map((match) => match.index);
+    const cspBlocksStylesheet = stylesheetPositions.some((position) =>
+      headerPolicies
+        .concat(
+          headMetaPolicies.filter((meta) => meta.position < position).map(({ policy }) => policy),
+        )
+        .some((policy) => {
+          const directives = new Map();
+          for (const directive of policy.split(";")) {
+            const [rawName, ...sources] = directive.trim().split(/\s+/);
+            const name = rawName?.toLowerCase();
+            if (name && !directives.has(name)) directives.set(name, sources);
+          }
+          const sources =
+            directives.get("style-src-elem") ??
+            directives.get("style-src") ??
+            directives.get("default-src");
+          return (
+            sources !== undefined &&
+            (sources.length === 0 || (sources.length === 1 && sources[0].toLowerCase() === "'none'"))
+          );
+        }),
+    );
     // النطاق `neexios.com` معرّف تقني (رابط · بريد · بيانات منظَّمة) لا اسم
     // معروض، وهو مُستثنى صراحةً في حارس العلامة على المصدر. يُنزع قبل المسح
     // وإلا رسب كل مسار على ذكر رابطه القانوني. أما `NEEXIOS` في نصّ مرئي
