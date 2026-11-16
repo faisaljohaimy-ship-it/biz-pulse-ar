@@ -63,16 +63,24 @@ describe("isTransientOverload — الازدحام العابر يُعاد، و�
 
   it("يحترم status القياسي في أخطاء مزوّدي AI: لا إعادة للحصّة أو الرفض حتى مع نص ازدحام", () => {
     for (const status of [400, 401, 402, 403, 404, 429]) {
-      expect(isTransientOverload(Object.assign(err("Service unavailable"), { status })), String(status)).toBe(false);
+      const sdkError = Object.assign(err("Service unavailable"), { status });
+      expect(isTransientOverload(sdkError), String(status)).toBe(false);
     }
     // A structured 429 wins even if incidental response text mentions a 503.
-    expect(isTransientOverload(Object.assign(err("503 service unavailable"), { status: 429 }))).toBe(false);
+    const quotaWithServerError = Object.assign(err("503 service unavailable"), { status: 429 });
+    expect(isTransientOverload(quotaWithServerError)).toBe(false);
     // An invalid legacy field must not hide a valid status from the provider SDK.
-    expect(isTransientOverload(Object.assign(err("service unavailable"), { statusCode: null, status: 429 }))).toBe(false);
+    const quotaWithInvalidLegacyStatus = Object.assign(err("service unavailable"), {
+      statusCode: null,
+      status: 429,
+    });
+    expect(isTransientOverload(quotaWithInvalidLegacyStatus)).toBe(false);
     for (const status of [500, 502, 503, 504]) {
-      expect(isTransientOverload(Object.assign(err("upstream failed"), { status })), String(status)).toBe(true);
+      const sdkError = Object.assign(err("upstream failed"), { status });
+      expect(isTransientOverload(sdkError), String(status)).toBe(true);
     }
-    expect(isTransientOverload(Object.assign(err("service unavailable"), { status: "403" }))).toBe(false);
+    const stringStatus = Object.assign(err("service unavailable"), { status: "403" });
+    expect(isTransientOverload(stringStatus)).toBe(false);
   });
 
   it("الإلغاء والمهلة لا يُعادان", () => {
