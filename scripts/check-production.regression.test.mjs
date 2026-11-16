@@ -87,15 +87,26 @@ test("accepts exact text/css with a charset parameter", async () => {
 for (const [label, policy, expected] of [
   ["style-src none", "style-src 'none'", 1],
   ["style-src-elem none overrides self", "style-src 'self'; style-src-elem 'none'", 1],
-  ["default-src none without style override", "default-src 'none'", 1],
+  ["default-src none without style override", "default-src 'none'; script-src 'unsafe-inline'", 1],
   ["empty style-src source list", "style-src", 1],
-  ["second policy blocks styles", "style-src 'self', default-src 'none'", 1],
-  ["self style override beats default none", "default-src 'none'; style-src 'self'", null],
+  ["second policy blocks styles", "style-src 'self', style-src 'none'", 1],
+  ["self style override beats default none", "default-src 'none'; script-src 'unsafe-inline'; style-src 'self'", null],
   ["style-src-elem self overrides style-src none", "style-src 'none'; style-src-elem 'self'", null],
 ]) {
   test("enforces stylesheet CSP: " + label, async () => {
     assert.equal(
-      await runFixture(normalPage, "text/html", 200, "text/css", "body {}", 200, undefined, null, null, policy),
+      await runFixture(
+        normalPage,
+        "text/html",
+        200,
+        "text/css",
+        "body {}",
+        200,
+        undefined,
+        null,
+        null,
+        policy,
+      ),
       expected,
     );
   });
