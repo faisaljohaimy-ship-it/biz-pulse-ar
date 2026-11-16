@@ -1508,7 +1508,7 @@ test("honors restrictive head meta CSP despite a permissive HTTP policy", async 
 test("accepts early head meta CSP allowing theme and CSS", async () => {
   const html = normalPage.replace(
     "<script>",
-    '<meta http-equiv="Content-Security-Policy" content="script-src \'unsafe-inline\'; style-src \'self\'"><script>',
+    "<meta http-equiv=\"Content-Security-Policy\" content=\"script-src 'unsafe-inline'; style-src 'self'\"><script>",
   );
   assert.equal(await runFixture(html), null);
 });
@@ -1516,7 +1516,7 @@ test("accepts early head meta CSP allowing theme and CSS", async () => {
 test("does not retroactively enforce late head meta CSP on earlier resources", async () => {
   const html = normalPage.replace(
     "</head>",
-    '<meta http-equiv="Content-Security-Policy" content="script-src \'none\'; style-src \'none\'"></head>',
+    "<meta http-equiv=\"Content-Security-Policy\" content=\"script-src 'none'; style-src 'none'\"></head>",
   );
   assert.equal(await runFixture(html), null);
 });

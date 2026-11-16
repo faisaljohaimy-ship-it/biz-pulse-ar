@@ -390,10 +390,12 @@ for (const route of ROUTES) {
       .flatMap((match) => {
         const attrs = tagAttributes(match[0], 5);
         if (
-          decodeMetaAttribute(attrs["http-equiv"] || "").trim().toLowerCase() !==
-            "content-security-policy" ||
+          decodeMetaAttribute(attrs["http-equiv"] || "")
+            .trim()
+            .toLowerCase() !== "content-security-policy" ||
           !attrs.content
-        ) return [];
+        )
+          return [];
         return [decodeMetaAttribute(attrs.content)];
       });
 
