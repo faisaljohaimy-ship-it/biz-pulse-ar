@@ -119,6 +119,15 @@ export async function buildExecutiveSnapshot(
     orgId ? patQ.eq("org_id", orgId) : patQ,
   ]);
 
+  // PostgREST returns query failures in `error` without rejecting. Silently
+  // replacing those results with [] makes a failed source look like a genuine
+  // zero-incident / zero-permit report. Never certify partial data as complete.
+  // Keep internal database error details out of exported reports.
+  if (inc.error) throw new Error("Executive snapshot source failed: sec_incidents");
+  if (wo.error) throw new Error("Executive snapshot source failed: sec_work_orders");
+  if (pm.error) throw new Error("Executive snapshot source failed: sec_permits");
+  if (pat.error) throw new Error("Executive snapshot source failed: sec_patrols");
+
   return {
     generatedAt: new Date().toISOString(),
     range: opts.range,
