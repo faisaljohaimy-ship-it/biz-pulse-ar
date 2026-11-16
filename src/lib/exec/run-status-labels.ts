@@ -180,9 +180,9 @@ const isRecord = (v: unknown): v is Record<string, unknown> =>
 const asCount = (v: unknown): number | null => {
   if (Array.isArray(v)) return v.length;
   const count = isRecord(v) ? v.count : v;
-  if (typeof count !== "number") return null;
-  if (count < 0 || count > Number.MAX_SAFE_INTEGER || !Number.isFinite(count)) return null;
-  return Math.floor(count);
+  return typeof count === "number" && count >= 0 && count <= Number.MAX_SAFE_INTEGER
+    ? Math.floor(count)
+    : null;
 };
 
 /**
