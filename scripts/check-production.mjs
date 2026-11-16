@@ -506,7 +506,9 @@ for (const route of ROUTES) {
     // policies intersect, so any blocking policy makes the CSS unusable.
     // Respect `>` inside quoted HTML attributes; otherwise a disabled link
     // can be misread as active CSS evidence, or a real href can disappear.
-    const stylesheetPositions = [...markupWithoutScriptBodies.matchAll(/<link\b(?:[^>"']|"[^"]*"|'[^']*')*>/gi)]
+    const stylesheetPositions = [
+      ...markupWithoutScriptBodies.matchAll(/<link\b(?:[^>"']|"[^"]*"|'[^']*')*>/gi),
+    ]
       .filter(([tag]) => stylesheetHref(tag))
       .map((match) => match.index);
     const cspBlocksStylesheet = stylesheetPositions.some((position) =>
