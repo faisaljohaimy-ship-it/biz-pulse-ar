@@ -25,11 +25,17 @@ export const TRANSIENT_JITTER_MS = 400;
 export const TRANSIENT_MIN_REMAINING_MS = 12_000;
 
 function statusOf(error: unknown, text: string): number {
-  if (error && typeof error === "object" && "statusCode" in error) {
-    const n = Number((error as { statusCode?: unknown }).statusCode);
-    // null, false and empty status codes coerce to 0. Do not let such
-    // placeholders override a real 4xx rejection in the error message.
-    if (Number.isInteger(n) && n >= 400 && n <= 599) return n;
+  if (error && typeof error === "object") {
+    // AI SDKs expose HTTP status as either statusCode or status. A real 429/403
+    // must override an ambiguous "service unavailable" message; otherwise
+    // quota or authorization failures can trigger an unnecessary provider call.
+    for (const field of ["statusCode", "status"] as const) {
+      if (!(field in error)) continue;
+      const raw = (error as Record<string, unknown>)[field];
+      // Ignore absent/malformed fields without coercing opaque objects.
+      const n = typeof raw === "number" ? raw : typeof raw === "string" ? Number(raw) : NaN;
+      if (Number.isInteger(n) && n >= 400 && n <= 599) return n;
+    }
   }
   return Number(text.match(/\b([45]\d\d)\b/)?.[1]);
 }
