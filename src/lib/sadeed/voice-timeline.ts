@@ -45,7 +45,7 @@ interface VoiceEvent {
 
 const MAX = 500;
 const buf: VoiceEvent[] = [];
-let last = 0;
+let last = -1;
 
 function now(): number {
   if (typeof performance !== "undefined") return Math.round(performance.now());
@@ -56,7 +56,7 @@ export const VoiceTimeline = {
   push(tag: VoiceTag, msg: string, data?: Record<string, unknown>, opts?: { stack?: boolean }) {
     if (typeof window === "undefined") return;
     const t = now();
-    const dt = last ? t - last : 0;
+    const dt = last < 0 ? 0 : t - last;
     last = t;
     const evt: VoiceEvent = { t, dt, tag, msg, data };
     if (opts?.stack) {
@@ -76,7 +76,7 @@ export const VoiceTimeline = {
   },
   clear() {
     buf.length = 0;
-    last = 0;
+    last = -1;
   },
 };
 
