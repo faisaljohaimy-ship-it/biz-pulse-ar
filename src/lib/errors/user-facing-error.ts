@@ -58,11 +58,29 @@ function readableErrorMessage(error: unknown): string {
   }
 }
 
+/**
+ * HTTP clients may keep only a numeric status when sanitizing response messages.
+ * Preserve the session action for 401/403 without displaying raw provider details.
+ * Untrusted getters/proxies must never break an error boundary.
+ */
+function isSessionFailure(error: unknown): boolean {
+  if (SECRET_SHAPED.test(readableErrorMessage(error))) return true;
+  if (!error || typeof error !== "object") return false;
+  try {
+    const status = (error as { status?: unknown }).status;
+    if (status === 401 || status === 403) return true;
+    const statusCode = (error as { statusCode?: unknown }).statusCode;
+    return statusCode === 401 || statusCode === 403;
+  } catch {
+    return false;
+  }
+}
+
 export function userFacingError(error: unknown): string {
-  return SECRET_SHAPED.test(readableErrorMessage(error)) ? SESSION_ERROR_AR : GENERIC_ERROR_AR;
+  return isSessionFailure(error) ? SESSION_ERROR_AR : GENERIC_ERROR_AR;
 }
 
 /** هل يشبه هذا الخطأ خطأ جلسة؟ — لعرض «تسجيل الدخول» بدل «إعادة المحاولة». */
 export function isSessionError(error: unknown): boolean {
-  return SECRET_SHAPED.test(readableErrorMessage(error));
+  return isSessionFailure(error);
 }
