@@ -54,12 +54,17 @@ const [source, sha] = candidates.find(([, v]) => v && /^[0-9a-f]{7,40}$/i.test(v
 // A ref override belongs to its explicitly overridden SHA. Without the
 // corresponding SHA, a stale ref must not mislabel a platform-identified build.
 const ref =
-  (source === "SADEED_BUILD_SHA" ? env.SADEED_BUILD_REF : undefined) ||
-  (isVercelBuild
-    ? env.VERCEL_GIT_COMMIT_REF || env.GITHUB_REF_NAME || env.CF_PAGES_BRANCH
-    : env.GITHUB_REF_NAME || env.CF_PAGES_BRANCH || env.VERCEL_GIT_COMMIT_REF) ||
-  git("rev-parse --abbrev-ref HEAD") ||
-  "unknown";
+  (source === "SADEED_BUILD_SHA"
+    ? env.SADEED_BUILD_REF
+    : source === "VERCEL_GIT_COMMIT_SHA"
+      ? env.VERCEL_GIT_COMMIT_REF
+      : source === "GITHUB_SHA"
+        ? env.GITHUB_REF_NAME
+        : source === "CF_PAGES_COMMIT_SHA"
+          ? env.CF_PAGES_BRANCH
+          : source === "git"
+            ? git("rev-parse --abbrev-ref HEAD")
+            : undefined)?.trim() || "unknown";
 // «معدَّل» يعني تغييرًا في ملفٍّ متعقَّب؛ الملفّات غير المتعقَّبة (مسودّة، ناتج أداة)
 // لا تجعل البناء مختلفًا عن الـcommit (ملاحظة الحارس على 5fd7fd122).
 const porcelain = source === "git" ? git("status --porcelain --untracked-files=no") : "";
