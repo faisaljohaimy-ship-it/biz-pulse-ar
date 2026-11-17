@@ -292,6 +292,63 @@ test("cannot certify broken CSS through a decoy C1 numeric-reference URL", async
 
 // HTML named references are case-sensitive. A mixed-case spelling that is
 // not in the HTML entity table remains literal in the browser's asset URL.
+// Browsers decode legacy named references without a semicolon in attributes
+// when the next character is not ASCII alphanumeric or '='. The release probe
+// must not accept a decoy CSS file that the browser never requests.
+test("rejects a healthy CSS decoy behind semicolonless &amp in href", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="stylesheet" href="/assets/app&amp.css">',
+  );
+  const browserUrl = "https://offline.invalid/assets/app&.css";
+  const decoyUrl = "https://offline.invalid/assets/app&amp.css";
+  assert.equal(
+    await runFixture(html, "text/html", 200, "text/css", "body {}", 200, browserUrl, {
+      [browserUrl]: { status: 404 },
+      [decoyUrl]: { status: 200 },
+    }),
+    1,
+  );
+});
+
+test("accepts a working stylesheet using a semicolonless legacy entity", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="stylesheet" href="/assets/app&copy.css">',
+  );
+  assert.equal(
+    await runFixture(
+      html,
+      "text/html",
+      200,
+      "text/css",
+      "body {}",
+      200,
+      "https://offline.invalid/assets/app%C2%A9.css",
+    ),
+    null,
+  );
+});
+
+test("preserves ambiguous semicolonless entity before equals in an href", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="stylesheet" href="/assets/app&amp=state.css">',
+  );
+  assert.equal(
+    await runFixture(
+      html,
+      "text/html",
+      200,
+      "text/css",
+      "body {}",
+      200,
+      "https://offline.invalid/assets/app&amp=state.css",
+    ),
+    null,
+  );
+});
+
 test("cannot certify missing CSS via a mixed-case pseudo-entity decoy", async () => {
   const html = normalPage.replace(
     '<link rel="stylesheet" href="/assets/app.css">',
