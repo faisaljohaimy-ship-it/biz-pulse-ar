@@ -26,14 +26,13 @@
  * أيضًا — الترجمة لا تجعل تفصيلة البنية التحتية صالحةً للعرض.
  */
 const SECRET_SHAPED =
-  /authenticat|unauthor|token|forbidden|permission denied|jwt|bearer|api[\s_-]?key|غير مصرّ?ح|غير مصرح|صلاحي/i;
+  /authenticat|unauthor|token|forbidden|permission denied|jwt|bearer|api[\s_-]?key|غير مصرّ?ح|صلاحي/i;
 
 /** رسالة الحال العامّة — تقول ما جرى وما بقي ممكنًا، بلا اسم مورّد. */
-export const GENERIC_ERROR_AR = "تعذّر عرض هذه الشاشة الآن. حاول مرّة أخرى بعد لحظات.";
+export const GENERIC_ERROR_AR = "تعذّر عرض الشاشة الآن. حاول مجددًا بعد لحظات.";
 
 /** رسالة الجلسة — صادقة دون أن تكشف بنيةً ولا تطلب من مديرٍ قراءة سجلّ. */
-export const SESSION_ERROR_AR =
-  "انتهت الجلسة أو لم تبدأ بعد. أعد المحاولة أو سجّل الدخول للمتابعة.";
+export const SESSION_ERROR_AR = "انتهت الجلسة أو لم تبدأ. أعد المحاولة أو سجّل الدخول.";
 
 /**
  * نصّ خطأٍ صالح للعرض على واجهة عربية.
@@ -44,13 +43,9 @@ export const SESSION_ERROR_AR =
  */
 function readableErrorMessage(error: unknown): string {
   try {
-    const raw =
-      error instanceof Error
-        ? error.message
-        : typeof error === "string"
-          ? error
-          : ((error as { message?: unknown } | null)?.message ?? "");
-    return String(raw);
+    return String(
+      typeof error === "string" ? error : ((error as { message?: unknown } | null)?.message ?? ""),
+    );
   } catch {
     // A thrown value can have a hostile message getter or string coercion.
     // The error boundary must still render a safe, anonymized fallback.
@@ -59,10 +54,18 @@ function readableErrorMessage(error: unknown): string {
 }
 
 export function userFacingError(error: unknown): string {
-  return SECRET_SHAPED.test(readableErrorMessage(error)) ? SESSION_ERROR_AR : GENERIC_ERROR_AR;
+  return isSessionError(error) ? SESSION_ERROR_AR : GENERIC_ERROR_AR;
 }
 
-/** هل يشبه هذا الخطأ خطأ جلسة؟ — لعرض «تسجيل الدخول» بدل «إعادة المحاولة». */
+/** Session errors can arrive as sanitized numeric HTTP statuses without auth keywords. */
 export function isSessionError(error: unknown): boolean {
-  return SECRET_SHAPED.test(readableErrorMessage(error));
+  if (SECRET_SHAPED.test(readableErrorMessage(error))) return true;
+  try {
+    const value = error as { status?: unknown; statusCode?: unknown } | null;
+    const status = value?.status ?? value?.statusCode;
+    return status === 401 || status === 403;
+  } catch {
+    // Error objects can expose hostile getters or proxies.
+    return false;
+  }
 }
