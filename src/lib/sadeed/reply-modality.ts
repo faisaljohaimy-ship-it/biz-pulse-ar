@@ -34,17 +34,20 @@ export function shouldSpeakSadeedReply({
 export function toSadeedSpeechText(value: string): string {
   const cleaned = value
     // Never narrate fenced code, even if streaming truncates before its closing fence.
-    .replace(/```[\s\S]*?(?:```|$)|~~~[^\r\n]*\r?\n[\s\S]*?(?:~~~|$)/g, " ")
+    .replace(/```[^]*?(```|$)|~~~[^\r\n]*\r?\n[^]*?(~~~|$)/g, " ")
     .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
     // Narrate link labels, not destination URLs, anchors, or screen paths.
-    .replace(/\[([^\]]+)\]\((?:https?:\/\/|mailto:|tel:|\/|#|\.{1,2}\/)[^)]*\)/gi, "$1")
+    .replace(/\[([^\]]+)\]\((https?:\/\/|mailto:|tel:|\/|#|\.{1,2}\/)[^)]*\)/gi, "$1")
     .replace(/https?:\/\/\S+/gi, " ")
-    .replace(/\[(?:DOC|KB):[^\]]+\]/gi, " ")
-    .replace(/\[(?:\d+(?:\s*[-,]\s*\d+)*)\]/g, " ")
-    .replace(/^\s{0,3}(?:#{1,6}|>|[-*+]\s|\d+[.)]\s)/gm, "")
+    .replace(/\[(DOC|KB):[^\]]+\]/gi, " ")
+    .replace(/\[\d+(\s*[-,]\s*\d+)*\]/g, " ")
+    .replace(/^\s{0,3}(#{1,6}|>|[-*+]\s|\d+[.)]\s)/gm, "")
+    // GFM column-alignment rows are visual delimiters, not spoken content.
+    // Remove them before dropping pipes, or "--- :---:" is read aloud.
+    // Require 3+ dashes per column; keep literal "-" and ":" data cells.
+    .replace(/^[ \t|]*:?---+:?([ \t]*\|[ \t]*:?---+:?)*[ \t|]*$/gm, " ")
     .replace(/[*_~`|]/g, "")
-    .replace(/[ \t]+/g, " ")
-    .replace(/\s*\n\s*/g, " ")
+    .replace(/\s+/g, " ")
     .trim();
   return applySadeedPronunciation(cleaned);
 }
