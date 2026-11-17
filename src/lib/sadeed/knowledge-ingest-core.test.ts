@@ -241,17 +241,17 @@ describe("knowledgeRevisionHash", () => {
 
 describe("CR-only extracted knowledge newlines", () => {
   it("produces the same revision fingerprint for LF, CRLF and standalone CR", async () => {
-    const lf = "بلاغ أمني\\n\\nالتوصية: فحص الموقع";
-    const crlf = lf.replace(/\\n/g, "\\r\\n");
-    const cr = lf.replace(/\\n/g, "\\r");
+    const lf = "بلاغ أمني\n\nالتوصية: فحص الموقع";
+    const crlf = lf.replace(/\n/g, "\r\n");
+    const cr = lf.replace(/\n/g, "\r");
     expect(normalizeKnowledgeText(cr)).toBe(lf);
     expect(await knowledgeRevisionHash(cr)).toBe(await knowledgeRevisionHash(lf));
     expect(await knowledgeRevisionHash(crlf)).toBe(await knowledgeRevisionHash(lf));
   });
 
   it("keeps paragraph boundaries instead of embedding raw CR characters", () => {
-    const original = "سياسة السلامة\\r\\rيجب ارتداء معدات الحماية الشخصية";
-    expect(chunkText(original)).toEqual(["سياسة السلامة\\n\\nيجب ارتداء معدات الحماية الشخصية"]);
+    const original = "سياسة السلامة\r\rيجب ارتداء معدات الحماية الشخصية";
+    expect(chunkText(original)).toEqual(["سياسة السلامة\n\nيجب ارتداء معدات الحماية الشخصية"]);
   });
 });
 
