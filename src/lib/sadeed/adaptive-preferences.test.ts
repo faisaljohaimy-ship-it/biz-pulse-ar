@@ -122,11 +122,7 @@ describe("SADEED adaptive preferences", () => {
   });
 
   it("learns standalone absolute no-table preferences without learning negated formats", () => {
-    for (const request of [
-      "Never use tables.",
-      "لا تستخدم الجداول أبدًا",
-      "بدون جداول أبداً",
-    ]) {
+    for (const request of ["Never use tables.", "لا تستخدم الجداول أبدًا", "بدون جداول أبداً"]) {
       expect(extractSadeedAdaptivePreferences(request)).toEqual([
         { key: "response_format", value: "no_tables", confidence: 0.95 },
       ]);
