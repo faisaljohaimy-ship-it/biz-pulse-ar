@@ -8,7 +8,7 @@ import {
 } from "./similarity-label";
 
 describe("measured cosine labels reject impossible scores", () => {
-  it.each([1.000001, 1.25, 50, "1.01", "200"])(
+  it.each([1.03, 1.25, 50, "1.03", "200"])(
     "does not publish an invented 100%% match for %s",
     (score) => {
       expect(computedSimilarityPercent(score)).toBeNull();
@@ -21,6 +21,7 @@ describe("measured cosine labels reject impossible scores", () => {
     [0.82, 82],
     ["0.82", 82],
     [1, 100],
+    [1.02, 100],
   ])("preserves measured similarity %s as %s%%", (score, expected) => {
     expect(computedSimilarityPercent(score)).toBe(expected);
     expect(similarityLabelAr(score)).toBe(`تطابق ${expected}%`);
