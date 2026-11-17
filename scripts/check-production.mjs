@@ -633,8 +633,10 @@ for (const route of ROUTES) {
           // An all-comment CSS file cannot style the app; MIME and bytes alone are insufficient.
           // A CSS encoding declaration cannot style an application by itself.
           // Preserve legitimate style rules that follow that declaration.
+          // A CSS comment with no closing */ extends to EOF. Such bytes cannot
+          // prove a stylesheet contains rules; preserve any valid rules before it.
           const effectiveCss = cssText
-            .replace(/\/\*[\s\S]*?\*\//g, "")
+            .replace(/\/\*[\s\S]*?(?:\*\/|$)/g, "")
             .replace(/^\s*@charset\s+(?:"[^"]*"|'[^']*')\s*;\s*/i, "")
             .trim();
           if (isCss && effectiveCss.length > 0) {
