@@ -140,6 +140,31 @@ describe("readExecutionStatus", () => {
     });
   });
 
+  it.each(["agent_runs", "tool_executions"] as const)(
+    "fails closed when %s returns null data without a database error",
+    async (table) => {
+      const { client } = fakeClient({
+        agent_runs: { data: table === "agent_runs" ? null : [], error: null },
+        tool_executions: { data: table === "tool_executions" ? null : [], error: null },
+      });
+      expect(await readExecutionStatus(client, "org-1")).toEqual({
+        ok: false,
+        error: "execution_status_invalid_response",
+      });
+    },
+  );
+
+  it("rejects non-array SELECT data instead of inventing an empty history", async () => {
+    const { client } = fakeClient({
+      agent_runs: { data: { id: "not-an-array" }, error: null },
+      tool_executions: { data: [], error: null },
+    });
+    expect(await readExecutionStatus(client, "org-1")).toEqual({
+      ok: false,
+      error: "execution_status_invalid_response",
+    });
+  });
+
   it("never throws when the client rejects", async () => {
     const { client } = fakeClient({ agent_runs: new Error("network down") });
     expect(await readExecutionStatus(client, "org-1")).toEqual({
