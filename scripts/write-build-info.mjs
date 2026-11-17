@@ -43,7 +43,12 @@ const candidates = [
   // Other CI providers and generic SHA envs can belong to the process that
   // invoked Vercel, not to the deployment being built. Fail closed on Vercel
   // if it supplies no platform commit; keep fallback sources for local/CI builds.
-  ...(isVercelBuild ? [] : [["COMMIT_SHA", env.COMMIT_SHA], ["git", git("rev-parse HEAD")]]),
+  ...(isVercelBuild
+    ? []
+    : [
+        ["COMMIT_SHA", env.COMMIT_SHA],
+        ["git", git("rev-parse HEAD")],
+      ]),
 ];
 const [source, sha] = candidates.find(([, v]) => v && /^[0-9a-f]{7,40}$/i.test(v)) ?? [
   "none",
