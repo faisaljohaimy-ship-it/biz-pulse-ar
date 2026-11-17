@@ -53,7 +53,6 @@ describe("SADEED reply modality", () => {
     expect(toSadeedSpeechText(text)).toBe(expected);
   });
 
-
   it.each([
     [
       "four-backtick fence with shorter embedded backticks",
