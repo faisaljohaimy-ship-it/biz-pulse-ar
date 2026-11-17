@@ -338,6 +338,19 @@ describe("normalizeResearchResults", () => {
     expect(r.snippet).not.toMatch(/\[WEB:/);
   });
 
+  it("respects a zero budget and fails closed for invalid result limits", () => {
+    const items = [
+      raw({ url: "https://a.example.com/one" }),
+      raw({ url: "https://b.example.com/two" }),
+    ];
+    for (const cap of [0, -1, NaN, Infinity, 0.5]) {
+      expect(normalizeResearchResults(items, cap, NOW), String(cap)).toEqual([]);
+    }
+    expect(normalizeResearchResults(items, 1, NOW).map((r) => r.url)).toEqual([
+      "https://a.example.com/one",
+    ]);
+  });
+
   it("قائمة فارغة ⇒ فارغة", () => {
     expect(normalizeResearchResults([], 5, NOW)).toEqual([]);
   });
