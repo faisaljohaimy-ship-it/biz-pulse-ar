@@ -30,7 +30,7 @@ export const SIMILARITY_UNMEASURED_AR = `تطابق ${UNMEASURED_AR}`;
 /**
  * النسبة المئوية الصحيحة (1–100) لكوساين محسوب، وإلا `null`.
  * `null` · `undefined` · `NaN` · `±Infinity` · سالب · صفر · ما يُقرَّب إلى أقل من
- * 1% · أكبر من 1 · نصٌّ غير رقمي ⇒ `null`. الرقم النصّي («0.82» من PostgREST) يُقبل.
+ * 1% · أكبر من 1.02 · نصٌّ غير رقمي ⇒ `null`. الرقم النصّي («0.82» من PostgREST) يُقبل.
  */
 export function computedSimilarityPercent(value: unknown): number | null {
   // PostgREST supplies decimal text; JS coercion also accepts 0x/0b/0o
@@ -42,7 +42,9 @@ export function computedSimilarityPercent(value: unknown): number | null {
         ? +value
         : NaN;
   const percent = Math.round(n * 100);
-  return Number.isFinite(percent) && percent > 0 && n <= 1 ? percent : null;
+  // Preserve the established 1.02 → 100% normalization tolerance, but do not
+  // present clearly out-of-range provider scores as measured 100% similarity.
+  return Number.isFinite(percent) && percent > 0 && n <= 1.02 ? Math.min(percent, 100) : null;
 }
 
 /**
