@@ -1056,6 +1056,25 @@ test("rejects multiple CSS comments and whitespace with no styling rules", async
   );
 });
 
+
+// An unclosed CSS comment consumes everything until EOF in a browser. It must
+// not count as evidence of application styles, even after a charset directive.
+for (const cssBody of [
+  "/* unclosed build comment",
+  '@charset "UTF-8"; /* unclosed build comment',
+]) {
+  test("rejects stylesheet containing only an unclosed comment: " + cssBody, async () => {
+    assert.equal(await runFixture(normalPage, "text/html", 200, "text/css", cssBody), 1);
+  });
+}
+
+test("retains real CSS rules before an unclosed trailing comment", async () => {
+  assert.equal(
+    await runFixture(normalPage, "text/html", 200, "text/css", "body { color: navy; } /* unclosed"),
+    null,
+  );
+});
+
 test("accepts functional CSS following a build banner comment", async () => {
   assert.equal(
     await runFixture(
