@@ -299,9 +299,7 @@ function englishUnder1000(n: number): string {
   }
   if (n) {
     const words =
-      n < 20
-        ? EN_ONES[n]
-        : `${EN_TENS[Math.floor(n / 10)]}${n % 10 ? `-${EN_ONES[n % 10]}` : ""}`;
+      n < 20 ? EN_ONES[n] : `${EN_TENS[Math.floor(n / 10)]}${n % 10 ? `-${EN_ONES[n % 10]}` : ""}`;
     result += `${result ? " " : ""}${words}`;
   }
   return result;
