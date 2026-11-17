@@ -50,7 +50,10 @@ describe("englishNumberWords (hundreds → millions)", () => {
 
 describe("English executive-scale narration regressions", () => {
   it.each([
-    [999_999_999, "nine hundred ninety-nine million nine hundred ninety-nine thousand nine hundred ninety-nine"],
+    [
+      999_999_999,
+      "nine hundred ninety-nine million nine hundred ninety-nine thousand nine hundred ninety-nine",
+    ],
     [1_000_000_000, "one billion"],
     [2_000_000_000, "two billion"],
     [3_500_000_000, "three billion five hundred million"],
