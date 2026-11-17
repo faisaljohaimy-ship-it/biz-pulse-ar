@@ -276,7 +276,7 @@ export function deriveRunStatus(
 export function runStepsLabel(steps: unknown): string {
   if (
     typeof steps === "number" &&
-    Number.isFinite(steps) &&
+    // The bounds exclude NaN and both infinities without a separate finite check.
     steps >= 0 &&
     steps <= Number.MAX_SAFE_INTEGER
   ) {
