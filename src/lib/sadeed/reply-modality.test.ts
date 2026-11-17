@@ -82,5 +82,4 @@ describe("SADEED reply modality", () => {
     expect(spoken).toContain("سليم");
     expect(spoken).not.toMatch(/-{3,}|:---:/);
   });
-
 });

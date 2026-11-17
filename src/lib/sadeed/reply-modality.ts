@@ -44,12 +44,8 @@ export function toSadeedSpeechText(value: string): string {
     .replace(/^\s{0,3}(?:#{1,6}|>|[-*+]\s|\d+[.)]\s)/gm, "")
     // GFM column-alignment rows are visual delimiters, not spoken content.
     // Remove them before dropping pipes, or "--- :---:" is read aloud.
-    // Remove only complete GFM alignment rows (3+ dashes per cell).
-    // A real status cell like "| - | : |" is content, not a delimiter.
-    .replace(/^[^\r\n]*\|[^\r\n]*$/gm, (row) => {
-      const cells = row.trim().replace(/^\|/, "").replace(/\|$/, "").split("|");
-      return cells.every((cell) => /^:?-{3,}:?$/.test(cell.trim())) ? " " : row;
-    })
+    // Require 3+ dashes per column; keep literal "-" and ":" data cells.
+    .replace(/^[ \t|]*:?-{3,}:?(?:[ \t]*\|[ \t]*:?-{3,}:?)*[ \t|]*$/gm, " ")
     .replace(/[*_~`|]/g, "")
     .replace(/\s+/g, " ")
     .trim();
