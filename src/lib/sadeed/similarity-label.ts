@@ -44,7 +44,7 @@ export function computedSimilarityPercent(value: unknown): number | null {
   const percent = Math.round(n * 100);
   // Preserve the established 1.02 → 100% normalization tolerance, but do not
   // present clearly out-of-range provider scores as measured 100% similarity.
-  return Number.isFinite(percent) && percent > 0 && n <= 1.02 ? Math.min(percent, 100) : null;
+  return percent > 0 && n <= 1.02 ? Math.min(percent, 100) : null;
 }
 
 /**
