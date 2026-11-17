@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { chatJsonError, validateChatRequest } from "./-chat-guard";
+import { describe, expect, it, vi } from "vitest";
+import { CHAT_BODY_READ_TIMEOUT_MS, chatJsonError, validateChatRequest } from "./-chat-guard";
 
 function chatRequest(body: unknown) {
   return new Request("https://example.test/api/chat", {
@@ -154,6 +154,105 @@ describe("chat request guard", () => {
       });
     }
     expect(pulls).toBeLessThanOrEqual(27);
+  });
+
+  it("times out a stalled partial chat body without awaiting a hostile cancel hook", async () => {
+    vi.useFakeTimers();
+    try {
+      let cancelled = false;
+      const body = new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode('{"messages":'));
+        },
+        cancel() {
+          cancelled = true;
+          return new Promise<void>(() => {});
+        },
+      });
+      const request = new Request("https://example.test/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body,
+        duplex: "half",
+      } as RequestInit & { duplex: "half" });
+      const pending = validateChatRequest(request);
+      await vi.advanceTimersByTimeAsync(CHAT_BODY_READ_TIMEOUT_MS);
+      const result = await pending;
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.response.status).toBe(408);
+        expect(await result.response.json()).toMatchObject({ error: "Chat request timed out." });
+      }
+      expect(cancelled).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("uses an absolute deadline even if the upload trickles a late chunk", async () => {
+    vi.useFakeTimers();
+    try {
+      let stream!: ReadableStreamDefaultController<Uint8Array>;
+      const body = new ReadableStream<Uint8Array>({
+        start(controller) {
+          stream = controller;
+          controller.enqueue(new TextEncoder().encode('{"messages":'));
+        },
+      });
+      const request = new Request("https://example.test/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body,
+        duplex: "half",
+      } as RequestInit & { duplex: "half" });
+      const pending = validateChatRequest(request);
+      await vi.advanceTimersByTimeAsync(CHAT_BODY_READ_TIMEOUT_MS - 1_000);
+      stream.enqueue(new TextEncoder().encode("["));
+      await vi.advanceTimersByTimeAsync(1_000);
+      const result = await pending;
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.response.status).toBe(408);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("returns 408 immediately when the client aborts a stalled chat body", async () => {
+    const controller = new AbortController();
+    let cancelled = false;
+    const body = new ReadableStream<Uint8Array>({
+      start() {},
+      cancel() {
+        cancelled = true;
+        return new Promise<void>(() => {});
+      },
+    });
+    const request = new Request("https://example.test/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body,
+      signal: controller.signal,
+      duplex: "half",
+    } as RequestInit & { duplex: "half" });
+    const pending = validateChatRequest(request);
+    controller.abort();
+    let watchdog: ReturnType<typeof setTimeout> | undefined;
+    try {
+      const result = await Promise.race([
+        pending,
+        new Promise<"stalled">((resolve) => {
+          watchdog = setTimeout(() => resolve("stalled"), 1_000);
+        }),
+      ]);
+      expect(result).not.toBe("stalled");
+      if (result !== "stalled") {
+        expect(result.ok).toBe(false);
+        if (!result.ok) expect(result.response.status).toBe(408);
+      }
+      expect(cancelled).toBe(true);
+    } finally {
+      if (watchdog !== undefined) clearTimeout(watchdog);
+    }
   });
 
   it("accepts valid JSON split across a stream without Content-Length", async () => {

@@ -1,4 +1,8 @@
 const MAX_REQUEST_BYTES = 24 * 1024 * 1024;
+/** Absolute upload deadline: a partial chat JSON body cannot pin a worker indefinitely. */
+export const CHAT_BODY_READ_TIMEOUT_MS = 30_000;
+const CHAT_BODY_TIMEOUT = Symbol("chat-body-timeout");
+const CHAT_BODY_ABORT = Symbol("chat-body-abort");
 const MAX_MESSAGES = 24;
 const MAX_TEXT_CHARS = 200_000;
 const MAX_FILES = 5;
@@ -99,14 +103,39 @@ function parseDataUrl(url: string): { bytes: number; mediaType: string } | null 
  */
 async function readBoundedChatJson(
   request: Request,
-): Promise<{ ok: true; value: unknown } | { ok: false; status: 400 | 413; error: string }> {
-  const reader = request.body?.getReader();
-  if (!reader) return { ok: false, status: 400, error: "Invalid JSON body." };
+): Promise<{ ok: true; value: unknown } | { ok: false; status: 400 | 408 | 413; error: string }> {
+  if (request.signal.aborted) {
+    return { ok: false, status: 408, error: "Chat request timed out." };
+  }
+  let reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let onAbort: (() => void) | undefined;
   const chunks: Uint8Array[] = [];
   let totalBytes = 0;
   try {
+    reader = request.body?.getReader();
+    if (!reader) return { ok: false, status: 400, error: "Invalid JSON body." };
+    // One deadline for the entire upload, not one new timeout per chunk.
+    // A slow caller must not tie up the chat endpoint with an unfinished JSON body.
+    const deadline = new Promise<typeof CHAT_BODY_TIMEOUT>((resolve) => {
+      timer = setTimeout(() => resolve(CHAT_BODY_TIMEOUT), CHAT_BODY_READ_TIMEOUT_MS);
+    });
+    const aborted = new Promise<typeof CHAT_BODY_ABORT>((resolve) => {
+      if (request.signal.aborted) {
+        resolve(CHAT_BODY_ABORT);
+        return;
+      }
+      onAbort = () => resolve(CHAT_BODY_ABORT);
+      request.signal.addEventListener("abort", onAbort, { once: true });
+    });
     while (true) {
-      const { done, value } = await reader.read();
+      const next = await Promise.race([reader.read(), deadline, aborted]);
+      if (next === CHAT_BODY_TIMEOUT || next === CHAT_BODY_ABORT) {
+        // A hostile source's cancel() can hang: never await its callback.
+        void reader.cancel().catch(() => {});
+        return { ok: false, status: 408, error: "Chat request timed out." };
+      }
+      const { done, value } = next;
       if (done) break;
       totalBytes += value.byteLength;
       if (totalBytes > MAX_REQUEST_BYTES) {
@@ -126,9 +155,13 @@ async function readBoundedChatJson(
     const json = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
     return { ok: true, value: JSON.parse(json) as unknown };
   } catch {
-    return { ok: false, status: 400, error: "Invalid JSON body." };
+    return request.signal.aborted
+      ? { ok: false, status: 408, error: "Chat request timed out." }
+      : { ok: false, status: 400, error: "Invalid JSON body." };
   } finally {
-    reader.releaseLock();
+    if (timer !== undefined) clearTimeout(timer);
+    if (onAbort) request.signal.removeEventListener("abort", onAbort);
+    reader?.releaseLock();
   }
 }
 
