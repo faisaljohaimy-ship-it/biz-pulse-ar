@@ -111,6 +111,11 @@ export async function readExecutionStatus(
     // كلّ شيء أو لا شيء: نصف صورةٍ يُقرأ صورةً كاملة.
     if (runs.error) return { ok: false, error: `agent_runs: ${runs.error.message}` };
     if (active.error) return { ok: false, error: `tool_executions: ${active.error.message}` };
+    // PostgREST SELECT must return an array (including [] for no visible rows).
+    // Null or malformed data is not proof of an empty execution history.
+    if (!Array.isArray(runs.data) || !Array.isArray(active.data)) {
+      return { ok: false, error: "execution_status_invalid_response" };
+    }
     return {
       ok: true,
       org_id: orgId,
