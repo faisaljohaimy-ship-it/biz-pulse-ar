@@ -17,7 +17,10 @@ if (typeof globalThis.addEventListener === "function") {
 
 export function consumeLastCapturedError(): unknown {
   if (!lastCapturedError) return undefined;
-  if (Date.now() - lastCapturedError.at > TTL_MS) {
+  // A backward or invalid clock must not attach another request's stale error
+  // to a new SSR failure. Keep the existing inclusive five-second TTL.
+  const ageMs = Date.now() - lastCapturedError.at;
+  if (!Number.isFinite(ageMs) || ageMs < 0 || ageMs > TTL_MS) {
     lastCapturedError = undefined;
     return undefined;
   }
