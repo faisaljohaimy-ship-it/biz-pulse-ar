@@ -429,7 +429,11 @@ for (const route of ROUTES) {
     // Unlike HTTP CSP, a meta policy starts applying only after its tag is
     // parsed. A policy between two resources must not retroactively block
     // the first, but must still be enforced on the second.
-    const headMetaPolicies = [...headMarkup.matchAll(/<meta\b[^>]*>/gi)].flatMap((match) => {
+    // A '>' inside a quoted meta attribute cannot terminate the tag: an
+    // early CSP or refresh with a later content attribute still applies.
+    const headMetaPolicies = [
+      ...headMarkup.matchAll(/<meta\b(?:[^>"']|"[^"]*"|'[^']*')*>/gi),
+    ].flatMap((match) => {
       const attrs = tagAttributes(match[0], 5);
       if (
         decodeMetaAttribute(attrs["http-equiv"] || "")
@@ -552,7 +556,7 @@ for (const route of ROUTES) {
     // A browser immediately leaves pages containing an active HTML meta refresh.
     // A 200 response from that page does not prove the requested route is usable.
     // Read actual attributes, not lookalikes in metadata or inert containers.
-    const immediateMetaRefresh = [...activeMarkup.matchAll(/<meta\b[^>]*>/gi)].some(([tag]) => {
+    const immediateMetaRefresh = [...activeMarkup.matchAll(/<meta\b(?:[^>"']|"[^"]*"|'[^']*')*>/gi)].some(([tag]) => {
       const attrs = tagAttributes(tag, 5); // Skip "<meta".
       if (
         decodeMetaAttribute(attrs["http-equiv"] || "")
