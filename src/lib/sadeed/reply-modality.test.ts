@@ -70,5 +70,4 @@ describe("SADEED reply modality", () => {
     const spoken = toSadeedSpeechText("الحالة آمن - بحاجة إلى مراجعة");
     expect(spoken).toContain("آمن - بحاجة إلى مراجعة");
   });
-
 });
