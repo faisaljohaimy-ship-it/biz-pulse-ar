@@ -20,6 +20,18 @@ describe("Retry-After من خطأ المزوّد", () => {
     expect(retryAfterMs({ responseHeaders: { "retry-after": "0" } }, NOW)).toBe(0);
   });
 
+  it("reads Retry-After from native Fetch Headers, not only plain header maps", () => {
+    const headers = new Headers({ "Retry-After": "120" });
+    expect(retryAfterMs({ responseHeaders: headers }, NOW)).toBe(120_000);
+    expect(primaryCooldownFor({ responseHeaders: headers }, NOW)).toBe(120_000);
+  });
+
+  it("reads HTTP-date Retry-After from native Fetch Headers", () => {
+    const headers = new Headers({ "Retry-After": new Date(NOW + 5_000).toUTCString() });
+    expect(retryAfterMs({ responseHeaders: headers }, NOW)).toBeGreaterThanOrEqual(4_000);
+    expect(retryAfterMs({ responseHeaders: headers }, NOW)).toBeLessThanOrEqual(5_000);
+  });
+
   it("تاريخ HTTP ⇐ الفرق عن الآن، ولا يكون سالبًا", () => {
     const at = new Date(NOW + 5_000).toUTCString();
     const ms = retryAfterMs({ responseHeaders: { "retry-after": at } }, NOW);
