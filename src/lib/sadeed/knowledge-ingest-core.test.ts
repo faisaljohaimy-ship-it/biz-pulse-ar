@@ -163,6 +163,22 @@ describe("chunkText — same behavior as the original hook", () => {
     const fresh = chunks.map((c, i) => (i === 0 ? c : c.slice(CHUNK_OVERLAP_CHARS + 2))).join("");
     expect(fresh).toBe(text);
   });
+  it("keeps emoji intact at hard-cut and overlap boundaries", () => {
+    const maxPiece = CHUNK_TARGET_CHARS - CHUNK_OVERLAP_CHARS - 2;
+    const inputs = [
+      "x".repeat(maxPiece - 1) + "😀" + "y".repeat(2_000),
+      "x".repeat(maxPiece - CHUNK_OVERLAP_CHARS - 1) + "😀" + "y".repeat(2_000),
+    ];
+    for (const input of inputs) {
+      const chunks = chunkText(input);
+      expect(chunks.length).toBeGreaterThan(1);
+      expect(chunks.some((chunk) => chunk.includes("😀"))).toBe(true);
+      for (const chunk of chunks) {
+        // A lone UTF-16 surrogate turns into a replacement glyph when encoded.
+        expect(new TextDecoder().decode(new TextEncoder().encode(chunk))).toBe(chunk);
+      }
+    }
+  });
 });
 
 describe("KNOWLEDGE_MAX_TEXT_CHARS fits in MAX_CHUNKS_PER_DOCUMENT", () => {
