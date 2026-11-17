@@ -116,6 +116,57 @@ for (const [label, policy, expected] of [
   });
 }
 
+
+test("rejects a decoy stylesheet under a base declared AFTER the link", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="stylesheet" href="assets/app.css"><base href="/static/">',
+  );
+  const cssAssets = {
+    "https://offline.invalid/assets/app.css": { status: 404 },
+    "https://offline.invalid/static/assets/app.css": { status: 200 },
+  };
+  assert.equal(
+    await runFixture(html, "text/html", 200, "text/css", "body {}", 200, undefined, cssAssets),
+    1,
+  );
+});
+
+test("uses a base declared BEFORE the stylesheet link", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<base href="/static/"><link rel="stylesheet" href="assets/app.css">',
+  );
+  assert.equal(
+    await runFixture(
+      html,
+      "text/html",
+      200,
+      "text/css",
+      "body {}",
+      200,
+      "https://offline.invalid/static/assets/app.css",
+    ),
+    null,
+  );
+});
+
+test("validates each stylesheet against the base effective at its position", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="stylesheet" href="before.css"><base href="/static/"><link rel="stylesheet" href="after.css">',
+  );
+  const cssAssets = {
+    "https://offline.invalid/before.css": { status: 404 },
+    "https://offline.invalid/static/before.css": { status: 200 },
+    "https://offline.invalid/static/after.css": { status: 200 },
+  };
+  assert.equal(
+    await runFixture(html, "text/html", 200, "text/css", "body {}", 200, undefined, cssAssets),
+    1,
+  );
+});
+
 test("accepts a real HTML document with a stylesheet link", async () => {
   assert.equal(await runFixture(normalPage), null);
 });
