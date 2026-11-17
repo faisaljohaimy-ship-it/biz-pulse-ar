@@ -42,6 +42,9 @@ export function toSadeedSpeechText(value: string): string {
     .replace(/\[(?:DOC|KB):[^\]]+\]/gi, " ")
     .replace(/\[(?:\d+(?:\s*[-,]\s*\d+)*)\]/g, " ")
     .replace(/^\s{0,3}(?:#{1,6}|>|[-*+]\s|\d+[.)]\s)/gm, "")
+    // GFM column-alignment rows are visual delimiters, not spoken content.
+    // Remove them before dropping pipes, or "--- :---:" is read aloud.
+    .replace(/^[ \t]*\|?[ \t]*:?-{3,}:?[ \t]*(?:\|[ \t]*:?-{3,}:?[ \t]*)+\|?[ \t]*\r?$/gm, " ")
     .replace(/[*_~`|]/g, "")
     .replace(/[ \t]+/g, " ")
     .replace(/\s*\n\s*/g, " ")
