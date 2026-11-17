@@ -312,14 +312,12 @@ export function englishNumberWords(n: number): string {
   if (!Number.isFinite(n) || n < 0) return String(n);
   const v = Math.floor(n);
   if (!Number.isSafeInteger(v)) return String(n);
-  if (v === 0) return "zero";
   const scales = ["", "thousand", "million", "billion", "trillion", "quadrillion"];
-  const parts: string[] = [];
-  for (let rem = v, i = 0; rem > 0; rem = Math.floor(rem / 1000), i++) {
-    const group = rem % 1000;
-    if (group) parts.unshift(`${englishUnder1000(group)}${scales[i] ? ` ${scales[i]}` : ""}`);
+  let result = "";
+  for (let i = 0, rem = v; rem; i++, rem = Math.floor(rem / 1000)) {
+    if (rem % 1000) result = `${englishUnder1000(rem % 1000)} ${scales[i]} ${result}`.trim();
   }
-  return parts.join(" ");
+  return result || "zero";
 }
 
 /** English → Arabic weekday names, so an Arabic reply speaks the day clearly
