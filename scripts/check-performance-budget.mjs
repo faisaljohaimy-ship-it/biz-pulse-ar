@@ -29,6 +29,12 @@ async function walk(directory) {
     const absolute = join(directory, entry.name);
     if (entry.isDirectory()) files.push(...(await walk(absolute)));
     else if (entry.isFile()) files.push({ absolute, size: (await stat(absolute)).size });
+    // A symbolic link may point to an oversized asset (or an entire tree)
+    // outside this directory. Silently skipping it can certify a broken build
+    // under every budget. Fail closed instead of dereferencing untrusted paths.
+    else if (entry.isSymbolicLink()) {
+      throw new Error(`Unverified symlink in production output: ${relative(ROOT, absolute)}`);
+    }
   }
   return files;
 }
