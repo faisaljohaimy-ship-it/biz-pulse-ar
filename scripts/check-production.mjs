@@ -556,7 +556,9 @@ for (const route of ROUTES) {
     // A browser immediately leaves pages containing an active HTML meta refresh.
     // A 200 response from that page does not prove the requested route is usable.
     // Read actual attributes, not lookalikes in metadata or inert containers.
-    const immediateMetaRefresh = [...activeMarkup.matchAll(/<meta\b(?:[^>"']|"[^"]*"|'[^']*')*>/gi)].some(([tag]) => {
+    const immediateMetaRefresh = [
+      ...activeMarkup.matchAll(/<meta\b(?:[^>"']|"[^"]*"|'[^']*')*>/gi),
+    ].some(([tag]) => {
       const attrs = tagAttributes(tag, 5); // Skip "<meta".
       if (
         decodeMetaAttribute(attrs["http-equiv"] || "")
