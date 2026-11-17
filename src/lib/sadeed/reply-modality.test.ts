@@ -57,11 +57,11 @@ describe("SADEED reply modality", () => {
   it.each([
     [
       "four-backtick fence with shorter embedded backticks",
-      "قبل\\n````ts\\nconst MARKER = '```';\\nconst PRIVATE_CODE = true;\\n````\\nبعد",
+      "قبل\n````ts\nconst MARKER = '```';\nconst PRIVATE_CODE = true;\n````\nبعد",
     ],
     [
       "five-tilde fence with shorter embedded tildes and CR-only lines",
-      "قبل\\r~~~~~js\\r~~~\\rconst PRIVATE_CODE = true;\\r~~~~~\\rبعد",
+      "قبل\r~~~~~js\r~~~\rconst PRIVATE_CODE = true;\r~~~~~\rبعد",
     ],
   ])("does not narrate %s", (_description, value) => {
     expect(toSadeedSpeechText(value)).toBe("قبل بعد");
