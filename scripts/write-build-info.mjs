@@ -31,11 +31,7 @@ const env = process.env;
 // Its platform-owned commit must win to avoid publishing a misleading SHA.
 const isVercelBuild = env.VERCEL === "1" || env.VERCEL === "true";
 const platformCandidates = isVercelBuild
-  ? [
-      ["VERCEL_GIT_COMMIT_SHA", env.VERCEL_GIT_COMMIT_SHA],
-      ["GITHUB_SHA", env.GITHUB_SHA],
-      ["CF_PAGES_COMMIT_SHA", env.CF_PAGES_COMMIT_SHA],
-    ]
+  ? [["VERCEL_GIT_COMMIT_SHA", env.VERCEL_GIT_COMMIT_SHA]]
   : [
       ["GITHUB_SHA", env.GITHUB_SHA],
       ["CF_PAGES_COMMIT_SHA", env.CF_PAGES_COMMIT_SHA],
@@ -44,8 +40,10 @@ const platformCandidates = isVercelBuild
 const candidates = [
   ["SADEED_BUILD_SHA", env.SADEED_BUILD_SHA],
   ...platformCandidates,
-  ["COMMIT_SHA", env.COMMIT_SHA],
-  ["git", git("rev-parse HEAD")],
+  // Other CI providers and generic SHA envs can belong to the process that
+  // invoked Vercel, not to the deployment being built. Fail closed on Vercel
+  // if it supplies no platform commit; keep fallback sources for local/CI builds.
+  ...(isVercelBuild ? [] : [["COMMIT_SHA", env.COMMIT_SHA], ["git", git("rev-parse HEAD")]]),
 ];
 const [source, sha] = candidates.find(([, v]) => v && /^[0-9a-f]{7,40}$/i.test(v)) ?? [
   "none",

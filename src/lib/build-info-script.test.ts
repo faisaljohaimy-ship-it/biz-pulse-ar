@@ -99,6 +99,30 @@ describe("build-info ref and SHA provenance must agree", () => {
     expect(info).toMatchObject({ sha: OVERRIDE_SHA, source: "SADEED_BUILD_SHA", ref: "unknown" });
   });
 
+  it("does not borrow GitHub CI metadata when a Vercel build has no platform SHA", () => {
+    const info = runBuildInfo({
+      VERCEL: "1",
+      GITHUB_SHA: PLATFORM_SHA,
+      GITHUB_REF_NAME: "unrelated-ci-branch",
+    });
+    expect(info).toMatchObject({ sha: "unknown", source: "none", ref: "unknown" });
+  });
+
+  it("does not borrow Cloudflare or generic SHA metadata on Vercel", () => {
+    const info = runBuildInfo({
+      VERCEL: "true",
+      CF_PAGES_COMMIT_SHA: PLATFORM_SHA,
+      CF_PAGES_BRANCH: "unrelated-cloudflare-branch",
+      COMMIT_SHA: OVERRIDE_SHA,
+    });
+    expect(info).toMatchObject({ sha: "unknown", source: "none", ref: "unknown" });
+  });
+
+  it("still uses GitHub CI provenance outside Vercel", () => {
+    const info = runBuildInfo({ GITHUB_SHA: PLATFORM_SHA, GITHUB_REF_NAME: "ci-main" });
+    expect(info).toMatchObject({ sha: PLATFORM_SHA, source: "GITHUB_SHA", ref: "ci-main" });
+  });
+
   it("does not borrow a GitHub ref for a Vercel SHA", () => {
     const info = runBuildInfo({
       VERCEL: "1",
