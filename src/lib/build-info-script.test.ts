@@ -88,4 +88,43 @@ describe("build-info ref and SHA provenance must agree", () => {
       source: "VERCEL_GIT_COMMIT_SHA",
     });
   });
+
+  it("keeps an unpaired manual SHA override's ref unknown", () => {
+    const info = runBuildInfo({
+      VERCEL: "1",
+      VERCEL_GIT_COMMIT_SHA: PLATFORM_SHA,
+      VERCEL_GIT_COMMIT_REF: "main",
+      SADEED_BUILD_SHA: OVERRIDE_SHA,
+    });
+    expect(info).toMatchObject({ sha: OVERRIDE_SHA, source: "SADEED_BUILD_SHA", ref: "unknown" });
+  });
+
+  it("does not borrow a GitHub ref for a Vercel SHA", () => {
+    const info = runBuildInfo({
+      VERCEL: "1",
+      VERCEL_GIT_COMMIT_SHA: PLATFORM_SHA,
+      GITHUB_REF_NAME: "unrelated-ci-branch",
+    });
+    expect(info).toMatchObject({
+      sha: PLATFORM_SHA,
+      source: "VERCEL_GIT_COMMIT_SHA",
+      ref: "unknown",
+    });
+  });
+
+  it("does not borrow a Cloudflare ref for a GitHub SHA", () => {
+    const info = runBuildInfo({
+      GITHUB_SHA: PLATFORM_SHA,
+      CF_PAGES_BRANCH: "unrelated-cloudflare-branch",
+    });
+    expect(info).toMatchObject({ sha: PLATFORM_SHA, source: "GITHUB_SHA", ref: "unknown" });
+  });
+
+  it("does not label a generic SHA with an unrelated provider ref", () => {
+    const info = runBuildInfo({
+      COMMIT_SHA: OVERRIDE_SHA,
+      GITHUB_REF_NAME: "unrelated-ci-branch",
+    });
+    expect(info).toMatchObject({ sha: OVERRIDE_SHA, source: "COMMIT_SHA", ref: "unknown" });
+  });
 });
