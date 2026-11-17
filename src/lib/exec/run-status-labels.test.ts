@@ -192,6 +192,16 @@ describe("UI-2 — الحالة المشتقّة من audit_json", () => {
 });
 
 describe("UI-1 — عدد الخطوات رقمٌ صحيح أو «—»", () => {
+  it("rejects unsafe step counts instead of displaying rounded audit measurements", () => {
+    expect(runStepsLabel(Number.MAX_SAFE_INTEGER)).toBe(String(Number.MAX_SAFE_INTEGER));
+    expect(runStepsLabel(Number.MAX_SAFE_INTEGER + 1)).toBe("—");
+    expect(runStepsLabel(1e25)).toBe("—");
+    expect(runStepsLabel(Number.POSITIVE_INFINITY)).toBe("—");
+    expect(runStepsLabel(Number.NEGATIVE_INFINITY)).toBe("—");
+    expect(runStepsLabel(Number.NaN)).toBe("—");
+    expect(runStepsLabel(2.9)).toBe("2");
+  });
+
   it("الرقم يُعرض كما هو، والمصفوفة (محاكاة) والفراغ «—»", () => {
     expect(runStepsLabel(7)).toBe("7");
     expect(runStepsLabel(0)).toBe("0");
