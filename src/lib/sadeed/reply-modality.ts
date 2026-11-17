@@ -40,11 +40,11 @@ export function toSadeedSpeechText(value: string): string {
     .replace(/\[([^\]]+)\]\((?:https?:\/\/|mailto:|tel:|\/|#|\.{1,2}\/)[^)]*\)/gi, "$1")
     .replace(/https?:\/\/\S+/gi, " ")
     .replace(/\[(?:DOC|KB):[^\]]+\]/gi, " ")
-    .replace(/\[(?:\d+(?:\s*[-,]\s*\d+)*)\]/g, " ")
+    .replace(/\[\d+(?:\s*[-,]\s*\d+)*\]/g, " ")
     .replace(/^\s{0,3}(?:#{1,6}|>|[-*+]\s|\d+[.)]\s)/gm, "")
     // GFM column-alignment rows are visual delimiters, not spoken content.
     // Remove them before dropping pipes, or "--- :---:" is read aloud.
-    .replace(/^[ \t]*\|[-:| \t]+\|[ \t]*\r?$/gm, " ")
+    .replace(/^[ \t]*\|[-:| \t]+\|[ \t]*$/gm, " ")
     .replace(/[*_~`|]/g, "")
     .replace(/\s+/g, " ")
     .trim();
