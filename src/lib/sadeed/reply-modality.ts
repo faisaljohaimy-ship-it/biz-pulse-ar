@@ -33,8 +33,9 @@ export function shouldSpeakSadeedReply({
  * «سِك ثمانية عشر», PTW → «تصريح العمل») instead of letter-spelled. */
 export function toSadeedSpeechText(value: string): string {
   const cleaned = value
-    // Never narrate fenced code, even if streaming truncates before its closing fence.
-    .replace(/```[^]*?(```|$)|~~~[^\r\n]*\r?\n[^]*?(~~~|$)/g, " ")
+    // Never narrate fenced code: partial tilde openers and CR-only line breaks
+    // must also be omitted before they reach voice synthesis.
+    .replace(/```[^]*?(```|$)|~~~[^]*?(~~~|$)/g, " ")
     .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
     // Narrate link labels, not destination URLs, anchors, or screen paths.
     .replace(/\[([^\]]+)\]\((https?:\/\/|mailto:|tel:|\/|#|\.{1,2}\/)[^)]*\)/gi, "$1")
