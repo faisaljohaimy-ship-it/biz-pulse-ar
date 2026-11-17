@@ -301,10 +301,11 @@ function hasExecutableThemeBootstrap(body) {
 // http-equiv=refresh. Decode one layer to match browser redirect semantics.
 function decodeMetaAttribute(value) {
   return value.replace(
-    // Named HTML character references are case-sensitive. Only explicitly
-    // supported spellings must be decoded: &CoPy; stays literal in browsers,
-    // while &copy; and &COPY; both decode to the copyright sign.
-    /&(?:#([xX][0-9a-fA-F]+|\d+);?|(?:amp|AMP|semi|Tab|NewLine|sol|colon|period|quot|QUOT|apos|lt|LT|gt|GT|copy|COPY|reg|REG|nbsp);)/g,
+    // Named HTML character references are case-sensitive. In attributes,
+    // legacy names (such as &amp or &copy) also decode without a semicolon
+    // unless followed by an ASCII alphanumeric or '='; other names require ';'.
+    // Mixed-case unknown &CoPy; remains literal, never a CSS decoy.
+    /&(?:#([xX][0-9a-fA-F]+|\d+);?|(?:amp|AMP|quot|QUOT|lt|LT|gt|GT|copy|COPY|reg|REG|nbsp)(?:;|(?![A-Za-z0-9=]))|(?:semi|Tab|NewLine|sol|colon|period|apos);)/g,
     (entity, numeric) => {
       if (!numeric) {
         const names = {
@@ -327,7 +328,7 @@ function decodeMetaAttribute(value) {
           reg: "®",
           nbsp: "\u00a0",
         };
-        return names[entity.slice(1, -1).toLowerCase()] ?? entity;
+        return names[entity.slice(1).replace(/;$/, "").toLowerCase()] ?? entity;
       }
       const hex = numeric[0].toLowerCase() === "x";
       const code = Number.parseInt(hex ? numeric.slice(1) : numeric, hex ? 16 : 10);
