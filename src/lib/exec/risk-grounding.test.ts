@@ -50,6 +50,12 @@ describe("① استخراج الأرقام — بالعربية كما بالل
     expect(numbersIn("z=−٢٫٣٤")).toEqual([-2.34]);
   });
 
+  it("يقرأ العدد الأُسّي كاملًا بدل فصل الأساس عن الأُس", () => {
+    expect(numbersIn("٣e٤ بلاغات")).toEqual([30_000]);
+    expect(numbersIn("−٢٫٣٤E+١")).toEqual([-23.4]);
+    expect(numbersIn("3e309")).toEqual([Infinity]);
+  });
+
   it("ولا يعثر على رقمٍ في نصٍّ بلا أرقام", () => {
     expect(numbersIn("ضغط متصاعد في الموقع")).toEqual([]);
   });
@@ -109,6 +115,14 @@ describe("③ الحكم — الصياغة تمرّ والوقائع العدد
       ungrounded: [-3, -4],
     });
     expect(judgeNarration(["z=−٢٫٣٤"], { ...signal, z: -2.34 }, 24).accepted).toBe(true);
+  });
+
+  it("يرفض أعدادًا أُسّية مختلَقة ولو كان الأساس والأُس مسندين", () => {
+    expect(judgeNarration(["3e4 بلاغات"], signal, 24)).toEqual({
+      accepted: false,
+      ungrounded: [30_000],
+    });
+    expect(judgeNarration(["3e309 بلاغات"], signal, 24).accepted).toBe(false);
   });
 
   it("ويُرفض النصّ الفارغ — بندُ خطرٍ بلا سبب أسوأ من بطاقةٍ حتميّة", () => {
