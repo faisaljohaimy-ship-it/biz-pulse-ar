@@ -81,10 +81,19 @@ export const PRIMARY_COOLDOWN_MAX_MS = 10 * 60_000;
 export function retryAfterMs(error: unknown, now = Date.now()): number | null {
   const headers = (error as { responseHeaders?: unknown })?.responseHeaders;
   if (!headers || typeof headers !== "object") return null;
-  const entry = Object.entries(headers as Record<string, unknown>).find(
-    ([k]) => k.toLowerCase() === "retry-after",
-  );
-  const raw = entry?.[1];
+  // Native Fetch Headers is iterable, but Object.entries(headers) is empty.
+  // SDKs may provide either Headers or a plain response-header record.
+  let raw: unknown;
+  try {
+    raw =
+      typeof Headers !== "undefined" && headers instanceof Headers
+        ? headers.get("retry-after")
+        : Object.entries(headers as Record<string, unknown>).find(
+            ([k]) => k.toLowerCase() === "retry-after",
+          )?.[1];
+  } catch {
+    return null;
+  }
   if (typeof raw !== "string" || !raw.trim()) return null;
   const seconds = Number(raw.trim());
   if (Number.isFinite(seconds)) return Math.max(0, Math.round(seconds * 1000));
