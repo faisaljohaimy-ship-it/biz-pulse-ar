@@ -21,8 +21,12 @@ export function createHealthProbeCache(
     inFlight = Promise.resolve()
       .then(probe)
       .then((unavailable) => {
-        memo = { at: now(), unavailable };
-        return unavailable;
+        // Storage availability must fail closed even if a runtime probe
+        // violates its TypeScript boolean contract (undefined/null/0/etc.).
+        // Only an explicit false proves that storage is available.
+        const failClosed = unavailable !== false;
+        memo = { at: now(), unavailable: failClosed };
+        return failClosed;
       })
       .finally(() => {
         inFlight = null;
