@@ -66,6 +66,30 @@ describe("SADEED reply modality", () => {
     expect(toSadeedSpeechText(value)).toBe("قبل بعد");
   });
 
+  it.each([
+    [
+      "backtick-like text inside a fenced code line",
+      'قبل\n```ts\nconst marker = "```";\nconst PRIVATE_CODE = true;\n```\nبعد',
+      "قبل بعد",
+    ],
+    [
+      "tilde-like text inside a CR-only fenced block",
+      'قبل\r~~~js\rconst marker = "~~~";\rconst PRIVATE_CODE = true;\r~~~\rبعد',
+      "قبل بعد",
+    ],
+    [
+      "truncated fenced reply with an inline fake closer",
+      'قبل\n```ts\nconst marker = "```";\nconst PRIVATE_CODE = true;',
+      "قبل",
+    ],
+    [
+      "fence with a longer valid closing delimiter",
+      "قبل\n```js\nconst PRIVATE_CODE = true;\n````\nبعد",
+      "قبل بعد",
+    ],
+  ])("never narrates %s", (_name, reply, expected) => {
+    expect(toSadeedSpeechText(reply)).toBe(expected);
+  });
   it("speaks Markdown anchor and relative-link labels without raw link syntax", () => {
     expect(toSadeedSpeechText("راجع [التنبيهات](#alerts) ثم [التقرير](./report)")).toBe(
       "راجع التنبيهات ثم التقرير",
