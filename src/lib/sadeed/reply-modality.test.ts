@@ -70,4 +70,17 @@ describe("SADEED reply modality", () => {
     const spoken = toSadeedSpeechText("الحالة آمن - بحاجة إلى مراجعة");
     expect(spoken).toContain("آمن - بحاجة إلى مراجعة");
   });
+  it("preserves literal dash and colon placeholder values in table data rows", () => {
+    const spoken = toSadeedSpeechText("| الحالة | الرمز |\n| --- | --- |\n| - | : |");
+    expect(spoken).toContain("الحالة");
+    expect(spoken).toContain("- :");
+  });
+
+  it("skips GFM alignment rows that omit their outer pipes", () => {
+    const spoken = toSadeedSpeechText("الموقع | الحالة\n--- | :---:\nمحطة الشمال | سليم");
+    expect(spoken).toContain("محطة الشمال");
+    expect(spoken).toContain("سليم");
+    expect(spoken).not.toMatch(/-{3,}|:---:/);
+  });
+
 });
