@@ -6,7 +6,9 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
-const SCRIPT = fileURLToPath(new URL("../../scripts/check-performance-budget.mjs", import.meta.url));
+const SCRIPT = fileURLToPath(
+  new URL("../../scripts/check-performance-budget.mjs", import.meta.url),
+);
 
 function checkFixture(prepare: (root: string, output: string) => void) {
   const root = mkdtempSync(join(tmpdir(), "sadeed-perf-symlink-"));
