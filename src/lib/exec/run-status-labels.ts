@@ -274,7 +274,12 @@ export function deriveRunStatus(
  * (مصفوفة) وكانت تُطبع فارغةً؛ والمصفوفة ليست عددًا مقيسًا فلا تُحوَّل إلى صفر.
  */
 export function runStepsLabel(steps: unknown): string {
-  if (typeof steps === "number" && Number.isFinite(steps) && steps >= 0) {
+  if (
+    typeof steps === "number" &&
+    Number.isFinite(steps) &&
+    steps >= 0 &&
+    steps <= Number.MAX_SAFE_INTEGER
+  ) {
     return String(Math.floor(steps));
   }
   return "—";
