@@ -634,7 +634,9 @@ for (const route of ROUTES) {
           // A CSS encoding declaration cannot style an application by itself.
           // Preserve legitimate style rules that follow that declaration.
           const effectiveCss = cssText
-            .replace(/\/\*[\s\S]*?\*\//g, "")
+            // A CSS comment with no closing */ extends to EOF. Such bytes cannot
+// prove a stylesheet contains rules; preserve any valid rules before it.
+          .replace(/\/\*[\s\S]*?(?:\*\/|$)/g, "")
             .replace(/^\s*@charset\s+(?:"[^"]*"|'[^']*')\s*;\s*/i, "")
             .trim();
           if (isCss && effectiveCss.length > 0) {
