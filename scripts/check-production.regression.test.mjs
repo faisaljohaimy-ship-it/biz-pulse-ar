@@ -1830,13 +1830,14 @@ test("retains a working stylesheet href after a quoted angle bracket", async () 
   assert.equal(await runFixture(html), null);
 });
 
-
 // Meta tags must be parsed through quoted '>' attributes. A truncated meta
 // silently drops its content and can incorrectly certify a CSP-blocked app.
 test("enforces head CSP after a quoted angle bracket before content", async () => {
   const html = normalPage.replace(
     "<script>sessionStorage.getItem('theme')</script>",
-    '<meta http-equiv="Content-Security-Policy" data-note=">" content="script-src \u0027none\u0027"><script>sessionStorage.getItem(\u0027theme\u0027)</script>',
+    '<meta http-equiv="Content-Security-Policy" data-note=">" ' +
+      `content="script-src 'none'">` +
+      "<script>sessionStorage.getItem('theme')</script>",
   );
   assert.equal(await runFixture(html), 1);
 });
@@ -1844,7 +1845,9 @@ test("enforces head CSP after a quoted angle bracket before content", async () =
 test("enforces style CSP after a single-quoted angle bracket attribute", async () => {
   const html = normalPage.replace(
     '<link rel="stylesheet" href="/assets/app.css">',
-    '<meta http-equiv="Content-Security-Policy" data-note=\u0027>\u0027 content="style-src \u0027none\u0027"><link rel="stylesheet" href="/assets/app.css">',
+    `<meta http-equiv="Content-Security-Policy" data-note='>' ` +
+      `content="style-src 'none'">` +
+      '<link rel="stylesheet" href="/assets/app.css">',
   );
   assert.equal(await runFixture(html), 1);
 });
@@ -1852,7 +1855,8 @@ test("enforces style CSP after a single-quoted angle bracket attribute", async (
 test("rejects immediate meta refresh after quoted angle bracket attribute", async () => {
   const html = normalPage.replace(
     '<link rel="stylesheet" href="/assets/app.css">',
-    '<meta http-equiv="refresh" data-note=">" content="0; url=/login"><link rel="stylesheet" href="/assets/app.css">',
+    '<meta http-equiv="refresh" data-note=">" content="0; url=/login">' +
+      '<link rel="stylesheet" href="/assets/app.css">',
   );
   assert.equal(await runFixture(html), 1);
 });
@@ -1860,7 +1864,8 @@ test("rejects immediate meta refresh after quoted angle bracket attribute", asyn
 test("retains delayed meta refresh after quoted angle bracket attribute", async () => {
   const html = normalPage.replace(
     '<link rel="stylesheet" href="/assets/app.css">',
-    '<meta http-equiv="refresh" data-note=">" content="3600; url=/home"><link rel="stylesheet" href="/assets/app.css">',
+    '<meta http-equiv="refresh" data-note=">" content="3600; url=/home">' +
+      '<link rel="stylesheet" href="/assets/app.css">',
   );
   assert.equal(await runFixture(html), null);
 });
