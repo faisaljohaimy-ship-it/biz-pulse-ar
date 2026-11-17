@@ -569,18 +569,25 @@ for (const route of ROUTES) {
       failures.push(route + ": الصفحة تحوّل أو تعيد التحميل تلقائيًا عبر meta refresh");
     }
     const stylesheetLinks = [...activeMarkup.matchAll(/<link\b(?:[^>"']|"[^"]*"|'[^']*')*>/gi)]
-      .map(([tag]) => stylesheetHref(tag))
-      .filter(Boolean);
+      .map((match) => ({ href: stylesheetHref(match[0]), position: match.index }))
+      .filter(({ href }) => href);
     const hasCss = stylesheetLinks.length > 0;
     // Browsers resolve relative link URLs against the first <base href>.
     // Checking them against the route URL could certify a local CSS file that
     // the browser actually fetches from a different origin (or a broken path).
-    const firstBase = [...activeMarkup.matchAll(/<base\b[^>]*>/gi)]
-      .map(([tag]) => tagAttributes(tag, 5))
-      .find((attrs) => "href" in attrs);
-    const baseHref =
-      firstBase?.href === undefined ? undefined : decodeMetaAttribute(firstBase.href);
-    const documentBase = baseHref === undefined ? url : new URL(baseHref, url).href;
+    // The browser resolves each stylesheet when it parses that link.
+    // A <base> declared later cannot retroactively change an earlier fetch;
+    // otherwise a healthy decoy under the later base can hide broken app CSS.
+    const baseLinks = [...activeMarkup.matchAll(/<base\b[^>]*>/gi)]
+      .map((match) => ({
+        position: match.index,
+        attrs: tagAttributes(match[0], 5),
+      }))
+      .filter(({ attrs }) => "href" in attrs)
+      .map(({ position, attrs }) => ({
+        position,
+        href: decodeMetaAttribute(attrs.href),
+      }));
 
     if (!isHtml) failures.push(`${route}: الاستجابة ليست مستند HTML صالحًا للتطبيق`);
     if (isAttachment) failures.push(`${route}: HTML يُرسَل كمرفق للتنزيل بدل عرض الصفحة`);
@@ -604,8 +611,10 @@ for (const route of ROUTES) {
       let reason = "no same-origin stylesheet";
       // One valid vendor stylesheet cannot certify a later broken app stylesheet.
       let brokenCss = false;
-      for (const href of stylesheetLinks) {
+      for (const { href, position } of stylesheetLinks) {
         try {
+          const firstBase = baseLinks.find((base) => base.position < position);
+          const documentBase = firstBase ? new URL(firstBase.href, url).href : url;
           const stylesheetUrl = new URL(href, documentBase);
           if (stylesheetUrl.origin !== new URL(BASE).origin) continue;
           const stylesheetRes = await fetchWithRetry(stylesheetUrl.href);
