@@ -39,6 +39,7 @@ describe("production performance budget symlink integrity", () => {
   it("does not certify an oversized external media asset hidden behind a file symlink", () => {
     const result = checkFixture((root, output) => {
       const media = join(root, "oversized.mp4");
+      writeFileSync(media, "");
       truncateSync(media, 15 * 1024 * 1024);
       symlinkSync(media, join(output, "film.mp4"));
     });
@@ -50,6 +51,7 @@ describe("production performance budget symlink integrity", () => {
     const result = checkFixture((root, output) => {
       const external = join(root, "external-assets");
       mkdirSync(external);
+      writeFileSync(join(external, "oversized.js"), "");
       truncateSync(join(external, "oversized.js"), 11 * 1024 * 1024);
       symlinkSync(external, join(output, "assets"), "dir");
     });
