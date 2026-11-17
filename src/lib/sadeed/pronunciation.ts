@@ -307,18 +307,18 @@ function englishUnder1000(n: number): string {
   return parts.join(" ");
 }
 
-/** English words for any non-negative integer up to the hundred-millions. */
+/** English cardinal groups up to the largest exactly representable integer. */
 export function englishNumberWords(n: number): string {
   if (!Number.isFinite(n) || n < 0) return String(n);
   const v = Math.floor(n);
+  if (!Number.isSafeInteger(v)) return String(n);
   if (v === 0) return "zero";
-  const millions = Math.floor(v / 1_000_000);
-  const thousands = Math.floor((v % 1_000_000) / 1000);
-  const rest = v % 1000;
+  const scales = ["", "thousand", "million", "billion", "trillion", "quadrillion"];
   const parts: string[] = [];
-  if (millions) parts.push(`${englishUnder1000(millions)} million`);
-  if (thousands) parts.push(`${englishUnder1000(thousands)} thousand`);
-  if (rest) parts.push(englishUnder1000(rest));
+  for (let rem = v, i = 0; rem > 0; rem = Math.floor(rem / 1000), i++) {
+    const group = rem % 1000;
+    if (group) parts.unshift(`${englishUnder1000(group)}${scales[i] ? ` ${scales[i]}` : ""}`);
+  }
   return parts.join(" ");
 }
 
