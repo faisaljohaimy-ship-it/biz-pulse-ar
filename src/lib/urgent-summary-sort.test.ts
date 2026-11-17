@@ -2,6 +2,15 @@ import { describe, expect, it } from "vitest";
 import { compareUrgentTasks } from "./urgent-summary-sort";
 
 describe("urgent-summary critical-task ordering", () => {
+  it("sorts malformed runtime deadline values last without crashing", () => {
+    const valid = { priority: "عاجل", due_at: "2026-11-08T06:00:00Z" };
+    for (const malformed of [123, {}, ["2026-11-08"], false]) {
+      const row = { priority: "عاجل", due_at: malformed as unknown as string };
+      expect(compareUrgentTasks(valid, row)).toBeLessThan(0);
+      expect(compareUrgentTasks(row, valid)).toBeGreaterThan(0);
+    }
+  });
+
   it("places valid deadlines before malformed and missing dates at equal priority", () => {
     const rows = [
       { id: "invalid", priority: "عاجل جدًا", due_at: "2026-11-08junk" },

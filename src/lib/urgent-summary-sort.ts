@@ -10,7 +10,10 @@ const priorityRank = (priority: string) =>
 function dueDateRank(value: string | null): number {
   // Date.parse accepts malformed strings such as "2026-11-08junk" as a
   // completely different valid date. Database deadlines must be ISO-shaped.
-  const match = value?.match(
+  // Realtime/database payloads may violate the declared nullable-string type.
+  // Malformed values must sort last instead of crashing the urgent-task panel.
+  if (typeof value !== "string") return Number.MAX_SAFE_INTEGER;
+  const match = value.match(
     /^(\d{4}-\d{2}-\d{2})(?:[T ]((?:[01]\d|2[0-3]):\d{2}:\d{2}(?:\.\d+)?)(Z|[+-]\d{2}(?::?\d{2})?)?)?$/,
   );
   if (!match) return Number.MAX_SAFE_INTEGER;
