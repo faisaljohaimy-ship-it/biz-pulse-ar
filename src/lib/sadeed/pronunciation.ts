@@ -292,26 +292,26 @@ const EN_TENS = [
 ];
 
 function englishUnder1000(n: number): string {
-  const parts: string[] = [];
-  const h = Math.floor(n / 100);
-  const r = n % 100;
-  if (h) parts.push(`${EN_ONES[h]} hundred`);
-  if (r) {
-    if (r < 20) parts.push(EN_ONES[r]);
-    else {
-      const t = Math.floor(r / 10);
-      const o = r % 10;
-      parts.push(o ? `${EN_TENS[t]}-${EN_ONES[o]}` : EN_TENS[t]);
-    }
+  let result = "";
+  if (n >= 100) {
+    result = `${EN_ONES[Math.floor(n / 100)]} hundred`;
+    n %= 100;
   }
-  return parts.join(" ");
+  if (n) {
+    const words =
+      n < 20
+        ? EN_ONES[n]
+        : `${EN_TENS[Math.floor(n / 10)]}${n % 10 ? `-${EN_ONES[n % 10]}` : ""}`;
+    result += `${result ? " " : ""}${words}`;
+  }
+  return result;
 }
 
 /** English cardinal groups up to the largest exactly representable integer. */
 export function englishNumberWords(n: number): string {
   if (!Number.isFinite(n) || n < 0) return String(n);
   const v = Math.floor(n);
-  if (!Number.isSafeInteger(v)) return String(n);
+  if (v >= 2 ** 53) return String(n);
   const scales = ["", "thousand", "million", "billion", "trillion", "quadrillion"];
   let result = "";
   for (let i = 0, rem = v; rem; i++, rem = Math.floor(rem / 1000)) {
