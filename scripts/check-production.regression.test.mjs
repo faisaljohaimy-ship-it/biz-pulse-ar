@@ -116,7 +116,6 @@ for (const [label, policy, expected] of [
   });
 }
 
-
 test("rejects a decoy stylesheet under a base declared AFTER the link", async () => {
   const html = normalPage.replace(
     '<link rel="stylesheet" href="/assets/app.css">',
