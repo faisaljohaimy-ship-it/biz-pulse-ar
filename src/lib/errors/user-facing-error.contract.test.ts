@@ -110,6 +110,49 @@ describe("لا تصل عبارة مصادقة إلى الشاشة", () => {
     expect(isSessionError({ message: 42 })).toBe(false);
     expect(isSessionError(null)).toBe(false);
   });
+
+  it("routes sanitized HTTP 401/403 errors to sign-in even without auth keywords", () => {
+    const authFailures = [
+      { status: 401 },
+      { status: 403, message: "Request failed" },
+      { statusCode: 401, message: "Bad response" },
+      Object.assign(new Error("Request failed"), { statusCode: 403 }),
+    ];
+    for (const failure of authFailures) {
+      expect(isSessionError(failure)).toBe(true);
+      expect(userFacingError(failure)).toBe(SESSION_ERROR_AR);
+    }
+  });
+
+  it("does not misclassify non-auth HTTP status codes or numeric-looking strings", () => {
+    const failures = [
+      { status: 400, message: "Bad request" },
+      { status: 429, message: "Too many requests" },
+      { statusCode: 500, message: "Server failed" },
+      { status: "401", message: "Request failed" },
+    ];
+    for (const failure of failures) {
+      expect(isSessionError(failure)).toBe(false);
+      expect(userFacingError(failure)).toBe(GENERIC_ERROR_AR);
+    }
+  });
+
+  it("survives hostile status getters and still classifies safe numeric status", () => {
+    const hostileStatus = Object.defineProperty({}, "status", {
+      get() {
+        throw new Error("hostile getter");
+      },
+    });
+    const hostileMessage = Object.defineProperty({ status: 401 }, "message", {
+      get() {
+        throw new Error("hostile message");
+      },
+    });
+    expect(isSessionError(hostileStatus)).toBe(false);
+    expect(userFacingError(hostileStatus)).toBe(GENERIC_ERROR_AR);
+    expect(isSessionError(hostileMessage)).toBe(true);
+    expect(userFacingError(hostileMessage)).toBe(SESSION_ERROR_AR);
+  });
 });
 
 describe("الحدود تمرّ بالمرشِّح فعلًا", () => {
