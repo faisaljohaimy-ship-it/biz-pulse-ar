@@ -121,6 +121,21 @@ describe("SADEED adaptive preferences", () => {
     ]);
   });
 
+  it("learns standalone absolute no-table preferences without learning negated formats", () => {
+    for (const request of [
+      "Never use tables.",
+      "لا تستخدم الجداول أبدًا",
+      "بدون جداول أبداً",
+    ]) {
+      expect(extractSadeedAdaptivePreferences(request)).toEqual([
+        { key: "response_format", value: "no_tables", confidence: 0.95 },
+      ]);
+    }
+    expect(extractSadeedAdaptivePreferences("Never use bullet points.")).toEqual([]);
+    expect(extractSadeedAdaptivePreferences("أبدًا لا تستخدم نقاط مختصرة")).toEqual([]);
+    expect(extractSadeedAdaptivePreferences("Never answer in English.")).toEqual([]);
+  });
+
   it("maps only approved enum pairs into prompt hints", () => {
     expect(sadeedPreferencePromptLine("response_length", "concise")).toContain("concise");
     expect(sadeedPreferencePromptLine("recipient", "someone@example.com")).toBe(null);
