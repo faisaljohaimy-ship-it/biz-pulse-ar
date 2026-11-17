@@ -48,4 +48,27 @@ describe("SADEED reply modality", () => {
     expect(spoken).toContain("الصيانة");
     expect(spoken).not.toMatch(/\/sec|maintenance|\]\(|سِك/);
   });
+
+  it("skips visual GFM table divider rows in spoken operational reports", () => {
+    const spoken = toSadeedSpeechText(
+      "ملخص المخاطر\n| الموقع | الحالة |\n| --- | :---: |\n| محطة الشمال | مرتفع |",
+    );
+    expect(spoken).toContain("الموقع");
+    expect(spoken).toContain("محطة الشمال");
+    expect(spoken).toContain("مرتفع");
+    expect(spoken).not.toMatch(/-{3,}|:---|\|/);
+  });
+
+  it("recognizes compact right/left aligned separators with CRLF line endings", () => {
+    const spoken = toSadeedSpeechText("نتائج الوردية\r\n|:---|---:|\r\n| سليم | مكتمل |");
+    expect(spoken).toContain("سليم");
+    expect(spoken).toContain("مكتمل");
+    expect(spoken).not.toMatch(/-{3,}|:---|\|/);
+  });
+
+  it("preserves meaningful hyphens outside Markdown table delimiters", () => {
+    const spoken = toSadeedSpeechText("الحالة آمن - بحاجة إلى مراجعة");
+    expect(spoken).toContain("آمن - بحاجة إلى مراجعة");
+  });
+
 });
