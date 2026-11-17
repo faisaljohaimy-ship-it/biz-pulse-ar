@@ -39,8 +39,16 @@ describe("SADEED reply modality", () => {
 
   it.each([
     ["unfinished tilde opener", "قبل\n~~~ts", "قبل"],
-    ["CR-only tilde-fenced code without closing fence", "قبل\r~~~ts\rconst CODE_NOT_FOR_SPEECH = true;", "قبل"],
-    ["CR-only tilde-fenced code with closing fence", "قبل\r~~~ts\rconst CODE_NOT_FOR_SPEECH = true;\r~~~\rبعد", "قبل بعد"],
+    [
+      "CR-only tilde-fenced code without closing fence",
+      "قبل\r~~~ts\rconst CODE_NOT_FOR_SPEECH = true;",
+      "قبل",
+    ],
+    [
+      "CR-only tilde-fenced code with closing fence",
+      "قبل\r~~~ts\rconst CODE_NOT_FOR_SPEECH = true;\r~~~\rبعد",
+      "قبل بعد",
+    ],
   ])("does not narrate %s", (_case, text, expected) => {
     expect(toSadeedSpeechText(text)).toBe(expected);
   });

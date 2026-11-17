@@ -35,7 +35,7 @@ export function toSadeedSpeechText(value: string): string {
   const cleaned = value
     // Never narrate fenced code: partial tilde openers and CR-only line breaks
     // must also be omitted before they reach voice synthesis.
-    .replace(/```[^]*?(```|$)|~~~[^\r\n]*(?:[\r\n][^]*?)?(~~~|$)/g, " ")
+    .replace(/```[^]*?(```|$)|~~~[^]*?(~~~|$)/g, " ")
     .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
     // Narrate link labels, not destination URLs, anchors, or screen paths.
     .replace(/\[([^\]]+)\]\((https?:\/\/|mailto:|tel:|\/|#|\.{1,2}\/)[^)]*\)/gi, "$1")
