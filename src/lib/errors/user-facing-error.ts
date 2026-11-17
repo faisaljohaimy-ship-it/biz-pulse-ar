@@ -26,7 +26,7 @@
  * أيضًا — الترجمة لا تجعل تفصيلة البنية التحتية صالحةً للعرض.
  */
 const SECRET_SHAPED =
-  /authenticat|unauthor|token|forbidden|permission denied|jwt|bearer|api[\s_-]?key|غير مصرّ?ح|غير مصرح|صلاحي/i;
+  /authenticat|unauthor|token|forbidden|permission denied|jwt|bearer|api[\s_-]?key|غير مصرّ?ح|صلاحي/i;
 
 /** رسالة الحال العامّة — تقول ما جرى وما بقي ممكنًا، بلا اسم مورّد. */
 export const GENERIC_ERROR_AR = "تعذّر عرض هذه الشاشة الآن. حاول مرّة أخرى بعد لحظات.";
@@ -44,13 +44,9 @@ export const SESSION_ERROR_AR =
  */
 function readableErrorMessage(error: unknown): string {
   try {
-    const raw =
-      error instanceof Error
-        ? error.message
-        : typeof error === "string"
-          ? error
-          : ((error as { message?: unknown } | null)?.message ?? "");
-    return String(raw);
+    return String(
+      typeof error === "string" ? error : ((error as { message?: unknown } | null)?.message ?? ""),
+    );
   } catch {
     // A thrown value can have a hostile message getter or string coercion.
     // The error boundary must still render a safe, anonymized fallback.
@@ -67,12 +63,8 @@ export function isSessionError(error: unknown): boolean {
   if (SECRET_SHAPED.test(readableErrorMessage(error))) return true;
   try {
     const value = error as { status?: unknown; statusCode?: unknown } | null;
-    return (
-      value?.status === 401 ||
-      value?.status === 403 ||
-      value?.statusCode === 401 ||
-      value?.statusCode === 403
-    );
+    const status = value?.status ?? value?.statusCode;
+    return status === 401 || status === 403;
   } catch {
     // Error objects can expose hostile getters or proxies.
     return false;
