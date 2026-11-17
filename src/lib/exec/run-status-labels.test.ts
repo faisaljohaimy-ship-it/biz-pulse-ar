@@ -197,6 +197,8 @@ describe("UI-1 — عدد الخطوات رقمٌ صحيح أو «—»", () => 
     expect(runStepsLabel(Number.MAX_SAFE_INTEGER + 1)).toBe("—");
     expect(runStepsLabel(1e25)).toBe("—");
     expect(runStepsLabel(Number.POSITIVE_INFINITY)).toBe("—");
+    expect(runStepsLabel(Number.NEGATIVE_INFINITY)).toBe("—");
+    expect(runStepsLabel(Number.NaN)).toBe("—");
     expect(runStepsLabel(2.9)).toBe("2");
   });
 
