@@ -82,7 +82,19 @@ describe("build-info provider provenance", () => {
         VERCEL_GIT_COMMIT_SHA: "not-a-sha",
         VERCEL_GIT_COMMIT_REF: "main",
         GITHUB_SHA: githubSha,
+        GITHUB_REF_NAME: "main",
       }),
     ).toMatchObject({ sha: githubSha, ref: "main", source: "GITHUB_SHA" });
+  });
+
+  it("does not inherit an invalid Vercel SHA's ref for a valid GitHub fallback", () => {
+    expect(
+      buildInfo({
+        VERCEL: "1",
+        VERCEL_GIT_COMMIT_SHA: "not-a-sha",
+        VERCEL_GIT_COMMIT_REF: "main",
+        GITHUB_SHA: githubSha,
+      }),
+    ).toMatchObject({ sha: githubSha, ref: "unknown", source: "GITHUB_SHA" });
   });
 });
