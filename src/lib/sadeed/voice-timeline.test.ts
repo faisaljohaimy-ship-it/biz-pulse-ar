@@ -37,9 +37,7 @@ describe("voice timeline deltas", () => {
     tick = 200;
     VoiceTimeline.push("CHAT", "new session");
 
-    expect(VoiceTimeline.dump().map(({ t, dt }) => ({ t, dt }))).toEqual([
-      { t: 200, dt: 0 },
-    ]);
+    expect(VoiceTimeline.dump().map(({ t, dt }) => ({ t, dt }))).toEqual([{ t: 200, dt: 0 }]);
   });
 
   it("preserves deltas for a nonzero first timestamp", () => {
