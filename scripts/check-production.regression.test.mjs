@@ -1056,7 +1056,6 @@ test("rejects multiple CSS comments and whitespace with no styling rules", async
   );
 });
 
-
 // An unclosed CSS comment consumes everything until EOF in a browser. It must
 // not count as evidence of application styles, even after a charset directive.
 for (const cssBody of [
