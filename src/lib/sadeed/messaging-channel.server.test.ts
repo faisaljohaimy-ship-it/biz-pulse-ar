@@ -61,6 +61,32 @@ describe("SADEED messaging channels", () => {
     ).toBe(mediaUrl);
   });
 
+  it("rejects unsafe Twilio status callback URLs before they are sent to the provider", () => {
+    const env = {
+      TWILIO_ACCOUNT_SID: "AC123",
+      TWILIO_AUTH_TOKEN: "test-token",
+      TWILIO_FROM_NUMBER: "+14155550123",
+    };
+    for (const callback of [
+      "http://events.example.com/status",
+      "https://user:password@events.example.com/status",
+      "https://127.0.0.1:8443/admin",
+      "https://[::1]/status",
+      "https://localhost/status",
+      "https://events.corp.internal/status",
+      "https://events.home.arpa/status",
+      "https://events.example.com/status#fragment",
+    ]) {
+      expect(() => resolveTwilioConfig({ ...env, TWILIO_STATUS_CALLBACK_URL: callback })).toThrow(
+        /public HTTPS/,
+      );
+    }
+    const callback = "https://events.example.com/status?event=delivery";
+    expect(resolveTwilioConfig({ ...env, TWILIO_STATUS_CALLBACK_URL: callback })?.statusCallbackUrl).toBe(
+      callback,
+    );
+  });
+
   it("prefers a Twilio Messaging Service when configured", () => {
     const form = buildTwilioMessageForm(
       { to: "+966551234567", body: "Ready" },
