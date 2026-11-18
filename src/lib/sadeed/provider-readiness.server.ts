@@ -52,6 +52,22 @@ function validHttpsEndpoint(value: string | undefined): boolean {
   }
 }
 
+/** Avoid claiming Resend is configured when its required sender is not a mailbox. */
+function validEmailSender(value: string | undefined): boolean {
+  if (!configured(value, 6)) return false;
+  const sender = value?.trim() ?? "";
+  const wrapped = /^(?:[^<>\r\n]+\s)?<([^<>\r\n]+)>$/.exec(sender);
+  const mailbox = wrapped?.[1] ?? sender;
+  if (!/^[^\s<>@]+@[^\s<>@]+$/.test(mailbox)) return false;
+  const [local, domain] = mailbox.split("@");
+  if (local.startsWith(".") || local.endsWith(".") || local.includes("..")) return false;
+  const labels = domain.split(".");
+  return (
+    labels.length > 1 &&
+    labels.every((label) => /^[\p{L}\p{N}](?:[\p{L}\p{N}-]*[\p{L}\p{N}])?$/u.test(label))
+  );
+}
+
 function capability(
   provider: string | null,
   required: Array<[name: string, valid: boolean]>,
@@ -102,7 +118,7 @@ export function inspectSadeedProviderReadiness(
   const elevenReady = configured(env.ELEVENLABS_API_KEY, 20);
   const voice = capability("elevenlabs", [["ELEVENLABS_API_KEY", elevenReady]]);
 
-  const resendReady = configured(env.RESEND_API_KEY, 20) && configured(env.RESEND_FROM_EMAIL, 6);
+  const resendReady = configured(env.RESEND_API_KEY, 20) && validEmailSender(env.RESEND_FROM_EMAIL);
   const outlookReady = configured(env.MICROSOFT_OUTLOOK_API_KEY, 20);
   const emailProvider = resendReady ? "resend" : outlookReady ? "outlook" : null;
   const email = capability(emailProvider, [
