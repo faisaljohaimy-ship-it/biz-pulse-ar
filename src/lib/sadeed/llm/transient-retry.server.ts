@@ -29,13 +29,19 @@ function statusOf(error: unknown, text: string): number {
     // AI SDKs expose HTTP status as either statusCode or status. A real 429/403
     // must override an ambiguous "service unavailable" message; otherwise
     // quota or authorization failures can trigger an unnecessary provider call.
+    let serverStatus: number | undefined;
     for (const field of ["statusCode", "status"] as const) {
       if (!(field in error)) continue;
       const raw = (error as Record<string, unknown>)[field];
       // Ignore absent/malformed fields without coercing opaque objects.
       const n = typeof raw === "number" ? raw : typeof raw === "string" ? Number(raw) : NaN;
-      if (Number.isInteger(n) && n >= 400 && n <= 599) return n;
+      if (!Number.isInteger(n) || n < 400 || n > 599) continue;
+      // Providers may expose conflicting structured status fields. Never retry
+      // an actual client/quota rejection just because another field says 503.
+      if (n < 500) return n;
+      serverStatus ??= n;
     }
+    if (serverStatus !== undefined) return serverStatus;
   }
   return Number(text.match(/\b([45]\d\d)\b/)?.[1]);
 }
