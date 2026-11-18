@@ -21,7 +21,11 @@ describe("SADEED reply modality", () => {
   it.each([
     ["backticks", "قبل ```رمز``` بعد", "قبل رمز بعد"],
     ["tildes", "قبل ~~~رمز~~~ بعد", "قبل رمز بعد"],
-    ["backticks before another line", "قبل ```رمز``` بعد\nنهاية التقرير", "قبل رمز بعد نهاية التقرير"],
+    [
+      "backticks before another line",
+      "قبل ```رمز``` بعد\nنهاية التقرير",
+      "قبل رمز بعد نهاية التقرير",
+    ],
   ])("does not mistake inline %s for a fenced Markdown code block", (_case, text, expected) => {
     expect(toSadeedSpeechText(text)).toBe(expected);
   });
