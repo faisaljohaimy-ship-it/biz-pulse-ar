@@ -42,8 +42,7 @@ export function verifyCronHookSecret(request: Request): Response | null {
 /** Bound external Auth lookups so token-minting routes cannot hang indefinitely. */
 export const AUTH_USER_LOOKUP_TIMEOUT_MS = 8_000;
 
-const authUnavailable = () =>
-  Response.json({ error: "auth_unavailable" }, { status: 503 });
+const authUnavailable = () => Response.json({ error: "auth_unavailable" }, { status: 503 });
 
 export async function verifySupabaseUser(request: Request): Promise<{ userId: string } | Response> {
   const authHeader = request.headers.get("authorization");
@@ -71,7 +70,10 @@ export async function verifySupabaseUser(request: Request): Promise<{ userId: st
     const result = await Promise.race([
       supabase.auth.getUser(),
       new Promise<never>((_, reject) => {
-        timer = setTimeout(() => reject(new Error("auth_lookup_timeout")), AUTH_USER_LOOKUP_TIMEOUT_MS);
+        timer = setTimeout(
+          () => reject(new Error("auth_lookup_timeout")),
+          AUTH_USER_LOOKUP_TIMEOUT_MS,
+        );
       }),
     ]);
     // Null/malformed SDK envelopes are outages, not valid anonymous sessions.
