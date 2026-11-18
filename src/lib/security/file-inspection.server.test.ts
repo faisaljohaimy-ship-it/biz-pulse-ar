@@ -151,7 +151,7 @@ describe("SADEED attachment structural inspection", () => {
     expectBlocked(
       () =>
         inspectSadeedAttachment({
-          bytes: new TextEncoder().encode(`%PDF-1.7\\n1 0 obj <<${action} 2 0 R>>`),
+          bytes: new TextEncoder().encode(`%PDF-1.7\n1 0 obj <<${action} 2 0 R>>`),
           filename: "brief.pdf",
           claimedMime: "application/pdf",
         }),
@@ -161,7 +161,7 @@ describe("SADEED attachment structural inspection", () => {
 
   it("allows benign PDF name escapes without weakening the existing magic check", () => {
     const result = inspectSadeedAttachment({
-      bytes: new TextEncoder().encode("%PDF-1.7\\n1 0 obj <</Title (Open#41ction)>>"),
+      bytes: new TextEncoder().encode("%PDF-1.7\n1 0 obj <</Title (Open#41ction)>>"),
       filename: "brief.pdf",
       claimedMime: "application/pdf",
     });
