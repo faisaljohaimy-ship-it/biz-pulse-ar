@@ -39,6 +39,12 @@ export function verifyCronHookSecret(request: Request): Response | null {
   return null;
 }
 
+/** Bound external Auth lookups so token-minting routes cannot hang indefinitely. */
+export const AUTH_USER_LOOKUP_TIMEOUT_MS = 8_000;
+
+const authUnavailable = () =>
+  Response.json({ error: "auth_unavailable" }, { status: 503 });
+
 export async function verifySupabaseUser(request: Request): Promise<{ userId: string } | Response> {
   const authHeader = request.headers.get("authorization");
   if (!authHeader || !/^Bearer\s+/i.test(authHeader)) {
@@ -55,18 +61,37 @@ export async function verifySupabaseUser(request: Request): Promise<{ userId: st
       headers: { "Content-Type": "application/json" },
     });
   }
-  const supabase = createClient(url, key, {
-    global: { headers: { Authorization: authHeader } },
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-  const { data, error } = await supabase.auth.getUser();
-  if (error || !data?.user) {
-    return new Response(JSON.stringify({ error: "unauthorized" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
+
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    const supabase = createClient(url, key, {
+      global: { headers: { Authorization: authHeader } },
+      auth: { persistSession: false, autoRefreshToken: false },
     });
+    const result = await Promise.race([
+      supabase.auth.getUser(),
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error("auth_lookup_timeout")), AUTH_USER_LOOKUP_TIMEOUT_MS);
+      }),
+    ]);
+    // Null/malformed SDK envelopes are outages, not valid anonymous sessions.
+    if (!result || typeof result !== "object" || !("data" in result) || !("error" in result)) {
+      return authUnavailable();
+    }
+    const { data, error } = result;
+    if (error || !data?.user) {
+      return Response.json({ error: "unauthorized" }, { status: 401 });
+    }
+    if (typeof data.user.id !== "string" || !data.user.id.trim()) {
+      return authUnavailable();
+    }
+    return { userId: data.user.id };
+  } catch {
+    // Suppress raw provider/transport errors and fail closed on an outage or timeout.
+    return authUnavailable();
+  } finally {
+    if (timer !== undefined) clearTimeout(timer);
   }
-  return { userId: data.user.id };
 }
 
 /** Require a signed-in platform administrator or manager for paid token minting. */
