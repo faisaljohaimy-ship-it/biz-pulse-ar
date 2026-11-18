@@ -8,6 +8,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.restoreAllMocks();
+  vi.unstubAllEnvs();
   VoiceTimeline.clear();
 });
 
@@ -53,4 +54,31 @@ describe("voice timeline deltas", () => {
       { t: 81, dt: 31 },
     ]);
   });
+  it("retains only safe event metadata in production, not voice text, payloads, or stacks", () => {
+    vi.stubEnv("DEV", false);
+    VoiceTimeline.push("CHAT", "confidential user transcript", {
+      authorization: "example-sensitive-token",
+      transcript: "confidential user transcript",
+    }, { stack: true });
+
+    expect(VoiceTimeline.dump()).toEqual([
+      { t: expect.any(Number), dt: 0, tag: "CHAT", msg: "CHAT" },
+    ]);
+    expect(JSON.stringify(window.__ariaTimeline)).not.toContain("confidential");
+    expect(JSON.stringify(window.__ariaTimeline)).not.toContain("example-sensitive-token");
+    expect(console.log).not.toHaveBeenCalled();
+  });
+
+  it("preserves opt-in development diagnostics without affecting timeline deltas", () => {
+    vi.stubEnv("DEV", true);
+    VoiceTimeline.push("STREAM", "local diagnostic", { bytes: 12 }, { stack: true });
+    expect(VoiceTimeline.dump()[0]).toMatchObject({
+      tag: "STREAM",
+      msg: "local diagnostic",
+      data: { bytes: 12 },
+    });
+    expect(VoiceTimeline.dump()[0].stack).toEqual(expect.any(String));
+    expect(console.log).toHaveBeenCalledOnce();
+  });
+
 });
