@@ -26,6 +26,9 @@ export function shouldUseBackup(error: unknown): boolean {
   // A denial or invalid request stays terminal, even when its text contains
   // "quota" or "unavailable". Never spend on a second provider for it.
   if ([400, 401, 402, 403].includes(status)) return false;
+  // The SDK may expose the HTTP status separately from a generic message.
+  // Preserve the existing transient-status allowlist in that case.
+  if ([429, 500, 502, 503, 504].includes(status)) return true;
   return (
     /\b(429|500|502|503|504)\b/.test(msg) ||
     msg.includes("quota") ||
