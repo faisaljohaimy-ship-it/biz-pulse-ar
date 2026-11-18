@@ -585,7 +585,9 @@ for (const route of ROUTES) {
     // The browser resolves each stylesheet when it parses that link.
     // A <base> declared later cannot retroactively change an earlier fetch;
     // otherwise a healthy decoy under the later base can hide broken app CSS.
-    // Quoted > is not a tag boundary: a truncated <base href> can redirect\n    // the browser's stylesheet to another origin while the gate probes a decoy.\n    const baseLinks = [...activeMarkup.matchAll(/<base\\b(?:[^>"']|"[^"]*"|'[^']*')*>/gi)]
+    // Quoted > is not a tag boundary: a truncated <base href> can redirect
+    // the browser's stylesheet to another origin while the gate probes a decoy.
+    const baseLinks = [...activeMarkup.matchAll(/<base\b(?:[^>"']|"[^"]*"|'[^']*')*>/gi)]
       .map((match) => ({
         position: match.index,
         attrs: tagAttributes(match[0], 5),
