@@ -32,6 +32,30 @@ describe("auth diagnostic persistence recovery", () => {
     },
   );
 
+  it.each([
+    ["object", { unexpected: true }],
+    ["string", "broken-ring"],
+    ["number", 42],
+  ])("recovers a corrupted in-memory diagnostics buffer (%s)", (_kind, invalid) => {
+    (window as unknown as { __nxAuthLog: unknown }).__nxAuthLog = invalid;
+
+    expect(() => authLog("login:retry")).not.toThrow();
+    expect(window.__nxAuthLog).toHaveLength(1);
+    expect(window.__nxAuthLog?.[0]).toMatchObject({ ev: "login:retry" });
+    expect(JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? "null")).toHaveLength(1);
+  });
+
+  it("clones a frozen diagnostics buffer without losing its previous events", () => {
+    (window as unknown as { __nxAuthLog: unknown }).__nxAuthLog = Object.freeze([
+      { t: 0, sid: "prior", ev: "login:started" },
+    ]);
+
+    expect(() => authLog("login:retry")).not.toThrow();
+    expect(window.__nxAuthLog).toHaveLength(2);
+    expect(window.__nxAuthLog?.[0]).toMatchObject({ ev: "login:started" });
+    expect(window.__nxAuthLog?.[1]).toMatchObject({ ev: "login:retry" });
+  });
+
   it("preserves valid history and caps the ring at the latest 50 entries", () => {
     const previous = Array.from({ length: 50 }, (_, i) => ({
       t: i,
