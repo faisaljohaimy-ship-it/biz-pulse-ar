@@ -1883,16 +1883,7 @@ for (const quote of ['"', "'"]) {
       "https://offline.invalid/releases%3E2026/assets/app.css": { status: 200 },
     };
     assert.equal(
-      await runFixture(
-        html,
-        "text/html",
-        200,
-        "text/css",
-        "body {}",
-        200,
-        undefined,
-        cssAssets,
-      ),
+      await runFixture(html, "text/html", 200, "text/css", "body {}", 200, undefined, cssAssets),
       null,
     );
   });
@@ -1908,17 +1899,7 @@ test("does not let a decoy CSS file override a broken quoted-angle base target",
     "https://offline.invalid/assets/app.css": { status: 200 },
   };
   assert.equal(
-    await runFixture(
-      html,
-      "text/html",
-      200,
-      "text/css",
-      "body {}",
-      200,
-      undefined,
-      cssAssets,
-    ),
+    await runFixture(html, "text/html", 200, "text/css", "body {}", 200, undefined, cssAssets),
     1,
   );
 });
-
