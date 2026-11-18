@@ -140,6 +140,34 @@ describe("SADEED attachment structural inspection", () => {
     );
   });
 
+  it.each([
+    "/Open#41ction",
+    "/O#70en#41ction",
+    "/J#61vaScript",
+    "/Laun#63h",
+    "/Embedded#46ile",
+    "/Rich#4dedia",
+  ])("blocks hex-escaped active PDF names (%s)", (action) => {
+    expectBlocked(
+      () =>
+        inspectSadeedAttachment({
+          bytes: new TextEncoder().encode(`%PDF-1.7\\n1 0 obj <<${action} 2 0 R>>`),
+          filename: "brief.pdf",
+          claimedMime: "application/pdf",
+        }),
+      "active_pdf",
+    );
+  });
+
+  it("allows benign PDF name escapes without weakening the existing magic check", () => {
+    const result = inspectSadeedAttachment({
+      bytes: new TextEncoder().encode("%PDF-1.7\\n1 0 obj <</Title (Open#41ction)>>"),
+      filename: "brief.pdf",
+      claimedMime: "application/pdf",
+    });
+    expect(result).toMatchObject({ family: "pdf", detectedMime: "application/pdf" });
+  });
+
   it("blocks active HTML disguised as text", () => {
     expectBlocked(
       () =>
