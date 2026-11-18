@@ -54,7 +54,7 @@ function validHttpsEndpoint(value: string | undefined): boolean {
 
 /** Avoid claiming Resend is configured when its required sender is not a mailbox. */
 function validEmailSender(value: string | undefined): boolean {
-  if (!configured(value, 6)) return false;
+  if (!configured(value, 6) || /[\r\n]/.test(value ?? "")) return false;
   const sender = value?.trim() ?? "";
   const wrapped = /^(?:[^<>\r\n]+[ \t])?<([^<>\r\n]+)>$/.exec(sender);
   const mailbox = wrapped?.[1] ?? sender;
