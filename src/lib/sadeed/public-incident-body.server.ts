@@ -75,7 +75,12 @@ export async function readPublicIncidentBody(request: Request): Promise<Incident
     }
     return { ok: true, value: value as Record<string, unknown> };
   } catch {
-    // Invalid UTF-8/JSON, interrupted streams and already-consumed bodies are client errors.
+    // A disconnect may reject reader.read() before the abort promise wins its
+    // race. Classify an aborted request as a timeout even on that rejection path.
+    if (request.signal.aborted) {
+      return { ok: false, status: 408, message: "request timeout" };
+    }
+    // Invalid UTF-8/JSON, non-abort stream errors and consumed bodies remain 400.
     return { ok: false, status: 400, message: "bad json" };
   } finally {
     if (timeout !== undefined) clearTimeout(timeout);
