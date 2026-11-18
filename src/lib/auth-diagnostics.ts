@@ -52,13 +52,10 @@ declare global {
 
 function ringPush(entry: DiagEntry) {
   if (typeof window === "undefined") return;
-  // An extension or another script can replace the public diagnostic slot.
-  // Never let a malformed or immutable buffer throw during login logging.
-  const previous = window.__nxAuthLog;
-  const memory =
-    Array.isArray(previous) && Object.isExtensible(previous)
-      ? previous
-      : (window.__nxAuthLog = Array.isArray(previous) ? previous.slice(-MAX_MEM) : []);
+  // A malformed global diagnostic slot must not break session initialization.
+  const memory = Array.isArray(window.__nxAuthLog)
+    ? window.__nxAuthLog
+    : (window.__nxAuthLog = []);
   memory.push(entry);
   if (memory.length > MAX_MEM) memory.splice(0, memory.length - MAX_MEM);
   try {
