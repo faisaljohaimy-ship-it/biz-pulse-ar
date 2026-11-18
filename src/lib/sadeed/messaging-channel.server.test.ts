@@ -34,6 +34,33 @@ describe("SADEED messaging channels", () => {
     expect(form.getAll("MediaUrl")).toEqual(["https://assets.example.com/alert.jpg"]);
   });
 
+  it("rejects unsafe Twilio media targets before forwarding them to the provider", () => {
+    const config = { accountSid: "AC123", authToken: "secret", fromNumber: "+14155550123" };
+    for (const mediaUrl of [
+      "https://user:password@assets.example.com/alert.jpg",
+      "https://127.0.0.1:8443/private",
+      "https://[::1]/private",
+      "https://localhost/secret",
+      "https://media.corp.internal/secret",
+      "https://media.home.arpa/secret",
+      "https://assets.example.com/alert.jpg#fragment",
+    ]) {
+      expect(() =>
+        buildTwilioMessageForm(
+          { to: "+966551234567", body: "Alert", mediaUrls: [mediaUrl] },
+          config,
+        ),
+      ).toThrow(/public HTTPS/);
+    }
+    const mediaUrl = "https://assets.example.com/alert.jpg?variant=small";
+    expect(
+      buildTwilioMessageForm(
+        { to: "+966551234567", body: "Alert", mediaUrls: [mediaUrl] },
+        config,
+      ).get("MediaUrl"),
+    ).toBe(mediaUrl);
+  });
+
   it("prefers a Twilio Messaging Service when configured", () => {
     const form = buildTwilioMessageForm(
       { to: "+966551234567", body: "Ready" },
