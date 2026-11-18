@@ -18,6 +18,14 @@ describe("SADEED reply modality", () => {
     ).toBe("النتيجة راجع المرجع ثم افتح");
   });
 
+  it.each([
+    ["backticks", "قبل ```رمز``` بعد", "قبل رمز بعد"],
+    ["tildes", "قبل ~~~رمز~~~ بعد", "قبل رمز بعد"],
+    ["backticks before another line", "قبل ```رمز``` بعد\nنهاية التقرير", "قبل رمز بعد نهاية التقرير"],
+  ])("does not mistake inline %s for a fenced Markdown code block", (_case, text, expected) => {
+    expect(toSadeedSpeechText(text)).toBe(expected);
+  });
+
   it("does not read fenced code aloud", () => {
     expect(toSadeedSpeechText("تم التنفيذ.\n```ts\nsecret()\n```\nبنجاح.")).toBe(
       "تم التنفيذ. بنجاح.",
