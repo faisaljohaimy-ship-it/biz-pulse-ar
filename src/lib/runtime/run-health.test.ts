@@ -24,6 +24,13 @@ describe("runtime execution health", () => {
     expect(recentExecutionHealth(-1, "succeeded", 24 * 60)).toBe("unknown");
   });
 
+  it.each([0, 42, true, {}, [], ["succeeded"]])(
+    "rejects malformed runtime status %j without crashing the health report",
+    (status) => {
+      expect(recentExecutionHealth(2, status, 24 * 60)).toBe("unknown");
+    },
+  );
+
   it("normalizes failure status casing and whitespace", () => {
     expect(recentExecutionHealth(0, " FAILED ", 24 * 60)).toBe("warning");
   });

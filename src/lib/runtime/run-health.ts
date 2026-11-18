@@ -28,11 +28,14 @@ const EXECUTING_OR_SUCCESSFUL_STATES = new Set([
 
 export function recentExecutionHealth(
   minutesAgo: number | null,
-  lastStatus: string | null | undefined,
+  lastStatus: unknown,
   staleAfterMin: number,
 ): RunHealth {
   if (minutesAgo === null || !Number.isFinite(minutesAgo) || minutesAgo < 0) return "unknown";
-  const status = lastStatus?.trim().toLowerCase();
+  // Database/runtime payloads are not guaranteed to match their TypeScript types.
+  // A malformed status must not throw and hide the rest of the health report.
+  if (typeof lastStatus !== "string") return "unknown";
+  const status = lastStatus.trim().toLowerCase();
   if (!status) return "unknown";
   if (FAILED_RUN_STATES.has(status)) return "warning";
   if (!EXECUTING_OR_SUCCESSFUL_STATES.has(status)) return "unknown";
