@@ -88,6 +88,7 @@ function hasActivePdfAction(chunk: string): boolean {
   );
   return ACTIVE_PDF.test(decoded);
 }
+
 const EICAR = "X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*";
 
 function ascii(bytes: Uint8Array, start = 0, end = bytes.length): string {
