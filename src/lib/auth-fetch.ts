@@ -40,17 +40,11 @@ export async function authenticatedFetch(input: RequestInfo | URL, init: Request
   if (signal?.aborted) throw aborted();
   // A valid guest session is allowed; a failed session lookup is not a guest.
   // Never leak the SDK's raw error or silently downgrade a private request.
-  // Only an explicit null session represents a guest. A malformed SDK payload
-  // must not silently downgrade a private request or forward an invalid bearer.
-  const session = data?.session;
-  if (
-    error ||
-    (session !== null &&
-      (typeof session?.access_token !== "string" || !session?.access_token.trim()))
-  ) {
+  // Only an explicit null session is a guest; malformed SDK results fail closed.
+  const token = data?.session?.access_token;
+  if (error || (data?.session !== null && !(typeof token === "string" && token.trim()))) {
     throw Error(AUTH_UNAVAILABLE);
   }
-  const token = session?.access_token;
   const headers = new Headers(init.headers ?? request?.headers);
   // Never forward a bearer token inherited from a Request or caller headers
   // after a real guest lookup. A token from an earlier login belongs to a
