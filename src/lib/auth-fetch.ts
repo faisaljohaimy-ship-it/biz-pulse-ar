@@ -14,7 +14,8 @@ function readSession(signal?: AbortSignal | null): Promise<SessionLookup> {
     const finish = (error?: Error, value?: SessionLookup) => {
       clearTimeout(timer);
       signal?.removeEventListener("abort", onAbort);
-      error ? reject(error) : resolve(value!);
+      if (error) reject(error);
+      else resolve(value!);
     };
     const onAbort = () => finish(aborted());
     const timer = setTimeout(
@@ -40,7 +41,7 @@ export async function authenticatedFetch(input: RequestInfo | URL, init: Request
   // Never leak the SDK's raw error or silently downgrade a private request.
   // Only an explicit null session is a guest; malformed SDK results fail closed.
   const token = data?.session?.access_token;
-  if (error || (data?.session !== null && (typeof token !== "string" || !token.trim()))) {
+  if (error || !(data?.session === null || (typeof token === "string" && token.trim()))) {
     throw Error(AUTH_UNAVAILABLE);
   }
   const headers = new Headers(init.headers ?? request?.headers);
