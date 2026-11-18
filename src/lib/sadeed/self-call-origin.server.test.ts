@@ -49,8 +49,6 @@ describe("resolveSelfCallOrigin", () => {
     expect(
       resolveSelfCallOrigin(REQ, { PUBLIC_SITE_URL: "  ", SITE_URL: "https://ok.example" }),
     ).toBe("https://ok.example");
-    expect(resolveSelfCallOrigin(REQ, { PUBLIC_SITE_URL: " " })).toBe(
-      "https://evil.example",
-    );
+    expect(resolveSelfCallOrigin(REQ, { PUBLIC_SITE_URL: " " })).toBe("https://evil.example");
   });
 });
