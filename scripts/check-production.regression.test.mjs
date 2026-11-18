@@ -126,7 +126,16 @@ test("rejects a decoy stylesheet under a base declared AFTER the link", async ()
     "https://offline.invalid/static/assets/app.css": { status: 200 },
   };
   assert.equal(
-    await runFixture(html, "text/html", 200, "text/css", "body {}", 200, undefined, cssAssets),
+    await runFixture(
+      html,
+      "text/html",
+      200,
+      "text/css",
+      "body {}",
+      200,
+      undefined,
+      cssAssets,
+    ),
     1,
   );
 });
@@ -1872,7 +1881,8 @@ test("retains delayed meta refresh after quoted angle bracket attribute", async 
 // Browsers do not end <base> at an angle bracket inside a quoted href.
 // A broken parser probes a different CSS URL and can reject healthy production.
 for (const quote of ['"', "'"]) {
-  test(`resolves a quoted > within a ${quote === '"' ? "double" : "single"}-quoted base href`, async () => {
+  const quoteKind = quote === '"' ? "double" : "single";
+  test(`resolves a quoted > within a ${quoteKind}-quoted base href`, async () => {
     const html = normalPage.replace(
       '<link rel="stylesheet" href="/assets/app.css">',
       `<base href=${quote}/releases>2026/${quote}><link rel="stylesheet" href="assets/app.css">`,
@@ -1881,7 +1891,16 @@ for (const quote of ['"', "'"]) {
       "https://offline.invalid/releases%3E2026/assets/app.css": { status: 200 },
     };
     assert.equal(
-      await runFixture(html, "text/html", 200, "text/css", "body {}", 200, undefined, cssAssets),
+      await runFixture(
+        html,
+        "text/html",
+        200,
+        "text/css",
+        "body {}",
+        200,
+        undefined,
+        cssAssets,
+      ),
       null,
     );
   });
