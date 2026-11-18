@@ -55,8 +55,8 @@ function ringPush(entry: DiagEntry) {
   // A malformed global diagnostic slot must not break session initialization.
   let memory = window.__nxAuthLog;
   if (!Array.isArray(memory)) memory = window.__nxAuthLog = [];
-  memory.push(entry);
-  if (memory.length > MAX_MEM) memory.splice(0, memory.length - MAX_MEM);
+  // Array.splice treats a negative delete count as zero.
+  memory.splice(0, memory.push(entry) - MAX_MEM);
   try {
     let arr: DiagEntry[] = [];
     try {
