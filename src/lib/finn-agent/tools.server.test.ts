@@ -302,7 +302,10 @@ describe("أعطال المنبع: رموزٌ عامّة، لا جسمَ ردٍ�
 
   it("preserves split multibyte UTF-8 characters in a bounded streamed response", async () => {
     const payload = JSON.stringify([
-      { sha: "d807f638e93f5aa9f54d513f0c4c426478fee6d1", commit: { message: "نطاق" } },
+      {
+        sha: "d807f638e93f5aa9f54d513f0c4c426478fee6d1",
+        commit: { message: "نطاق" },
+      },
     ]);
     const bytes = new TextEncoder().encode(payload);
     const cut = bytes.indexOf(0xd9) + 1; // Split the first Arabic UTF-8 code point.
