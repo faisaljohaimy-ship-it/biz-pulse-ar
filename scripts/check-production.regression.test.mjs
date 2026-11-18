@@ -1892,10 +1892,7 @@ for (const algorithm of ["sha256", "sha384", "sha512"]) {
       '<link rel="stylesheet" href="/assets/app.css">',
       `<link rel="stylesheet" href="/assets/app.css" integrity="${algorithm}-${digest}">`,
     );
-    assert.equal(
-      await runFixture(html, "text/html", 200, "text/css", css),
-      null,
-    );
+    assert.equal(await runFixture(html, "text/html", 200, "text/css", css), null);
   });
 }
 
