@@ -587,9 +587,7 @@ for (const route of ROUTES) {
     // otherwise a healthy decoy under the later base can hide broken app CSS.
     // A '>' inside a quoted base href is data, not the end of the <base> tag.
     // Truncating it probes a different CSS URL and can reject a healthy release.
-    const baseLinks = [
-      ...activeMarkup.matchAll(/<base\b(?:[^>"']|"[^"]*"|'[^']*')*>/gi),
-    ]
+    const baseLinks = [...activeMarkup.matchAll(/<base\b(?:[^>"']|"[^"]*"|'[^']*')*>/gi)]
       .map((match) => ({
         position: match.index,
         attrs: tagAttributes(match[0], 5),
