@@ -42,9 +42,14 @@ export async function searchSadeedDocumentsAcrossMemberships(
   const orgIds = [...new Set((memberships ?? []).map((m) => m.org_id))].slice(0, MAX_SEARCH_ORGS);
   if (orgIds.length === 0) return [];
 
+  // `sadeed_match_documents` is deployed on the production database but is not
+  // present in this environment's generated types, so the typed client's rpc
+  // signature rejects the name. Call it through an untyped client view; runtime
+  // errors still surface through `error` below.
+  const rpcClient = supabase as SupabaseClient;
   const perOrg = await Promise.all(
     orgIds.map(async (orgId) => {
-      const { data, error } = await supabase.rpc("sadeed_match_documents", {
+      const { data, error } = await rpcClient.rpc("sadeed_match_documents", {
         _org_id: orgId,
         _query: queryVector,
         _limit: limit,
