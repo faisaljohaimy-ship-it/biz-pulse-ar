@@ -77,6 +77,22 @@ export function buildTwilioMessageForm(
   for (const rawUrl of mediaUrls) {
     const url = new URL(rawUrl);
     if (url.protocol !== "https:") throw new Error("SMS media URLs must use HTTPS.");
+    // These URLs are forwarded to Twilio for remote retrieval. Do not send
+    // credential-bearing or internal-only endpoints to a third-party fetcher.
+    // Fragments never reach an HTTP server and can hide a mistaken asset URL.
+    const host = url.hostname.toLowerCase().replace(/\.$/, "");
+    if (
+      url.username ||
+      url.password ||
+      url.hash ||
+      !host.includes(".") ||
+      /^\d+\.\d+\.\d+\.\d+$/.test(host) ||
+      host.startsWith("[") ||
+      /(?:^|\.)(?:localhost|local|internal)$/.test(host) ||
+      host.endsWith(".home.arpa")
+    ) {
+      throw new Error("SMS media URLs must use public HTTPS hosts without credentials or fragments.");
+    }
     form.append("MediaUrl", url.toString());
   }
   return form;
