@@ -56,7 +56,7 @@ function validHttpsEndpoint(value: string | undefined): boolean {
 function validEmailSender(value: string | undefined): boolean {
   if (!configured(value, 6)) return false;
   const sender = value?.trim() ?? "";
-  const wrapped = /^(?:[^<>\r\n]+\s)?<([^<>\r\n]+)>$/.exec(sender);
+  const wrapped = /^(?:[^<>\r\n]+[ \t])?<([^<>\r\n]+)>$/.exec(sender);
   const mailbox = wrapped?.[1] ?? sender;
   if (!/^[^\s<>@]+@[^\s<>@]+$/.test(mailbox)) return false;
   const [local, domain] = mailbox.split("@");
