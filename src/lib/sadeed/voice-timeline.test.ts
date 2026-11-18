@@ -64,8 +64,9 @@ describe("voice timeline deltas", () => {
     expect(VoiceTimeline.dump()).toEqual([
       { t: expect.any(Number), dt: 0, tag: "CHAT", msg: "CHAT" },
     ]);
-    expect(JSON.stringify(window.__ariaTimeline)).not.toContain("confidential");
-    expect(JSON.stringify(window.__ariaTimeline)).not.toContain("example-sensitive-token");
+    const exposedTimeline = (window as Window & { __ariaTimeline?: unknown }).__ariaTimeline;
+    expect(JSON.stringify(exposedTimeline)).not.toContain("confidential");
+    expect(JSON.stringify(exposedTimeline)).not.toContain("example-sensitive-token");
     expect(console.log).not.toHaveBeenCalled();
   });
 
