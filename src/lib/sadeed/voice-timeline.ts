@@ -3,10 +3,10 @@
  * event in the audio pipeline. Populated from audio-bus, SadeedCopilot,
  * aria-voice, and the voice-policy assertion.
  *
- * In the browser console:
- *   __dumpSadeedTimeline()          → console.table + copy JSON to clipboard
- *   __clearSadeedTimeline()         → reset the buffer
- *   __ariaTimeline                → raw array
+ * Local diagnostics are available in the browser console.
+ * Production deliberately retains only event tags and timing; raw chat/voice
+ * messages, metadata, and stack traces must not be exposed via console or the
+ * globally accessible timeline dump.
  */
 export type VoiceTag =
   | "CHAT"
@@ -58,8 +58,12 @@ export const VoiceTimeline = {
     const t = now();
     const dt = last < 0 ? 0 : t - last;
     last = t;
-    const evt: VoiceEvent = { t, dt, tag, msg, data };
-    if (opts?.stack) {
+    // Browser debug surfaces are globally readable. Never retain voice/chat
+    // text, arbitrary payloads (which may include credentials), or stacks in production.
+    const diagnostic = import.meta.env.DEV;
+    const evt: VoiceEvent = { t, dt, tag, msg: diagnostic ? msg : tag };
+    if (diagnostic && data) evt.data = data;
+    if (diagnostic && opts?.stack) {
       try {
         evt.stack = new Error().stack?.split("\n").slice(2, 6).join("\n");
       } catch {
@@ -69,7 +73,7 @@ export const VoiceTimeline = {
     buf.push(evt);
     if (buf.length > MAX) buf.shift();
 
-    console.log(`[${tag}] +${dt}ms ${msg}`, data ?? "");
+    if (diagnostic) console.log(`[${tag}] +${dt}ms ${msg}`, data ?? "");
   },
   dump(): VoiceEvent[] {
     return buf.slice();
