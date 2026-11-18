@@ -73,6 +73,7 @@ describe("SADEED provider readiness", () => {
     "SADEED <invalid-sender>",
     "sender@example.com\r\nBcc: injected@example.com",
     "SADEED\n<alerts@example.com>",
+    "alerts@example.com\r\n",
   ])("does not report Resend ready with malformed sender %s", (from) => {
     const status = inspectSadeedProviderReadiness({ ...COMPLETE, RESEND_FROM_EMAIL: from });
     expect(status.email).toEqual({
