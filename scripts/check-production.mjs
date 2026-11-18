@@ -588,7 +588,7 @@ for (const route of ROUTES) {
     // A '>' inside a quoted base href is data, not the end of the <base> tag.
     // Truncating it probes a different CSS URL and can reject a healthy release.
     const baseLinks = [
-      ...activeMarkup.matchAll(/<base\\b(?:[^>"']|"[^"]*"|'[^']*')*>/gi),
+      ...activeMarkup.matchAll(/<base\b(?:[^>"']|"[^"]*"|'[^']*')*>/gi),
     ]
       .map((match) => ({
         position: match.index,
