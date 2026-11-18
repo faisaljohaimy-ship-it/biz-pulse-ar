@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { httpFetch } from "./http.server";
+import { httpFetch, httpJson } from "./http.server";
 
 const originalFetch = globalThis.fetch;
 
@@ -55,4 +55,60 @@ describe("httpFetch hard deadline for non-cooperative transports", () => {
     expect(outcomeAtDeadline).toBe("upstream_timeout");
     expect(cancelled).toBe(true);
   });
+});
+
+describe("httpFetch and httpJson invalid deadline normalization", () => {
+  it.each([NaN, 0, -3, Infinity, 2 ** 31])(
+    "does not abort healthy response headers at 1 ms for timeoutMs=%s",
+    async (timeoutMs) => {
+      vi.useFakeTimers();
+      let resolveNetwork!: (response: Response) => void;
+      globalThis.fetch = (() =>
+        new Promise<Response>((resolve) => {
+          resolveNetwork = resolve;
+        })) as typeof fetch;
+
+      const outcome = httpFetch("https://example.invalid/late-headers", {
+        retries: 0,
+        timeoutMs,
+      }).then(
+        (response) => response.status,
+        (error: { code?: string }) => error.code,
+      );
+      await vi.advanceTimersByTimeAsync(25);
+      resolveNetwork(new Response("ok", { status: 200 }));
+      expect(await outcome).toBe(200);
+    },
+  );
+
+  it.each([NaN, 0, -3, Infinity, 2 ** 31])(
+    "does not cancel a healthy JSON body at 1 ms for timeoutMs=%s",
+    async (timeoutMs) => {
+      vi.useFakeTimers();
+      let sendBody!: () => void;
+      globalThis.fetch = (async () =>
+        new Response(
+          new ReadableStream<Uint8Array>({
+            start(controller) {
+              sendBody = () => {
+                controller.enqueue(new TextEncoder().encode('{"ok":true}'));
+                controller.close();
+              };
+            },
+          }),
+          { status: 200 },
+        )) as typeof fetch;
+
+      const outcome = httpJson<{ ok: boolean }>("https://example.invalid/slow-json", {
+        retries: 0,
+        timeoutMs,
+      }).then(
+        (payload) => payload.ok,
+        (error: { code?: string }) => error.code,
+      );
+      await vi.advanceTimersByTimeAsync(25);
+      sendBody();
+      expect(await outcome).toBe(true);
+    },
+  );
 });
