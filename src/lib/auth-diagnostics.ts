@@ -53,9 +53,8 @@ declare global {
 function ringPush(entry: DiagEntry) {
   if (typeof window === "undefined") return;
   // A malformed global diagnostic slot must not break session initialization.
-  const memory = Array.isArray(window.__nxAuthLog)
-    ? window.__nxAuthLog
-    : (window.__nxAuthLog = []);
+  let memory = window.__nxAuthLog;
+  if (!Array.isArray(memory)) memory = window.__nxAuthLog = [];
   memory.push(entry);
   if (memory.length > MAX_MEM) memory.splice(0, memory.length - MAX_MEM);
   try {
