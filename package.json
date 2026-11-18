@@ -114,6 +114,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
+    "@lovable.dev/vite-plugin-dev-server-bridge": "^1.0.2",
+    "@lovable.dev/vite-plugin-hmr-gate": "^1.8.3",
     "@lovable.dev/vite-tanstack-config": "2.26.5",
     "@playwright/test": "^1.61.1",
     "@testing-library/dom": "^10.4.1",
@@ -138,6 +140,7 @@
     "jest-axe": "^10.0.0",
     "jsdom": "^29.1.1",
     "knip": "^5.70.0",
+    "lovable-tagger": "^1.3.5",
     "nitro": "3.0.260603-beta",
     "postgres": "^3.4.9",
     "prettier": "^3.7.3",
