@@ -115,7 +115,7 @@ export function hasExplicitOutboundIntent(text: string, channel: "email" | "sms"
   if (reportedInstruction.test(value) && !explicitOverride.test(value)) return false;
 
   const negatedInstruction =
-    /(?:^|\s)(?:لا|لاتقم ب|لا تقم ب|عدم|dont|don't|do not|never)\s+(?:[اأإآ]رسل(?:ي)?|ابعث(?:ي)?|send|dispatch)(?:\s|$)/i;
+    /(?:^|\s)(?:لا|لاتقم ب|لا تقم ب|عدم|dont|don['\u2018\u2019\u02BC]t|do not|never)\s+(?:[اأإآ]رسل(?:ي)?|ابعث(?:ي)?|send|dispatch)(?:\s|$)/i;
   if (negatedInstruction.test(value)) return false;
 
   const sendVerb = /(?:^|\s)(?:[اأإآ]رسل(?:ي)?|ابعث(?:ي)?|send|dispatch)(?:\s|$)/i;
