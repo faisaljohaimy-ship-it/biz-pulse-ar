@@ -349,7 +349,7 @@ describe("vercel_deployments", () => {
           { uid: "dpl_overflow", readyState: "READY", created: 1e20 },
           { uid: "dpl_underflow", readyState: "READY", createdAt: -1e20 },
           { uid: "dpl_valid", readyState: "READY", created: 1792798308756 },
-          { uid: "dpl_nonfinite", readyState: "READY", created: 1e309 },
+          { uid: "dpl_nonfinite", readyState: "READY", created: Number.POSITIVE_INFINITY },
         ],
       }),
     );
