@@ -26,6 +26,12 @@ afterEach(() => {
   vi.unstubAllEnvs();
 });
 
+async function responseStatus(input = request()): Promise<number> {
+  const response = await verifySupabaseUser(input);
+  if (!(response instanceof Response)) throw new Error("Expected a rejected auth response");
+  return response.status;
+}
+
 describe("paid-token endpoint user lookup availability", () => {
   it("returns an explicit 503 when Auth transport rejects instead of throwing a 500", async () => {
     sdk.getUser.mockRejectedValueOnce(new Error("private-network-detail"));
@@ -39,13 +45,13 @@ describe("paid-token endpoint user lookup availability", () => {
     sdk.createClient.mockImplementationOnce(() => {
       throw new Error("private-provider-detail");
     });
-    expect((await verifySupabaseUser(request()) as Response).status).toBe(503);
+    expect(await responseStatus()).toBe(503);
 
     sdk.getUser.mockResolvedValueOnce(null);
-    expect((await verifySupabaseUser(request()) as Response).status).toBe(503);
+    expect(await responseStatus()).toBe(503);
 
     sdk.getUser.mockResolvedValueOnce({ data: { user: { id: 42 } }, error: null });
-    expect((await verifySupabaseUser(request()) as Response).status).toBe(503);
+    expect(await responseStatus()).toBe(503);
   });
 
   it("bounds a hung user lookup and cleans the timeout without minting identity", async () => {
@@ -59,14 +65,14 @@ describe("paid-token endpoint user lookup availability", () => {
     expect(vi.getTimerCount()).toBe(0);
   });
 
-  it("preserves 401 for an actual rejected token and does not trust a missing session", async () => {
+  it("preserves 401 for rejected tokens and missing sessions", async () => {
     sdk.getUser.mockResolvedValueOnce({ data: { user: null }, error: { message: "bad_token" } });
-    expect((await verifySupabaseUser(request()) as Response).status).toBe(401);
+    expect(await responseStatus()).toBe(401);
     sdk.getUser.mockResolvedValueOnce({ data: { user: null }, error: null });
-    expect((await verifySupabaseUser(request()) as Response).status).toBe(401);
+    expect(await responseStatus()).toBe(401);
   });
 
-  it("retains successful user verification and forwards only the supplied bearer to Auth", async () => {
+  it("preserves successful identity and forwards only the active bearer to Auth", async () => {
     sdk.getUser.mockResolvedValue({ data: { user: { id: "known-test-user" } }, error: null });
     expect(await verifySupabaseUser(request())).toEqual({ userId: "known-test-user" });
     expect(sdk.createClient).toHaveBeenCalledWith(
@@ -80,12 +86,9 @@ describe("paid-token endpoint user lookup availability", () => {
   });
 
   it("retains missing-token and missing-configuration failures", async () => {
-    expect(
-      (await verifySupabaseUser(new Request("https://sadeed.invalid/api/heygen/token")) as Response)
-        .status,
-    ).toBe(401);
+    expect(await responseStatus(new Request("https://sadeed.invalid/api/heygen/token"))).toBe(401);
     vi.stubEnv("SUPABASE_URL", "");
-    expect((await verifySupabaseUser(request()) as Response).status).toBe(503);
+    expect(await responseStatus()).toBe(503);
     expect(sdk.getUser).not.toHaveBeenCalled();
   });
 });
