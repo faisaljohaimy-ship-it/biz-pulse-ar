@@ -84,4 +84,39 @@ describe("public incident source-IP quotas", () => {
       "aria-incident:unknown",
     );
   });
+  it.each([
+    "not-an-ip",
+    "198.51.100.9:443",
+    "999.0.0.1",
+    "203.0.113.042",
+  ])("falls back to trusted Vercel XFF when the primary header is malformed: %s", (bad) => {
+    const req = request({
+      "x-vercel-forwarded-for": bad,
+      "x-forwarded-for": "203.0.113.42",
+    });
+    expect(clientBucketKey(req, { VERCEL: "1" })).toBe("aria-incident:203.0.113.42");
+  });
+
+  it("fails closed into the shared bucket when both Vercel IP headers are invalid", () => {
+    const req = request({
+      "x-vercel-forwarded-for": "not-an-ip",
+      "x-forwarded-for": "198.51.100.4:443",
+      "cf-connecting-ip": "198.51.100.9",
+    });
+    expect(clientBucketKey(req, { VERCEL: "1" })).toBe("aria-incident:unknown");
+  });
+
+  it("accepts and canonicalizes legitimate IPv6 proxy IPs", () => {
+    const req = request({ "x-vercel-forwarded-for": "2001:0db8::0001" });
+    expect(clientBucketKey(req, { VERCEL: "1" })).toBe("aria-incident:2001:db8::1");
+  });
+
+  it("ignores a malformed Cloudflare IP and falls back to the first valid XFF", () => {
+    const req = request({
+      "cf-connecting-ip": "not-an-ip",
+      "x-forwarded-for": "198.51.100.7, 198.51.100.8",
+    });
+    expect(clientBucketKey(req, {})).toBe("aria-incident:198.51.100.7");
+  });
+
 });
