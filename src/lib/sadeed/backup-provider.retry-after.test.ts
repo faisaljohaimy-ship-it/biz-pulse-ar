@@ -40,7 +40,6 @@ describe("Backup eligibility from upstream HTTP status", () => {
   });
 });
 
-
 describe("Retry-After من خطأ المزوّد", () => {
   it("ثوانٍ ⇐ مللي ثانية، بأيّ حالة أحرف للترويسة", () => {
     expect(retryAfterMs({ responseHeaders: { "retry-after": "120" } }, NOW)).toBe(120_000);
