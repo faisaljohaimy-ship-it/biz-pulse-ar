@@ -49,17 +49,20 @@ describe("enforceRateLimit — المهلة", () => {
     { label: "zero", deadlineMs: 0 },
     { label: "fraction", deadlineMs: 0.5 },
     { label: "Node timer overflow", deadlineMs: 2_147_483_648 },
-  ])("invalid $label deadline uses the default instead of an immediate timeout", async ({ deadlineMs }) => {
-    rpc.impl = () => new Promise(() => {});
-    let settled: unknown = "pending";
-    void enforceRateLimit("invalid-deadline", 10, 60, { deadlineMs }).then(
-      (decision) => (settled = decision),
-    );
-    await vi.advanceTimersByTimeAsync(RATE_LIMIT_DEFAULT_DEADLINE_MS - 1);
-    expect(settled).toBe("pending");
-    await vi.advanceTimersByTimeAsync(1);
-    expect(settled).toEqual({ allowed: false, unavailable: true });
-  });
+  ])(
+    "invalid $label deadline uses the default instead of an immediate timeout",
+    async ({ deadlineMs }) => {
+      rpc.impl = () => new Promise(() => {});
+      let settled: unknown = "pending";
+      void enforceRateLimit("invalid-deadline", 10, 60, { deadlineMs }).then(
+        (decision) => (settled = decision),
+      );
+      await vi.advanceTimersByTimeAsync(RATE_LIMIT_DEFAULT_DEADLINE_MS - 1);
+      expect(settled).toBe("pending");
+      await vi.advanceTimersByTimeAsync(1);
+      expect(settled).toEqual({ allowed: false, unavailable: true });
+    },
+  );
 
   it.each(["timeout", "rpc_error"] as const)(
     "failure logs redact identity and backend error details (%s)",
