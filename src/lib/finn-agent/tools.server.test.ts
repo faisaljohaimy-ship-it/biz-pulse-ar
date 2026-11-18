@@ -342,6 +342,24 @@ describe("vercel_deployments", () => {
     expect(JSON.stringify(out)).not.toMatch(/free text|vercel\.app/);
   });
 
+  it("ignores unrepresentable Vercel creation timestamps without losing valid deployments", async () => {
+    const { tools } = setup(env, () =>
+      jsonResponse({
+        deployments: [
+          { uid: "dpl_overflow", readyState: "READY", created: 1e20 },
+          { uid: "dpl_underflow", readyState: "READY", createdAt: -1e20 },
+          { uid: "dpl_valid", readyState: "READY", created: 1792798308756 },
+          { uid: "dpl_nonfinite", readyState: "READY", created: 1e309 },
+        ],
+      }),
+    );
+    const out = await run(tools, "vercel_deployments", { limit: 4 });
+    expect(out.ok).toBe(true);
+    expect(
+      (out.items as { id: string; created: string | null }[]).map((item) => item.created),
+    ).toEqual([null, null, "2026-10-23T23:31:48.756Z", null]);
+  });
+
   it("limit محصور 1..10", () => {
     const { tools } = setup(env, () => jsonResponse({}));
     const s = schemaOf(tools, "vercel_deployments");
