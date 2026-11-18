@@ -84,7 +84,15 @@ describe("enforceRateLimit — المهلة", () => {
     expect(output).not.toContain(privateDbMessage);
   });
 
-  it.each([Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, -1, 0, 0.5, 2_147_483_648])(
+  it.each([
+    Number.NaN,
+    Number.POSITIVE_INFINITY,
+    Number.NEGATIVE_INFINITY,
+    -1,
+    0,
+    0.5,
+    2_147_483_648,
+  ])(
     "invalid deadline override (%s) falls back to bounded 2s instead of Node's 1ms timer",
     async (invalidDeadline) => {
       rpc.impl = () => new Promise(() => {});
