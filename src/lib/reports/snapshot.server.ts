@@ -87,21 +87,26 @@ export async function buildExecutiveSnapshot(
   );
   const kpis = computeExecKpis(sources);
 
+  // Column names must match the live schema exactly: a select of a missing
+  // column makes PostgREST fail the whole query, and the error checks below
+  // then (correctly) refuse to export. sec_incidents/sec_work_orders carry
+  // title_ar/title_en (no `title`), incidents reference `site_id` (no `site`),
+  // and sec_permits uses `work_type` (no `type`).
   const incQ = supabase
     .from("sec_incidents")
-    .select("id,ref,title,severity,status,site,reported_at,response_minutes")
+    .select("id,ref,title_ar,title_en,severity,status,site_id,reported_at,response_minutes")
     .gte("reported_at", from)
     .order("reported_at", { ascending: false })
     .limit(ROW_LIMIT);
   const woQ = supabase
     .from("sec_work_orders")
-    .select("id,ref,title,kind,status,priority,due_at,created_at")
+    .select("id,ref,title_ar,title_en,kind,status,priority,due_at,created_at")
     .gte("created_at", from)
     .order("created_at", { ascending: false })
     .limit(ROW_LIMIT);
   const pmQ = supabase
     .from("sec_permits")
-    .select("id,ref,type,status,contractor,starts_at,ends_at,created_at")
+    .select("id,ref,work_type,status,contractor,starts_at,ends_at,created_at")
     .gte("created_at", from)
     .order("created_at", { ascending: false })
     .limit(ROW_LIMIT);
@@ -128,20 +133,50 @@ export async function buildExecutiveSnapshot(
   if (pm.error) throw new Error("Executive snapshot source failed: sec_permits");
   if (pat.error) throw new Error("Executive snapshot source failed: sec_patrols");
 
+  const incidents: IncidentRow[] = (inc.data ?? []).map((r) => ({
+    id: r.id,
+    ref: r.ref,
+    title: r.title_ar || r.title_en || null,
+    severity: r.severity,
+    status: r.status,
+    site: r.site_id,
+    reported_at: r.reported_at,
+    response_minutes: r.response_minutes,
+  }));
+  const workOrders: WorkOrderRow[] = (wo.data ?? []).map((r) => ({
+    id: r.id,
+    ref: r.ref,
+    title: r.title_ar || r.title_en || null,
+    kind: r.kind,
+    status: r.status,
+    priority: r.priority,
+    due_at: r.due_at,
+  }));
+  const permits: PermitRow[] = (pm.data ?? []).map((r) => ({
+    id: r.id,
+    ref: r.ref,
+    type: r.work_type,
+    status: r.status,
+    contractor: r.contractor,
+    starts_at: r.starts_at,
+    ends_at: r.ends_at,
+  }));
+  const patrols = (pat.data ?? []) as PatrolRow[];
+
   return {
     generatedAt: new Date().toISOString(),
     range: opts.range,
     rangeFromIso: from,
     kpis,
-    incidents: (inc.data ?? []) as IncidentRow[],
-    workOrders: (wo.data ?? []) as WorkOrderRow[],
-    permits: (pm.data ?? []) as PermitRow[],
-    patrols: (pat.data ?? []) as PatrolRow[],
+    incidents,
+    workOrders,
+    permits,
+    patrols,
     totals: {
-      incidents: inc.data?.length ?? 0,
-      workOrders: wo.data?.length ?? 0,
-      permits: pm.data?.length ?? 0,
-      patrols: pat.data?.length ?? 0,
+      incidents: incidents.length,
+      workOrders: workOrders.length,
+      permits: permits.length,
+      patrols: patrols.length,
     },
   };
 }

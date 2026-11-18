@@ -40,6 +40,42 @@ describe("executive snapshot source integrity", () => {
     },
   );
 
+  it("selects only columns that exist in the live schema", async () => {
+    const selects: Record<string, string> = {};
+    const client = {
+      from: (table: string) => {
+        const result = { data: [], error: null };
+        const query = {
+          select: (cols: string) => {
+            selects[table] = cols;
+            return query;
+          },
+          gte: () => query,
+          order: () => query,
+          limit: () => query,
+          eq: () => query,
+          then: (resolve: (value: typeof result) => void) => Promise.resolve(result).then(resolve),
+        };
+        return query;
+      },
+    } as unknown as SupabaseClient;
+
+    await buildExecutiveSnapshot(client, { range: "24h", orgId: "org" });
+
+    // Phantom columns previously selected (PostgREST fails the whole query on
+    // any of these): incidents/work_orders have title_ar+title_en, not title;
+    // incidents reference site_id, not site; permits use work_type, not type.
+    const cols = (t: string) => selects[t].split(",").map((c) => c.trim());
+    expect(cols("sec_incidents")).not.toContain("title");
+    expect(cols("sec_incidents")).not.toContain("site");
+    expect(cols("sec_incidents")).toContain("title_ar");
+    expect(cols("sec_incidents")).toContain("site_id");
+    expect(cols("sec_work_orders")).not.toContain("title");
+    expect(cols("sec_work_orders")).toContain("title_ar");
+    expect(cols("sec_permits")).not.toContain("type");
+    expect(cols("sec_permits")).toContain("work_type");
+  });
+
   it("preserves legitimate empty results without inventing counts", async () => {
     const snapshot = await buildExecutiveSnapshot(mockedClient(null), {
       range: "24h",
