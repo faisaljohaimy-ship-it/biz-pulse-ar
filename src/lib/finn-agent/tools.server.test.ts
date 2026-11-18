@@ -277,6 +277,47 @@ describe("أعطال المنبع: رموزٌ عامّة، لا جسمَ ردٍ�
     });
   });
 
+  it("rejects an oversized upstream stream without buffering its remaining chunks", async () => {
+    let pulls = 0;
+    const body = new ReadableStream<Uint8Array>(
+      {
+        pull(controller) {
+          pulls++;
+          if (pulls === 1) {
+            controller.enqueue(new Uint8Array(400_001).fill(0x61));
+          } else {
+            controller.error(new Error("upstream continued after the limit"));
+          }
+        },
+      },
+      { highWaterMark: 0 },
+    );
+    const { tools } = setup({ FINN_GITHUB_TOKEN: TOKEN }, () => new Response(body));
+    expect(await run(tools, "github_activity", { view: "recent_commits" })).toEqual({
+      ok: false,
+      reason: "too_large",
+    });
+    expect(pulls).toBe(1);
+  });
+
+  it("preserves split multibyte UTF-8 characters in a bounded streamed response", async () => {
+    const payload = JSON.stringify([
+      { sha: "d807f638e93f5aa9f54d513f0c4c426478fee6d1", commit: { message: "نطاق" } },
+    ]);
+    const bytes = new TextEncoder().encode(payload);
+    const cut = bytes.indexOf(0xd9) + 1; // Split the first Arabic UTF-8 code point.
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(bytes.subarray(0, cut));
+        controller.enqueue(bytes.subarray(cut));
+        controller.close();
+      },
+    });
+    const { tools } = setup({ FINN_GITHUB_TOKEN: TOKEN }, () => new Response(body));
+    const out = await run(tools, "github_activity", { view: "recent_commits" });
+    expect(out.items).toEqual([{ sha: "d807f638e", message: "نطاق", date: null }]);
+  });
+
   it("المهلة ثابتةٌ ومعقولة (لا انتظارَ مفتوح)", () => {
     expect(FINN_TOOL_TIMEOUT_MS).toBeGreaterThan(0);
     expect(FINN_TOOL_TIMEOUT_MS).toBeLessThanOrEqual(10_000);
