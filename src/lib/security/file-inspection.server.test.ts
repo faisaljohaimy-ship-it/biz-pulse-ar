@@ -187,6 +187,24 @@ describe("SADEED attachment structural inspection", () => {
     expect(result.checks).toContain("archive-limits");
   });
 
+  it.each([
+    ["relative dot alias", "word/./document.xml"],
+    ["leading current-directory alias", "./word/document.xml"],
+    ["repeated separator alias", "word//document.xml"],
+  ])("blocks %s before ZIP member normalization can conceal duplicates", (_kind, alias) => {
+    // Both names are distinct in the directory but resolve to the same
+    // extracted member on common ZIP consumers.
+    expectBlocked(
+      () =>
+        inspectSadeedAttachment({
+          bytes: fakeOfficeZip(["[Content_Types].xml", "word/document.xml", alias]),
+          filename: "brief.docx",
+          claimedMime: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        }),
+      "invalid_zip",
+    );
+  });
+
   it("blocks terminal parent paths and Windows-rooted Office ZIP entries", () => {
     for (const unsafePath of [
       "word/..",
