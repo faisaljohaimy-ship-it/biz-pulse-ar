@@ -4,7 +4,7 @@ const READ_TIMEOUT = Symbol("webhook-read-timeout");
 const READ_ABORT = Symbol("webhook-read-abort");
 
 export type BoundedWebhookBodyResult =
-  | { ok: true; text: string }
+  { ok: true; text: string }
   | { ok: false; status: 400 | 408 | 413 };
 
 export async function readBoundedWebhookBody(
