@@ -21,15 +21,36 @@ describe("resolveSelfCallOrigin", () => {
     expect(resolveSelfCallOrigin("http://127.0.0.1:8080/x", {})).toBe("http://127.0.0.1:8080");
   });
 
-  it("قيمةٌ مضبوطة غير صالحة (ليست عنوانًا مطلقًا أو بمخطّط غريب) تُتجاهل", () => {
-    expect(resolveSelfCallOrigin(REQ, { PUBLIC_SITE_URL: "neexios.com" })).toBe(
-      "https://evil.example",
+  it.each(["neexios.com", "javascript:alert(1)", "ftp://not-http.example"])(
+    "fails closed for invalid PUBLIC_SITE_URL %s rather than sending a cron secret to the request Host",
+    (raw) => {
+      expect(() => resolveSelfCallOrigin(REQ, { PUBLIC_SITE_URL: raw })).toThrow(
+        "Invalid configured self-call origin.",
+      );
+    },
+  );
+
+  it("also fails closed when only SITE_URL is malformed", () => {
+    expect(() => resolveSelfCallOrigin(REQ, { SITE_URL: "/relative" })).toThrow(
+      "Invalid configured self-call origin.",
     );
-    expect(resolveSelfCallOrigin(REQ, { PUBLIC_SITE_URL: "javascript:alert(1)" })).toBe(
-      "https://evil.example",
-    );
+  });
+
+  it("tries a valid SITE_URL after an invalid PUBLIC_SITE_URL", () => {
+    expect(
+      resolveSelfCallOrigin(REQ, {
+        PUBLIC_SITE_URL: "javascript:alert(1)",
+        SITE_URL: "https://safe.example/application",
+      }),
+    ).toBe("https://safe.example");
+  });
+
+  it("treats an empty configured value as absent while retaining a valid fallback", () => {
     expect(
       resolveSelfCallOrigin(REQ, { PUBLIC_SITE_URL: "  ", SITE_URL: "https://ok.example" }),
     ).toBe("https://ok.example");
+    expect(resolveSelfCallOrigin(REQ, { PUBLIC_SITE_URL: " " })).toBe(
+      "https://evil.example",
+    );
   });
 });
