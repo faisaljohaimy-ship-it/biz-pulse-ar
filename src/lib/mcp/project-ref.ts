@@ -77,7 +77,7 @@ export interface McpEnv {
  */
 export function resolveProjectRef(env: McpEnv): string {
   const explicit = env.VITE_SUPABASE_PROJECT_ID?.trim();
-  if (explicit) return explicit;
+  if (explicit && /^[a-z0-9]{20}$/.test(explicit)) return explicit;
 
   const url = env.VITE_SUPABASE_URL?.trim();
   const match = url?.match(SUPABASE_HOST);
