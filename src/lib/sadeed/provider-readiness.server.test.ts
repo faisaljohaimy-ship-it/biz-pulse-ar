@@ -64,6 +64,41 @@ describe("SADEED provider readiness", () => {
     expect(status.deliveryTracking.ready).toBe(true);
   });
 
+  it.each([
+    "not-an-email-address",
+    "sender@localhost",
+    "sender@@example.com",
+    "sender@bad..example.com",
+    "sender@-example.com",
+    "SADEED <invalid-sender>",
+    "sender@example.com\\r\\nBcc: injected@example.com",
+  ])("does not report Resend ready with malformed sender %s", (from) => {
+    const status = inspectSadeedProviderReadiness({ ...COMPLETE, RESEND_FROM_EMAIL: from });
+    expect(status.email).toEqual({
+      ready: false,
+      provider: null,
+      missing: ["RESEND_API_KEY + RESEND_FROM_EMAIL or MICROSOFT_OUTLOOK_API_KEY"],
+    });
+  });
+
+  it.each([
+    "alerts@example.com",
+    "SADEED <alerts@example.com>",
+    "  operations+west@sub.example.com  ",
+  ])("accepts ordinary valid sender mailboxes %s", (from) => {
+    const status = inspectSadeedProviderReadiness({ ...COMPLETE, RESEND_FROM_EMAIL: from });
+    expect(status.email).toEqual({ ready: true, provider: "resend", missing: [] });
+  });
+
+  it("retains the configured Outlook fallback when the Resend sender is invalid", () => {
+    const status = inspectSadeedProviderReadiness({
+      ...COMPLETE,
+      RESEND_FROM_EMAIL: "missing-mailbox",
+      MICROSOFT_OUTLOOK_API_KEY: "outlook-key-with-enough-length",
+    });
+    expect(status.email).toEqual({ ready: true, provider: "outlook", missing: [] });
+  });
+
   it("rejects placeholders and reports exact missing variable names", () => {
     const status = inspectSadeedProviderReadiness({
       GEMINI_API_KEY: "replace_me",
