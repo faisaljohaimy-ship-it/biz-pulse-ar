@@ -37,6 +37,14 @@ const DEFAULT_TIMEOUT_MS = 15_000;
 const DEFAULT_RETRIES = 2;
 const DEFAULT_BASE_MS = 300;
 
+// Node clamps invalid and overflowing timers to 1 ms. Do not mistake a
+// malformed caller-supplied deadline for an immediate upstream outage.
+function effectiveTimeoutMs(value: number | undefined): number {
+  return value !== undefined && Number.isFinite(value) && value >= 1 && value <= 2_147_483_647
+    ? value
+    : DEFAULT_TIMEOUT_MS;
+}
+
 /** Hard cap for buffered upstream JSON/error bodies (the streaming fetch API is unaffected). */
 export const MAX_HTTP_JSON_BODY_BYTES = 8 * 1024 * 1024;
 
@@ -114,6 +122,7 @@ export async function httpFetch(input: string | URL, init: HttpOptions = {}): Pr
     ...rest
   } = init;
   const outer = outerOrNull ?? undefined;
+  const deadlineMs = effectiveTimeoutMs(timeoutMs);
 
   const url = typeof input === "string" ? input : input.toString();
   const target = label ?? url;
@@ -126,7 +135,7 @@ export async function httpFetch(input: string | URL, init: HttpOptions = {}): Pr
   for (let attempt = 0; attempt <= retries; attempt++) {
     if (outer?.aborted) throw abandoned();
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    const timer = setTimeout(() => controller.abort(), deadlineMs);
     // إشارة المستدعي تُطلق مؤقّت المحاولة نفسه — دمجٌ يدوي لا يعتمد على `AbortSignal.any`.
     const onOuterAbort = () => controller.abort();
     outer?.addEventListener("abort", onOuterAbort, { once: true });
@@ -160,7 +169,7 @@ export async function httpFetch(input: string | URL, init: HttpOptions = {}): Pr
         // Do not park an SSR worker for hours on an upstream-controlled header.
         // A longer Retry-After cannot fit this call's configured request budget:
         // return the original response so the caller handles the 429/5xx.
-        if (retryAfter !== null && retryAfter > timeoutMs) return res;
+        if (retryAfter !== null && retryAfter > deadlineMs) return res;
         // A retried response is discarded. Cancel its body so streaming 5xx/429
         // responses cannot retain upstream connections across attempts.
         void res.body?.cancel().catch(() => {});
@@ -177,7 +186,7 @@ export async function httpFetch(input: string | URL, init: HttpOptions = {}): Pr
       if (outer?.aborted) throw abandoned();
       const aborted = (err as { name?: string })?.name === "AbortError";
       if (aborted && attempt === retries) {
-        throw apiError("upstream_timeout", `Timeout after ${timeoutMs}ms calling ${target}`, {
+        throw apiError("upstream_timeout", `Timeout after ${deadlineMs}ms calling ${target}`, {
           details: { url, attempts: attempt + 1 },
         });
       }
@@ -294,7 +303,7 @@ export async function httpJson<T = unknown>(
   });
   // Extra accepted statuses must not reject ordinary successful 2xx responses.
   const ok = res.ok || (acceptStatuses?.includes(res.status) ?? false);
-  const body = await readResponseTextWithin(res, rest.timeoutMs ?? DEFAULT_TIMEOUT_MS, rest.signal);
+  const body = await readResponseTextWithin(res, effectiveTimeoutMs(rest.timeoutMs), rest.signal);
   if (!ok) {
     let parsed: unknown;
     try {
