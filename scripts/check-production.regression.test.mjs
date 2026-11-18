@@ -150,7 +150,44 @@ test("uses a base declared BEFORE the stylesheet link", async () => {
   );
 });
 
-// A literal '>' inside a quoted base href must not truncate the base tag.\n// Otherwise the gate may fetch a healthy decoy under its own origin even\n// though the browser requests the real stylesheet from an external origin.\ntest("rejects a local CSS decoy behind a quoted remote base href containing >", async () => {\n  const html = normalPage.replace(\n    '<link rel="stylesheet" href="/assets/app.css">',\n    '<base href="https://cdn.example.invalid/assets/?hint=>">' +\n      '<link rel="stylesheet" href="app.css">',\n  );\n  const cssAssets = {\n    "https://offline.invalid/%22https://cdn.example.invalid/assets/app.css": { status: 200 },\n  };\n  assert.equal(\n    await runFixture(html, "text/html", 200, "text/css", "body {}", 200, undefined, cssAssets),\n    1,\n  );\n});\n\ntest("accepts a quoted same-origin base href containing >", async () => {\n  const html = normalPage.replace(\n    '<link rel="stylesheet" href="/assets/app.css">',\n    '<base href="/assets/?hint=>"><link rel="stylesheet" href="app.css">',\n  );\n  assert.equal(\n    await runFixture(\n      html,\n      "text/html",\n      200,\n      "text/css",\n      "body {}",\n      200,\n      "https://offline.invalid/assets/app.css",\n    ),\n    null,\n  );\n});\n\ntest("validates each stylesheet against the base effective at its position", async () => {
+// A literal '>' inside a quoted base href must not truncate the base tag.
+// Otherwise the gate may fetch a healthy decoy under its own origin even
+// though the browser requests the real stylesheet from an external origin.
+test("rejects a local CSS decoy behind a quoted remote base href containing >", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<base href="https://cdn.example.invalid/assets/?hint=>">' +
+      '<link rel="stylesheet" href="app.css">',
+  );
+  const cssAssets = {
+    "https://offline.invalid/%22https://cdn.example.invalid/assets/app.css": { status: 200 },
+  };
+  assert.equal(
+    await runFixture(html, "text/html", 200, "text/css", "body {}", 200, undefined, cssAssets),
+    1,
+  );
+});
+
+test("accepts a quoted same-origin base href containing >", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<base href="/assets/?hint=>"><link rel="stylesheet" href="app.css">',
+  );
+  assert.equal(
+    await runFixture(
+      html,
+      "text/html",
+      200,
+      "text/css",
+      "body {}",
+      200,
+      "https://offline.invalid/assets/app.css",
+    ),
+    null,
+  );
+});
+
+test("validates each stylesheet against the base effective at its position", async () => {
   const html = normalPage.replace(
     '<link rel="stylesheet" href="/assets/app.css">',
     '<link rel="stylesheet" href="before.css"><base href="/static/"><link rel="stylesheet" href="after.css">',
