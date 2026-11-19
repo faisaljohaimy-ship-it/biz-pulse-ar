@@ -77,6 +77,11 @@ const media = files.filter((file) =>
 if (js.length === 0) {
   console.error("✗ Production output contains no JavaScript assets.");
   process.exitCode = 1;
+} else if (js.every((file) => file.size === 0)) {
+  // A zero-byte placeholder is not a deployable JavaScript application.
+  // Keep the existing budget ceilings; require at least one nonempty JS asset.
+  console.error("✗ Production output contains only empty JavaScript assets.");
+  process.exitCode = 1;
 }
 const total = files.reduce((sum, file) => sum + file.size, 0);
 const jsTotal = js.reduce((sum, file) => sum + file.size, 0);
