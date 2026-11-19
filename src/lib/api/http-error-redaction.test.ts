@@ -40,8 +40,8 @@ describe("outbound HTTP failure envelopes do not expose untrusted diagnostics", 
 
     const failure = await httpFetch(sensitiveUrl, { retries: 0 }).catch((error: unknown) => error);
     expect(failure).toBeInstanceOf(ApiError);
-    expect(failure.code).toBe("upstream_failed");
-    expect(failure.details).toEqual({ attempts: 1 });
+    expect((failure as ApiError).code).toBe("upstream_failed");
+    expect((failure as ApiError).details).toEqual({ attempts: 1 });
     expect(JSON.stringify(toApiErrorShape(failure))).not.toContain(privateMarker);
   });
 
@@ -53,7 +53,7 @@ describe("outbound HTTP failure envelopes do not expose untrusted diagnostics", 
       retries: 0,
     }).catch((error: unknown) => error);
     expect(callerFailure).toBeInstanceOf(ApiError);
-    expect(callerFailure.code).toBe("upstream_timeout");
+    expect((callerFailure as ApiError).code).toBe("upstream_timeout");
     expect(JSON.stringify(toApiErrorShape(callerFailure))).not.toContain(privateMarker);
 
     globalThis.fetch = (async (_input, init) =>
@@ -69,7 +69,7 @@ describe("outbound HTTP failure envelopes do not expose untrusted diagnostics", 
       timeoutMs: 20,
     }).catch((error: unknown) => error);
     expect(deadlineFailure).toBeInstanceOf(ApiError);
-    expect(deadlineFailure.code).toBe("upstream_timeout");
+    expect((deadlineFailure as ApiError).code).toBe("upstream_timeout");
     expect(JSON.stringify(toApiErrorShape(deadlineFailure))).not.toContain(privateMarker);
   });
 
@@ -81,7 +81,7 @@ describe("outbound HTTP failure envelopes do not expose untrusted diagnostics", 
       label: "approved-service",
     }).catch((error: unknown) => error);
     expect(failure).toBeInstanceOf(ApiError);
-    expect(failure.message).toContain("approved-service");
-    expect(failure.details).toEqual({ upstreamStatus: 503 });
+    expect((failure as ApiError).message).toContain("approved-service");
+    expect((failure as ApiError).details).toEqual({ upstreamStatus: 503 });
   });
 });
