@@ -42,6 +42,18 @@ describe("البصمة", () => {
 });
 
 describe("منع التكرار", () => {
+  it("rejects non-finite request clocks without replacing an active dedupe lease", () => {
+    const release = acquireRequest("same", 1_000);
+    expect(release).not.toBeNull();
+    for (const invalidNow of [Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY]) {
+      expect(acquireRequest("same", invalidNow)).toBeNull();
+      expect(acquireRequest(`new-${invalidNow}`, invalidNow)).toBeNull();
+    }
+    expect(acquireRequest("same", 1_001)).toBeNull();
+    release!();
+    expect(acquireRequest("same", 1_002)).not.toBeNull();
+  });
+
   it("الطلب نفسه وهو جارٍ يُرفض، وبعد التحرير يمرّ", () => {
     const release = acquireRequest("k", 1_000);
     expect(release).not.toBeNull();
@@ -126,6 +138,21 @@ describe("منع التكرار", () => {
 });
 
 describe("سقف التزامن", () => {
+  it("does not leak a model slot or release active slots for non-finite clocks", () => {
+    const env = { SADEED_CHAT_MAX_INFLIGHT: "1" };
+    for (const invalidNow of [Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY]) {
+      expect(acquireModelSlot(invalidNow, env)).toBeNull();
+    }
+    expect(inflightModelCalls(100)).toBe(0);
+    const release = acquireModelSlot(100, env);
+    expect(release).not.toBeNull();
+    expect(inflightModelCalls(Number.NaN)).toBe(1);
+    expect(inflightModelCalls(Number.POSITIVE_INFINITY)).toBe(1);
+    expect(acquireModelSlot(Number.NaN, env)).toBeNull();
+    expect(inflightModelCalls(100 + MODEL_SLOT_TTL_MS)).toBe(0);
+    release!();
+  });
+
   it("السقف من البيئة محصور [1، 64] والافتراض 8", () => {
     expect(maxInflightModelCalls({})).toBe(8);
     expect(maxInflightModelCalls({ SADEED_CHAT_MAX_INFLIGHT: "3" })).toBe(3);
