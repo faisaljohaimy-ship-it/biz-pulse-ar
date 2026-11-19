@@ -189,4 +189,46 @@ describe("digital twin signal memo — locale regression", () => {
     const { result } = renderHook(() => useLiveTwinNodes(nodes, undefined, true));
     expect(result.current).toBe(nodes);
   });
+
+  it("rejects fractional and unsafe live counters while preserving percentage velocity", () => {
+    const ids = [
+      "depts",
+      "data",
+      "agents",
+      "integ",
+      "flows",
+      "know",
+      "risk",
+      "board",
+      "intel",
+      "exec",
+    ];
+    const allNodes = ids.map((id) => ({ id, value: "reference" }));
+    const invalid: TwinSignals = {
+      ...baseSignals,
+      departments: 2.5,
+      events: 1.25,
+      agents: Number.MAX_SAFE_INTEGER + 1,
+      integrations: 0,
+      automations: -0.5,
+      documents: 3.75,
+      criticalRisks: 0.5,
+      boardActions: 4.4,
+      intelligenceSignals: 1.1,
+      executionVelocity: -2.5,
+    };
+    const { result, rerender } = renderHook(({ ar }) => useLiveTwinNodes(allNodes, invalid, ar), {
+      initialProps: { ar: true },
+    });
+    for (const ar of [true, false]) {
+      rerender({ ar });
+      expect(result.current.map((node) => node.value)).toEqual([
+        ...Array(3).fill(unmeasuredLabel(ar)),
+        "0",
+        ...Array(5).fill(unmeasuredLabel(ar)),
+        "-2.5%",
+      ]);
+    }
+  });
+
 });
