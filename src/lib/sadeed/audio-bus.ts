@@ -103,7 +103,7 @@ export const SadeedAudioBus = {
       return false;
     }
     if (!unlocked && !bypass) {
-      console.warn("[aria-audio-bus] acquire REFUSED — no user gesture yet", {
+      console.warn("[aria-audio-bus] gesture required", {
         source,
         stack,
       });
@@ -166,7 +166,7 @@ export const SadeedAudioBus = {
   /** Signal audio has stopped (ended / pause / interrupt). Motion freezes. */
   notifyStopped(source: Source) {
     if (current?.source !== source) return;
-    if (currentAudioEl) currentAudioEl = null;
+    currentAudioEl = null;
     VoiceTimeline.push("BUS", "notifyStopped", { source });
     emit({ kind: "stopped", source });
   },
