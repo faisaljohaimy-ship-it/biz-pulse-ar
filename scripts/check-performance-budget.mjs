@@ -66,10 +66,13 @@ try {
   process.exit(1);
 }
 
-const js = files.filter((file) => [".js", ".mjs"].includes(extname(file.absolute)));
-const css = files.filter((file) => extname(file.absolute) === ".css");
+// Asset suffixes are case-insensitive on some hosts. Never let .JS/.CSS/.MP4
+// escape category-specific limits while still counting toward the total.
+const assetExt = (file) => extname(file.absolute).toLowerCase();
+const js = files.filter((file) => [".js", ".mjs"].includes(assetExt(file)));
+const css = files.filter((file) => assetExt(file) === ".css");
 const media = files.filter((file) =>
-  [".mp4", ".webm", ".mov", ".mp3", ".wav", ".ogg"].includes(extname(file.absolute)),
+  [".mp4", ".webm", ".mov", ".mp3", ".wav", ".ogg"].includes(assetExt(file)),
 );
 // A missing/empty asset build used to pass every maximum-size budget as 0 bytes.
 // Vite's production client must emit JavaScript; fail closed instead of certifying
