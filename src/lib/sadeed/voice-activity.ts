@@ -56,18 +56,16 @@ export function advanceSadeedVoiceActivity(input: {
   const config = input.config ?? SADEED_VOICE_ACTIVITY_DEFAULTS;
   const previous = input.state;
   const startedAt = previous.startedAt;
-  // An invalid audio clock must not bypass the silence and capture deadlines.
-  // Terminate rather than allowing NaN to enter the voice onset state.
-  if (!Number.isFinite(startedAt) || !Number.isFinite(input.now)) {
-    return { state: previous, decision: previous.heardVoice ? "complete" : "no-speech" };
-  }
   const now = Math.max(startedAt, input.now);
   const noSpeechAt = startedAt + config.noSpeechMs;
   let heardVoice = previous.heardVoice;
-  // Late first samples must not create speech after the initial timeout.
+  // Invalid clocks must not bypass deadlines or qualify untrusted audio frames.
   // Pre-deadline speech candidates still receive their voice qualification grace.
-  if (!heardVoice && now >= noSpeechAt && (previous.candidateVoiceAt ?? now) >= noSpeechAt) {
-    return { state: previous, decision: "no-speech" };
+  if (
+    !Number.isFinite(startedAt + input.now) ||
+    (!heardVoice && now >= noSpeechAt && (previous.candidateVoiceAt ?? now) >= noSpeechAt)
+  ) {
+    return { state: previous, decision: heardVoice ? "complete" : "no-speech" };
   }
 
   let candidateVoiceAt = previous.candidateVoiceAt;
