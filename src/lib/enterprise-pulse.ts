@@ -320,7 +320,7 @@ export function deriveAlerts(crises: CrisisPrediction[]): PulseAlert[] {
   // Source sort_order is not severity order. Rank all crises before taking five.
   // Keep the original array intact for realtime and other operational consumers.
   return crises
-    .filter(({ riskScore }) => validRiskScore(riskScore)
+    .filter(({ riskScore }) => validRiskScore(riskScore))
     .sort((a, b) => b.riskScore - a.riskScore)
     .slice(0, 5)
     .map((c) => ({
