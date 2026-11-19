@@ -44,6 +44,17 @@ describe("health probe single-flight cache", () => {
     expect(check).toHaveBeenCalledTimes(2);
   });
 
+  it("fails closed and caches malformed runtime probe values instead of reporting storage available", async () => {
+    for (const invalid of [undefined, null, 0, "", "false", {}]) {
+      const check = vi.fn().mockResolvedValue(invalid);
+      const read = createHealthProbeCache(check, 15_000, () => 100);
+      const [first, second] = await Promise.all([read(), read()]);
+      expect([first, second]).toEqual([true, true]);
+      expect(await read()).toBe(true);
+      expect(check).toHaveBeenCalledTimes(1);
+    }
+  });
+
   it("does not reuse a cached result when the system clock moves backwards", async () => {
     let time = 50_000;
     const check = vi.fn().mockResolvedValue(false);
