@@ -105,7 +105,9 @@ export function normalizePublishedAt(raw: string | null, nowMs: number): string 
     calendar.getUTCFullYear() !== year ||
     calendar.getUTCMonth() !== month - 1 ||
     calendar.getUTCDate() !== day
-  ) return null;
+  ) {
+    return null;
+  }
   const ms = Date.parse(raw);
   if (!Number.isFinite(ms) || ms > nowMs + ONE_DAY_MS) return null;
   return new Date(ms).toISOString();
