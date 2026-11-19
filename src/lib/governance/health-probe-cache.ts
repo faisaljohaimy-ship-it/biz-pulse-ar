@@ -21,8 +21,11 @@ export function createHealthProbeCache(
     inFlight = Promise.resolve()
       .then(probe)
       .then((unavailable) => {
-        memo = { at: now(), unavailable };
-        return unavailable;
+        // A malformed runtime probe result must not be mistaken for a healthy store.
+        // Only an explicit false certifies availability; fail closed otherwise.
+        const safeUnavailable = unavailable !== false;
+        memo = { at: now(), unavailable: safeUnavailable };
+        return safeUnavailable;
       })
       .finally(() => {
         inFlight = null;
