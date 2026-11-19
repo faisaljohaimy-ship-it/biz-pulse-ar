@@ -41,13 +41,9 @@ const platformCandidates = isVercelBuild
       ["CF_PAGES_COMMIT_SHA", env.CF_PAGES_COMMIT_SHA],
       ["VERCEL_GIT_COMMIT_SHA", env.VERCEL_GIT_COMMIT_SHA],
     ];
-// Platform-provided Vercel SHA is authoritative for Vercel builds. A stale
-// explicit override must not make /build-info.json claim a different commit.
-// Outside Vercel, keep the intentional SADEED_BUILD_SHA override precedence.
 const candidates = [
-  ...(isVercelBuild ? [platformCandidates[0]] : []),
   ["SADEED_BUILD_SHA", env.SADEED_BUILD_SHA],
-  ...platformCandidates.slice(isVercelBuild ? 1 : 0),
+  ...platformCandidates,
   ["COMMIT_SHA", env.COMMIT_SHA],
   ["git", git("rev-parse HEAD")],
 ];
