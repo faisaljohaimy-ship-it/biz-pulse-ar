@@ -4,7 +4,7 @@
   "path": "/mcp",
   "auth": {
     "type": "oauth",
-    "issuer": "https://jhutlofapjfjjeajawie.supabase.co/auth/v1",
+    "issuer": "https://cnaevysaoimzusnvpazr.supabase.co/auth/v1",
     "accepted_audiences": [
       "authenticated"
     ]
@@ -28,7 +28,8 @@
         "inputSchema": {
           "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object",
-          "properties": {}
+          "properties": {},
+          "additionalProperties": false
         },
         "outputSchema": null
       },
@@ -61,7 +62,8 @@
           },
           "required": [
             "question"
-          ]
+          ],
+          "additionalProperties": false
         },
         "outputSchema": null
       },
@@ -91,7 +93,8 @@
               "description": "Include the open critical/overdue findings list (default true).",
               "type": "boolean"
             }
-          }
+          },
+          "additionalProperties": false
         },
         "outputSchema": null
       },
@@ -128,7 +131,8 @@
               "minimum": 1,
               "maximum": 50
             }
-          }
+          },
+          "additionalProperties": false
         },
         "outputSchema": null
       }
