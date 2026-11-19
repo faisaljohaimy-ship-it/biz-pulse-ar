@@ -65,6 +65,39 @@ describe("SADEED audio bus synchronous stop callbacks", () => {
     expect(SadeedAudioBus.currentSource()).toBe("chat-tts");
   });
 
+  it("does not grant audio playback after a start observer immediately stops it", () => {
+    const stop = vi.fn();
+    const unsubscribe = SadeedAudioBus.subscribe(({ kind, source }) => {
+      if (kind === "start" && source === "agent-tts") SadeedAudioBus.stopAll();
+    });
+    try {
+      // Before the fix acquire() returned true despite no remaining owner.
+      expect(SadeedAudioBus.acquire("agent-tts", stop)).toBe(false);
+      expect(stop).toHaveBeenCalledTimes(1);
+      expect(SadeedAudioBus.currentSource()).toBeNull();
+    } finally {
+      unsubscribe();
+    }
+  });
+
+  it("rejects a stale start grant when a listener preempts it with a stronger voice", () => {
+    const stop = vi.fn();
+    let nextGranted = false;
+    const unsubscribe = SadeedAudioBus.subscribe(({ kind, source }) => {
+      if (kind === "start" && source === "agent-tts") {
+        nextGranted = SadeedAudioBus.acquire("chat-tts", () => {});
+      }
+    });
+    try {
+      expect(SadeedAudioBus.acquire("agent-tts", stop)).toBe(false);
+      expect(nextGranted).toBe(true);
+      expect(stop).toHaveBeenCalledTimes(1);
+      expect(SadeedAudioBus.currentSource()).toBe("chat-tts");
+    } finally {
+      unsubscribe();
+    }
+  });
+
   it("retains an owner acquired by a normal release end listener", () => {
     const unsubscribe = SadeedAudioBus.subscribe(({ kind, source }) => {
       if (kind === "end" && source === "agent-tts") {
