@@ -23,6 +23,29 @@ describe("SADEED voice activity — non-finite audio clocks", () => {
     expect(result.state.candidateVoiceAt).toBeNull();
   });
 
+  it.each([Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY])(
+    "fails closed for a malformed persisted voice timestamp %s",
+    (clock) => {
+      const idle = createSadeedVoiceActivityState(0);
+      const pending = { ...idle, candidateVoiceAt: clock };
+      expect(advanceSadeedVoiceActivity({ state: pending, now: 8_000, rms: 0.02 })).toEqual({
+        state: pending,
+        decision: "no-speech",
+      });
+
+      const speaking = {
+        ...idle,
+        candidateVoiceAt: 100,
+        lastVoiceAt: clock,
+        heardVoice: true,
+      };
+      expect(advanceSadeedVoiceActivity({ state: speaking, now: 8_000, rms: 0 })).toEqual({
+        state: speaking,
+        decision: "complete",
+      });
+    },
+  );
+
   it("preserves valid voice qualification, silence completion and no-speech deadlines", () => {
     const initial = createSadeedVoiceActivityState(0);
     const onset = advanceSadeedVoiceActivity({ state: initial, now: 90, rms: 0.02 });
