@@ -5,9 +5,7 @@
   "auth": {
     "type": "oauth",
     "issuer": "https://cnaevysaoimzusnvpazr.supabase.co/auth/v1",
-    "accepted_audiences": [
-      "authenticated"
-    ]
+    "accepted_audiences": ["authenticated"]
   },
   "mcp": {
     "server": {
@@ -54,15 +52,10 @@
             "language": {
               "description": "Preferred reply language.",
               "type": "string",
-              "enum": [
-                "ar",
-                "en"
-              ]
+              "enum": ["ar", "en"]
             }
           },
-          "required": [
-            "question"
-          ],
+          "required": ["question"],
           "additionalProperties": false
         },
         "outputSchema": null
@@ -82,12 +75,7 @@
             "region": {
               "description": "Optional region filter.",
               "type": "string",
-              "enum": [
-                "central",
-                "western",
-                "eastern",
-                "southern"
-              ]
+              "enum": ["central", "western", "eastern", "southern"]
             },
             "include_findings": {
               "description": "Include the open critical/overdue findings list (default true).",
@@ -113,12 +101,7 @@
             "region": {
               "description": "Optional region filter.",
               "type": "string",
-              "enum": [
-                "central",
-                "western",
-                "eastern",
-                "southern"
-              ]
+              "enum": ["central", "western", "eastern", "southern"]
             },
             "type_key": {
               "description": "Optional permit type key, e.g. hot_work or confined_space.",
