@@ -90,10 +90,11 @@ export function advanceSadeedVoiceActivity(input: {
 
   // The absolute capture cap still takes precedence for established speech.
   let decision: SadeedVoiceActivityDecision = "continue";
-  if (now - startedAt >= config.maximumCaptureMs) {
+  if (
+    now - startedAt >= config.maximumCaptureMs ||
+    (!heardVoice && now >= noSpeechAt && candidateVoiceAt === null)
+  ) {
     decision = heardVoice ? "complete" : "no-speech";
-  } else if (!heardVoice && now >= noSpeechAt && candidateVoiceAt === null) {
-    decision = "no-speech";
   } else if (heardVoice && lastVoiceAt !== null && now - lastVoiceAt >= config.silenceMs) {
     decision = "complete";
   }
