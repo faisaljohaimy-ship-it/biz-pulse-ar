@@ -81,6 +81,20 @@ describe("isTransientOverload — الازدحام العابر يُعاد، و�
     }
     const stringStatus = Object.assign(err("service unavailable"), { status: "403" });
     expect(isTransientOverload(stringStatus)).toBe(false);
+
+  it("a conflicting structured 4xx vetoes a legacy 5xx retry regardless of field order", () => {
+    for (const [statusCode, status] of [
+      [503, 429],
+      [502, 401],
+      [429, 503],
+      [403, 502],
+    ]) {
+      const sdkError = Object.assign(err("service unavailable"), { statusCode, status });
+      expect(isTransientOverload(sdkError), `${statusCode}/${status}`).toBe(false);
+    }
+    // A genuine pair of server errors still allows the one bounded retry.
+    expect(isTransientOverload(Object.assign(err("upstream failed"), { statusCode: 502, status: 503 }))).toBe(true);
+  });
   });
 
   it("الإلغاء والمهلة لا يُعادان", () => {
