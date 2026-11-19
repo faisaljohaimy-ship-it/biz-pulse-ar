@@ -111,11 +111,14 @@ export function tickerLoop(
   viewWidth: number,
   speed: number = TICKER_PX_PER_S,
 ): TickerLoop | null {
-  if (!(copyWidth > 0) || !(speed > 0)) return null;
-  return {
-    seconds: copyWidth / speed,
-    copies: Math.max(2, Math.ceil(Math.max(0, viewWidth) / copyWidth) + 1),
-  };
+  if (!(copyWidth > 0) || !(speed > 0) || !Number.isFinite(viewWidth)) return null;
+  const seconds = copyWidth / speed;
+  const copies = Math.max(2, Math.ceil(Math.max(0, viewWidth) / copyWidth) + 1);
+  // Invalid/overflowed DOM metrics must never become CSS animation durations
+  // or an infinite number of duplicate ticker items.
+  return Number.isFinite(seconds) && seconds > 0 && Number.isSafeInteger(copies)
+    ? { seconds, copies }
+    : null;
 }
 
 const sameLoop = (a: TickerLoop | null, b: TickerLoop | null) =>
