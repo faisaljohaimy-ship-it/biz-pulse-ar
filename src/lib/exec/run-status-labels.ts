@@ -275,11 +275,7 @@ export function deriveRunStatus(
  * (مصفوفة) وكانت تُطبع فارغةً؛ والمصفوفة ليست عددًا مقيسًا فلا تُحوَّل إلى صفر.
  */
 export function runStepsLabel(steps: unknown): string {
-  if (
-    typeof steps === "number" &&
-    Number.isSafeInteger(steps) &&
-    steps >= 0
-  ) {
+  if (typeof steps === "number" && Number.isSafeInteger(steps) && steps >= 0) {
     return String(steps);
   }
   return "—";
