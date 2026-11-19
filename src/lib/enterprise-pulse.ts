@@ -152,7 +152,7 @@ async function seedUserIfMissing(userId: string, openTasks: number) {
     .select("id", { count: "exact", head: true })
     .eq("user_id", userId);
   if (countError) {
-    console.error("pulse seed count failed:", countError.message);
+    console.error("pulse count:", countError.message);
     return; // transient read failure — leave unseeded so it retries
   }
   // Only an exact zero authorizes seed inserts. Missing/malformed counts
@@ -171,7 +171,7 @@ async function seedUserIfMissing(userId: string, openTasks: number) {
   ]);
   const insertError = results.find((r) => r.error)?.error;
   if (insertError) {
-    console.error("pulse seed insert failed:", insertError.message);
+    console.error("pulse insert:", insertError.message);
     return; // leave unseeded so a later call retries the seed
   }
   seeded.add(userId); // mark seeded ONLY after a fully successful seed
