@@ -1,5 +1,6 @@
 /** Offline regression tests for the production HTML gate; no real network. */
 import assert from "node:assert/strict";
+import { createHash, webcrypto } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import vm from "node:vm";
@@ -35,6 +36,9 @@ async function runFixture(
     console: { log() {}, error() {} },
     AbortSignal,
     URL,
+    crypto: webcrypto,
+    Buffer,
+    TextDecoder,
     async fetch(input, options) {
       assert.equal(options.redirect, "manual");
       if (input === "https://offline.invalid/") {
@@ -1868,4 +1872,54 @@ test("retains delayed meta refresh after quoted angle bracket attribute", async 
       '<link rel="stylesheet" href="/assets/app.css">',
   );
   assert.equal(await runFixture(html), null);
+});
+
+// A response with sound CSS bytes is NOT applied by the browser when the
+// link's Subresource Integrity hash disagrees with those bytes.
+test("rejects a 200 stylesheet with a mismatching SHA-256 integrity digest", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="stylesheet" href="/assets/app.css" integrity="sha256-AAAA">',
+  );
+  assert.equal(await runFixture(html), 1);
+});
+
+for (const algorithm of ["sha256", "sha384", "sha512"]) {
+  test(`accepts a stylesheet with matching ${algorithm} integrity`, async () => {
+    const css = "body::after { content: 'مرحبا'; }";
+    const digest = createHash(algorithm).update(css).digest("base64");
+    const html = normalPage.replace(
+      '<link rel="stylesheet" href="/assets/app.css">',
+      `<link rel="stylesheet" href="/assets/app.css" integrity="${algorithm}-${digest}">`,
+    );
+    assert.equal(await runFixture(html, "text/html", 200, "text/css", css), null);
+  });
+}
+
+test("rejects a mismatching stronger SRI hash even when a weaker hash matches", async () => {
+  const css = "body { color: navy; }";
+  const goodSha256 = createHash("sha256").update(css).digest("base64");
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    `<link rel="stylesheet" href="/assets/app.css" integrity="sha256-${goodSha256} sha384-AAAA">`,
+  );
+  assert.equal(await runFixture(html, "text/html", 200, "text/css", css), 1);
+});
+
+test("rejects malformed nonempty SRI rather than accepting unverifiable CSS", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="stylesheet" href="/assets/app.css" integrity="sha256-not-a-valid+hash">',
+  );
+  assert.equal(await runFixture(html), 1);
+});
+
+test("accepts matching strongest SHA-384 SRI among multiple metadata entries", async () => {
+  const css = "body { color: navy; }";
+  const goodSha384 = createHash("sha384").update(css).digest("base64");
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    `<link rel="stylesheet" href="/assets/app.css" integrity="sha256-AAAA sha384-${goodSha384}">`,
+  );
+  assert.equal(await runFixture(html, "text/html", 200, "text/css", css), null);
 });

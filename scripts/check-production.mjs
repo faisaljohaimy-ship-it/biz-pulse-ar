@@ -189,6 +189,26 @@ function stylesheetHref(tag) {
   return attrs.href?.trim() ? decodeMetaAttribute(attrs.href) : null;
 }
 
+// The browser refuses a stylesheet whose SRI digest does not match its actual
+// bytes even when the asset returns HTTP 200 with a valid text/css MIME type.
+// SRI selects the strongest recognized algorithm, not a weaker matching hash.
+async function matchesStylesheetIntegrity(integrity, bytes) {
+  const ranks = { sha256: 1, sha384: 2, sha512: 3 };
+  const algorithms = { sha256: "SHA-256", sha384: "SHA-384", sha512: "SHA-512" };
+  const candidates = integrity.split(/\s+/).flatMap((token) => {
+    const match = /^(sha256|sha384|sha512)-([A-Za-z0-9+/]+={0,2})(?:\?[^\s]*)?$/.exec(token);
+    return match ? [{ algorithm: match[1], digest: match[2].replace(/=+$/, "") }] : [];
+  });
+  // Unknown/malformed nonempty metadata cannot establish release readiness.
+  if (!candidates.length) return false;
+  const highest = Math.max(...candidates.map((candidate) => ranks[candidate.algorithm]));
+  const strongest = candidates.filter((candidate) => ranks[candidate.algorithm] === highest);
+  const actual = Buffer.from(await crypto.subtle.digest(algorithms[strongest[0].algorithm], bytes))
+    .toString("base64")
+    .replace(/=+$/, "");
+  return strongest.some((candidate) => candidate.digest === actual);
+}
+
 // A textual theme call in a JS comment or string does not initialize the UI.
 // Scan only executable-looking code; preserve quoted URL strings (including //)
 // instead of stripping comments with a regex that would hide valid statements.
@@ -576,7 +596,14 @@ for (const route of ROUTES) {
       failures.push(route + ": الصفحة تحوّل أو تعيد التحميل تلقائيًا عبر meta refresh");
     }
     const stylesheetLinks = [...activeMarkup.matchAll(/<link\b(?:[^>"']|"[^"]*"|'[^']*')*>/gi)]
-      .map((match) => ({ href: stylesheetHref(match[0]), position: match.index }))
+      .map((match) => {
+        const attrs = tagAttributes(match[0], 5);
+        return {
+          href: stylesheetHref(match[0]),
+          position: match.index,
+          integrity: "integrity" in attrs ? decodeMetaAttribute(attrs.integrity) : null,
+        };
+      })
       .filter(({ href }) => href);
     const hasCss = stylesheetLinks.length > 0;
     // Browsers resolve relative link URLs against the first <base href>.
@@ -618,7 +645,7 @@ for (const route of ROUTES) {
       let reason = "no same-origin stylesheet";
       // One valid vendor stylesheet cannot certify a later broken app stylesheet.
       let brokenCss = false;
-      for (const { href, position } of stylesheetLinks) {
+      for (const { href, position, integrity } of stylesheetLinks) {
         try {
           const firstBase = baseLinks.find((base) => base.position < position);
           const documentBase = firstBase ? new URL(firstBase.href, url).href : url;
@@ -628,8 +655,19 @@ for (const route of ROUTES) {
           const isCss = hasMimeType(stylesheetRes.headers.get("content-type"), "text/css");
           // An empty text/css response is not application styling. Verify the
           // body rather than trusting only status and a Content-Type header.
-          const cssText = isCss ? await stylesheetRes.text() : "";
-          if (!isCss) await stylesheetRes.body?.cancel();
+          let cssText = "";
+          let integrityMatches = true;
+          if (isCss) {
+            if (integrity?.trim()) {
+              const bytes = new Uint8Array(await stylesheetRes.arrayBuffer());
+              integrityMatches = await matchesStylesheetIntegrity(integrity, bytes);
+              cssText = new TextDecoder().decode(bytes);
+            } else {
+              cssText = await stylesheetRes.text();
+            }
+          } else {
+            await stylesheetRes.body?.cancel();
+          }
           // An all-comment CSS file cannot style the app; MIME and bytes alone are insufficient.
           // A CSS encoding declaration cannot style an application by itself.
           // Preserve legitimate style rules that follow that declaration.
@@ -637,12 +675,16 @@ for (const route of ROUTES) {
             .replace(/\/\*[\s\S]*?\*\//g, "")
             .replace(/^\s*@charset\s+(?:"[^"]*"|'[^']*')\s*;\s*/i, "")
             .trim();
-          if (isCss && effectiveCss.length > 0) {
+          if (isCss && integrityMatches && effectiveCss.length > 0) {
             cssLoaded = true;
             continue;
           }
           brokenCss = true;
-          reason = isCss ? "stylesheet response is empty" : "stylesheet response is not text/css";
+          reason = !isCss
+            ? "stylesheet response is not text/css"
+            : !integrityMatches
+              ? "stylesheet SRI integrity mismatch"
+              : "stylesheet response is empty";
         } catch (error) {
           brokenCss = true;
           reason = error instanceof Error ? error.message : String(error);
