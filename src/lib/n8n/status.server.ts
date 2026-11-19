@@ -59,13 +59,21 @@ export interface StatusInput {
 }
 
 export function buildStatusSnapshot(input: StatusInput): N8nStatusSnapshot {
+  // An injected or corrupted wall clock must not turn the status endpoint into a 500.
+  // Treat unrepresentable timestamps as unmeasured, just like a cold isolate.
+  const lastOkDate =
+    typeof input.lastOkAtMs === "number" && Number.isFinite(input.lastOkAtMs)
+      ? new Date(input.lastOkAtMs)
+      : null;
+  const lastOkAt =
+    lastOkDate && Number.isFinite(lastOkDate.getTime()) ? lastOkDate.toISOString() : null;
   return {
     surface: input.surface,
     configured: input.configured,
     disabled: input.disabled,
     mode: input.surface === "sadeed" ? input.mode : null,
     breaker: input.breaker,
-    last_ok_at: input.lastOkAtMs === null ? null : new Date(input.lastOkAtMs).toISOString(),
+    last_ok_at: lastOkAt,
     p95_ms: input.latencies.p95(),
     samples: input.latencies.count,
   };

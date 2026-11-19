@@ -84,6 +84,23 @@ describe("buildStatusSnapshot", () => {
     });
   });
 
+  it("malformed last-success clocks stay unmeasured instead of crashing status", () => {
+    for (const invalid of [NaN, Infinity, -Infinity, 8_640_000_000_000_001, undefined]) {
+      const s = buildStatusSnapshot({
+        ...base,
+        surface: "sadeed",
+        lastOkAtMs: invalid as number,
+      });
+      expect(s.last_ok_at).toBeNull();
+      expect(s.samples).toBe(0);
+    }
+  });
+
+  it("retains valid epoch zero as a real observation", () => {
+    const s = buildStatusSnapshot({ ...base, surface: "sadeed", lastOkAtMs: 0 });
+    expect(s.last_ok_at).toBe("1970-01-01T00:00:00.000Z");
+  });
+
   it("سطح FNN: الوضع لا ينطبق ⇒ null", () => {
     expect(buildStatusSnapshot({ ...base, surface: "fnn" }).mode).toBeNull();
   });
