@@ -316,7 +316,7 @@ export function deriveAlerts(crises: CrisisPrediction[]): PulseAlert[] {
   // Source sort_order is not severity order. Rank all crises before taking five.
   // Keep the original array intact for realtime and other operational consumers.
   return crises
-    .filter(({ riskScore }) => riskScore >= 0 && riskScore <= 100)
+    .filter(({ riskScore }) => Number.isFinite(riskScore) && riskScore >= 0 && riskScore <= 100)
     .sort((a, b) => b.riskScore - a.riskScore)
     .slice(0, 5)
     .map((c) => ({
@@ -337,11 +337,11 @@ export function deriveAlerts(crises: CrisisPrediction[]): PulseAlert[] {
 }
 
 export function deriveStatus(crises: CrisisPrediction[]): { status: PulseStatus; health: number } {
-  // Invalid telemetry must never mask a real crisis or turn health into NaN.
-  // The accumulator starts at 0: the greater-than check excludes negatives/NaN;
-  // the upper bound also excludes Infinity, with no extra Math.max allocation.
+  // Runtime API values may be null, booleans or numeric strings despite the
+  // TypeScript number contract. Never coerce malformed telemetry into risk.
   const max = crises.reduce(
-    (m, { riskScore }) => (riskScore > m && riskScore <= 100 ? riskScore : m),
+    (m, { riskScore }) =>
+      Number.isFinite(riskScore) && riskScore > m && riskScore <= 100 ? riskScore : m,
     0,
   );
   return {
