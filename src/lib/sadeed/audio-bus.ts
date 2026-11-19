@@ -133,7 +133,11 @@ export const SadeedAudioBus = {
       });
       stopCurrentOwner();
     }
-    current = { source, stop };
+    // A start subscriber may synchronously stop or preempt this grant.
+    // Keep the exact ownership identity so a revoked caller never starts audio
+    // after it was already stopped by a hold/mute listener.
+    const ownership = { source, stop };
+    current = ownership;
     VoiceTimeline.push("OWNER", "ACQUIRED", {
       owner: source,
       provider:
@@ -148,7 +152,7 @@ export const SadeedAudioBus = {
       bypass,
     });
     emit({ kind: "start", source });
-    return true;
+    return current === ownership;
   },
 
   /**
