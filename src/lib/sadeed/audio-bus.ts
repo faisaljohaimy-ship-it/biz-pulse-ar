@@ -22,12 +22,8 @@ const PRIORITY: Record<Source, number> = {
   "chat-tts": 3,
 };
 
-// Owners allowed to bypass the "no gesture yet" guard when they pass
-// { bypassGesture: true }. Only the hero soundtrack's optimistic first
-// autoplay may do this — every SADEED / tour owner MUST wait for a real
-// user gesture (via SadeedAudioBus.unlock()).
-const BYPASS_ALLOWED: ReadonlySet<Source> = new Set<Source>(["hero-soundtrack"]);
-
+// Only the hero soundtrack may opt into the initial autoplay attempt;
+// every assistant voice source still requires an explicit user gesture.
 type StopFn = () => void;
 type BusEvent =
   | { kind: "start" | "end"; source: Source }
@@ -96,7 +92,7 @@ export const SadeedAudioBus = {
     // on-mount / on-load / on-scroll audio, no matter which component tries.
     // EXEMPTION: the hero soundtrack's ONE optimistic mount-time attempt may
     // pass { bypassGesture: true }. No SADEED / tour source is ever exempt.
-    const bypass = opts?.bypassGesture === true && BYPASS_ALLOWED.has(source);
+    const bypass = opts?.bypassGesture === true && source === "hero-soundtrack";
     // بوابة الكتم (طلب المالك «ونقدر نصمته»). تسبق كل شيء عمدًا: الرفض هنا
     // يقع قبل أن يُطلب أي مقطع TTS من الخادم، فالكتم صمتٌ حقيقي لا خفض
     // مستوى فوق صوت اشتُري ونُزِّل. وهي في الناقل لا في مكوّن، لأن الناقل
