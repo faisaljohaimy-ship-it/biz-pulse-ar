@@ -1,7 +1,7 @@
 /**
  * RouteErrorBoundary — branded Arabic fallback used by per-route
  * `errorComponent`. Never leaves the user staring at a blank screen; the
- * caught error is logged with route context so operators can trace it.
+ * route-level failure is logged without copying private exception payloads.
  */
 import { useRouter } from "@tanstack/react-router";
 import { userFacingError } from "@/lib/errors/user-facing-error";
@@ -26,11 +26,9 @@ export function RouteErrorBoundary({ error: rawError, reset, routeLabel }: Props
     // Structured console log with route context; system_events insertion
     // would require an authed server fn and is not guaranteed to succeed
     // from an already-broken client tree, so we stay client-only here.
-    console.error("[RouteErrorBoundary]", {
-      route: routeLabel ?? "unknown",
-      message: error?.message,
-      stack: error?.stack,
-    });
+    // SDK exceptions can carry credentials, internal URLs and private responses.
+    // Keep a stable route-level diagnostic, never the raw message or stack.
+    console.error("[RouteErrorBoundary]", routeLabel ?? "unknown");
   }, [error, routeLabel]);
 
   return (
