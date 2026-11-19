@@ -88,11 +88,13 @@ export function toApiErrorShape(err: unknown): ApiErrorShape {
   // Keep the error boundary serialisable instead of throwing a second 500.
   try {
     if (isApiError(err)) return err.toJSON();
-    if (err instanceof Error) {
-      return { code: "internal_error", message: err.message, status: 500 };
-    }
-    return { code: "internal_error", message: String(err ?? "Unknown error"), status: 500 };
+    // Arbitrary Error messages and rejection values may include upstream
+    // response bodies, database diagnostics or credentials. They are not
+    // public API contracts. Only deliberately constructed ApiError envelopes
+    // may carry a specific client-visible message.
+    return { code: "internal_error", message: "Internal server error", status: 500 };
   } catch {
-    return { code: "internal_error", message: "Unknown error", status: 500 };
+    // Even a malformed ApiError must not escape through the error boundary.
+    return { code: "internal_error", message: "Internal server error", status: 500 };
   }
 }
