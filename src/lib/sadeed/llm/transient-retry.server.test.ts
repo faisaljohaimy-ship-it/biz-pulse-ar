@@ -83,6 +83,33 @@ describe("isTransientOverload — الازدحام العابر يُعاد، و�
     expect(isTransientOverload(stringStatus)).toBe(false);
   });
 
+  it("does not retry conflicting SDK status fields when either reports a client/quota rejection", () => {
+    // Some SDK wrappers expose both statusCode and status. The older first-field
+    // return silently retried 503/429, even though the second field was a real
+    // quota rejection. A denial must win regardless of field order.
+    for (const rejection of [400, 401, 402, 403, 404, 429]) {
+      const legacyServerError = Object.assign(err("upstream failed"), {
+        statusCode: 503,
+        status: rejection,
+      });
+      expect(isTransientOverload(legacyServerError), `503 / ${rejection}`).toBe(false);
+      const modernServerError = Object.assign(err("upstream failed"), {
+        statusCode: rejection,
+        status: 503,
+      });
+      expect(isTransientOverload(modernServerError), `${rejection} / 503`).toBe(false);
+    }
+    expect(
+      isTransientOverload(
+        Object.assign(err("upstream failed"), { statusCode: 503, status: "429" }),
+      ),
+    ).toBe(false);
+    // A second genuine server error remains eligible for bounded retry.
+    expect(
+      isTransientOverload(Object.assign(err("upstream failed"), { statusCode: 503, status: 504 })),
+    ).toBe(true);
+  });
+
   it("الإلغاء والمهلة لا يُعادان", () => {
     expect(isTransientOverload(new DOMException("timed out", "TimeoutError"))).toBe(false);
     expect(isTransientOverload(new DOMException("aborted", "AbortError"))).toBe(false);
