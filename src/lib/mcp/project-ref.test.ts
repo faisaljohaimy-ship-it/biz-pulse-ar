@@ -122,12 +122,8 @@ describe("the repo agrees with itself about which project this is", () => {
     // to a retired ref more than once in this repo's history.
     // Compare the complete HTTPS issuer, not just the 20-character project ref:
     // http://, a changed auth path or a mismatched host must all fail closed.
-    const manifestIssuer = JSON.parse(
-      readFileSync(".lovable/mcp/manifest.json", "utf8"),
-    ).auth.issuer as string;
-    expect(manifestIssuer).toBe(
-      resolveIssuer({ VITE_SUPABASE_PROJECT_ID: declared() }),
-    );
+    const manifest = JSON.parse(readFileSync(".lovable/mcp/manifest.json", "utf8"));
+    expect(manifest.auth.issuer).toBe(resolveIssuer({ VITE_SUPABASE_PROJECT_ID: declared() }));
   });
 
   it("the ref this suite asserts against is the declared one", () => {
