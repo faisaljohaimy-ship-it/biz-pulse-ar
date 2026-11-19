@@ -36,6 +36,30 @@ describe("production performance budget symlink integrity", () => {
     expect(result.status, result.stderr).toBe(0);
   });
 
+  it("rejects a linked output root even when its assets are small", () => {
+    const result = checkFixture((root, output) => {
+      const foreign = join(root, "foreign-build");
+      mkdirSync(foreign);
+      writeFileSync(join(foreign, "main.js"), "export {};\n");
+      rmSync(output, { recursive: true, force: true });
+      symlinkSync(foreign, output, "dir");
+    });
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("Unverified symlink in production output path: dist/client");
+  });
+
+  it("rejects a linked output parent before traversing its assets", () => {
+    const result = checkFixture((root) => {
+      const foreign = join(root, "foreign-dist");
+      mkdirSync(join(foreign, "client"), { recursive: true });
+      writeFileSync(join(foreign, "client", "main.js"), "export {};\n");
+      rmSync(join(root, "dist"), { recursive: true, force: true });
+      symlinkSync(foreign, join(root, "dist"), "dir");
+    });
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("Unverified symlink in production output path: dist");
+  });
+
   it("does not certify an oversized external media asset hidden behind a file symlink", () => {
     const result = checkFixture((root, output) => {
       const media = join(root, "oversized.mp4");
