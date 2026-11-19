@@ -312,11 +312,15 @@ const STATIC_INTEL: PulseIntel[] = [
   },
 ];
 
+// Reuse one guard so malformed JSON scalars cannot coerce into dashboard scores.
+const validRiskScore = (score: number): boolean =>
+  Number.isFinite(score) && score >= 0 && score <= 100;
+
 export function deriveAlerts(crises: CrisisPrediction[]): PulseAlert[] {
   // Source sort_order is not severity order. Rank all crises before taking five.
   // Keep the original array intact for realtime and other operational consumers.
   return crises
-    .filter(({ riskScore }) => Number.isFinite(riskScore) && riskScore >= 0 && riskScore <= 100)
+    .filter(({ riskScore }) => validRiskScore(riskScore)
     .sort((a, b) => b.riskScore - a.riskScore)
     .slice(0, 5)
     .map((c) => ({
@@ -341,7 +345,7 @@ export function deriveStatus(crises: CrisisPrediction[]): { status: PulseStatus;
   // TypeScript number contract. Never coerce malformed telemetry into risk.
   const max = crises.reduce(
     (m, { riskScore }) =>
-      Number.isFinite(riskScore) && riskScore > m && riskScore <= 100 ? riskScore : m,
+      validRiskScore(riskScore) && riskScore > m ? riskScore : m,
     0,
   );
   return {
