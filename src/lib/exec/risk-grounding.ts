@@ -66,6 +66,10 @@ export function allowedNumbersOf(s: RiskSignal, horizonHours: number): ReadonlyS
 
 const ARABIC_INDIC = /[٠-٩۰-۹]/g;
 
+// A model can write 1e5; the ordinary digit matcher sees only 1 and 5.
+// Never allow those two grounded digits to certify an ungrounded 100,000.
+const SCIENTIFIC_NUMERAL = /[-−]?\d+(?:[.,٫]\d+)?[eE][+−-]?\d+/;
+
 /** يوحّد الأرقام العربية-الهندية إلى اللاتينية قبل الاستخراج. */
 function normalizeDigits(text: string): string {
   return text.replace(ARABIC_INDIC, (d) => {
@@ -105,6 +109,10 @@ export function judgeNarration(
   horizonHours: number,
 ): NarrationVerdict {
   if (texts.some((t) => t.trim().length === 0)) return { accepted: false, ungrounded: [] };
+  // Fail closed on scientific notation: its mantissa and exponent are not two observations.
+  if (texts.some((t) => SCIENTIFIC_NUMERAL.test(normalizeDigits(t)))) {
+    return { accepted: false, ungrounded: [] };
+  }
   const allowed = allowedNumbersOf(signal, horizonHours);
   const ungrounded = texts
     .flatMap((t) => numbersIn(t))
