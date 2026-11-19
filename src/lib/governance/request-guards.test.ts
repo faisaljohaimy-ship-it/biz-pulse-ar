@@ -37,7 +37,7 @@ describe("البصمة", () => {
   });
 
   it("keeps argument boundaries distinct even when a message contains a NUL", () => {
-    expect(fingerprint("a\\u0000b", "c")).not.toBe(fingerprint("a", "b\\u0000c"));
+    expect(fingerprint("a\u0000b", "c")).not.toBe(fingerprint("a", "b\u0000c"));
   });
 });
 
