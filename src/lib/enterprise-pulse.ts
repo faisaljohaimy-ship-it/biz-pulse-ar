@@ -155,15 +155,10 @@ async function seedUserIfMissing(userId: string, openTasks: number) {
     console.error("pulse seed count failed:", countError.message);
     return; // transient read failure — leave unseeded so it retries
   }
-  // A missing or malformed exact-count response is not proof the table is
-  // empty. Fail closed rather than risking duplicate baseline INSERTs; the
-  // next realtime refresh can retry when the count service recovers.
-  if (typeof count !== "number" || !Number.isSafeInteger(count) || count < 0) {
-    console.warn("pulse seed exact count unavailable; deferring seed");
-    return;
-  }
-  if (count > 0) {
-    seeded.add(userId); // already has data — no seeding needed
+  // Only an exact zero authorizes seed inserts. Missing/malformed counts
+  // defer the write; valid positive counts still mark pre-existing data.
+  if (count !== 0) {
+    if (Number.isSafeInteger(count) && count! > 0) seeded.add(userId);
     return;
   }
   const stamped = <T extends object>(rows: T[]) =>
