@@ -51,11 +51,9 @@ export function RouteErrorBoundary({ error: rawError, reset, routeLabel }: Props
         </p>
         {/* كانت هذه الكتلة تعرض `error.message` خامًا في `<pre>` — وهو
             المكان الذي يصل منه نصّ المصادقة الإنجليزي إلى شاشةٍ عربية. */}
-        {error ? (
-          <p className="text-xs text-rose-200/80 bg-black/30 rounded-lg p-3 max-h-32 overflow-auto">
-            {userFacingError(error)}
-          </p>
-        ) : null}
+        <p className="text-xs text-rose-200/80 bg-black/30 rounded-lg p-3 max-h-32 overflow-auto">
+          {userFacingError(error)}
+        </p>
         <div className="flex items-center justify-center gap-3">
           <button
             onClick={() => {
