@@ -137,6 +137,10 @@ describe("Enterprise Pulse first-use seeding", () => {
         harness.onChange?.();
       });
       await waitFor(() => expect(harness.countKpis).toHaveBeenCalledTimes(2));
+      await act(async () => {
+        await Promise.resolve();
+        await Promise.resolve();
+      });
       expect(harness.insert).not.toHaveBeenCalled();
 
       await act(async () => {
