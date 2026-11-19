@@ -58,14 +58,15 @@ export function advanceSadeedVoiceActivity(input: {
   const startedAt = previous.startedAt;
   const now = Math.max(startedAt, input.now);
   const noSpeechAt = startedAt + config.noSpeechMs;
+  const noSpeechTimedOut = now >= noSpeechAt;
   let heardVoice = previous.heardVoice;
   // Invalid clocks must not bypass deadlines or qualify untrusted audio frames.
   // Pre-deadline speech candidates still receive their voice qualification grace.
   if (
     !Number.isFinite(
-      startedAt + input.now + (previous.candidateVoiceAt ?? 0) + (previous.lastVoiceAt ?? 0),
+      input.now + noSpeechAt + (previous.candidateVoiceAt ?? 0) + (previous.lastVoiceAt ?? 0),
     ) ||
-    (!heardVoice && now >= noSpeechAt && (previous.candidateVoiceAt ?? now) >= noSpeechAt)
+    (!heardVoice && noSpeechTimedOut && (previous.candidateVoiceAt ?? now) >= noSpeechAt)
   ) {
     return { state: previous, decision: heardVoice ? "complete" : "no-speech" };
   }
@@ -90,14 +91,16 @@ export function advanceSadeedVoiceActivity(input: {
     heardVoice,
   };
 
-  // The absolute capture cap still takes precedence for established speech.
-  let decision: SadeedVoiceActivityDecision = "continue";
-  if (now - startedAt >= config.maximumCaptureMs) {
-    decision = heardVoice ? "complete" : "no-speech";
-  } else if (!heardVoice && now >= noSpeechAt && candidateVoiceAt === null) {
-    decision = "no-speech";
-  } else if (heardVoice && lastVoiceAt !== null && now - lastVoiceAt >= config.silenceMs) {
-    decision = "complete";
-  }
+  // Preserve the absolute capture cap, silence completion, and no-speech deadline.
+  const finished =
+    now - startedAt >= config.maximumCaptureMs ||
+    (heardVoice
+      ? lastVoiceAt !== null && now - lastVoiceAt >= config.silenceMs
+      : noSpeechTimedOut && candidateVoiceAt === null);
+  const decision: SadeedVoiceActivityDecision = finished
+    ? heardVoice
+      ? "complete"
+      : "no-speech"
+    : "continue";
   return { state, decision };
 }
