@@ -22,10 +22,14 @@ export function useLiveTwinNodes<T extends TwinValueNode>(
   return useMemo(() => {
     if (!signals) return nodes;
     const fallback = (id: string) => nodes.find((n) => n.id === id)?.value ?? "";
-    // Counts cannot be negative; do not publish corrupt telemetry as a measured value.
-    // Keep signed execution velocity separate: a decline can be a meaningful percentage.
+    // Counts must be non-negative safe integers: fractional/unsafe telemetry
+    // is not a measured number of assets, events or staff.
+    // Keep signed/fractional execution velocity separate (it is a percentage).
     const measuredCount = (value: number | null | undefined) =>
-      twinValue((value ?? 0) < 0 ? NaN : value, ar);
+      twinValue(
+        typeof value === "number" && Number.isSafeInteger(value) && value >= 0 ? value : NaN,
+        ar,
+      );
     const optional = (value: number | null | undefined, id: string) =>
       value == null ? fallback(id) : measuredCount(value);
     const values: Record<string, string> = {
