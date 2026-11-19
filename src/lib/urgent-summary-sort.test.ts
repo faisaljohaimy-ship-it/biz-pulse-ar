@@ -75,7 +75,6 @@ describe("urgent-summary critical-task ordering", () => {
     ).toEqual(["earliest-valid", "latest-valid"]);
   });
 
-
   it("rejects impossible UTC offsets rather than promoting forged earlier deadlines", () => {
     const valid = { priority: "عاجل", due_at: "2026-11-08T09:00:00Z" };
     for (const suffix of ["+23:00", "-23:00", "+14:30", "-14:30"]) {
