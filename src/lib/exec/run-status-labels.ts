@@ -180,8 +180,9 @@ const isRecord = (v: unknown): v is Record<string, unknown> =>
 const asCount = (v: unknown): number | null => {
   if (Array.isArray(v)) return v.length;
   const count = isRecord(v) ? v.count : v;
-  // IEEE-754 safely represents whole counts below 2^53.
-  return typeof count === "number" && count >= 0 && count < 2 ** 53 ? Math.floor(count) : null;
+  // An audit count must be an exact non-negative integer; rounding fractions
+  // invents completed steps or approvals that were never measured.
+  return typeof count === "number" && Number.isSafeInteger(count) && count >= 0 ? count : null;
 };
 
 /**
@@ -276,11 +277,10 @@ export function deriveRunStatus(
 export function runStepsLabel(steps: unknown): string {
   if (
     typeof steps === "number" &&
-    // The bounds exclude NaN and both infinities without a separate finite check.
-    steps >= 0 &&
-    steps <= Number.MAX_SAFE_INTEGER
+    Number.isSafeInteger(steps) &&
+    steps >= 0
   ) {
-    return String(Math.floor(steps));
+    return String(steps);
   }
   return "—";
 }
