@@ -153,5 +153,4 @@ describe("Enterprise Pulse first-use seeding", () => {
       warnSpy.mockRestore();
     }
   });
-
 });
