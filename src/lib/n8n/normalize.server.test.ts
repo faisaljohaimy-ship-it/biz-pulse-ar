@@ -338,6 +338,19 @@ describe("normalizeResearchResults", () => {
     expect(r.snippet).not.toMatch(/\[WEB:/);
   });
 
+  it("does not emit a result when the limit is zero, negative, fractional or non-finite", () => {
+    const items = [
+      raw({ url: "https://a.example.com/1" }),
+      raw({ url: "https://b.example.com/2" }),
+      raw({ url: "https://c.example.com/3" }),
+    ];
+    for (const invalidLimit of [0, -1, 0.5, 1.5, Number.NaN, Number.POSITIVE_INFINITY]) {
+      expect(normalizeResearchResults(items, invalidLimit, NOW), String(invalidLimit)).toEqual([]);
+    }
+    expect(normalizeResearchResults(items, 1, NOW)).toHaveLength(1);
+    expect(normalizeResearchResults(items, 2, NOW)).toHaveLength(2);
+  });
+
   it("قائمة فارغة ⇒ فارغة", () => {
     expect(normalizeResearchResults([], 5, NOW)).toEqual([]);
   });

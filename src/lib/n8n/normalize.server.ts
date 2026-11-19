@@ -109,6 +109,9 @@ export function normalizeResearchResults(
   nowMs: number,
   accept?: (u: SafeUrl) => boolean,
 ): WebResult[] {
+  // A disabled or malformed limit must not leak one result or bypass truncation.
+  // Production requests require integer 1..5; enforce the same count contract here.
+  if (!Number.isSafeInteger(max) || max <= 0) return [];
   const seen = new Set<string>();
   const out: WebResult[] = [];
   for (const r of raw) {
