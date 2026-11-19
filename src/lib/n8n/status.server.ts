@@ -65,9 +65,8 @@ export function buildStatusSnapshot(input: StatusInput): N8nStatusSnapshot {
     typeof input.lastOkAtMs === "number" && Number.isFinite(input.lastOkAtMs)
       ? new Date(input.lastOkAtMs)
       : null;
-  const lastOkAt = lastOkDate && Number.isFinite(lastOkDate.getTime())
-    ? lastOkDate.toISOString()
-    : null;
+  const lastOkAt =
+    lastOkDate && Number.isFinite(lastOkDate.getTime()) ? lastOkDate.toISOString() : null;
   return {
     surface: input.surface,
     configured: input.configured,
