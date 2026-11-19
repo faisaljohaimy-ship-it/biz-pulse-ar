@@ -262,6 +262,18 @@ describe("normalizePublishedAt", () => {
     expect(normalizePublishedAt("2026-09-01T03:00:00+03:00", NOW)).toBe("2026-09-01T00:00:00.000Z");
   });
 
+  it("rejects calendar-overflowed dates instead of silently moving publication to the next month", () => {
+    for (const invalid of ["2026-02-29", "2026-02-30T00:00:00Z", "2026-04-31"]) {
+      expect(normalizePublishedAt(invalid, NOW), invalid).toBeNull();
+    }
+    expect(normalizePublishedAt("2024-02-29", NOW)).toBe("2024-02-29T00:00:00.000Z");
+    // A real timestamp crossing UTC midnight remains valid for its local calendar day.
+    expect(normalizePublishedAt("2026-09-01T23:30:00-08:00", NOW)).toBe("2026-09-02T07:30:00.000Z");
+    expect(
+      normalizeResearchResults([raw({ publishedAt: "2026-02-30" })], 1, NOW)[0]?.publishedAt,
+    ).toBeNull();
+  });
+
   it("يُسقط: null · ما ليس بشكل ISO · غير قابل للتحليل · بعد الغد", () => {
     expect(normalizePublishedAt(null, NOW)).toBeNull();
     expect(normalizePublishedAt("Oct 3", NOW)).toBeNull();
