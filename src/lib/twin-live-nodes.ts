@@ -6,7 +6,7 @@ type TwinValueNode = { id: string; value: string };
 
 /** Display missing values in the current locale, not as null, NaN or a fabricated zero. */
 export function twinValue(v: number | null | undefined, ar: boolean, suffix = ""): string {
-  return v == null || !Number.isFinite(v) ? unmeasuredLabel(ar) : String(v) + suffix;
+  return !Number.isFinite(v) ? unmeasuredLabel(ar) : String(v) + suffix;
 }
 
 /**
@@ -26,10 +26,7 @@ export function useLiveTwinNodes<T extends TwinValueNode>(
     // is not a measured number of assets, events or staff.
     // Keep signed/fractional execution velocity separate (it is a percentage).
     const measuredCount = (value: number | null | undefined) =>
-      twinValue(
-        typeof value === "number" && Number.isSafeInteger(value) && value >= 0 ? value : NaN,
-        ar,
-      );
+      twinValue(Number.isSafeInteger(value as number) && value! >= 0 ? value : NaN, ar);
     const optional = (value: number | null | undefined, id: string) =>
       value == null ? fallback(id) : measuredCount(value);
     const values: Record<string, string> = {
