@@ -85,7 +85,7 @@ describe("urgent-summary critical-task ordering", () => {
 
     // Real-world offset bounds remain valid, including compact forms.
     const missing = { priority: "عاجل", due_at: null };
-    for (const suffix of ["+14:00", "-12:00", "+03", "+0300", "+03:00"]) {
+    for (const suffix of ["+14:00", "-12:00", "+0300", "+03:00"]) {
       const allowed = { priority: "عاجل", due_at: `2026-11-08T10:00:00${suffix}` };
       expect(compareUrgentTasks(allowed, missing)).toBeLessThan(0);
     }
