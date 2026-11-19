@@ -64,10 +64,8 @@ export function isSessionError(error: unknown): boolean {
     const value = error as { status?: unknown; statusCode?: unknown } | null;
     // Some SDK envelopes expose both fields; a non-auth primary status must
     // not mask a numeric 401/403 in the secondary statusCode.
-    const status = value?.status;
-    if (status === 401 || status === 403) return true;
-    const statusCode = value?.statusCode;
-    return statusCode === 401 || statusCode === 403;
+    return [401, 403].includes(value?.status as number) ||
+      [401, 403].includes(value?.statusCode as number);
   } catch {
     // Error objects can expose hostile getters or proxies.
     return false;
