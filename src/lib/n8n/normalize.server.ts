@@ -88,12 +88,24 @@ function providerId(raw: string): string {
   return id.length > 0 ? id : "unknown";
 }
 
-const ISO_DATE_PREFIX = /^\d{4}-\d{2}-\d{2}/;
+const ISO_DATE_PREFIX = /^(\d{4})-(\d{2})-(\d{2})/;
 const ONE_DAY_MS = 86_400_000;
 
-/** ISO معياري أو `null`. تاريخٌ بعد الغد يُعدّ مختلَقًا فيُسقط. */
+/** ISO معياري أو `null`. Reject overflowed calendar days that Date.parse silently normalizes. */
 export function normalizePublishedAt(raw: string | null, nowMs: number): string | null {
-  if (raw === null || !ISO_DATE_PREFIX.test(raw)) return null;
+  if (raw === null) return null;
+  const date = ISO_DATE_PREFIX.exec(raw);
+  if (!date) return null;
+  const year = Number(date[1]);
+  const month = Number(date[2]);
+  const day = Number(date[3]);
+  const calendar = new Date(0);
+  calendar.setUTCFullYear(year, month - 1, day);
+  if (
+    calendar.getUTCFullYear() !== year ||
+    calendar.getUTCMonth() !== month - 1 ||
+    calendar.getUTCDate() !== day
+  ) return null;
   const ms = Date.parse(raw);
   if (!Number.isFinite(ms) || ms > nowMs + ONE_DAY_MS) return null;
   return new Date(ms).toISOString();
