@@ -14,7 +14,7 @@ function dueDateRank(value: string | null): number {
   // Malformed values must sort last instead of crashing the urgent-task panel.
   if (typeof value !== "string") return Number.MAX_SAFE_INTEGER;
   const match = value.match(
-    /^(\d{4}-\d{2}-\d{2})(?:[T ]((?:[01]\d|2[0-3]):\d{2}:\d{2}(?:\.\d+)?)(Z|[+-]\d{2}(?::?\d{2})?)?)?$/,
+    /^(\d{4}-\d{2}-\d{2})(?:[T ]((?:[01]\d|2[0-3]):\d{2}:\d{2}(?:\.\d+)?)(Z|[+-](?:(?:0\d|1[0-3])(?::?[0-5]\d)?|14(?::?00)?))?)?$/,
   );
   if (!match) return Number.MAX_SAFE_INTEGER;
   const calendarDate = new Date(`${match[1]}T00:00:00Z`);
@@ -24,7 +24,7 @@ function dueDateRank(value: string | null): number {
   ) {
     return Number.MAX_SAFE_INTEGER;
   }
-  // RFC 3339 hours stop at 23; Date.parse silently rolls 24:00 into the next day.
+  // Reject impossible UTC offsets (beyond ±14:00): Date.parse accepts +23:00\n  // and turns a malformed deadline into an earlier, high-priority task.\n  // RFC 3339 hours stop at 23; Date.parse silently rolls 24:00 into the next day.
   // Offset-free timestamps must not be interpreted in the host local zone.
   // Keep the same instant regardless of where the app or CI runner executes.
   const normalized = match[2] ? `${match[1]}T${match[2]}${match[3] ?? "Z"}` : match[1];
