@@ -63,6 +63,8 @@ export function advanceSadeedVoiceActivity(input: {
   // Pre-deadline speech candidates still receive their voice qualification grace.
   if (
     !Number.isFinite(startedAt + input.now) ||
+    (previous.candidateVoiceAt !== null && !Number.isFinite(previous.candidateVoiceAt)) ||
+    (previous.lastVoiceAt !== null && !Number.isFinite(previous.lastVoiceAt)) ||
     (!heardVoice && now >= noSpeechAt && (previous.candidateVoiceAt ?? now) >= noSpeechAt)
   ) {
     return { state: previous, decision: heardVoice ? "complete" : "no-speech" };
