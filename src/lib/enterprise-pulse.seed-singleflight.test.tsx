@@ -117,4 +117,37 @@ describe("Enterprise Pulse first-use seeding", () => {
       errorSpy.mockRestore();
     }
   });
+  it("defers seeding on missing or malformed exact counts, then retries", async () => {
+    harness.getUser.mockResolvedValue({ data: { user: { id: "pulse-unknown-count-test" } } });
+    harness.countKpis
+      .mockResolvedValueOnce({ count: null, error: null })
+      .mockResolvedValueOnce({ count: -1, error: null })
+      .mockResolvedValueOnce({ count: 0, error: null });
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    try {
+      const hook = renderHook(() => useEnterprisePulse());
+      await waitFor(() => expect(harness.countKpis).toHaveBeenCalledTimes(1));
+      await act(async () => {
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+      expect(harness.insert).not.toHaveBeenCalled();
+
+      await act(async () => {
+        harness.onChange?.();
+      });
+      await waitFor(() => expect(harness.countKpis).toHaveBeenCalledTimes(2));
+      expect(harness.insert).not.toHaveBeenCalled();
+
+      await act(async () => {
+        harness.onChange?.();
+      });
+      await waitFor(() => expect(harness.countKpis).toHaveBeenCalledTimes(3));
+      await waitFor(() => expect(harness.insert).toHaveBeenCalledTimes(4));
+      hook.unmount();
+    } finally {
+      warnSpy.mockRestore();
+    }
+  });
+
 });
