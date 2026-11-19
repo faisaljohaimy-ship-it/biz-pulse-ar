@@ -56,6 +56,11 @@ export function advanceSadeedVoiceActivity(input: {
   const config = input.config ?? SADEED_VOICE_ACTIVITY_DEFAULTS;
   const previous = input.state;
   const startedAt = previous.startedAt;
+  // An invalid audio clock must not bypass the silence and capture deadlines.
+  // Terminate rather than allowing NaN to enter the voice onset state.
+  if (!Number.isFinite(startedAt) || !Number.isFinite(input.now)) {
+    return { state: previous, decision: previous.heardVoice ? "complete" : "no-speech" };
+  }
   const now = Math.max(startedAt, input.now);
   const noSpeechAt = startedAt + config.noSpeechMs;
   let heardVoice = previous.heardVoice;
