@@ -585,7 +585,9 @@ for (const route of ROUTES) {
     // The browser resolves each stylesheet when it parses that link.
     // A <base> declared later cannot retroactively change an earlier fetch;
     // otherwise a healthy decoy under the later base can hide broken app CSS.
-    const baseLinks = [...activeMarkup.matchAll(/<base\b[^>]*>/gi)]
+    // A '>' inside a quoted base href is data, not the end of the <base> tag.
+    // Truncating it probes a different CSS URL and can reject a healthy release.
+    const baseLinks = [...activeMarkup.matchAll(/<base\b(?:[^>"']|"[^"]*"|'[^']*')*>/gi)]
       .map((match) => ({
         position: match.index,
         attrs: tagAttributes(match[0], 5),

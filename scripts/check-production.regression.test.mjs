@@ -1869,3 +1869,37 @@ test("retains delayed meta refresh after quoted angle bracket attribute", async 
   );
   assert.equal(await runFixture(html), null);
 });
+
+// Browsers do not end <base> at an angle bracket inside a quoted href.
+// A broken parser probes a different CSS URL and can reject healthy production.
+for (const quote of ['"', "'"]) {
+  const quoteKind = quote === '"' ? "double" : "single";
+  test(`resolves a quoted > within a ${quoteKind}-quoted base href`, async () => {
+    const html = normalPage.replace(
+      '<link rel="stylesheet" href="/assets/app.css">',
+      `<base href=${quote}/releases>2026/${quote}><link rel="stylesheet" href="assets/app.css">`,
+    );
+    const cssAssets = {
+      "https://offline.invalid/releases%3E2026/assets/app.css": { status: 200 },
+    };
+    assert.equal(
+      await runFixture(html, "text/html", 200, "text/css", "body {}", 200, undefined, cssAssets),
+      null,
+    );
+  });
+}
+
+test("does not let a decoy CSS file override a broken quoted-angle base target", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<base href="/releases>2026/"><link rel="stylesheet" href="assets/app.css">',
+  );
+  const cssAssets = {
+    "https://offline.invalid/releases%3E2026/assets/app.css": { status: 404 },
+    "https://offline.invalid/assets/app.css": { status: 200 },
+  };
+  assert.equal(
+    await runFixture(html, "text/html", 200, "text/css", "body {}", 200, undefined, cssAssets),
+    1,
+  );
+});
