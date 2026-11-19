@@ -230,5 +230,4 @@ describe("digital twin signal memo — locale regression", () => {
       ]);
     }
   });
-
 });
