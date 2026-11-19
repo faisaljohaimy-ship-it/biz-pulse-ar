@@ -17,11 +17,27 @@ describe("البصمة", () => {
   it("مستقرّة للمدخل نفسه ومختلفة لأيّ اختلاف", () => {
     const a = fingerprint("ip:1", "t1", "ما الحالة؟");
     expect(a).toBe(fingerprint("ip:1", "t1", "ما الحالة؟"));
-    expect(a).toMatch(/^[0-9a-f]{8}$/);
+    expect(a).toMatch(/^[0-9a-f]{24}$/);
     expect(fingerprint("ip:2", "t1", "ما الحالة؟")).not.toBe(a);
     expect(fingerprint("ip:1", "t2", "ما الحالة؟")).not.toBe(a);
     expect(fingerprint("ip:1", "t1", "ما الحالة")).not.toBe(a);
-    expect(fingerprint("ip:1", null, "")).toMatch(/^[0-9a-f]{8}$/);
+    expect(fingerprint("ip:1", null, "")).toMatch(/^[0-9a-f]{24}$/);
+  });
+  it("does not treat unrelated chat prompts with a historical 32-bit collision as duplicates", () => {
+    // These ordinary messages collided under the previous 8-character FNV key.
+    const first = fingerprint("user", "thread", "incident-1y26hib-170x1hd");
+    const second = fingerprint("user", "thread", "incident-1hb5j5i-1hlfa0l");
+    expect(first).not.toBe(second);
+    const releaseFirst = acquireRequest(first, 1_000);
+    expect(releaseFirst).not.toBeNull();
+    const releaseSecond = acquireRequest(second, 1_000);
+    expect(releaseSecond).not.toBeNull();
+    releaseFirst!();
+    releaseSecond!();
+  });
+
+  it("keeps argument boundaries distinct even when a message contains a NUL", () => {
+    expect(fingerprint("a\\u0000b", "c")).not.toBe(fingerprint("a", "b\\u0000c"));
   });
 });
 
