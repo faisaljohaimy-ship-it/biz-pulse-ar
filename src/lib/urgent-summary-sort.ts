@@ -24,7 +24,8 @@ function dueDateRank(value: string | null): number {
   ) {
     return Number.MAX_SAFE_INTEGER;
   }
-  // Reject impossible UTC offsets (beyond ±14:00): Date.parse accepts +23:00\n  // and turns a malformed deadline into an earlier, high-priority task.\n  // RFC 3339 hours stop at 23; Date.parse silently rolls 24:00 into the next day.
+  // Date.parse accepts impossible +23:00 offsets; the regex must reject them.
+  // RFC 3339 hours stop at 23; Date.parse silently rolls 24:00 into the next day.
   // Offset-free timestamps must not be interpreted in the host local zone.
   // Keep the same instant regardless of where the app or CI runner executes.
   const normalized = match[2] ? `${match[1]}T${match[2]}${match[3] ?? "Z"}` : match[1];
