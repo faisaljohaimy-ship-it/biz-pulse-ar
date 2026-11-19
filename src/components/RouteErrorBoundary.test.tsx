@@ -34,7 +34,8 @@ describe("RouteErrorBoundary error logging", () => {
   it("keeps sensitive SDK messages and stacks out of browser diagnostics", () => {
     const errorLog = vi.spyOn(console, "error").mockImplementation(() => {});
     const sensitiveFailure = new Error("Bearer fixture-secret-from-upstream");
-    sensitiveFailure.stack = "request to https://fixture.invalid/?token=fixture-secret-from-upstream";
+    sensitiveFailure.stack =
+      "request to https://fixture.invalid/?token=fixture-secret-from-upstream";
 
     render(<RouteErrorBoundary error={sensitiveFailure} reset={vi.fn()} routeLabel="twin" />);
 
