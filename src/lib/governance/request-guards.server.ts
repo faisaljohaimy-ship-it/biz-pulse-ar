@@ -49,6 +49,8 @@ function purgeStaleRequests(now: number): void {
  * (أحدث من `REQUEST_INFLIGHT_TTL_MS`).
  */
 export function acquireRequest(key: string, now = Date.now()): (() => void) | null {
+  // A bad clock must not replace an active dedupe lease or create an immortal one.
+  if (!Number.isFinite(now)) return null;
   const active = inflightRequests.get(key);
   if (active) {
     // Rebase rather than extending a live guard by the entire clock jump.
@@ -82,6 +84,8 @@ export function maxInflightModelCalls(
 }
 
 export function inflightModelCalls(now = Date.now()): number {
+  // Never expire live slots from an invalid clock sample.
+  if (!Number.isFinite(now)) return modelSlots.size;
   let live = 0;
   for (const [token, startedAt] of modelSlots) {
     if (now - startedAt >= MODEL_SLOT_TTL_MS) {
@@ -101,6 +105,8 @@ export function acquireModelSlot(
   now = Date.now(),
   env: Record<string, string | undefined> = process.env,
 ): (() => void) | null {
+  // Do not create a slot with NaN/Infinity: it could otherwise never expire.
+  if (!Number.isFinite(now)) return null;
   if (inflightModelCalls(now) >= maxInflightModelCalls(env)) return null;
   const token = Symbol("model-slot");
   modelSlots.set(token, now);
