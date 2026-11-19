@@ -269,8 +269,8 @@ function mapMemory(r: PulseMemoryRow): MemoryEntry {
     title_en: r.title_en,
     owner: r.owner,
     department: r.department,
-    due: r.due_at ?? new Date().toISOString(),
-    createdAt: r.created_at ?? new Date().toISOString(),
+    due: r.due_at ?? new Date().toJSON(),
+    createdAt: r.created_at ?? new Date().toJSON(),
     status: enumOr(
       r.status,
       ["open", "in_progress", "blocked", "done", "forgotten"] as const,
@@ -320,23 +320,23 @@ export function deriveAlerts(crises: CrisisPrediction[]): PulseAlert[] {
   // Source sort_order is not severity order. Rank all crises before taking five.
   // Keep the original array intact for realtime and other operational consumers.
   return crises
-    .filter(({ riskScore }) => validRiskScore(riskScore))
+    .filter((crisis) => validRiskScore(crisis.riskScore))
     .sort((a, b) => b.riskScore - a.riskScore)
     .slice(0, 5)
-    .map((c) => ({
-      id: c.id,
+    .map(({ id, riskScore, title_ar, title_en, owner, route }) => ({
+      id,
       severity:
-        c.riskScore >= 80
+        riskScore >= 80
           ? "critical"
-          : c.riskScore >= 65
+          : riskScore >= 65
             ? "high"
-            : c.riskScore >= 50
+            : riskScore >= 50
               ? "medium"
               : "low",
-      title_ar: c.title_ar,
-      title_en: c.title_en,
-      owner: c.owner,
-      route: c.route,
+      title_ar,
+      title_en,
+      owner,
+      route,
     }));
 }
 
@@ -344,8 +344,7 @@ export function deriveStatus(crises: CrisisPrediction[]): { status: PulseStatus;
   // Runtime API values may be null, booleans or numeric strings despite the
   // TypeScript number contract. Never coerce malformed telemetry into risk.
   const max = crises.reduce(
-    (m, { riskScore }) =>
-      validRiskScore(riskScore) && riskScore > m ? riskScore : m,
+    (m, { riskScore }) => (validRiskScore(riskScore) && riskScore > m ? riskScore : m),
     0,
   );
   return {
