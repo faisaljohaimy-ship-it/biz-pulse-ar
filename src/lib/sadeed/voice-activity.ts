@@ -60,21 +60,21 @@ export function advanceSadeedVoiceActivity(input: {
   const noSpeechAt = startedAt + config.noSpeechMs;
   const noSpeechTimedOut = now >= noSpeechAt;
   let heardVoice = previous.heardVoice;
+  let candidateVoiceAt = previous.candidateVoiceAt;
+  let lastVoiceAt = previous.lastVoiceAt;
   // Invalid clocks must not bypass deadlines or qualify untrusted audio frames.
   // Pre-deadline speech candidates still receive their voice qualification grace.
   if (
     !Number.isFinite(
-      input.now + noSpeechAt + (previous.candidateVoiceAt ?? 0) + (previous.lastVoiceAt ?? 0),
+      input.now + noSpeechAt + (candidateVoiceAt ?? 0) + (lastVoiceAt ?? 0),
     ) ||
-    (!heardVoice && noSpeechTimedOut && (previous.candidateVoiceAt ?? now) >= noSpeechAt)
+    (!heardVoice && noSpeechTimedOut && (candidateVoiceAt ?? now) >= noSpeechAt)
   ) {
     return { state: previous, decision: heardVoice ? "complete" : "no-speech" };
   }
 
-  let candidateVoiceAt = previous.candidateVoiceAt;
-  let lastVoiceAt = previous.lastVoiceAt;
-
-  if (Number.isFinite(input.rms) && Math.max(0, input.rms) >= config.rmsThreshold) {
+  // Negative or non-finite RMS samples cannot qualify as speech.
+  if (input.rms >= 0 && input.rms < Infinity && input.rms >= config.rmsThreshold) {
     candidateVoiceAt ??= now;
     if (heardVoice || now - candidateVoiceAt >= config.minimumVoiceMs) {
       heardVoice = true;
