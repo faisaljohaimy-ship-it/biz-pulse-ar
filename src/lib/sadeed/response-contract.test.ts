@@ -88,6 +88,26 @@ describe("Article 22 — scope lock", () => {
     }
   });
 
+  it("does not treat a generic report as an industrial-security override", () => {
+    // Previously, "report"/"تقرير" in IN_SCOPE overrode explicit weather/sports
+    // signals. These must refuse while reports about real incidents remain valid.
+    for (const question of [
+      "weather report",
+      "football match report",
+      "تقرير مباراة كرة القدم",
+    ]) {
+      expect(isInScope(question), question).toBe(false);
+    }
+    for (const question of [
+      "incident report",
+      "تقرير بلاغ حادث",
+      "weather incident report",
+      "أعطني تقرير الحالة الحالية",
+    ]) {
+      expect(isInScope(question), question).toBe(true);
+    }
+  });
+
   it("lets ambiguous text through to the model (high-precision blocking)", () => {
     // No off-domain signal, no in-domain keyword → pass to the model path.
     expect(isInScope("أعطني ملخص الوضع الحالي")).toBe(true);
