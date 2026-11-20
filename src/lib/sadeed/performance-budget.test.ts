@@ -50,6 +50,18 @@ describe("production performance budget build evidence", () => {
     expect(result.output).toContain("contains no JavaScript assets");
   });
 
+  it("rejects a zero-byte JavaScript placeholder instead of certifying an empty app bundle", () => {
+    const result = checkIsolatedBuild({ "assets/app.js": "" });
+    expect(result.status).not.toBe(0);
+    expect(result.output).toContain("contains only empty JavaScript assets");
+  });
+
+  it("rejects a build with multiple empty JavaScript assets", () => {
+    const result = checkIsolatedBuild({ "assets/app.js": "", "assets/chunk.mjs": "" });
+    expect(result.status).not.toBe(0);
+    expect(result.output).toContain("contains only empty JavaScript assets");
+  });
+
   it("accepts a real small JavaScript asset within all existing budget caps", () => {
     const result = checkIsolatedBuild({ "assets/app.js": "console.log('SADEED');" });
     expect(result.status).toBe(0);

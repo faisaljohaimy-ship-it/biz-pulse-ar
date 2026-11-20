@@ -28,6 +28,31 @@ describe("FR-19 freshness: do not certify future or stale readings", () => {
     expect(isFresh(evidenceAt(new Date(NOW - MAX_AGE).toISOString()))).toBe(true);
   });
 
+  it("rejects invalid freshness budgets rather than certifying arbitrarily old evidence", () => {
+    vi.spyOn(Date, "now").mockReturnValue(NOW);
+    const old = evidenceAt("2024-01-01T00:00:00.000Z");
+    for (const invalidBudget of [Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, NaN, -1]) {
+      expect(isFresh(old, invalidBudget)).toBe(false);
+      expect(isFresh(evidenceAt(new Date(NOW).toISOString()), invalidBudget)).toBe(false);
+    }
+    expect(isFresh(evidenceAt(new Date(NOW).toISOString()), 0)).toBe(true);
+  });
+
+  it("rejects non-finite or impossible wall clocks even with a valid observation", () => {
+    const recent = evidenceAt(new Date(NOW).toISOString());
+    const clock = vi.spyOn(Date, "now");
+    for (const invalidNow of [
+      Number.NaN,
+      Number.POSITIVE_INFINITY,
+      Number.NEGATIVE_INFINITY,
+      1e20,
+    ]) {
+      clock.mockReturnValue(invalidNow);
+      expect(isFresh(recent)).toBe(false);
+      expect(isFresh(recent, Number.POSITIVE_INFINITY)).toBe(false);
+    }
+  });
+
   it("rejects expired or malformed evidence without changing the existing budget", () => {
     vi.spyOn(Date, "now").mockReturnValue(NOW);
     expect(isFresh(evidenceAt(new Date(NOW - MAX_AGE - 1).toISOString()))).toBe(false);
@@ -69,6 +94,46 @@ describe("FR-19 evidence identity and timestamp validation", () => {
   it("does not certify an impossible observation as LIVE after Date.parse rolls it forward", () => {
     vi.spyOn(Date, "now").mockReturnValue(Date.parse("2026-03-02T10:00:00.000Z"));
     expect(isFresh(evidenceAt("2026-02-30T10:00:00.000Z"))).toBe(false);
+  });
+
+  it("refuses to certify missing or unrecognized evidence provenance kinds", () => {
+    vi.spyOn(Date, "now").mockReturnValue(NOW);
+    const valid = evidenceAt(new Date(NOW).toISOString());
+    // Runtime/JSON values must not impersonate trusted kinds via JS coercion.
+    const throwingKind = {
+      toString: () => {
+        throw Error("untrusted coercion");
+      },
+    };
+    for (const kind of [
+      undefined,
+      null,
+      "",
+      "unverified.generated",
+      123,
+      ["runtime.probe"],
+      ["db.query"],
+      { toString: () => "runtime.probe" },
+      throwingKind,
+      Symbol("runtime.probe"),
+    ]) {
+      const malformed = { ...valid, kind } as unknown as Evidence;
+      expect(hasEvidence(malformed)).toBe(false);
+      expect(isFresh(malformed)).toBe(false);
+    }
+    for (const kind of [
+      "db.query",
+      "runtime.probe",
+      "cert.public",
+      "audit.log",
+      "external.api",
+      "reference.builtin",
+      "derived.computed",
+      "human.attested",
+    ] as const) {
+      expect(hasEvidence({ ...valid, kind })).toBe(true);
+      expect(isFresh({ ...valid, kind })).toBe(true);
+    }
   });
 
   it("requires a nonblank source for both evidence and freshness", () => {

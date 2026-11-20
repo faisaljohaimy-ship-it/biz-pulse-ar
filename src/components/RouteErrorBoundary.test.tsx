@@ -22,19 +22,25 @@ describe("RouteErrorBoundary error logging", () => {
       <RouteErrorBoundary error="connection lost" reset={reset} routeLabel="twin" />,
     );
     expect(errorLog).toHaveBeenCalledTimes(1);
-    expect(errorLog).toHaveBeenCalledWith(
-      "[RouteErrorBoundary]",
-      expect.objectContaining({ route: "twin", message: "connection lost" }),
-    );
+    expect(errorLog).toHaveBeenCalledWith("[RouteErrorBoundary]", "twin");
 
     rerender(<RouteErrorBoundary error="connection lost" reset={reset} routeLabel="twin" />);
     expect(errorLog).toHaveBeenCalledTimes(1);
 
     rerender(<RouteErrorBoundary error="new failure" reset={reset} routeLabel="twin" />);
     expect(errorLog).toHaveBeenCalledTimes(2);
-    expect(errorLog).toHaveBeenLastCalledWith(
-      "[RouteErrorBoundary]",
-      expect.objectContaining({ route: "twin", message: "new failure" }),
-    );
+    expect(errorLog).toHaveBeenLastCalledWith("[RouteErrorBoundary]", "twin");
+  });
+  it("keeps sensitive SDK messages and stacks out of browser diagnostics", () => {
+    const errorLog = vi.spyOn(console, "error").mockImplementation(() => {});
+    const sensitiveFailure = new Error("Bearer fixture-secret-from-upstream");
+    sensitiveFailure.stack =
+      "request to https://fixture.invalid/?token=fixture-secret-from-upstream";
+
+    render(<RouteErrorBoundary error={sensitiveFailure} reset={vi.fn()} routeLabel="twin" />);
+
+    expect(errorLog).toHaveBeenCalledTimes(1);
+    expect(errorLog).toHaveBeenCalledWith("[RouteErrorBoundary]", "twin");
+    expect(JSON.stringify(errorLog.mock.calls)).not.toContain("fixture-secret-from-upstream");
   });
 });

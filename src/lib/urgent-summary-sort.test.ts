@@ -75,6 +75,22 @@ describe("urgent-summary critical-task ordering", () => {
     ).toEqual(["earliest-valid", "latest-valid"]);
   });
 
+  it("rejects impossible UTC offsets rather than promoting forged earlier deadlines", () => {
+    const valid = { priority: "عاجل", due_at: "2026-11-08T09:00:00Z" };
+    for (const suffix of ["+23:00", "-23:00", "+14:30", "-14:30"]) {
+      const invalid = { priority: "عاجل", due_at: `2026-11-08T10:00:00${suffix}` };
+      expect(compareUrgentTasks(valid, invalid)).toBeLessThan(0);
+      expect(compareUrgentTasks(invalid, valid)).toBeGreaterThan(0);
+    }
+
+    // Real-world offset bounds remain valid, including compact forms.
+    const missing = { priority: "عاجل", due_at: null };
+    for (const suffix of ["+14:00", "-12:00", "+0300", "+03:00"]) {
+      const allowed = { priority: "عاجل", due_at: `2026-11-08T10:00:00${suffix}` };
+      expect(compareUrgentTasks(allowed, missing)).toBeLessThan(0);
+    }
+  });
+
   it("orders offset-free and explicit-zone deadlines consistently in Riyadh and UTC", () => {
     const previous = process.env.TZ;
     try {
