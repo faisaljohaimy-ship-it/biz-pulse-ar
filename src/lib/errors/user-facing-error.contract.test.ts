@@ -137,15 +137,11 @@ describe("لا تصل عبارة مصادقة إلى الشاشة", () => {
 
   it("uses a valid secondary auth status when the primary status getter throws", () => {
     for (const statusCode of [401, 403]) {
-      const failure = Object.defineProperty(
-        { statusCode, message: "Request failed" },
-        "status",
-        {
-          get() {
-            throw new Error("primary status getter is unavailable");
-          },
+      const failure = Object.defineProperty({ statusCode, message: "Request failed" }, "status", {
+        get() {
+          throw new Error("primary status getter is unavailable");
         },
-      );
+      });
       expect(isSessionError(failure)).toBe(true);
       expect(userFacingError(failure)).toBe(SESSION_ERROR_AR);
     }
