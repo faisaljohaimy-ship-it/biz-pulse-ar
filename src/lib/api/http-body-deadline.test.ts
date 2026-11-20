@@ -173,15 +173,19 @@ describe("httpJson response body deadline", () => {
     });
   });
 
-  it("preserves upstream error envelopes", async () => {
+  it("preserves upstream error status without exposing the untrusted body", async () => {
     globalThis.fetch = (async () =>
       new Response(JSON.stringify({ reason: "busy" }), { status: 429 })) as typeof fetch;
 
-    await expect(httpJson("https://example.invalid/busy", { retries: 0 })).rejects.toMatchObject({
+    const failure = await httpJson("https://example.invalid/busy", { retries: 0 }).catch(
+      (error: unknown) => error,
+    );
+    expect(failure).toMatchObject({
       code: "rate_limited",
       status: 429,
-      details: { body: { reason: "busy" } },
+      details: { upstreamStatus: 429 },
     });
+    expect(JSON.stringify(failure)).not.toContain("busy");
   });
 
   it("aborts a stalled body promptly when its caller cancels", async () => {
