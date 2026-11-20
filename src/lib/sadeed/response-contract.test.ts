@@ -91,11 +91,7 @@ describe("Article 22 — scope lock", () => {
   it("does not treat a generic report as an industrial-security override", () => {
     // Previously, "report"/"تقرير" in IN_SCOPE overrode explicit weather/sports
     // signals. These must refuse while reports about real incidents remain valid.
-    for (const question of [
-      "weather report",
-      "football match report",
-      "تقرير مباراة كرة القدم",
-    ]) {
+    for (const question of ["weather report", "football match report", "تقرير مباراة كرة القدم"]) {
       expect(isInScope(question), question).toBe(false);
     }
     for (const question of [
