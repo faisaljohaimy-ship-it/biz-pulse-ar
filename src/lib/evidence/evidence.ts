@@ -114,8 +114,7 @@ export function measured<T>(
   }
   // `hasEvidence` مُحدِّدُ نوع، فنفيُه على `Evidence` يضيّق إلى `never`.
   // فيُلفّ في دالّةٍ تعيد منطقيًّا خالصًا — الفحص نفسه بلا تضييق.
-  const valid = (e: Evidence): boolean => hasEvidence(e);
-  const bad = evidence.find((e) => !valid(e));
+  const bad = evidence.find((e): boolean => !hasEvidence(e));
   if (bad) {
     throw new Error(`دليل FR-19 غير صالح: ${bad.source}`);
   }
@@ -124,7 +123,7 @@ export function measured<T>(
 
 /** يبني غيابًا يحمل سببه. **يرمي على سببٍ فارغ.** */
 export function unmeasured(reason: string): UnmeasuredValue {
-  if (reason.trim().length === 0) {
+  if (!reason.trim()) {
     throw new Error("غياب بلا سبب");
   }
   return { measured: false, reason };
@@ -141,12 +140,12 @@ export function isMeasured<T>(g: Grounded<T>): g is GroundedValue<T> {
  * المقيس، فلا سبيل إلى أن يصير الغياب رقمًا في الطريق إلى الشاشة.
  */
 export function displayOf<T>(g: Grounded<T>, format: (v: T) => string): string {
-  return isMeasured(g) ? format(g.value) : UNMEASURED_AR;
+  return g.measured ? format(g.value) : UNMEASURED_AR;
 }
 
 /** القيمة إن قِيست، وإلا البديل — لحسابٍ داخليّ لا لعرض. */
 export function valueOr<T>(g: Grounded<T>, fallback: T): T {
-  return isMeasured(g) ? g.value : fallback;
+  return g.measured ? g.value : fallback;
 }
 
 /**
@@ -157,7 +156,7 @@ export function valueOr<T>(g: Grounded<T>, fallback: T): T {
  * يُرسم له رمزٌ باهتٌ يُقرأ قياسًا ضعيفًا وهو لا قياس.
  */
 export function badgeEvidenceOf<T>(g: Grounded<T>): Evidence | null {
-  return isMeasured(g) ? (g.evidence[0] ?? null) : null;
+  return g.measured ? (g.evidence[0] ?? null) : null;
 }
 
 /**
