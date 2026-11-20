@@ -55,22 +55,6 @@ export function advanceSadeedVoiceActivity(input: {
 } {
   const config = input.config ?? SADEED_VOICE_ACTIVITY_DEFAULTS;
   const previous = input.state;
-  // Invalid thresholds must not qualify a single noise spike as speech or
-  // disable capture deadlines. Keep prior state and fail closed.
-  if (
-    !Number.isFinite(config.rmsThreshold) ||
-    config.rmsThreshold <= 0 ||
-    !Number.isFinite(config.minimumVoiceMs) ||
-    config.minimumVoiceMs <= 0 ||
-    !Number.isFinite(config.silenceMs) ||
-    config.silenceMs <= 0 ||
-    !Number.isFinite(config.noSpeechMs) ||
-    config.noSpeechMs <= 0 ||
-    !Number.isFinite(config.maximumCaptureMs) ||
-    config.maximumCaptureMs <= 0
-  ) {
-    return { state: previous, decision: previous.heardVoice ? "complete" : "no-speech" };
-  }
   const startedAt = previous.startedAt;
   const now = Math.max(startedAt, input.now);
   const noSpeechAt = startedAt + config.noSpeechMs;
@@ -80,7 +64,10 @@ export function advanceSadeedVoiceActivity(input: {
   let lastVoiceAt = previous.lastVoiceAt;
   // Invalid clocks must not bypass deadlines or qualify untrusted audio frames.
   // Pre-deadline speech candidates still receive their voice qualification grace.
+  // Every threshold is required to be positive and finite. Reuse the existing
+  // fail-closed branch to keep the client bundle inside its fixed size budget.
   if (
+    Object.values(config).some((value) => !(value > 0 && value < Infinity)) ||
     !Number.isFinite(input.now + noSpeechAt + (candidateVoiceAt ?? 0) + (lastVoiceAt ?? 0)) ||
     (!heardVoice && noSpeechTimedOut && (candidateVoiceAt ?? now) >= noSpeechAt)
   ) {
