@@ -81,8 +81,7 @@ const VALID_EVIDENCE_KIND =
 
 export function hasEvidence(e: Evidence | null | undefined): e is Evidence {
   if (
-    !e ||
-    typeof e.kind !== "string" ||
+    typeof e?.kind !== "string" ||
     !VALID_EVIDENCE_KIND.test(e.kind) ||
     typeof e.source !== "string" ||
     !e.source.trim() ||
@@ -95,9 +94,8 @@ export function hasEvidence(e: Evidence | null | undefined): e is Evidence {
       value,
     );
   return (
-    !!match &&
-    !Number.isNaN(Date.parse(value)) &&
-    new Date(value.split("T")[0]).getUTCDate() === +match[1]
+    isFinite(Date.parse(value)) &&
+    new Date(value.split("T")[0]).getUTCDate() === +match?.[1]
   );
 }
 
