@@ -311,7 +311,7 @@ function decodeMetaAttribute(value) {
     // legacy names (such as &amp or &copy) also decode without a semicolon
     // unless followed by an ASCII alphanumeric or '='; other names require ';'.
     // Mixed-case unknown &CoPy; remains literal, never a CSS decoy.
-    /&(?:#([xX][0-9a-fA-F]+|\d+);?|(?:amp|AMP|quot|QUOT|lt|LT|gt|GT|copy|COPY|reg|REG|nbsp)(?:;|(?![A-Za-z0-9=]))|(?:semi|Tab|NewLine|sol|colon|period|apos);)/g,
+    /&(?:#([xX][0-9a-fA-F]+|\d+);?|(?:amp|AMP|quot|QUOT|lt|LT|gt|GT|copy|COPY|reg|REG|nbsp)(?:;|(?![A-Za-z0-9=]))|(?:semi|Tab|NewLine|sol|bsol|colon|period|apos);)/g,
     (entity, numeric) => {
       if (!numeric) {
         const names = {
@@ -320,6 +320,8 @@ function decodeMetaAttribute(value) {
           tab: "\t",
           newline: "\n",
           sol: "/",
+          // HTML &bsol; is a backslash; WHATWG URL may normalize it into a slash.
+          bsol: "\\",
           colon: ":",
           period: ".",
           // Browsers decode these named references inside quoted HTML hrefs.
