@@ -56,6 +56,8 @@ const canon = (xs: readonly string[], upper: boolean): string =>
     ),
   )
     .sort()
+    // JSON quoting escapes embedded separator controls before joining the canonical items.
+    .map((item) => JSON.stringify(item))
     .join("\u0001");
 
 /** مفتاح الموجز المعياري. نصٌّ واحد ثابت الصياغة؛ لا يُسجَّل. */
