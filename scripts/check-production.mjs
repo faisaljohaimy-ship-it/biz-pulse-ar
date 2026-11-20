@@ -65,6 +65,8 @@ if (
       return (
         resolved.origin !== ROUTE_VALIDATION_ORIGIN ||
         resolved.hash !== "" ||
+        // Encoded separators can be decoded into a different route downstream.
+        /%(?:2f|5c)/i.test(resolved.pathname) ||
         resolved.pathname + resolved.search !== route
       );
     } catch {
