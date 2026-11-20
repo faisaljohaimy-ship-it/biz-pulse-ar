@@ -105,8 +105,9 @@ const IN_SCOPE = [
   "بوابة",
   "gate",
   // Reporting & platform
-  "تقرير",
-  "report",
+  // A bare "report" is not industrial-security evidence: "weather report"
+  // or "football match report" must still trigger an explicit off-domain veto.
+  // Report-only requests remain allowed by default when no off-domain term exists.
   "مؤشر",
   "kpi",
   "لوحة",
