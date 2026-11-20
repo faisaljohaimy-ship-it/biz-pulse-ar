@@ -1437,6 +1437,9 @@ for (const routeSetting of [
   "/sec/twin#overview", // Fragment silently drops the expected route suffix.
   "/sec/twin/../..", // URL normalization makes this a probe of "/".
   "/sec/%2e%2e/", // Percent-encoded dot segments also normalize to "/".
+  "/sec%2Ftwin", // Downstream decoding can change the probed route to /sec/twin.
+  "/sec%5Ctwin", // Encoded backslash is an ambiguous route separator.
+  "/sec%2Ftwin?mode=demo", // Queries must not disguise encoded path separators.
 ]) {
   test(`rejects empty or unsafe production ROUTES=${JSON.stringify(routeSetting)} before requests`, async () => {
     const halt = new Error("invalid route configuration");
