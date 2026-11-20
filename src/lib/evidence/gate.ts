@@ -102,8 +102,7 @@ export function hasEvidence(e: Evidence | null | undefined): e is Evidence {
       value,
     );
   return (
-    isFinite(Date.parse(value)) &&
-    new Date(value.split("T")[0]).getUTCDate() === +(match?.[1] ?? 0)
+    !isNaN(Date.parse(value)) && new Date(value.split("T")[0]).getUTCDate() === +(match?.[1] ?? 0)
   );
 }
 
