@@ -148,6 +148,10 @@ export function isPublicHostname(host: string): boolean {
 // eslint-disable-next-line no-control-regex -- الغرض رفض محارف التحكّم صراحةً
 const FORBIDDEN_RAW = /[\s\u0000-\u001f\u007f-\u009f\u200b-\u200f\u2028\u2029\u2060\ufeff\\"'`<>]/u;
 
+// URL/IDNA silently removes some default-ignorable characters (soft hyphen, CGJ, variation selectors).
+// Reject raw invisible hosts rather than upgrading them into a trusted source tier.
+const FORBIDDEN_IGNORABLE = /\p{Default_Ignorable_Code_Point}/u;
+
 export interface SafeUrl {
   /** العنوان بصيغته المعيارية بلا شظية `#…`. */
   readonly href: string;
@@ -161,7 +165,7 @@ export function filterUrl(raw: unknown): SafeUrl | null {
   if (typeof raw !== "string") return null;
   if (raw.length === 0 || raw.length > MAX_URL_CHARS) return null;
   if (!/^https:\/\//i.test(raw)) return null;
-  if (FORBIDDEN_RAW.test(raw)) return null;
+  if (FORBIDDEN_RAW.test(raw) || FORBIDDEN_IGNORABLE.test(raw)) return null;
   let u: URL;
   try {
     u = new URL(raw);
