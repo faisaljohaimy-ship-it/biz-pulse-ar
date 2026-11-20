@@ -5,8 +5,7 @@ import { httpFetch, httpJson } from "./http.server";
 
 const originalFetch = globalThis.fetch;
 const privateMarker = "synthetic-private-backend-token-for-regression";
-const sensitiveUrl =
-  `https://service-user:${privateMarker}@example.invalid/data?api_key=${privateMarker}#${privateMarker}`;
+const sensitiveUrl = `https://service-user:${privateMarker}@example.invalid/data?api_key=${privateMarker}#${privateMarker}`;
 
 afterEach(() => {
   globalThis.fetch = originalFetch;
@@ -56,8 +55,7 @@ describe("outbound HTTP failure envelopes do not expose untrusted diagnostics", 
     expect((callerFailure as ApiError).code).toBe("upstream_timeout");
     expect(JSON.stringify(toApiErrorShape(callerFailure))).not.toContain(privateMarker);
 
-    globalThis.fetch = (async (_input, init) =>
-      new Promise<Response>((_resolve, reject) => {
+    globalThis.fetch = (async (_input, init) => new Promise<Response>((_resolve, reject) => {
         init?.signal?.addEventListener(
           "abort",
           () => reject(Object.assign(new Error("aborted"), { name: "AbortError" })),
