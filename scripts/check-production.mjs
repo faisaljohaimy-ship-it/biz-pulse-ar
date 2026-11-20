@@ -35,6 +35,10 @@ try {
     parsedBase.pathname !== "/" ||
     parsedBase.search !== "" ||
     parsedBase.hash !== "" ||
+    // WHATWG URL silently drops tabs/newlines and treats backslashes as slashes.
+    // Reject ambiguous raw origins before certifying a different host.
+    /[\u0000-\u001f\u007f]/.test(requestedBase) ||
+    requestedBase.includes("\\") ||
     requestedBase.includes("?") ||
     requestedBase.includes("#")
   ) {
