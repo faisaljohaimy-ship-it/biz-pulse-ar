@@ -60,20 +60,15 @@ export function userFacingError(error: unknown): string {
 /** Session errors can arrive as sanitized numeric HTTP statuses without auth keywords. */
 export function isSessionError(error: unknown): boolean {
   if (SECRET_SHAPED.test(readableErrorMessage(error))) return true;
-  try {
-    const value = error as { status?: unknown; statusCode?: unknown } | null;
-    // Some SDK envelopes expose both fields; a non-auth primary status must
-    // not mask a numeric 401/403 in the secondary statusCode.
-    // A broken primary status getter must not hide a valid secondary HTTP
-    // statusCode supplied by an SDK envelope.
+  const value = error as { status?: unknown; statusCode?: unknown } | null;
+  // A broken SDK field must not mask the independent status field, and
+  // neither a throwing getter nor a proxy may crash the error boundary.
+  for (const field of ["status", "statusCode"] as const) {
     try {
-      if ([401, 403].includes(value?.status as number)) return true;
+      if ([401, 403].includes(value?.[field] as number)) return true;
     } catch {
-      // Keep checking the independent secondary field.
+      // Continue to the other field; do not coerce non-numeric HTTP codes.
     }
-    return [401, 403].includes(value?.statusCode as number);
-  } catch {
-    // Error objects can expose hostile getters or proxies.
-    return false;
   }
+  return false;
 }
