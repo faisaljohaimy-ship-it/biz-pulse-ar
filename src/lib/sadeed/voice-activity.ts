@@ -69,7 +69,9 @@ export function advanceSadeedVoiceActivity(input: {
   // express that JS rule to TypeScript without growing the client bundle.
   if (
     Object.values(config).some((value) => !(value > 0 && value < Infinity)) ||
-    !Number.isFinite(input.now + noSpeechAt + (candidateVoiceAt as number) + (lastVoiceAt as number)) ||
+    !Number.isFinite(
+      input.now + noSpeechAt + (candidateVoiceAt as number) + (lastVoiceAt as number),
+    ) ||
     (!heardVoice && noSpeechTimedOut && (candidateVoiceAt ?? now) >= noSpeechAt)
   ) {
     return { state: previous, decision: heardVoice ? "complete" : "no-speech" };
