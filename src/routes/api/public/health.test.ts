@@ -127,7 +127,6 @@ describe("فحص القاعدة لا يعلق", () => {
   }, 10_000);
 });
 
-
 describe("anonymous health diagnostics never expose backend error messages", () => {
   const privateMarker = "PRIVATE_BACKEND_DETAIL_DO_NOT_EXPORT";
 
