@@ -55,6 +55,22 @@ export function advanceSadeedVoiceActivity(input: {
 } {
   const config = input.config ?? SADEED_VOICE_ACTIVITY_DEFAULTS;
   const previous = input.state;
+  // Invalid thresholds must not qualify a single noise spike as speech or
+  // disable capture deadlines. Keep prior state and fail closed.
+  if (
+    !Number.isFinite(config.rmsThreshold) ||
+    config.rmsThreshold <= 0 ||
+    !Number.isFinite(config.minimumVoiceMs) ||
+    config.minimumVoiceMs <= 0 ||
+    !Number.isFinite(config.silenceMs) ||
+    config.silenceMs <= 0 ||
+    !Number.isFinite(config.noSpeechMs) ||
+    config.noSpeechMs <= 0 ||
+    !Number.isFinite(config.maximumCaptureMs) ||
+    config.maximumCaptureMs <= 0
+  ) {
+    return { state: previous, decision: previous.heardVoice ? "complete" : "no-speech" };
+  }
   const startedAt = previous.startedAt;
   const now = Math.max(startedAt, input.now);
   const noSpeechAt = startedAt + config.noSpeechMs;
