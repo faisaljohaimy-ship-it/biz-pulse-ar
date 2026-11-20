@@ -111,12 +111,10 @@ export function tickerLoop(
   viewWidth: number,
   speed: number = TICKER_PX_PER_S,
 ): TickerLoop | null {
-  if (!(copyWidth > 0) || !(speed > 0) || !Number.isFinite(viewWidth)) return null;
   const seconds = copyWidth / speed;
-  const copies = Math.max(2, Math.ceil(Math.max(0, viewWidth) / copyWidth) + 1);
-  // Invalid/overflowed DOM metrics must never become CSS animation durations
-  // or an infinite number of duplicate ticker items.
-  return Number.isFinite(seconds) && seconds > 0 && Number.isSafeInteger(copies)
+  const copies = Math.max(2, Math.ceil(viewWidth / copyWidth) + 1);
+  // Keep the ticker static for invalid metrics or excessive DOM duplication.
+  return speed > 0 && viewWidth >= 0 && seconds > 0 && seconds < Infinity && copies < 65
     ? { seconds, copies }
     : null;
 }

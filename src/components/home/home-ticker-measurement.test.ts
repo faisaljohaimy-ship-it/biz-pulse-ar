@@ -14,10 +14,17 @@ describe("tickerLoop measurement guards", () => {
     expect(tickerLoop(copy, view, speed)).toBeNull();
   });
 
-  it("still returns stable finite timing and sufficient copies for real measurements", () => {
+  it("keeps finite timing for normal measurements", () => {
     expect(tickerLoop(100, 300, 50)).toEqual({ seconds: 2, copies: 4 });
     expect(tickerLoop(100, 0, 50)).toEqual({ seconds: 2, copies: 2 });
     expect(tickerLoop(0, 300, 50)).toBeNull();
     expect(tickerLoop(100, 300, 0)).toBeNull();
+  });
+
+  it("caps duplicate lists at 64 and rejects negative finite view widths", () => {
+    expect(tickerLoop(1, 63, 1)).toEqual({ seconds: 1, copies: 64 });
+    expect(tickerLoop(1, 64, 1)).toBeNull();
+    expect(tickerLoop(1, 1e9, 1)).toBeNull();
+    expect(tickerLoop(100, -1, 50)).toBeNull();
   });
 });
