@@ -93,7 +93,8 @@ const ONE_DAY_MS = 86_400_000;
 
 /** ISO معياري أو `null`. Reject overflowed calendar days that Date.parse silently normalizes. */
 export function normalizePublishedAt(raw: string | null, nowMs: number): string | null {
-  if (raw === null) return null;
+  // An invalid clock cannot establish that remote publication metadata is not from the future.
+  if (raw === null || !Number.isFinite(nowMs)) return null;
   const date = ISO_DATE_PREFIX.exec(raw);
   if (!date) return null;
   const year = Number(date[1]);
