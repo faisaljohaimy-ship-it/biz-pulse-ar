@@ -28,6 +28,31 @@ describe("FR-19 freshness: do not certify future or stale readings", () => {
     expect(isFresh(evidenceAt(new Date(NOW - MAX_AGE).toISOString()))).toBe(true);
   });
 
+  it("rejects invalid freshness budgets rather than certifying arbitrarily old evidence", () => {
+    vi.spyOn(Date, "now").mockReturnValue(NOW);
+    const old = evidenceAt("2024-01-01T00:00:00.000Z");
+    for (const invalidBudget of [Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, NaN, -1]) {
+      expect(isFresh(old, invalidBudget)).toBe(false);
+      expect(isFresh(evidenceAt(new Date(NOW).toISOString()), invalidBudget)).toBe(false);
+    }
+    expect(isFresh(evidenceAt(new Date(NOW).toISOString()), 0)).toBe(true);
+  });
+
+  it("rejects non-finite or impossible wall clocks even with a valid observation", () => {
+    const recent = evidenceAt(new Date(NOW).toISOString());
+    const clock = vi.spyOn(Date, "now");
+    for (const invalidNow of [
+      Number.NaN,
+      Number.POSITIVE_INFINITY,
+      Number.NEGATIVE_INFINITY,
+      1e20,
+    ]) {
+      clock.mockReturnValue(invalidNow);
+      expect(isFresh(recent)).toBe(false);
+      expect(isFresh(recent, Number.POSITIVE_INFINITY)).toBe(false);
+    }
+  });
+
   it("rejects expired or malformed evidence without changing the existing budget", () => {
     vi.spyOn(Date, "now").mockReturnValue(NOW);
     expect(isFresh(evidenceAt(new Date(NOW - MAX_AGE - 1).toISOString()))).toBe(false);
