@@ -49,10 +49,19 @@ export const Route = createFileRoute("/api/public/health")({
             // مهلةٌ صلبة (VIBE 5.1): قاعدةٌ تقبل الاتصال ولا تجيب كانت تعلّق فحص
             // الصحّة نفسه — فلا يرى المراقب «down» بل انقطاعًا.
             let timer: ReturnType<typeof setTimeout> | undefined;
+            const controller = new AbortController();
+            const query = client
+              .from("organizations")
+              .select("id", { count: "exact", head: true })
+              .limit(1)
+              .abortSignal(controller.signal);
             const probe = await Promise.race([
-              client.from("organizations").select("id", { count: "exact", head: true }).limit(1),
+              query,
               new Promise<"timeout">((resolve) => {
-                timer = setTimeout(() => resolve("timeout"), HEALTH_DB_DEADLINE_MS);
+                timer = setTimeout(() => {
+                  controller.abort();
+                  resolve("timeout");
+                }, HEALTH_DB_DEADLINE_MS);
               }),
             ]).finally(() => clearTimeout(timer));
             const latency = Date.now() - t0;

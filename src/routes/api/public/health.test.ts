@@ -8,7 +8,12 @@ import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 vi.stubEnv("SUPABASE_URL", "https://stub.invalid");
 vi.stubEnv("SUPABASE_PUBLISHABLE_KEY", "sb_publishable_stub");
 
-const db = vi.hoisted(() => ({ hang: false, errorMessage: "", throwMessage: "" }));
+const db = vi.hoisted(() => ({
+  hang: false,
+  errorMessage: "",
+  throwMessage: "",
+  signal: null as AbortSignal | null,
+}));
 
 vi.mock("@supabase/supabase-js", () => {
   const chain: unknown = new Proxy(() => chain, {
@@ -16,6 +21,12 @@ vi.mock("@supabase/supabase-js", () => {
       if (prop === "then") {
         return (resolve: (v: unknown) => unknown) => {
           if (!db.hang) resolve({ error: db.errorMessage ? { message: db.errorMessage } : null });
+        };
+      }
+      if (prop === "abortSignal") {
+        return (signal: AbortSignal) => {
+          db.signal = signal;
+          return chain;
         };
       }
       return () => chain;
@@ -74,6 +85,7 @@ beforeEach(() => {
   gate.unavailable = false;
   gate.state = "closed";
   db.hang = false;
+  db.signal = null;
   db.errorMessage = "";
   db.throwMessage = "";
   gate.throwMessage = "";
@@ -86,6 +98,8 @@ describe("مخزن حدّ المعدّل في فحص الصحّة", () => {
     expect(body.subsystems.rate_limit_storage.status).toBe("ok");
     expect(body.subsystems.rate_limit_storage.detail).toContain("breaker=closed");
     expect(body.subsystems.db.status).toBe("ok");
+    expect(db.signal).toBeInstanceOf(AbortSignal);
+    expect(db.signal?.aborted).toBe(false);
   });
 
   it("المخزن ساقط والقاطع مفتوح ⇐ down باسمه، والحالة الكلّية 503", async () => {
@@ -122,6 +136,8 @@ describe("فحص القاعدة لا يعلق", () => {
     const elapsed = Date.now() - t0;
     expect(res.status).toBe(503);
     expect(body.subsystems.db).toMatchObject({ status: "down", detail: "timeout" });
+    expect(db.signal).toBeInstanceOf(AbortSignal);
+    expect(db.signal?.aborted).toBe(true);
     expect(elapsed).toBeGreaterThanOrEqual(deadline - 50);
     expect(elapsed).toBeLessThan(deadline + 1_500);
   }, 10_000);
