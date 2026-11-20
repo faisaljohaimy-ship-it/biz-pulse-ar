@@ -100,11 +100,22 @@ describe("FR-19 evidence identity and timestamp validation", () => {
     vi.spyOn(Date, "now").mockReturnValue(NOW);
     const valid = evidenceAt(new Date(NOW).toISOString());
     // Runtime/JSON values must not impersonate trusted kinds via JS coercion.
-    const throwingKind = { toString: () => { throw Error("untrusted coercion"); } };
+    const throwingKind = {
+      toString: () => {
+        throw Error("untrusted coercion");
+      },
+    };
     for (const kind of [
-      undefined, null, "", "unverified.generated", 123,
-      ["runtime.probe"], ["db.query"], { toString: () => "runtime.probe" },
-      throwingKind, Symbol("runtime.probe"),
+      undefined,
+      null,
+      "",
+      "unverified.generated",
+      123,
+      ["runtime.probe"],
+      ["db.query"],
+      { toString: () => "runtime.probe" },
+      throwingKind,
+      Symbol("runtime.probe"),
     ]) {
       const malformed = { ...valid, kind } as unknown as Evidence;
       expect(hasEvidence(malformed)).toBe(false);
