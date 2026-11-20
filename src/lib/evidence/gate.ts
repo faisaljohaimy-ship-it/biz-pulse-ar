@@ -91,15 +91,12 @@ export function hasEvidence(e: Evidence | null | undefined): e is Evidence {
 
 /** Freshness gate: reject stale, invalid, and future-dated evidence. */
 export function isFresh(e: Evidence, maxAgeMs = 5 * 60_000): boolean {
-  // An infinite budget used to certify arbitrarily old evidence as LIVE.
-  // Never accept an invalid freshness policy or an invalid wall clock.
-  if (!hasEvidence(e) || !Number.isFinite(maxAgeMs) || maxAgeMs < 0) return false;
+  if (!hasEvidence(e)) return false;
   const now = Date.now();
-  if (!Number.isFinite(now) || Math.abs(now) > 8.64e15) return false;
-  const t = Date.parse(e.observedAt);
-  const ageMs = now - t;
-  // Future timestamps and stale readings must both fail closed.
-  return Number.isFinite(ageMs) && ageMs >= 0 && ageMs <= maxAgeMs;
+  const ageMs = now - Date.parse(e.observedAt);
+  // A non-finite budget or an impossible wall clock must never certify LIVE.
+  // Nonnegative age and finite budget already reject invalid negative inputs.
+  return ageMs >= 0 && ageMs <= maxAgeMs && maxAgeMs < Infinity && now <= 8.64e15;
 }
 
 /**
