@@ -76,21 +76,13 @@ export interface Evidence {
  */
 // Evidence can cross a JSON/runtime boundary where TypeScript's union is not enforced.
 // An unknown or missing provenance class must not qualify a value for a LIVE badge.
-const VALID_EVIDENCE_KINDS = new Set<string>([
-  "db.query",
-  "runtime.probe",
-  "cert.public",
-  "audit.log",
-  "external.api",
-  "reference.builtin",
-  "derived.computed",
-  "human.attested",
-]);
+const VALID_EVIDENCE_KIND =
+  /^(?:db\.query|runtime\.probe|cert\.public|audit\.log|external\.api|reference\.builtin|derived\.computed|human\.attested)$/;
 
 export function hasEvidence(e: Evidence | null | undefined): e is Evidence {
   if (
     !e ||
-    !VALID_EVIDENCE_KINDS.has(e.kind) ||
+    !VALID_EVIDENCE_KIND.test(e.kind) ||
     typeof e.source !== "string" ||
     !e.source.trim() ||
     typeof e.observedAt !== "string"
