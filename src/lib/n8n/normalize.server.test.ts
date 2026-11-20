@@ -363,6 +363,19 @@ describe("normalizeResearchResults", () => {
     expect(normalizeResearchResults(items, 2, NOW)).toHaveLength(2);
   });
 
+  it("rejects above-contract result counts instead of returning more than five results", () => {
+    const items = Array.from({ length: 7 }, (_, i) =>
+      raw({ url: `https://source${i}.example.com/${i}`, title: String(i) }),
+    );
+    // The downstream normalizer must enforce the same 1..5 input contract
+    // even if an unexpected runtime caller bypasses earlier schema checks.
+    for (const invalidLimit of [6, 7, 500, Number.MAX_SAFE_INTEGER]) {
+      expect(normalizeResearchResults(items, invalidLimit, NOW), String(invalidLimit)).toEqual([]);
+    }
+    expect(normalizeResearchResults(items, 5, NOW)).toHaveLength(5);
+    expect(normalizeResearchResults(items, 1, NOW)).toHaveLength(1);
+  });
+
   it("قائمة فارغة ⇒ فارغة", () => {
     expect(normalizeResearchResults([], 5, NOW)).toEqual([]);
   });
