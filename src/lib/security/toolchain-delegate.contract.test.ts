@@ -861,15 +861,15 @@ describe("التصدير من HEAD بقراءة blobs خام — فشل مغلق
   });
 
   const binaryCases: Array<[string, Buffer]> = [
-      ["UTF-16LE بـBOM", utf16(`/* ${FAKE} */`)],
-      ["UTF-16LE بلا BOM", utf16(`/* ${FAKE} */`, false)],
-      ["NUL يقطع المفتاح", Buffer.from(`// ${FAKE.slice(0, 10)}\0${FAKE.slice(10)}`)],
-      [
-        "ثنائي PNG بامتداد .ts",
-        Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0, 0]), Buffer.alloc(64)]),
-      ],
-      ["latin1 غير UTF-8", Buffer.from([0x63, 0xe9, 0x66, 0xe9])],
-    ];
+    ["UTF-16LE بـBOM", utf16(`/* ${FAKE} */`)],
+    ["UTF-16LE بلا BOM", utf16(`/* ${FAKE} */`, false)],
+    ["NUL يقطع المفتاح", Buffer.from(`// ${FAKE.slice(0, 10)}\0${FAKE.slice(10)}`)],
+    [
+      "ثنائي PNG بامتداد .ts",
+      Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0, 0]), Buffer.alloc(64)]),
+    ],
+    ["latin1 غير UTF-8", Buffer.from([0x63, 0xe9, 0x66, 0xe9])],
+  ];
   it("تغطي حالات المحتوى غير النصّي جميع صيغ الرفض", () => {
     expect(binaryCases).toHaveLength(5);
   });
