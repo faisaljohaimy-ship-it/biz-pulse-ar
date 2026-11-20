@@ -64,15 +64,21 @@ export function advanceSadeedVoiceActivity(input: {
   let lastVoiceAt = previous.lastVoiceAt;
   // Invalid clocks must not bypass deadlines or qualify untrusted audio frames.
   // Pre-deadline speech candidates still receive their voice qualification grace.
+  // Every threshold is required to be positive and finite. Numeric addition
+  // treats null voice clocks as zero; NaN/Infinity still fail closed. Casts
+  // express that JS rule to TypeScript without growing the client bundle.
   if (
-    !Number.isFinite(input.now + noSpeechAt + (candidateVoiceAt ?? 0) + (lastVoiceAt ?? 0)) ||
+    !Object.values(config).every((value) => value > 0 && value < Infinity) ||
+    !Number.isFinite(
+      input.now + noSpeechAt + (candidateVoiceAt as number) + (lastVoiceAt as number),
+    ) ||
     (!heardVoice && noSpeechTimedOut && (candidateVoiceAt ?? now) >= noSpeechAt)
   ) {
     return { state: previous, decision: heardVoice ? "complete" : "no-speech" };
   }
 
-  // Negative or non-finite RMS samples cannot qualify as speech.
-  if (input.rms >= 0 && input.rms < Infinity && input.rms >= config.rmsThreshold) {
+  // The validated positive threshold excludes negative/NaN RMS; reject +Infinity too.
+  if (input.rms >= config.rmsThreshold && input.rms < Infinity) {
     candidateVoiceAt ??= now;
     if (heardVoice || now - candidateVoiceAt >= config.minimumVoiceMs) {
       heardVoice = true;
