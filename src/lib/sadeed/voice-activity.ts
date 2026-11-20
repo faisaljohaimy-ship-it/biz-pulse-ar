@@ -74,8 +74,8 @@ export function advanceSadeedVoiceActivity(input: {
     return { state: previous, decision: heardVoice ? "complete" : "no-speech" };
   }
 
-  // Negative or non-finite RMS samples cannot qualify as speech.
-  if (input.rms >= 0 && input.rms < Infinity && input.rms >= config.rmsThreshold) {
+  // The validated positive threshold excludes negative/NaN RMS; reject +Infinity too.
+  if (input.rms >= config.rmsThreshold && input.rms !== Infinity) {
     candidateVoiceAt ??= now;
     if (heardVoice || now - candidateVoiceAt >= config.minimumVoiceMs) {
       heardVoice = true;
