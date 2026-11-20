@@ -60,12 +60,12 @@ export function userFacingError(error: unknown): string {
 /** Session errors can arrive as sanitized numeric HTTP statuses without auth keywords. */
 export function isSessionError(error: unknown): boolean {
   if (SECRET_SHAPED.test(readableErrorMessage(error))) return true;
-  const value = error as { status?: unknown; statusCode?: unknown } | null;
   // A broken SDK field must not mask the independent status field, and
   // neither a throwing getter nor a proxy may crash the error boundary.
   for (const field of ["status", "statusCode"] as const) {
     try {
-      if ([401, 403].includes(value?.[field] as number)) return true;
+      const code = (error as { status?: unknown; statusCode?: unknown } | null)?.[field];
+      if (code === 401 || code === 403) return true;
     } catch {
       // Continue to the other field; do not coerce non-numeric HTTP codes.
     }
