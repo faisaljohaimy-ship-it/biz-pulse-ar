@@ -648,7 +648,13 @@ for (const route of ROUTES) {
           // An import-only response has no local style rules. Its imported
           // resource is not probed by this gate, so HTTP 200 on the wrapper
           // must not certify that the application has working CSS.
-          const uncheckedImportsOnly = /^@import\b/i.test(effectiveCss) && !/[{}]/.test(effectiveCss);
+          // Braces inside quoted import URLs do not create local CSS rules.
+          const withoutQuotedUrls = effectiveCss.replace(
+            /"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'/g,
+            "",
+          );
+          const uncheckedImportsOnly =
+            /^@import\b/i.test(effectiveCss) && !/[{}]/.test(withoutQuotedUrls);
           if (isCss && effectiveCss.length > 0 && !uncheckedImportsOnly) {
             cssLoaded = true;
             continue;
