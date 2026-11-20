@@ -85,9 +85,7 @@ describe("production performance budget symlink integrity", () => {
       symlinkSync(foreign, join(vercelDir, "output"), "dir");
     }, "1");
     expect(result.status).toBe(1);
-    expect(result.stderr).toContain(
-      "Unverified symlink in production output path: .vercel/output",
-    );
+    expect(result.stderr).toContain("Unverified symlink in production output path: .vercel/output");
   });
 
   it("does not certify an oversized external media asset hidden behind a file symlink", () => {
