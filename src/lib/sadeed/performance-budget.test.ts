@@ -96,5 +96,4 @@ describe("production performance budget build evidence", () => {
     expect(result.output).toContain("Largest media asset");
     expect(result.output).toContain("exceeded by");
   });
-
 });
