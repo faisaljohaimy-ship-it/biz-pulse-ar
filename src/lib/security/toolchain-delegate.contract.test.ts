@@ -860,24 +860,29 @@ describe("التصدير من HEAD بقراءة blobs خام — فشل مغلق
     expect(r.content["src/styles/meta.css"]).toContain("$Format:%an <%ae> | %s | %h$");
   });
 
-  it("المحتوى غير النصّي يُرفض ولا يُكتب منه شيء: UTF-16/UTF-32 وNUL المجزّأ وغير UTF-8", () => {
-    const cases: Array<[string, Buffer]> = [
-      ["UTF-16LE بـBOM", utf16(`/* ${FAKE} */`)],
-      ["UTF-16LE بلا BOM", utf16(`/* ${FAKE} */`, false)],
-      ["NUL يقطع المفتاح", Buffer.from(`// ${FAKE.slice(0, 10)}\0${FAKE.slice(10)}`)],
-      [
-        "ثنائي PNG بامتداد .ts",
-        Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0, 0]), Buffer.alloc(64)]),
-      ],
-      ["latin1 غير UTF-8", Buffer.from([0x63, 0xe9, 0x66, 0xe9])],
-    ];
-    for (const [why, content] of cases) {
+  const binaryCases: Array<[string, Buffer]> = [
+    ["UTF-16LE بـBOM", utf16(`/* ${FAKE} */`)],
+    ["UTF-16LE بلا BOM", utf16(`/* ${FAKE} */`, false)],
+    ["NUL يقطع المفتاح", Buffer.from(`// ${FAKE.slice(0, 10)}\0${FAKE.slice(10)}`)],
+    [
+      "ثنائي PNG بامتداد .ts",
+      Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0, 0]), Buffer.alloc(64)]),
+    ],
+    ["latin1 غير UTF-8", Buffer.from([0x63, 0xe9, 0x66, 0xe9])],
+  ];
+  it("تغطي حالات المحتوى غير النصّي جميع صيغ الرفض", () => {
+    expect(binaryCases).toHaveLength(5);
+  });
+  // Keep the default 5-second deadline: each independent byte-encoding fixture
+  // gets its own test and cleanup rather than sharing one serial deadline.
+  for (const [why, content] of binaryCases) {
+    it(`المحتوى غير النصّي يُرفض ولا يُكتب منه شيء: ${why}`, () => {
       const r = attempt({ "src/lib/ui/f.ts": content }, undefined, ["src/lib/ui/"]);
       expect(r.error, why).toBeInstanceOf(Error);
       expect(String(r.error?.message), why).toMatch(/NUL|UTF-8/);
       expect(r.leftover, `${why}: لا شيء يُكتب عند الرفض`).toBe(0);
-    }
-  });
+    });
+  }
 
   it("الروابط الرمزية وgitlink وملفات حجمها فوق 1MB تُرفض", () => {
     const sym = attempt({ "src/styles/ok.css": "a{}\n" }, (repo) =>
