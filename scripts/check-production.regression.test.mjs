@@ -1872,3 +1872,38 @@ test("retains delayed meta refresh after quoted angle bracket attribute", async 
   );
   assert.equal(await runFixture(html), null);
 });
+
+// A URL parser may drop embedded tabs/newlines or turn backslashes into
+// separators. A typo must not silently certify a different production origin.
+for (const base of [
+  "https://off\tline.invalid",
+  "https://off\nline.invalid",
+  "https:\\offline.invalid",
+  "https://offline.invalid\\",
+]) {
+  test(`rejects ambiguous production URL control characters: ${JSON.stringify(base)}`, async () => {
+    const halt = new Error("invalid production origin");
+    let fetchCalls = 0;
+    const context = vm.createContext({
+      process: {
+        env: { PRODUCTION_URL: base, ROUTES: "/", ATTEMPTS: "1" },
+        exit(code) {
+          assert.equal(code, 1);
+          throw halt;
+        },
+      },
+      console: { log() {}, error() {} },
+      AbortSignal,
+      URL,
+      async fetch() {
+        fetchCalls++;
+        throw new Error("invalid production origins must not make network requests");
+      },
+    });
+    await assert.rejects(
+      new vm.Script(`(async () => {\n${executableSource}\n})()`).runInContext(context),
+      (error) => error === halt,
+    );
+    assert.equal(fetchCalls, 0);
+  });
+}
