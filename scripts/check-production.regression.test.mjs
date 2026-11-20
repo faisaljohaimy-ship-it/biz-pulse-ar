@@ -1082,6 +1082,54 @@ test("rejects multiple CSS comments and whitespace with no styling rules", async
   );
 });
 
+// An import-only CSS wrapper can return HTTP 200 while all its real styles
+// live in an imported URL that this release gate never checks.
+test("rejects an import-only stylesheet without verified local rules", async () => {
+  assert.equal(
+    await runFixture(normalPage, "text/html", 200, "text/css", '@import url("/missing.css");'),
+    1,
+  );
+});
+
+test("rejects import-only CSS after comments and a charset declaration", async () => {
+  assert.equal(
+    await runFixture(
+      normalPage,
+      "text/html",
+      200,
+      "text/css",
+      '/* build banner */ @charset "UTF-8"; @import "/a.css"; @import url("/b.css") screen;',
+    ),
+    1,
+  );
+});
+
+test("does not count braces inside quoted import URLs as local CSS rules", async () => {
+  assert.equal(
+    await runFixture(
+      normalPage,
+      "text/html",
+      200,
+      "text/css",
+      '@import url("/missing{not-a-rule}.css");',
+    ),
+    1,
+  );
+});
+
+test("accepts an imported stylesheet when real local CSS rules also exist", async () => {
+  assert.equal(
+    await runFixture(
+      normalPage,
+      "text/html",
+      200,
+      "text/css",
+      '@import url("/optional.css"); body { color: navy; }',
+    ),
+    null,
+  );
+});
+
 test("accepts functional CSS following a build banner comment", async () => {
   assert.equal(
     await runFixture(

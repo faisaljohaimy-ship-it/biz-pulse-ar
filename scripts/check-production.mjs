@@ -645,12 +645,26 @@ for (const route of ROUTES) {
             .replace(/\/\*[\s\S]*?\*\//g, "")
             .replace(/^\s*@charset\s+(?:"[^"]*"|'[^']*')\s*;\s*/i, "")
             .trim();
-          if (isCss && effectiveCss.length > 0) {
+          // An import-only response has no local style rules. Its imported
+          // resource is not probed by this gate, so HTTP 200 on the wrapper
+          // must not certify that the application has working CSS.
+          // Braces inside quoted import URLs do not create local CSS rules.
+          const withoutQuotedUrls = effectiveCss.replace(
+            /"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'/g,
+            "",
+          );
+          const uncheckedImportsOnly =
+            /^@import\b/i.test(effectiveCss) && !/[{}]/.test(withoutQuotedUrls);
+          if (isCss && effectiveCss.length > 0 && !uncheckedImportsOnly) {
             cssLoaded = true;
             continue;
           }
           brokenCss = true;
-          reason = isCss ? "stylesheet response is empty" : "stylesheet response is not text/css";
+          reason = uncheckedImportsOnly
+            ? "stylesheet contains only unverified @import rules"
+            : isCss
+              ? "stylesheet response is empty"
+              : "stylesheet response is not text/css";
         } catch (error) {
           brokenCss = true;
           reason = error instanceof Error ? error.message : String(error);
