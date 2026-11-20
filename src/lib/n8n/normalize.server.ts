@@ -125,7 +125,7 @@ export function normalizeResearchResults(
 ): WebResult[] {
   // A disabled or malformed limit must not leak one result or bypass truncation.
   // Production requests require integer 1..5; enforce the same count contract here.
-  if (!Number.isSafeInteger(max) || max <= 0) return [];
+  if (!Number.isSafeInteger(max) || max < 1 || max > 5) return [];
   const seen = new Set<string>();
   const out: WebResult[] = [];
   for (const r of raw) {
