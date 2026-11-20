@@ -62,7 +62,9 @@ async function assertOrdinaryOutputPath() {
   for (const component of relative(prefix, ROOT).split(sep)) {
     prefix = join(prefix, component);
     if ((await lstat(prefix)).isSymbolicLink()) {
-      throw new Error(`Unverified symlink in production output path: ${relative(process.cwd(), prefix)}`);
+      throw new Error(
+        `Unverified symlink in production output path: ${relative(process.cwd(), prefix)}`,
+      );
     }
   }
 }
