@@ -64,11 +64,12 @@ export function advanceSadeedVoiceActivity(input: {
   let lastVoiceAt = previous.lastVoiceAt;
   // Invalid clocks must not bypass deadlines or qualify untrusted audio frames.
   // Pre-deadline speech candidates still receive their voice qualification grace.
-  // Every threshold is required to be positive and finite. Reuse the existing
-  // fail-closed branch to keep the client bundle inside its fixed size budget.
+  // Every threshold is required to be positive and finite. Numeric addition
+  // treats null voice clocks as zero; NaN/Infinity still fail closed. Casts
+  // express that JS rule to TypeScript without growing the client bundle.
   if (
     Object.values(config).some((value) => !(value > 0 && value < Infinity)) ||
-    !Number.isFinite(input.now + noSpeechAt + (candidateVoiceAt ?? 0) + (lastVoiceAt ?? 0)) ||
+    !Number.isFinite(input.now + noSpeechAt + (candidateVoiceAt as number) + (lastVoiceAt as number)) ||
     (!heardVoice && noSpeechTimedOut && (candidateVoiceAt ?? now) >= noSpeechAt)
   ) {
     return { state: previous, decision: heardVoice ? "complete" : "no-speech" };
