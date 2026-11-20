@@ -104,7 +104,13 @@ export class ResearchCache<T> {
 
   constructor(opts: ResearchCacheOptions = {}) {
     this.now = opts.now ?? Date.now;
-    this.max = opts.maxEntries ?? CACHE_MAX_ENTRIES;
+    // Never let malformed or oversized options disable LRU eviction.
+    // Zero remains a supported way to disable caching in an isolated caller.
+    const requestedMax = opts.maxEntries;
+    this.max =
+      requestedMax !== undefined && Number.isSafeInteger(requestedMax) && requestedMax >= 0
+        ? Math.min(requestedMax, CACHE_MAX_ENTRIES)
+        : CACHE_MAX_ENTRIES;
   }
 
   get size(): number {

@@ -125,6 +125,30 @@ describe("LRU", () => {
     expect(c.get("a").kind).toBe("miss");
   });
 
+  it("سعة غير صالحة أو غير محدودة لا تتجاوز 200 مدخل", () => {
+    for (const limit of [Number.NaN, Number.POSITIVE_INFINITY, -1, 1.5, 10_000]) {
+      const { c } = make(limit);
+      for (let i = 0; i <= CACHE_MAX_ENTRIES; i++) c.set(`k${i}`, `v${i}`, H);
+      expect(c.size).toBe(CACHE_MAX_ENTRIES);
+      expect(c.get("k0")).toEqual({ kind: "miss" });
+      expect(c.get(`k${CACHE_MAX_ENTRIES}`)).toEqual({
+        kind: "hit",
+        value: `v${CACHE_MAX_ENTRIES}`,
+      });
+    }
+  });
+
+  it("الحد صفر يعطّل التخزين ولا يتجاهل حدًا صحيحًا صغيرًا", () => {
+    const { c: disabled } = make(0);
+    disabled.set("k", "v", H);
+    disabled.setNegative("failed", "network");
+    expect(disabled.size).toBe(0);
+    const { c: bounded } = make(2);
+    for (const k of ["a", "b", "c"]) bounded.set(k, k, H);
+    expect(bounded.size).toBe(2);
+    expect(bounded.get("a")).toEqual({ kind: "miss" });
+  });
+
   it("clear تُفرغ", () => {
     const { c } = make();
     c.set("a", "1", H);
