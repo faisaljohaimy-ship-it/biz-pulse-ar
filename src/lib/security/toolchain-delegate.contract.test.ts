@@ -860,59 +860,74 @@ describe("التصدير من HEAD بقراءة blobs خام — فشل مغلق
     expect(r.content["src/styles/meta.css"]).toContain("$Format:%an <%ae> | %s | %h$");
   });
 
-  it("المحتوى غير النصّي يُرفض ولا يُكتب منه شيء: UTF-16/UTF-32 وNUL المجزّأ وغير UTF-8", () => {
-    const cases: Array<[string, Buffer]> = [
-      ["UTF-16LE بـBOM", utf16(`/* ${FAKE} */`)],
-      ["UTF-16LE بلا BOM", utf16(`/* ${FAKE} */`, false)],
-      ["NUL يقطع المفتاح", Buffer.from(`// ${FAKE.slice(0, 10)}\0${FAKE.slice(10)}`)],
-      [
-        "ثنائي PNG بامتداد .ts",
-        Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0, 0]), Buffer.alloc(64)]),
-      ],
-      ["latin1 غير UTF-8", Buffer.from([0x63, 0xe9, 0x66, 0xe9])],
-    ];
-    for (const [why, content] of cases) {
+  const nonTextCases: Array<[string, Buffer]> = [
+    ["UTF-16LE بـBOM", utf16("/* " + FAKE + " */")],
+    ["UTF-16LE بلا BOM", utf16("/* " + FAKE + " */", false)],
+    ["NUL يقطع المفتاح", Buffer.from("// " + FAKE.slice(0, 10) + "\0" + FAKE.slice(10))],
+    [
+      "ثنائي PNG بامتداد .ts",
+      Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0, 0]), Buffer.alloc(64)]),
+    ],
+    ["latin1 غير UTF-8", Buffer.from([0x63, 0xe9, 0x66, 0xe9])],
+  ];
+  it("تغطي حالات المحتوى غير النصّي كل صيغ الترميز المختبرة", () => {
+    expect(nonTextCases.length).toBe(5);
+  });
+  for (const [why, content] of nonTextCases) {
+    it("يرفض محتوى غير نصّي: " + why + " ولا يكتب شيئًا", () => {
       const r = attempt({ "src/lib/ui/f.ts": content }, undefined, ["src/lib/ui/"]);
       expect(r.error, why).toBeInstanceOf(Error);
       expect(String(r.error?.message), why).toMatch(/NUL|UTF-8/);
-      expect(r.leftover, `${why}: لا شيء يُكتب عند الرفض`).toBe(0);
-    }
-  });
+      expect(r.leftover, why + ": لا شيء يُكتب عند الرفض").toBe(0);
+    });
+  }
 
-  it("الروابط الرمزية وgitlink وملفات حجمها فوق 1MB تُرفض", () => {
+  it("يرفض رابطًا رمزيًّا داخل الشجرة", () => {
     const sym = attempt({ "src/styles/ok.css": "a{}\n" }, (repo) =>
       symlinkSync("/etc/hostname", join(repo, "src", "styles", "link.css")),
     );
     expect(String(sym.error?.message)).toMatch(/ليس ملفًا عاديًّا/);
     expect(sym.leftover).toBe(0);
+  });
 
+  it("يرفض gitlink داخل الجذر المسموح", () => {
     const gitlink = attempt({ "src/lib/ui/ok.ts": "export {};\n" }, undefined, roots, (repo) =>
-      sh(repo, ["update-index", "--add", "--cacheinfo", `160000,${"1".repeat(40)},src/lib/ui/sub`]),
+      sh(repo, ["update-index", "--add", "--cacheinfo", "160000," + "1".repeat(40) + ",src/lib/ui/sub"]),
     );
     expect(String(gitlink.error?.message)).toMatch(/ليس ملفًا عاديًّا/);
+  });
 
+  it("يرفض ملفًا يتجاوز 1MB", () => {
     const big = attempt({ "src/styles/big.css": "a".repeat(1024 * 1024 + 1) });
     expect(String(big.error?.message)).toMatch(/1MB/);
   });
 
-  it("أسماء الملفات تُمسح (سرّ أو بريد في الاسم) ومجلد .env وأشباهه محجوبة", () => {
-    const secretName = attempt({ [`src/lib/ui/${FAKE}.md`]: "x\n" }, undefined, ["src/lib/ui/"]);
+  it("يحجب اسم ملف يحتوي مفتاحًا", () => {
+    const secretName = attempt({ ["src/lib/ui/" + FAKE + ".md"]: "x\n" }, undefined, ["src/lib/ui/"]);
     expect(String(secretName.error?.message)).toMatch(/اسم الملف/);
+  });
+
+  it("يحجب اسم ملف يحتوي بريدًا", () => {
     const emailName = attempt({ "src/lib/ui/alice.smith@corp-victim.com.md": "x\n" }, undefined, [
       "src/lib/ui/",
     ]);
     expect(String(emailName.error?.message)).toMatch(/بريد/);
-    for (const rel of [
-      "src/styles/.env/notes.md",
-      "src/styles/.env-prod.md",
-      "src/styles/.envrc.md",
-      "src/lib/ui/id_rsa.md",
-    ]) {
+  });
+
+  const blockedPathCases = [
+    "src/styles/.env/notes.md",
+    "src/styles/.env-prod.md",
+    "src/styles/.envrc.md",
+    "src/lib/ui/id_rsa.md",
+  ];
+  for (const rel of blockedPathCases) {
+    it("يحجب مسارًا حساسًا: " + rel, () => {
       const r = attempt({ [rel]: "x\n" }, undefined, ["src/styles/", "src/lib/ui/"]);
       expect(r.error, rel).toBeInstanceOf(Error);
       expect(r.leftover, rel).toBe(0);
-    }
-  });
+    });
+  }
+
 });
 
 describe("عملية الوكيل والمجلد المؤقت — لا يتيم ولا شجرة git أعلى", () => {
