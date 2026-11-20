@@ -66,6 +66,31 @@ describe("الصلاحية", () => {
     expect(c.get("k")).toEqual({ kind: "miss" });
   });
 
+  it("ساعة غير صالحة أو مهلة غير محدودة لا تثبّت نتيجة إلى الأبد", () => {
+    const { c, clock } = make();
+    for (const ttl of [Number.NaN, Number.POSITIVE_INFINITY, -1, 0]) {
+      c.set("invalid", "v", ttl);
+      expect(c.get("invalid")).toEqual({ kind: "miss" });
+    }
+    clock.t = Number.NaN;
+    c.set("bad-clock", "v", H);
+    c.setNegative("bad-negative", "timeout");
+    expect(c.size).toBe(0);
+  });
+
+  it("تراجع الساعة أو فسادها يُسقط الإدخال بدل تمديد الكاش السلبي أو الإيجابي", () => {
+    const { c, clock } = make();
+    c.setNegative("failure", "network");
+    clock.t -= 1;
+    expect(c.get("failure")).toEqual({ kind: "miss" });
+
+    clock.t = 10_000;
+    c.set("answer", "ok", H);
+    clock.t = Number.POSITIVE_INFINITY;
+    expect(c.get("answer")).toEqual({ kind: "miss" });
+    expect(c.size).toBe(0);
+  });
+
   it("كتابة موجبة بعد سالبة على المفتاح نفسه تستبدلها", () => {
     const { c } = make();
     c.setNegative("k", "timeout");
@@ -98,6 +123,30 @@ describe("LRU", () => {
     c.setNegative("d", "network");
     expect(c.size).toBe(3);
     expect(c.get("a").kind).toBe("miss");
+  });
+
+  it("سعة غير صالحة أو غير محدودة لا تتجاوز 200 مدخل", () => {
+    for (const limit of [Number.NaN, Number.POSITIVE_INFINITY, -1, 1.5, 10_000]) {
+      const { c } = make(limit);
+      for (let i = 0; i <= CACHE_MAX_ENTRIES; i++) c.set(`k${i}`, `v${i}`, H);
+      expect(c.size).toBe(CACHE_MAX_ENTRIES);
+      expect(c.get("k0")).toEqual({ kind: "miss" });
+      expect(c.get(`k${CACHE_MAX_ENTRIES}`)).toEqual({
+        kind: "hit",
+        value: `v${CACHE_MAX_ENTRIES}`,
+      });
+    }
+  });
+
+  it("الحد صفر يعطّل التخزين ولا يتجاهل حدًا صحيحًا صغيرًا", () => {
+    const { c: disabled } = make(0);
+    disabled.set("k", "v", H);
+    disabled.setNegative("failed", "network");
+    expect(disabled.size).toBe(0);
+    const { c: bounded } = make(2);
+    for (const k of ["a", "b", "c"]) bounded.set(k, k, H);
+    expect(bounded.size).toBe(2);
+    expect(bounded.get("a")).toEqual({ kind: "miss" });
   });
 
   it("clear تُفرغ", () => {
@@ -138,6 +187,24 @@ describe("المفتاح: الموجز المعياري", () => {
       { ...base, codes: [] },
     ];
     for (const v of variants) expect(cacheKeyOf(v)).not.toBe(k);
+  });
+
+  it("keeps distinct briefs separate when terms or codes contain cache key separators", () => {
+    // The brief schema permits control characters. Joining raw terms with U+0001
+    // made one term indistinguishable from two terms in the same cache scope.
+    const single = cacheKeyOf({ ...base, terms: ["alpha\u0001beta"], codes: [] });
+    const split = cacheKeyOf({ ...base, terms: ["alpha", "beta"], codes: [] });
+    expect(single).not.toBe(split);
+
+    // U+0002 is the separator between top-level fields. A term containing it
+    // previously collided with the same characters split across terms and codes.
+    const acrossFields = cacheKeyOf({ ...base, terms: ["1\u00022"], codes: ["3"] });
+    const separateFields = cacheKeyOf({ ...base, terms: ["1"], codes: ["2\u00023"] });
+    expect(acrossFields).not.toBe(separateFields);
+
+    const { c } = make();
+    c.set(single, "first-brief", H);
+    expect(c.get(split)).toEqual({ kind: "miss" });
   });
 
   it("المفتاح لا يحمل هوية: لا مدخل لها في النوع أصلًا", () => {

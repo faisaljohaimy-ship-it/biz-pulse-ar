@@ -11,14 +11,10 @@ import { useSyncExternalStore } from "react";
 let active = false;
 const listeners = new Set<() => void>();
 
-function emit() {
-  for (const l of listeners) l();
-}
-
 export function setIntroActive(next: boolean) {
   if (active === next) return;
   active = next;
-  emit();
+  for (const l of listeners) l();
 }
 
 function subscribe(cb: () => void) {

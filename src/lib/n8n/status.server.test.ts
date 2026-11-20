@@ -41,6 +41,28 @@ describe("LatencyWindow", () => {
     expect(w.count).toBe(0);
     expect(w.p95()).toBeNull();
   });
+
+  it.each([Number.NaN, Infinity, -Infinity, -1, 1.5, 10_000])(
+    "falls back to a bounded window for invalid capacity %s",
+    (max) => {
+      const w = new LatencyWindow(max);
+      for (let i = 0; i < 1_200; i++) w.record(i);
+      expect(w.count).toBe(100);
+      expect(w.p95()).toBe(1_194);
+    },
+  );
+
+  it("keeps finite custom capacities and zero-sized windows", () => {
+    const bounded = new LatencyWindow(3);
+    [10, 20, 30, 40].forEach((value) => bounded.record(value));
+    expect(bounded.count).toBe(3);
+    expect(bounded.p95()).toBe(40);
+
+    const empty = new LatencyWindow(0);
+    empty.record(125);
+    expect(empty.count).toBe(0);
+    expect(empty.p95()).toBeNull();
+  });
 });
 
 describe("buildStatusSnapshot", () => {
@@ -82,6 +104,23 @@ describe("buildStatusSnapshot", () => {
       p95_ms: 300,
       samples: 3,
     });
+  });
+
+  it("malformed last-success clocks stay unmeasured instead of crashing status", () => {
+    for (const invalid of [NaN, Infinity, -Infinity, 8_640_000_000_000_001, undefined]) {
+      const s = buildStatusSnapshot({
+        ...base,
+        surface: "sadeed",
+        lastOkAtMs: invalid as number,
+      });
+      expect(s.last_ok_at).toBeNull();
+      expect(s.samples).toBe(0);
+    }
+  });
+
+  it("retains valid epoch zero as a real observation", () => {
+    const s = buildStatusSnapshot({ ...base, surface: "sadeed", lastOkAtMs: 0 });
+    expect(s.last_ok_at).toBe("1970-01-01T00:00:00.000Z");
   });
 
   it("سطح FNN: الوضع لا ينطبق ⇒ null", () => {

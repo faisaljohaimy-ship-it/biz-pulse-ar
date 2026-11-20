@@ -74,8 +74,27 @@ export interface Evidence {
  * wrongly certify a fabricated observation as LIVE. Require a complete ISO
  * timestamp and validate its Gregorian calendar day before parsing.
  */
+// Evidence can cross a JSON/runtime boundary where TypeScript's union is not enforced.
+// An unknown or missing provenance class must not qualify a value for a LIVE badge.
+const VALID_EVIDENCE_KIND: readonly EvidenceKind[] = [
+  "db.query",
+  "runtime.probe",
+  "cert.public",
+  "audit.log",
+  "external.api",
+  "reference.builtin",
+  "derived.computed",
+  "human.attested",
+];
+
 export function hasEvidence(e: Evidence | null | undefined): e is Evidence {
-  if (!e || typeof e.source !== "string" || !e.source.trim() || typeof e.observedAt !== "string")
+  if (
+    !e ||
+    !VALID_EVIDENCE_KIND.includes(e.kind) ||
+    typeof e.source !== "string" ||
+    !e.source.trim() ||
+    typeof e.observedAt !== "string"
+  )
     return false;
   const value = e.observedAt;
   const match =
@@ -83,21 +102,18 @@ export function hasEvidence(e: Evidence | null | undefined): e is Evidence {
       value,
     );
   return (
-    !!match &&
-    Number.isFinite(Date.parse(value)) &&
-    new Date(value.slice(0, value.indexOf("T"))).getUTCDate() === +match[1]
+    !isNaN(Date.parse(value)) && new Date(value.split("T")[0]).getUTCDate() === +(match?.[1] ?? 0)
   );
 }
 
 /** Freshness gate: reject stale, invalid, and future-dated evidence. */
 export function isFresh(e: Evidence, maxAgeMs = 5 * 60_000): boolean {
   if (!hasEvidence(e)) return false;
-  const t = Date.parse(e.observedAt);
-  const ageMs = Date.now() - t;
-  // A future timestamp previously produced a negative age, so even evidence
-  // years ahead was mistakenly treated as fresh by the status-badge gate.
-  // NaN from an invalid date fails both comparisons naturally.
-  return ageMs >= 0 && ageMs <= maxAgeMs;
+  const now = Date.now();
+  const ageMs = now - Date.parse(e.observedAt);
+  // A non-finite budget or an impossible wall clock must never certify LIVE.
+  // Nonnegative age and finite budget already reject invalid negative inputs.
+  return ageMs >= 0 && ageMs <= maxAgeMs && maxAgeMs < Infinity && now <= 8.64e15;
 }
 
 /**

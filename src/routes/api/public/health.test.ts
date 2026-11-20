@@ -8,31 +8,50 @@ import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 vi.stubEnv("SUPABASE_URL", "https://stub.invalid");
 vi.stubEnv("SUPABASE_PUBLISHABLE_KEY", "sb_publishable_stub");
 
-const db = vi.hoisted(() => ({ hang: false }));
+const db = vi.hoisted(() => ({
+  hang: false,
+  errorMessage: "",
+  throwMessage: "",
+  signal: null as AbortSignal | null,
+}));
 
 vi.mock("@supabase/supabase-js", () => {
   const chain: unknown = new Proxy(() => chain, {
     get(_t, prop) {
       if (prop === "then") {
         return (resolve: (v: unknown) => unknown) => {
-          if (!db.hang) resolve({ error: null });
+          if (!db.hang) resolve({ error: db.errorMessage ? { message: db.errorMessage } : null });
+        };
+      }
+      if (prop === "abortSignal") {
+        return (signal: AbortSignal) => {
+          db.signal = signal;
+          return chain;
         };
       }
       return () => chain;
     },
     apply: () => chain,
   });
-  return { createClient: () => ({ from: () => chain }) };
+  return {
+    createClient: () => {
+      if (db.throwMessage) throw new Error(db.throwMessage);
+      return { from: () => chain };
+    },
+  };
 });
 
 const gate = vi.hoisted(() => ({
   unavailable: false,
   state: "closed" as "closed" | "open" | "half-open",
+  throwMessage: "",
 }));
 
 vi.mock("@/lib/governance/rate-limit.server", () => ({
-  enforceRateLimit: async () =>
-    gate.unavailable ? { allowed: false, unavailable: true } : { allowed: true },
+  enforceRateLimit: async () => {
+    if (gate.throwMessage) throw new Error(gate.throwMessage);
+    return gate.unavailable ? { allowed: false, unavailable: true } : { allowed: true };
+  },
   rateLimitStorageState: () => ({
     state: gate.state,
     consecutiveFailures: gate.unavailable ? 2 : 0,
@@ -66,6 +85,10 @@ beforeEach(() => {
   gate.unavailable = false;
   gate.state = "closed";
   db.hang = false;
+  db.signal = null;
+  db.errorMessage = "";
+  db.throwMessage = "";
+  gate.throwMessage = "";
 });
 
 describe("مخزن حدّ المعدّل في فحص الصحّة", () => {
@@ -75,6 +98,8 @@ describe("مخزن حدّ المعدّل في فحص الصحّة", () => {
     expect(body.subsystems.rate_limit_storage.status).toBe("ok");
     expect(body.subsystems.rate_limit_storage.detail).toContain("breaker=closed");
     expect(body.subsystems.db.status).toBe("ok");
+    expect(db.signal).toBeInstanceOf(AbortSignal);
+    expect(db.signal?.aborted).toBe(false);
   });
 
   it("المخزن ساقط والقاطع مفتوح ⇐ down باسمه، والحالة الكلّية 503", async () => {
@@ -111,7 +136,46 @@ describe("فحص القاعدة لا يعلق", () => {
     const elapsed = Date.now() - t0;
     expect(res.status).toBe(503);
     expect(body.subsystems.db).toMatchObject({ status: "down", detail: "timeout" });
+    expect(db.signal).toBeInstanceOf(AbortSignal);
+    expect(db.signal?.aborted).toBe(true);
     expect(elapsed).toBeGreaterThanOrEqual(deadline - 50);
     expect(elapsed).toBeLessThan(deadline + 1_500);
   }, 10_000);
+});
+
+describe("anonymous health diagnostics never expose backend error messages", () => {
+  const privateMarker = "PRIVATE_BACKEND_DETAIL_DO_NOT_EXPORT";
+
+  it("redacts query failures while preserving the degraded signal", async () => {
+    db.errorMessage = `relation hidden.table_${privateMarker} is inaccessible`;
+    const { res, body } = await get();
+    expect(res.status).toBe(200);
+    expect(body.subsystems.db).toMatchObject({
+      status: "degraded",
+      detail: "query_failed",
+    });
+    expect(JSON.stringify(body)).not.toContain(privateMarker);
+  });
+
+  it("redacts database client exceptions while reporting a 503", async () => {
+    db.throwMessage = `connection string exposed: ${privateMarker}`;
+    const { res, body } = await get();
+    expect(res.status).toBe(503);
+    expect(body.subsystems.db).toMatchObject({
+      status: "down",
+      detail: "connection_failed",
+    });
+    expect(JSON.stringify(body)).not.toContain(privateMarker);
+  });
+
+  it("redacts rate-limit storage exceptions without hiding their outage", async () => {
+    gate.throwMessage = `RPC internals: ${privateMarker}`;
+    const { res, body } = await get();
+    expect(res.status).toBe(503);
+    expect(body.subsystems.rate_limit_storage).toMatchObject({
+      status: "down",
+      detail: "probe_failed",
+    });
+    expect(JSON.stringify(body)).not.toContain(privateMarker);
+  });
 });

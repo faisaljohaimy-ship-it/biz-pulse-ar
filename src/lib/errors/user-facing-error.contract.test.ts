@@ -124,6 +124,46 @@ describe("لا تصل عبارة مصادقة إلى الشاشة", () => {
     }
   });
 
+  it("honors a numeric auth statusCode even when a conflicting status is present", () => {
+    for (const failure of [
+      { status: 0, statusCode: 401, message: "Request failed" },
+      { status: 500, statusCode: 403, message: "Request failed" },
+    ]) {
+      expect(isSessionError(failure)).toBe(true);
+      expect(userFacingError(failure)).toBe(SESSION_ERROR_AR);
+    }
+    expect(isSessionError({ status: 500, statusCode: 429, message: "Request failed" })).toBe(false);
+  });
+
+  it("uses a valid secondary auth status when the primary status getter throws", () => {
+    for (const statusCode of [401, 403]) {
+      const failure = Object.defineProperty({ statusCode, message: "Request failed" }, "status", {
+        get() {
+          throw new Error("primary status getter is unavailable");
+        },
+      });
+      expect(isSessionError(failure)).toBe(true);
+      expect(userFacingError(failure)).toBe(SESSION_ERROR_AR);
+    }
+    const nonAuth = Object.defineProperty({ statusCode: 500 }, "status", {
+      get() {
+        throw new Error("primary status getter is unavailable");
+      },
+    });
+    expect(isSessionError(nonAuth)).toBe(false);
+    expect(userFacingError(nonAuth)).toBe(GENERIC_ERROR_AR);
+  });
+
+  it("does not read an unsafe secondary getter after a valid primary auth status", () => {
+    const failure = Object.defineProperty({ status: 401 }, "statusCode", {
+      get() {
+        throw new Error("secondary field is inaccessible");
+      },
+    });
+    expect(isSessionError(failure)).toBe(true);
+    expect(userFacingError(failure)).toBe(SESSION_ERROR_AR);
+  });
+
   it("does not misclassify non-auth HTTP status codes or numeric-looking strings", () => {
     const failures = [
       { status: 400, message: "Bad request" },
