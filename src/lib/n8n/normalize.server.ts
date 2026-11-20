@@ -91,7 +91,8 @@ function providerId(raw: string): string {
 const ISO_DATE_PREFIX = /^(\d{4})-(\d{2})-(\d{2})/;
 // Date.parse treats offset-free date-times as server-local time. Research source times must
 // be absolute, or date-only (UTC), so deployment timezone cannot alter their meaning.
-const ISO_PUBLICATION_FORMAT = /^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:\d{2}))?$/;
+const ISO_PUBLICATION_FORMAT =
+  /^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:\d{2}))?$/;
 const ONE_DAY_MS = 86_400_000;
 
 /** ISO معياري أو `null`. Reject overflowed calendar days that Date.parse silently normalizes. */
