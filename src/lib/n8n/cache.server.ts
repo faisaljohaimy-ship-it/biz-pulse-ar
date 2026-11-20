@@ -56,6 +56,8 @@ const canon = (xs: readonly string[], upper: boolean): string =>
     ),
   )
     .sort()
+    // JSON quoting escapes embedded separator controls before joining the canonical items.
+    .map((item) => JSON.stringify(item))
     .join("\u0001");
 
 /** مفتاح الموجز المعياري. نصٌّ واحد ثابت الصياغة؛ لا يُسجَّل. */
@@ -78,8 +80,18 @@ export type CacheLookup<T> =
   | { readonly kind: "miss" };
 
 type Entry<T> =
-  | { readonly kind: "value"; readonly value: T; readonly expiresAt: number }
-  | { readonly kind: "negative"; readonly reason: string; readonly expiresAt: number };
+  | {
+      readonly kind: "value";
+      readonly value: T;
+      readonly insertedAt: number;
+      readonly expiresAt: number;
+    }
+  | {
+      readonly kind: "negative";
+      readonly reason: string;
+      readonly insertedAt: number;
+      readonly expiresAt: number;
+    };
 
 export interface ResearchCacheOptions {
   readonly now?: () => number;
@@ -94,7 +106,13 @@ export class ResearchCache<T> {
 
   constructor(opts: ResearchCacheOptions = {}) {
     this.now = opts.now ?? Date.now;
-    this.max = opts.maxEntries ?? CACHE_MAX_ENTRIES;
+    // Never let malformed or oversized options disable LRU eviction.
+    // Zero remains a supported way to disable caching in an isolated caller.
+    const requestedMax = opts.maxEntries;
+    this.max =
+      requestedMax !== undefined && Number.isSafeInteger(requestedMax) && requestedMax >= 0
+        ? Math.min(requestedMax, CACHE_MAX_ENTRIES)
+        : CACHE_MAX_ENTRIES;
   }
 
   get size(): number {
@@ -104,7 +122,9 @@ export class ResearchCache<T> {
   get(key: string): CacheLookup<T> {
     const e = this.map.get(key);
     if (!e) return { kind: "miss" };
-    if (this.now() >= e.expiresAt) {
+    const checkedAt = this.now();
+    // A missing/backward clock must not extend a stale positive or negative result.
+    if (!Number.isFinite(checkedAt) || checkedAt < e.insertedAt || checkedAt >= e.expiresAt) {
       this.map.delete(key);
       return { kind: "miss" };
     }
@@ -116,16 +136,40 @@ export class ResearchCache<T> {
   }
 
   set(key: string, value: T, ttlMs: number): void {
-    this.put(key, { kind: "value", value, expiresAt: this.now() + ttlMs });
+    const window = this.ttlWindow(ttlMs);
+    if (!window) {
+      this.map.delete(key);
+      return;
+    }
+    this.put(key, { kind: "value", value, ...window });
   }
 
   /** فشلٌ أو فراغ: يُتذكَّر 30 ث، والسبب ثابتٌ من القائمة المغلقة لا نصّ بعيد. */
   setNegative(key: string, reason: string): void {
-    this.put(key, { kind: "negative", reason, expiresAt: this.now() + CACHE_NEGATIVE_TTL_MS });
+    const window = this.ttlWindow(CACHE_NEGATIVE_TTL_MS);
+    if (!window) {
+      this.map.delete(key);
+      return;
+    }
+    this.put(key, { kind: "negative", reason, ...window });
   }
 
   clear(): void {
     this.map.clear();
+  }
+
+  private ttlWindow(ttlMs: number): { insertedAt: number; expiresAt: number } | null {
+    const insertedAt = this.now();
+    const expiresAt = insertedAt + ttlMs;
+    if (
+      !Number.isFinite(insertedAt) ||
+      !Number.isFinite(ttlMs) ||
+      ttlMs <= 0 ||
+      !Number.isFinite(expiresAt)
+    ) {
+      return null;
+    }
+    return { insertedAt, expiresAt };
   }
 
   private put(key: string, entry: Entry<T>): void {

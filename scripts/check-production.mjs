@@ -35,6 +35,10 @@ try {
     parsedBase.pathname !== "/" ||
     parsedBase.search !== "" ||
     parsedBase.hash !== "" ||
+    // WHATWG URL silently drops tabs/newlines and treats backslashes as slashes.
+    // Reject ambiguous raw origins before certifying a different host.
+    /[\u0000-\u001f\u007f]/.test(requestedBase) ||
+    requestedBase.includes("\\") ||
     requestedBase.includes("?") ||
     requestedBase.includes("#")
   ) {
@@ -65,6 +69,8 @@ if (
       return (
         resolved.origin !== ROUTE_VALIDATION_ORIGIN ||
         resolved.hash !== "" ||
+        // Encoded separators can be decoded into a different route downstream.
+        /%(?:2f|5c)/i.test(resolved.pathname) ||
         resolved.pathname + resolved.search !== route
       );
     } catch {
@@ -305,7 +311,7 @@ function decodeMetaAttribute(value) {
     // legacy names (such as &amp or &copy) also decode without a semicolon
     // unless followed by an ASCII alphanumeric or '='; other names require ';'.
     // Mixed-case unknown &CoPy; remains literal, never a CSS decoy.
-    /&(?:#([xX][0-9a-fA-F]+|\d+);?|(?:amp|AMP|quot|QUOT|lt|LT|gt|GT|copy|COPY|reg|REG|nbsp)(?:;|(?![A-Za-z0-9=]))|(?:semi|Tab|NewLine|sol|colon|period|apos);)/g,
+    /&(?:#([xX][0-9a-fA-F]+|\d+);?|(?:amp|AMP|quot|QUOT|lt|LT|gt|GT|copy|COPY|reg|REG|nbsp)(?:;|(?![A-Za-z0-9=]))|(?:semi|Tab|NewLine|sol|bsol|colon|period|apos);)/g,
     (entity, numeric) => {
       if (!numeric) {
         const names = {
@@ -314,6 +320,8 @@ function decodeMetaAttribute(value) {
           tab: "\t",
           newline: "\n",
           sol: "/",
+          // HTML &bsol; is a backslash; WHATWG URL may normalize it into a slash.
+          bsol: "\\",
           colon: ":",
           period: ".",
           // Browsers decode these named references inside quoted HTML hrefs.
@@ -637,12 +645,26 @@ for (const route of ROUTES) {
             .replace(/\/\*[\s\S]*?\*\//g, "")
             .replace(/^\s*@charset\s+(?:"[^"]*"|'[^']*')\s*;\s*/i, "")
             .trim();
-          if (isCss && effectiveCss.length > 0) {
+          // An import-only response has no local style rules. Its imported
+          // resource is not probed by this gate, so HTTP 200 on the wrapper
+          // must not certify that the application has working CSS.
+          // Braces inside quoted import URLs do not create local CSS rules.
+          const withoutQuotedUrls = effectiveCss.replace(
+            /"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'/g,
+            "",
+          );
+          const uncheckedImportsOnly =
+            /^@import\b/i.test(effectiveCss) && !/[{}]/.test(withoutQuotedUrls);
+          if (isCss && effectiveCss.length > 0 && !uncheckedImportsOnly) {
             cssLoaded = true;
             continue;
           }
           brokenCss = true;
-          reason = isCss ? "stylesheet response is empty" : "stylesheet response is not text/css";
+          reason = uncheckedImportsOnly
+            ? "stylesheet contains only unverified @import rules"
+            : isCss
+              ? "stylesheet response is empty"
+              : "stylesheet response is not text/css";
         } catch (error) {
           brokenCss = true;
           reason = error instanceof Error ? error.message : String(error);

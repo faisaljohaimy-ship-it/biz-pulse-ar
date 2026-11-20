@@ -58,17 +58,27 @@ export function advanceSadeedVoiceActivity(input: {
   const startedAt = previous.startedAt;
   const now = Math.max(startedAt, input.now);
   const noSpeechAt = startedAt + config.noSpeechMs;
+  const noSpeechTimedOut = now >= noSpeechAt;
   let heardVoice = previous.heardVoice;
-  // Late first samples must not create speech after the initial timeout.
-  // Pre-deadline speech candidates still receive their voice qualification grace.
-  if (!heardVoice && now >= noSpeechAt && (previous.candidateVoiceAt ?? now) >= noSpeechAt) {
-    return { state: previous, decision: "no-speech" };
-  }
-
   let candidateVoiceAt = previous.candidateVoiceAt;
   let lastVoiceAt = previous.lastVoiceAt;
+  // Invalid clocks must not bypass deadlines or qualify untrusted audio frames.
+  // Pre-deadline speech candidates still receive their voice qualification grace.
+  // Every threshold is required to be positive and finite. Numeric addition
+  // treats null voice clocks as zero; NaN/Infinity still fail closed. Casts
+  // express that JS rule to TypeScript without growing the client bundle.
+  if (
+    !Object.values(config).every((value) => value > 0 && value < Infinity) ||
+    !Number.isFinite(
+      input.now + noSpeechAt + (candidateVoiceAt as number) + (lastVoiceAt as number),
+    ) ||
+    (!heardVoice && noSpeechTimedOut && (candidateVoiceAt ?? now) >= noSpeechAt)
+  ) {
+    return { state: previous, decision: heardVoice ? "complete" : "no-speech" };
+  }
 
-  if (Number.isFinite(input.rms) && Math.max(0, input.rms) >= config.rmsThreshold) {
+  // The validated positive threshold excludes negative/NaN RMS; reject +Infinity too.
+  if (input.rms >= config.rmsThreshold && input.rms < Infinity) {
     candidateVoiceAt ??= now;
     if (heardVoice || now - candidateVoiceAt >= config.minimumVoiceMs) {
       heardVoice = true;
@@ -85,14 +95,16 @@ export function advanceSadeedVoiceActivity(input: {
     heardVoice,
   };
 
-  // The absolute capture cap still takes precedence for established speech.
-  let decision: SadeedVoiceActivityDecision = "continue";
-  if (now - startedAt >= config.maximumCaptureMs) {
-    decision = heardVoice ? "complete" : "no-speech";
-  } else if (!heardVoice && now >= noSpeechAt && candidateVoiceAt === null) {
-    decision = "no-speech";
-  } else if (heardVoice && lastVoiceAt !== null && now - lastVoiceAt >= config.silenceMs) {
-    decision = "complete";
-  }
+  // Preserve the absolute capture cap, silence completion, and no-speech deadline.
+  const finished =
+    now - startedAt >= config.maximumCaptureMs ||
+    (heardVoice
+      ? lastVoiceAt !== null && now - lastVoiceAt >= config.silenceMs
+      : noSpeechTimedOut && candidateVoiceAt === null);
+  const decision: SadeedVoiceActivityDecision = finished
+    ? heardVoice
+      ? "complete"
+      : "no-speech"
+    : "continue";
   return { state, decision };
 }
