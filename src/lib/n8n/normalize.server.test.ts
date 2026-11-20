@@ -256,6 +256,16 @@ describe("sanitizeWebText: ما يفكّه العارض بعد التعقيم (�
 });
 
 describe("normalizePublishedAt", () => {
+  it("fails closed for missing, infinite or NaN publication comparison clocks", () => {
+    const future = "2099-01-01T00:00:00Z";
+    for (const invalidNow of [Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY]) {
+      expect(normalizePublishedAt(future, invalidNow), String(invalidNow)).toBeNull();
+      expect(normalizePublishedAt("2026-09-01T00:00:00Z", invalidNow), String(invalidNow)).toBeNull();
+    }
+    expect(normalizePublishedAt(future, NOW)).toBeNull();
+    expect(normalizePublishedAt("2026-10-31T12:00:00Z", NOW)).toBe("2026-10-31T12:00:00.000Z");
+  });
+
   it("يقبل شكل التاريخ ويعيده ISO معياريًّا", () => {
     expect(normalizePublishedAt("2026-09-01T00:00:00Z", NOW)).toBe("2026-09-01T00:00:00.000Z");
     expect(normalizePublishedAt("2026-09-01", NOW)).toBe("2026-09-01T00:00:00.000Z");
