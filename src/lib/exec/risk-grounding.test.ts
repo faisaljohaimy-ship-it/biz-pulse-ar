@@ -111,6 +111,21 @@ describe("③ الحكم — الصياغة تمرّ والوقائع العدد
     expect(judgeNarration(["z=−٢٫٣٤"], { ...signal, z: -2.34 }, 24).accepted).toBe(true);
   });
 
+  it("rejects scientific notation instead of grounding its mantissa/exponent separately", () => {
+    const withDigits = { ...signal, total7d: 5, critical7d: 1 };
+    // Without the guard, numbersIn(\"1e5\") is [1, 5], both permitted,
+    // so the fabricated 100,000-event claim was incorrectly accepted.
+    for (const narration of [
+      "رُصد 1e5 بلاغ",
+      "رُصد ١e٥ بلاغ",
+      "رُصد 1E+5 بلاغ",
+      "رُصد 1e9999 بلاغ",
+    ]) {
+      expect(judgeNarration([narration], withDigits, 24).accepted).toBe(false);
+    }
+    expect(judgeNarration(["رُصد 5 بلاغات، منها 1 حرج"], withDigits, 24).accepted).toBe(true);
+  });
+
   it("ويُرفض النصّ الفارغ — بندُ خطرٍ بلا سبب أسوأ من بطاقةٍ حتميّة", () => {
     expect(judgeNarration(["عنوان", "   "], signal, 24).accepted).toBe(false);
   });

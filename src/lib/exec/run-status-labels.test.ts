@@ -161,6 +161,20 @@ describe("UI-2 — الحالة المشتقّة من audit_json", () => {
     expect(excludedToolCount({})).toBeNull();
     expect(toolFailureCount({ toolFailures: [{}] })).toBe(1);
   });
+  it("rejects fractional audit measurements rather than silently flooring them", () => {
+    expect(pendingApprovalCount({ pendingApprovals: 0.9 })).toBe(0);
+    expect(pendingApprovalCount({ pendingApprovals: { count: 1.9 } })).toBe(0);
+    expect(toolFailureCount({ toolFailures: 2.9 })).toBeNull();
+    expect(toolFailureCount({ toolFailures: { count: 2.9 } })).toBeNull();
+    expect(excludedToolCount({ excludedTools: { count: 2.9 } })).toBeNull();
+    // A valid counter is still displayed when its sibling is malformed.
+    expect(toolFailureCount({ toolFailures: { failed: 1.5, rejected: 2 } })).toBe(2);
+    expect(toolFailureCount({ toolFailures: { failed: 2, rejected: 0.5 } })).toBe(2);
+    expect(toolFailureCount({ toolFailures: { failed: 0, rejected: 0 } })).toBe(0);
+    expect(runStepsLabel(0.5)).toBe("—");
+    expect(runStepsLabel(3)).toBe("3");
+  });
+
   it("rejects unsafe audit counters rather than showing fabricated precise totals", () => {
     expect(toolFailureCount({ toolFailures: Number.MAX_SAFE_INTEGER + 1 })).toBeNull();
     expect(toolFailureCount({ toolFailures: { count: Number.MAX_SAFE_INTEGER + 1 } })).toBeNull();
@@ -187,7 +201,7 @@ describe("UI-2 — الحالة المشتقّة من audit_json", () => {
     ).toBe(2);
     expect(toolFailureCount({ toolFailures: { failed: 2, rejected: -5 } })).toBe(2);
     expect(toolFailureCount({ toolFailures: { failed: -1, rejected: -2 } })).toBeNull();
-    expect(toolFailureCount({ toolFailures: { failed: 1.9, rejected: 2.9 } })).toBe(3);
+    expect(toolFailureCount({ toolFailures: { failed: 1.9, rejected: 2.9 } })).toBeNull();
   });
 });
 
@@ -199,13 +213,13 @@ describe("UI-1 — عدد الخطوات رقمٌ صحيح أو «—»", () => 
     expect(runStepsLabel(Number.POSITIVE_INFINITY)).toBe("—");
     expect(runStepsLabel(Number.NEGATIVE_INFINITY)).toBe("—");
     expect(runStepsLabel(Number.NaN)).toBe("—");
-    expect(runStepsLabel(2.9)).toBe("2");
+    expect(runStepsLabel(2.9)).toBe("—");
   });
 
   it("الرقم يُعرض كما هو، والمصفوفة (محاكاة) والفراغ «—»", () => {
     expect(runStepsLabel(7)).toBe("7");
     expect(runStepsLabel(0)).toBe("0");
-    expect(runStepsLabel(2.9)).toBe("2");
+    expect(runStepsLabel(2.9)).toBe("—");
     expect(runStepsLabel([])).toBe("—");
     expect(runStepsLabel([1, 2])).toBe("—");
     expect(runStepsLabel(null)).toBe("—");

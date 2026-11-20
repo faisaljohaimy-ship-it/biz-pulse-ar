@@ -256,10 +256,46 @@ describe("sanitizeWebText: ما يفكّه العارض بعد التعقيم (�
 });
 
 describe("normalizePublishedAt", () => {
+  it("does not reinterpret offset-free publication times using the server timezone", () => {
+    // Date.parse("2026-09-01T12:00:00") changes between UTC and Asia/Riyadh.
+    // Source metadata must use an explicit time zone or an unambiguous UTC date.
+    for (const ambiguous of ["2026-09-01T12:00:00", "2026-09-01 12:00:00"]) {
+      expect(normalizePublishedAt(ambiguous, NOW), ambiguous).toBeNull();
+    }
+    expect(normalizePublishedAt("2026-09-01T12:00:00Z", NOW)).toBe("2026-09-01T12:00:00.000Z");
+    expect(normalizePublishedAt("2026-09-01T15:00:00+03:00", NOW)).toBe("2026-09-01T12:00:00.000Z");
+    expect(normalizePublishedAt("2026-09-01", NOW)).toBe("2026-09-01T00:00:00.000Z");
+  });
+
+  it("fails closed for missing, infinite or NaN publication comparison clocks", () => {
+    const future = "2099-01-01T00:00:00Z";
+    for (const invalidNow of [Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY]) {
+      expect(normalizePublishedAt(future, invalidNow), String(invalidNow)).toBeNull();
+      expect(
+        normalizePublishedAt("2026-09-01T00:00:00Z", invalidNow),
+        String(invalidNow),
+      ).toBeNull();
+    }
+    expect(normalizePublishedAt(future, NOW)).toBeNull();
+    expect(normalizePublishedAt("2026-10-31T12:00:00Z", NOW)).toBe("2026-10-31T12:00:00.000Z");
+  });
+
   it("يقبل شكل التاريخ ويعيده ISO معياريًّا", () => {
     expect(normalizePublishedAt("2026-09-01T00:00:00Z", NOW)).toBe("2026-09-01T00:00:00.000Z");
     expect(normalizePublishedAt("2026-09-01", NOW)).toBe("2026-09-01T00:00:00.000Z");
     expect(normalizePublishedAt("2026-09-01T03:00:00+03:00", NOW)).toBe("2026-09-01T00:00:00.000Z");
+  });
+
+  it("rejects calendar-overflowed dates instead of silently moving publication to the next month", () => {
+    for (const invalid of ["2026-02-29", "2026-02-30T00:00:00Z", "2026-04-31"]) {
+      expect(normalizePublishedAt(invalid, NOW), invalid).toBeNull();
+    }
+    expect(normalizePublishedAt("2024-02-29", NOW)).toBe("2024-02-29T00:00:00.000Z");
+    // A real timestamp crossing UTC midnight remains valid for its local calendar day.
+    expect(normalizePublishedAt("2026-09-01T23:30:00-08:00", NOW)).toBe("2026-09-02T07:30:00.000Z");
+    expect(
+      normalizeResearchResults([raw({ publishedAt: "2026-02-30" })], 1, NOW)[0]?.publishedAt,
+    ).toBeNull();
   });
 
   it("يُسقط: null · ما ليس بشكل ISO · غير قابل للتحليل · بعد الغد", () => {
@@ -336,6 +372,32 @@ describe("normalizeResearchResults", () => {
     );
     expect(r.snippet).not.toMatch(/ignore previous instructions/i);
     expect(r.snippet).not.toMatch(/\[WEB:/);
+  });
+
+  it("does not emit a result when the limit is zero, negative, fractional or non-finite", () => {
+    const items = [
+      raw({ url: "https://a.example.com/1" }),
+      raw({ url: "https://b.example.com/2" }),
+      raw({ url: "https://c.example.com/3" }),
+    ];
+    for (const invalidLimit of [0, -1, 0.5, 1.5, Number.NaN, Number.POSITIVE_INFINITY]) {
+      expect(normalizeResearchResults(items, invalidLimit, NOW), String(invalidLimit)).toEqual([]);
+    }
+    expect(normalizeResearchResults(items, 1, NOW)).toHaveLength(1);
+    expect(normalizeResearchResults(items, 2, NOW)).toHaveLength(2);
+  });
+
+  it("rejects above-contract result counts instead of returning more than five results", () => {
+    const items = Array.from({ length: 7 }, (_, i) =>
+      raw({ url: `https://source${i}.example.com/${i}`, title: String(i) }),
+    );
+    // The downstream normalizer must enforce the same 1..5 input contract
+    // even if an unexpected runtime caller bypasses earlier schema checks.
+    for (const invalidLimit of [6, 7, 500, Number.MAX_SAFE_INTEGER]) {
+      expect(normalizeResearchResults(items, invalidLimit, NOW), String(invalidLimit)).toEqual([]);
+    }
+    expect(normalizeResearchResults(items, 5, NOW)).toHaveLength(5);
+    expect(normalizeResearchResults(items, 1, NOW)).toHaveLength(1);
   });
 
   it("قائمة فارغة ⇒ فارغة", () => {

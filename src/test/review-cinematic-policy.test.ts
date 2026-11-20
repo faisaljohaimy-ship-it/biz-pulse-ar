@@ -38,6 +38,17 @@ test("the hold does not add hover pauses, controls or JavaScript animation loops
   assert.ok(!css.includes("animation-duration:"));
 });
 
+test("every published MCP tool has an explicitly closed argument object", () => {
+  for (const tool of manifest.mcp.tools) {
+    assert.equal(tool.inputSchema.type, "object", tool.name);
+    assert.equal(
+      tool.inputSchema.additionalProperties,
+      false,
+      `${tool.name}: undeclared input keys must be rejected by the advertised schema`,
+    );
+  }
+});
+
 for (const name of ["ask_sadeed", "hcis_status", "ptw_active_permits"]) {
   test(`${name} declares the reviewed closed input schema`, () => {
     const tool = manifest.mcp.tools.find((value: { name: string }) => value.name === name);

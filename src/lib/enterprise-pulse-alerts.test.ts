@@ -76,6 +76,16 @@ describe("Enterprise Pulse executive risk alerts", () => {
     ]);
   });
 
+  it("rejects coerced null, string and boolean risk telemetry in alert cards", () => {
+    const crises = [
+      crisis("missing", null as unknown as number),
+      crisis("string-critical", "99" as unknown as number),
+      crisis("boolean", true as unknown as number),
+      crisis("legitimate", 81),
+    ];
+    expect(deriveAlerts(crises).map((alert) => alert.id)).toEqual(["legitimate"]);
+  });
+
   it("preserves original ordering for equal risks and does not mutate the source", () => {
     const crises = [crisis("first", 69), crisis("second", 69), crisis("third", 80)];
     expect(deriveAlerts(crises).map((alert) => alert.id)).toEqual(["third", "first", "second"]);
@@ -98,6 +108,19 @@ describe("Enterprise Pulse overall risk status", () => {
       crisis("warning", 65),
     ];
     expect(deriveStatus(crises)).toEqual({ status: "warning", health: 77 });
+  });
+
+  it("does not elevate status using coerced numeric strings, booleans or nulls", () => {
+    const malformed = [
+      crisis("missing", null as unknown as number),
+      crisis("string-critical", "99" as unknown as number),
+      crisis("boolean", true as unknown as number),
+    ];
+    expect(deriveStatus(malformed)).toEqual({ status: "healthy", health: 100 });
+    expect(deriveStatus([...malformed, crisis("real", 81)])).toEqual({
+      status: "critical",
+      health: 72,
+    });
   });
 
   it("keeps existing healthy fallback and valid 0/100 boundaries", () => {

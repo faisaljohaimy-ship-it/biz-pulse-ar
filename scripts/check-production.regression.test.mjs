@@ -411,6 +411,32 @@ test("resolves named &sol; references in stylesheet paths", async () => {
   assert.equal(await runFixture(html), null);
 });
 
+// HTML decodes &bsol; into a backslash before resolving an HTTP stylesheet
+// URL. WHATWG URL treats that backslash as a path separator, so checking the
+// undecoded literal would wrongly certify an unrelated healthy CSS decoy.
+test("rejects a CSS decoy hidden behind named &bsol; in href", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="stylesheet" href="/assets&bsol;app.css">',
+  );
+  const cssAssets = {
+    "https://offline.invalid/assets&bsol;app.css": { status: 200 },
+    "https://offline.invalid/assets/app.css": { status: 404 },
+  };
+  assert.equal(
+    await runFixture(html, "text/html", 200, "text/css", "body {}", 200, undefined, cssAssets),
+    1,
+  );
+});
+
+test("accepts working CSS addressed with a named &bsol; separator", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="stylesheet" href="/assets&bsol;app.css">',
+  );
+  assert.equal(await runFixture(html), null);
+});
+
 test("resolves named references in base URLs and relative stylesheet paths", async () => {
   const html = normalPage.replace(
     '<link rel="stylesheet" href="/assets/app.css">',
@@ -1056,6 +1082,54 @@ test("rejects multiple CSS comments and whitespace with no styling rules", async
   );
 });
 
+// An import-only CSS wrapper can return HTTP 200 while all its real styles
+// live in an imported URL that this release gate never checks.
+test("rejects an import-only stylesheet without verified local rules", async () => {
+  assert.equal(
+    await runFixture(normalPage, "text/html", 200, "text/css", '@import url("/missing.css");'),
+    1,
+  );
+});
+
+test("rejects import-only CSS after comments and a charset declaration", async () => {
+  assert.equal(
+    await runFixture(
+      normalPage,
+      "text/html",
+      200,
+      "text/css",
+      '/* build banner */ @charset "UTF-8"; @import "/a.css"; @import url("/b.css") screen;',
+    ),
+    1,
+  );
+});
+
+test("does not count braces inside quoted import URLs as local CSS rules", async () => {
+  assert.equal(
+    await runFixture(
+      normalPage,
+      "text/html",
+      200,
+      "text/css",
+      '@import url("/missing{not-a-rule}.css");',
+    ),
+    1,
+  );
+});
+
+test("accepts an imported stylesheet when real local CSS rules also exist", async () => {
+  assert.equal(
+    await runFixture(
+      normalPage,
+      "text/html",
+      200,
+      "text/css",
+      '@import url("/optional.css"); body { color: navy; }',
+    ),
+    null,
+  );
+});
+
 test("accepts functional CSS following a build banner comment", async () => {
   assert.equal(
     await runFixture(
@@ -1437,6 +1511,9 @@ for (const routeSetting of [
   "/sec/twin#overview", // Fragment silently drops the expected route suffix.
   "/sec/twin/../..", // URL normalization makes this a probe of "/".
   "/sec/%2e%2e/", // Percent-encoded dot segments also normalize to "/".
+  "/sec%2Ftwin", // Downstream decoding can change the probed route to /sec/twin.
+  "/sec%5Ctwin", // Encoded backslash is an ambiguous route separator.
+  "/sec%2Ftwin?mode=demo", // Queries must not disguise encoded path separators.
 ]) {
   test(`rejects empty or unsafe production ROUTES=${JSON.stringify(routeSetting)} before requests`, async () => {
     const halt = new Error("invalid route configuration");
@@ -1869,3 +1946,38 @@ test("retains delayed meta refresh after quoted angle bracket attribute", async 
   );
   assert.equal(await runFixture(html), null);
 });
+
+// A URL parser may drop embedded tabs/newlines or turn backslashes into
+// separators. A typo must not silently certify a different production origin.
+for (const base of [
+  "https://off\tline.invalid",
+  "https://off\nline.invalid",
+  "https:\\offline.invalid",
+  "https://offline.invalid\\",
+]) {
+  test(`rejects ambiguous production URL control characters: ${JSON.stringify(base)}`, async () => {
+    const halt = new Error("invalid production origin");
+    let fetchCalls = 0;
+    const context = vm.createContext({
+      process: {
+        env: { PRODUCTION_URL: base, ROUTES: "/", ATTEMPTS: "1" },
+        exit(code) {
+          assert.equal(code, 1);
+          throw halt;
+        },
+      },
+      console: { log() {}, error() {} },
+      AbortSignal,
+      URL,
+      async fetch() {
+        fetchCalls++;
+        throw new Error("invalid production origins must not make network requests");
+      },
+    });
+    await assert.rejects(
+      new vm.Script(`(async () => {\n${executableSource}\n})()`).runInContext(context),
+      (error) => error === halt,
+    );
+    assert.equal(fetchCalls, 0);
+  });
+}

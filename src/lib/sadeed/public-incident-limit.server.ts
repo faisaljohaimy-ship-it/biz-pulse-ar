@@ -21,6 +21,9 @@ const buckets = new Map<string, IncidentBucket>();
 let lastObservedNow: number | undefined;
 
 export function allowIncidentDuringStorageOutage(bucketKey: string, now = Date.now()): boolean {
+  // A malformed or unsafe wall clock must not reset active quotas, poison the
+  // rollback baseline or create immortal entries. Deny without mutating state.
+  if (!Number.isSafeInteger(now)) return false;
   // A host clock rollback must not leave exhausted buckets blocked until the
   // old wall-clock time returns. Rebase ALL windows by the same delta to keep
   // their ages, counts and oldest-first eviction order intact (fail closed).
