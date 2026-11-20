@@ -68,7 +68,7 @@ export function advanceSadeedVoiceActivity(input: {
   // treats null voice clocks as zero; NaN/Infinity still fail closed. Casts
   // express that JS rule to TypeScript without growing the client bundle.
   if (
-    Object.values(config).some((value) => !(value > 0 && value < Infinity)) ||
+    !Object.values(config).every((value) => value > 0 && value < Infinity) ||
     !Number.isFinite(
       input.now + noSpeechAt + (candidateVoiceAt as number) + (lastVoiceAt as number),
     ) ||
@@ -78,7 +78,7 @@ export function advanceSadeedVoiceActivity(input: {
   }
 
   // The validated positive threshold excludes negative/NaN RMS; reject +Infinity too.
-  if (input.rms >= config.rmsThreshold && input.rms !== Infinity) {
+  if (input.rms >= config.rmsThreshold && input.rms < Infinity) {
     candidateVoiceAt ??= now;
     if (heardVoice || now - candidateVoiceAt >= config.minimumVoiceMs) {
       heardVoice = true;
