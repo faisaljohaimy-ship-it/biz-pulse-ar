@@ -1104,6 +1104,19 @@ test("rejects import-only CSS after comments and a charset declaration", async (
   );
 });
 
+test("does not count braces inside quoted import URLs as local CSS rules", async () => {
+  assert.equal(
+    await runFixture(
+      normalPage,
+      "text/html",
+      200,
+      "text/css",
+      '@import url("/missing{not-a-rule}.css");',
+    ),
+    1,
+  );
+});
+
 test("accepts an imported stylesheet when real local CSS rules also exist", async () => {
   assert.equal(
     await runFixture(
