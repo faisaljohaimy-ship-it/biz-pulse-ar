@@ -411,6 +411,32 @@ test("resolves named &sol; references in stylesheet paths", async () => {
   assert.equal(await runFixture(html), null);
 });
 
+// HTML decodes &bsol; into a backslash before resolving an HTTP stylesheet
+// URL. WHATWG URL treats that backslash as a path separator, so checking the
+// undecoded literal would wrongly certify an unrelated healthy CSS decoy.
+test("rejects a CSS decoy hidden behind named &bsol; in href", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="stylesheet" href="/assets&bsol;app.css">',
+  );
+  const cssAssets = {
+    "https://offline.invalid/assets&bsol;app.css": { status: 200 },
+    "https://offline.invalid/assets/app.css": { status: 404 },
+  };
+  assert.equal(
+    await runFixture(html, "text/html", 200, "text/css", "body {}", 200, undefined, cssAssets),
+    1,
+  );
+});
+
+test("accepts working CSS addressed with a named &bsol; separator", async () => {
+  const html = normalPage.replace(
+    '<link rel="stylesheet" href="/assets/app.css">',
+    '<link rel="stylesheet" href="/assets&bsol;app.css">',
+  );
+  assert.equal(await runFixture(html), null);
+});
+
 test("resolves named references in base URLs and relative stylesheet paths", async () => {
   const html = normalPage.replace(
     '<link rel="stylesheet" href="/assets/app.css">',
