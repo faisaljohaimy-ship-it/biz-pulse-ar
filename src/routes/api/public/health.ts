@@ -64,16 +64,14 @@ export const Route = createFileRoute("/api/public/health")({
               const isPermission = /permission|rls|denied/i.test(error.message);
               db = isPermission
                 ? { status: "ok", latency_ms: latency, detail: "reachable" }
-                : { status: "degraded", latency_ms: latency, detail: error.message };
+                : { status: "degraded", latency_ms: latency, detail: "query_failed" };
             } else {
               db = { status: "ok", latency_ms: latency };
             }
           }
-        } catch (e) {
-          db = {
-            status: "down",
-            detail: e instanceof Error ? e.message : String(e),
-          };
+        } catch {
+          // Anonymous readiness must not expose Supabase driver or connection details.
+          db = { status: "down", detail: "connection_failed" };
         }
 
         // VIBE 5.1: مخزن حدّ المعدّل — فحصٌ حقيقي بمهلة، وحالة القاطع وسياسة التدهور.
@@ -89,11 +87,9 @@ export const Route = createFileRoute("/api/public/health")({
           rateLimitStorage = probe.unavailable
             ? { status: "down", latency_ms: Date.now() - t0, detail }
             : { status: "ok", latency_ms: Date.now() - t0, detail };
-        } catch (e) {
-          rateLimitStorage = {
-            status: "down",
-            detail: e instanceof Error ? e.message : String(e),
-          };
+        } catch {
+          // Keep private rate-limit storage diagnostics out of public health JSON.
+          rateLimitStorage = { status: "down", detail: "probe_failed" };
         }
 
         const subsystems: Record<string, Subsystem> = {
