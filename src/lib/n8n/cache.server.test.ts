@@ -189,6 +189,24 @@ describe("المفتاح: الموجز المعياري", () => {
     for (const v of variants) expect(cacheKeyOf(v)).not.toBe(k);
   });
 
+  it("keeps distinct briefs separate when terms or codes contain cache key separators", () => {
+    // The brief schema permits control characters. Joining raw terms with U+0001
+    // made one term indistinguishable from two terms in the same cache scope.
+    const single = cacheKeyOf({ ...base, terms: ["alpha\\u0001beta"], codes: [] });
+    const split = cacheKeyOf({ ...base, terms: ["alpha", "beta"], codes: [] });
+    expect(single).not.toBe(split);
+
+    // U+0002 is the separator between top-level fields. A term containing it
+    // previously collided with the same characters split across terms and codes.
+    const acrossFields = cacheKeyOf({ ...base, terms: ["1\\u00022"], codes: ["3"] });
+    const separateFields = cacheKeyOf({ ...base, terms: ["1"], codes: ["2\\u00023"] });
+    expect(acrossFields).not.toBe(separateFields);
+
+    const { c } = make();
+    c.set(single, "first-brief", H);
+    expect(c.get(split)).toEqual({ kind: "miss" });
+  });
+
   it("المفتاح لا يحمل هوية: لا مدخل لها في النوع أصلًا", () => {
     expect(Object.keys(base).sort()).toEqual(
       ["codes", "freshness", "lang", "maxResults", "mode", "surface", "terms"].sort(),
