@@ -125,6 +125,10 @@ const NON_PUBLIC_TLDS: ReadonlySet<string> = new Set([
   "corp",
   "intranet",
   "onion",
+  // RFC 2606 special-use TLDs: these cannot identify publicly resolvable sources.
+  "test",
+  "example",
+  "invalid",
 ]);
 
 /**
