@@ -1411,19 +1411,20 @@ describe.skipIf(process.platform === "win32")(
       }
     });
 
+    const AKIA = ["AKIA", "IOSFODNN7EXAMPLE"].join("");
     const hostileCases: Array<[string, string]> = [
       ["سرّ بعد ++ (P1)", `echo '++${AKIA}' >> src/styles/a.css`],
       ["رابط رمزي", `ln -s /etc/hostname src/styles/l.css`],
-      [".gitattributes", `printf '* filter=x\\\\n' > .gitattributes`],
+      [".gitattributes", `printf '* filter=x\\n' > .gitattributes`],
       ["ملف خارج الجذور", `echo x > package.json`],
       ["صلاحية تنفيذ", `echo 'a{}' > src/styles/n.css; chmod +x src/styles/n.css`],
       ["قيمة المفتاح الحرفية", `echo "/* $GROQ_API_KEY */" >> src/styles/a.css`],
       ["بريد حقيقي", `echo '/* owner@corp.sa */' >> src/styles/a.css`],
-      ["ثنائي (NUL)", `printf 'a\\\\000b\\\\001' > src/styles/b.css`],
-      ["بايتات غير UTF-8", `printf 'x\\\\351y\\\\n' > src/styles/c.css`],
+      ["ثنائي (NUL)", `printf 'a\\000b\\001' > src/styles/b.css`],
+      ["بايتات غير UTF-8", `printf 'x\\351y\\n' > src/styles/c.css`],
       [
         "إعدادات git عدائية",
-        `mkdir .git; printf '[core]\\\\n\\\\tfsmonitor = touch ${"__PWNED__"}\\\\n' > .git/config; echo 'b{}' >> src/styles/a.css; printf '* diff=x\\\\n' > src/styles/.gitattributes`,
+        `mkdir .git; printf '[core]\\n\\tfsmonitor = touch ${"__PWNED__"}\\n' > .git/config; echo 'b{}' >> src/styles/a.css; printf '* diff=x\\n' > src/styles/.gitattributes`,
       ],
     ];
     it("تغطي مجموعة المخرجات العدائية جميع فئات الرفض", () => {
