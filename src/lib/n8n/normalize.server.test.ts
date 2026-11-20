@@ -256,6 +256,21 @@ describe("sanitizeWebText: ما يفكّه العارض بعد التعقيم (�
 });
 
 describe("normalizePublishedAt", () => {
+  it("does not reinterpret offset-free publication times using the server timezone", () => {
+    // Date.parse("2026-09-01T12:00:00") changes between UTC and Asia/Riyadh.
+    // Source metadata must use an explicit time zone or an unambiguous UTC date.
+    for (const ambiguous of ["2026-09-01T12:00:00", "2026-09-01 12:00:00"]) {
+      expect(normalizePublishedAt(ambiguous, NOW), ambiguous).toBeNull();
+    }
+    expect(normalizePublishedAt("2026-09-01T12:00:00Z", NOW)).toBe(
+      "2026-09-01T12:00:00.000Z",
+    );
+    expect(normalizePublishedAt("2026-09-01T15:00:00+03:00", NOW)).toBe(
+      "2026-09-01T12:00:00.000Z",
+    );
+    expect(normalizePublishedAt("2026-09-01", NOW)).toBe("2026-09-01T00:00:00.000Z");
+  });
+
   it("fails closed for missing, infinite or NaN publication comparison clocks", () => {
     const future = "2099-01-01T00:00:00Z";
     for (const invalidNow of [Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY]) {
