@@ -28,10 +28,7 @@ describe("anonymous incident fallback — invalid clock", () => {
       expect(allowIncidentDuringStorageOutage("incident:existing", 1_000)).toBe(false);
       expect(allowIncidentDuringStorageOutage("incident:new", 1_000)).toBe(true);
       expect(
-        allowIncidentDuringStorageOutage(
-          "incident:existing",
-          1_000 + INCIDENT_FALLBACK_WINDOW_MS,
-        ),
+        allowIncidentDuringStorageOutage("incident:existing", 1_000 + INCIDENT_FALLBACK_WINDOW_MS),
       ).toBe(true);
     },
   );
