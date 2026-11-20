@@ -99,7 +99,24 @@ describe("FR-19 evidence identity and timestamp validation", () => {
   it("refuses to certify missing or unrecognized evidence provenance kinds", () => {
     vi.spyOn(Date, "now").mockReturnValue(NOW);
     const valid = evidenceAt(new Date(NOW).toISOString());
-    for (const kind of [undefined, null, "", "unverified.generated", 123]) {
+    // Runtime/JSON values must not impersonate trusted kinds via JS coercion.
+    const throwingKind = {
+      toString: () => {
+        throw Error("untrusted coercion");
+      },
+    };
+    for (const kind of [
+      undefined,
+      null,
+      "",
+      "unverified.generated",
+      123,
+      ["runtime.probe"],
+      ["db.query"],
+      { toString: () => "runtime.probe" },
+      throwingKind,
+      Symbol("runtime.probe"),
+    ]) {
       const malformed = { ...valid, kind } as unknown as Evidence;
       expect(hasEvidence(malformed)).toBe(false);
       expect(isFresh(malformed)).toBe(false);
