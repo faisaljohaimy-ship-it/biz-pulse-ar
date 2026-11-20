@@ -66,6 +66,31 @@ describe("الصلاحية", () => {
     expect(c.get("k")).toEqual({ kind: "miss" });
   });
 
+  it("ساعة غير صالحة أو مهلة غير محدودة لا تثبّت نتيجة إلى الأبد", () => {
+    const { c, clock } = make();
+    for (const ttl of [Number.NaN, Number.POSITIVE_INFINITY, -1, 0]) {
+      c.set("invalid", "v", ttl);
+      expect(c.get("invalid")).toEqual({ kind: "miss" });
+    }
+    clock.t = Number.NaN;
+    c.set("bad-clock", "v", H);
+    c.setNegative("bad-negative", "timeout");
+    expect(c.size).toBe(0);
+  });
+
+  it("تراجع الساعة أو فسادها يُسقط الإدخال بدل تمديد الكاش السلبي أو الإيجابي", () => {
+    const { c, clock } = make();
+    c.setNegative("failure", "network");
+    clock.t -= 1;
+    expect(c.get("failure")).toEqual({ kind: "miss" });
+
+    clock.t = 10_000;
+    c.set("answer", "ok", H);
+    clock.t = Number.POSITIVE_INFINITY;
+    expect(c.get("answer")).toEqual({ kind: "miss" });
+    expect(c.size).toBe(0);
+  });
+
   it("كتابة موجبة بعد سالبة على المفتاح نفسه تستبدلها", () => {
     const { c } = make();
     c.setNegative("k", "timeout");
