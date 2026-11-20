@@ -74,8 +74,19 @@ export interface Evidence {
  * wrongly certify a fabricated observation as LIVE. Require a complete ISO
  * timestamp and validate its Gregorian calendar day before parsing.
  */
+// Evidence can cross a JSON/runtime boundary where TypeScript's union is not enforced.
+// An unknown or missing provenance class must not qualify a value for a LIVE badge.
+const VALID_EVIDENCE_KIND =
+  /^(?:db\.query|runtime\.probe|cert\.public|audit\.log|external\.api|reference\.builtin|derived\.computed|human\.attested)$/;
+
 export function hasEvidence(e: Evidence | null | undefined): e is Evidence {
-  if (!e || typeof e.source !== "string" || !e.source.trim() || typeof e.observedAt !== "string")
+  if (
+    !e ||
+    !VALID_EVIDENCE_KIND.test(e.kind) ||
+    typeof e.source !== "string" ||
+    !e.source.trim() ||
+    typeof e.observedAt !== "string"
+  )
     return false;
   const value = e.observedAt;
   const match =
@@ -84,8 +95,8 @@ export function hasEvidence(e: Evidence | null | undefined): e is Evidence {
     );
   return (
     !!match &&
-    Number.isFinite(Date.parse(value)) &&
-    new Date(value.slice(0, value.indexOf("T"))).getUTCDate() === +match[1]
+    !Number.isNaN(Date.parse(value)) &&
+    new Date(value.split("T")[0]).getUTCDate() === +match[1]
   );
 }
 
