@@ -41,7 +41,12 @@ describe("FR-19 freshness: do not certify future or stale readings", () => {
   it("rejects non-finite or impossible wall clocks even with a valid observation", () => {
     const recent = evidenceAt(new Date(NOW).toISOString());
     const clock = vi.spyOn(Date, "now");
-    for (const invalidNow of [Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, 1e20]) {
+    for (const invalidNow of [
+      Number.NaN,
+      Number.POSITIVE_INFINITY,
+      Number.NEGATIVE_INFINITY,
+      1e20,
+    ]) {
       clock.mockReturnValue(invalidNow);
       expect(isFresh(recent)).toBe(false);
       expect(isFresh(recent, Number.POSITIVE_INFINITY)).toBe(false);
