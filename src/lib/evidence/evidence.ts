@@ -109,14 +109,14 @@ export function measured<T>(
   evidence: readonly Evidence[],
   confidence: Confidence = "measured",
 ): GroundedValue<T> {
-  if (evidence.length === 0) {
-    throw new Error("بلا دليل");
+  if (!evidence.length) {
+    throw Error("بلا دليل");
   }
   // `hasEvidence` مُحدِّدُ نوع، فنفيُه على `Evidence` يضيّق إلى `never`.
   // فيُلفّ في دالّةٍ تعيد منطقيًّا خالصًا — الفحص نفسه بلا تضييق.
   for (const item of evidence) {
     if (!(hasEvidence(item) as boolean)) {
-      throw new Error(`FR-19: ${item.source}`);
+      throw Error(`FR-19: ${item.source}`);
     }
   }
   return { measured: true, value, evidence, confidence };
@@ -125,7 +125,7 @@ export function measured<T>(
 /** يبني غيابًا يحمل سببه. **يرمي على سببٍ فارغ.** */
 export function unmeasured(reason: string): UnmeasuredValue {
   if (!reason.trim()) {
-    throw new Error("غياب بلا سبب");
+    throw Error("بلا سبب");
   }
   return { measured: false, reason };
 }
@@ -182,7 +182,7 @@ export function deriveFrom<T>(
   const missing = inputs.find((i): i is UnmeasuredValue => !i.measured);
   if (missing) return unmeasured(missing.reason);
   const evidence = inputs.flatMap((i) => (i as GroundedValue<unknown>).evidence);
-  if (evidence.length === 0) return unmeasured("لا مدخلات");
+  if (!evidence.length) return unmeasured("لا مدخلات");
   const self: Evidence = {
     kind: "derived.computed",
     source: opts?.source ?? "derived",
