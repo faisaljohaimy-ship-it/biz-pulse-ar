@@ -26,9 +26,10 @@ describe("SADEED voice activity — invalid runtime thresholds", () => {
       decision: "no-speech",
     });
     const speaking = { ...idle, heardVoice: true, candidateVoiceAt: 20, lastVoiceAt: 60 };
-    expect(
-      advanceSadeedVoiceActivity({ state: speaking, rms: 0.02, now: 100, config }),
-    ).toEqual({ state: speaking, decision: "complete" });
+    expect(advanceSadeedVoiceActivity({ state: speaking, rms: 0.02, now: 100, config })).toEqual({
+      state: speaking,
+      decision: "complete",
+    });
   });
 
   it("preserves sustained speech detection for valid defaults", () => {
