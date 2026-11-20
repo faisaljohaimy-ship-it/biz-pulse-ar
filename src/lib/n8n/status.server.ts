@@ -14,7 +14,13 @@ import type { N8nSurface } from "./protocol";
 /** نافذة آخر N زمن خدمة ناجحة (مللي ثانية). */
 export class LatencyWindow {
   private readonly samples: number[] = [];
-  constructor(private readonly max = 100) {}
+  private readonly max: number;
+
+  constructor(max = 100) {
+    // Invalid or unbounded limits disable eviction and can retain every latency forever.
+    // Zero keeps the existing intentionally-empty window behavior.
+    this.max = Number.isSafeInteger(max) && max >= 0 && max <= 1_000 ? max : 100;
+  }
 
   record(ms: number): void {
     if (!Number.isFinite(ms) || ms < 0) return;
