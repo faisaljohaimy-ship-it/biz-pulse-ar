@@ -55,13 +55,15 @@ describe("outbound HTTP failure envelopes do not expose untrusted diagnostics", 
     expect((callerFailure as ApiError).code).toBe("upstream_timeout");
     expect(JSON.stringify(toApiErrorShape(callerFailure))).not.toContain(privateMarker);
 
-    globalThis.fetch = (async (_input, init) => new Promise<Response>((_resolve, reject) => {
+    globalThis.fetch = async (_input: RequestInfo | URL, init?: RequestInit) => {
+      return new Promise<Response>((_resolve, reject) => {
         init?.signal?.addEventListener(
           "abort",
           () => reject(Object.assign(new Error("aborted"), { name: "AbortError" })),
           { once: true },
         );
-      })) as typeof fetch;
+      });
+    };
     const deadlineFailure = await httpFetch(sensitiveUrl, {
       retries: 0,
       timeoutMs: 20,
@@ -72,8 +74,7 @@ describe("outbound HTTP failure envelopes do not expose untrusted diagnostics", 
   });
 
   it("retains a developer-provided safe label and status diagnostics", async () => {
-    globalThis.fetch = (async () =>
-      new Response("maintenance", { status: 503 })) as typeof fetch;
+    globalThis.fetch = async () => new Response("maintenance", { status: 503 });
     const failure = await httpJson(sensitiveUrl, {
       retries: 0,
       label: "approved-service",
