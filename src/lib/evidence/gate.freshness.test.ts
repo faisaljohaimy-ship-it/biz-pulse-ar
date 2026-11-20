@@ -96,6 +96,29 @@ describe("FR-19 evidence identity and timestamp validation", () => {
     expect(isFresh(evidenceAt("2026-02-30T10:00:00.000Z"))).toBe(false);
   });
 
+  it("refuses to certify missing or unrecognized evidence provenance kinds", () => {
+    vi.spyOn(Date, "now").mockReturnValue(NOW);
+    const valid = evidenceAt(new Date(NOW).toISOString());
+    for (const kind of [undefined, null, "", "unverified.generated", 123]) {
+      const malformed = { ...valid, kind } as unknown as Evidence;
+      expect(hasEvidence(malformed)).toBe(false);
+      expect(isFresh(malformed)).toBe(false);
+    }
+    for (const kind of [
+      "db.query",
+      "runtime.probe",
+      "cert.public",
+      "audit.log",
+      "external.api",
+      "reference.builtin",
+      "derived.computed",
+      "human.attested",
+    ] as const) {
+      expect(hasEvidence({ ...valid, kind })).toBe(true);
+      expect(isFresh({ ...valid, kind })).toBe(true);
+    }
+  });
+
   it("requires a nonblank source for both evidence and freshness", () => {
     vi.spyOn(Date, "now").mockReturnValue(NOW);
     const blankSource = { ...evidenceAt(new Date(NOW).toISOString()), source: "  " };
