@@ -65,9 +65,7 @@ export function advanceSadeedVoiceActivity(input: {
   // Invalid clocks must not bypass deadlines or qualify untrusted audio frames.
   // Pre-deadline speech candidates still receive their voice qualification grace.
   if (
-    !Number.isFinite(
-      input.now + noSpeechAt + (candidateVoiceAt ?? 0) + (lastVoiceAt ?? 0),
-    ) ||
+    !Number.isFinite(input.now + noSpeechAt + (candidateVoiceAt ?? 0) + (lastVoiceAt ?? 0)) ||
     (!heardVoice && noSpeechTimedOut && (candidateVoiceAt ?? now) >= noSpeechAt)
   ) {
     return { state: previous, decision: heardVoice ? "complete" : "no-speech" };
