@@ -262,9 +262,7 @@ describe("normalizePublishedAt", () => {
     for (const ambiguous of ["2026-09-01T12:00:00", "2026-09-01 12:00:00"]) {
       expect(normalizePublishedAt(ambiguous, NOW), ambiguous).toBeNull();
     }
-    expect(normalizePublishedAt("2026-09-01T12:00:00Z", NOW)).toBe(
-      "2026-09-01T12:00:00.000Z",
-    );
+    expect(normalizePublishedAt("2026-09-01T12:00:00Z", NOW)).toBe("2026-09-01T12:00:00.000Z");
     expect(normalizePublishedAt("2026-09-01T15:00:00+03:00", NOW)).toBe(
       "2026-09-01T12:00:00.000Z",
     );
