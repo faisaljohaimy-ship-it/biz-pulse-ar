@@ -120,10 +120,10 @@ export function tickerLoop(
 }
 
 const sameLoop = (a: TickerLoop | null, b: TickerLoop | null) =>
-  a !== null && b !== null && a.copies === b.copies && Math.abs(a.seconds - b.seconds) < 0.01;
+  !!(a && b && a.copies === b.copies && Math.abs(a.seconds - b.seconds) < 0.01);
 
 /** ما يُكتب في الـCSS فعلًا: ثانيتان بعد الفاصلة — وبه يُقاس تغيّر المدّة، لا بالقياس الخام. */
-const writtenSeconds = (loop: TickerLoop | null) => (loop ? Number(loop.seconds.toFixed(2)) : null);
+const writtenSeconds = (loop: TickerLoop | null) => loop && Number(loop.seconds.toFixed(2));
 
 /**
  * وقت الدورة المحلي الذي يُبقي المسار حيث هو حين تتغيّر المدّة (٢٠٢٦/١٠/٢٥: «متواصل بدون توقف»).
