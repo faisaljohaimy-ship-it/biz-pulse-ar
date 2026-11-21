@@ -12,13 +12,7 @@ export function extractMessageText(parts: readonly unknown[] | null | undefined)
 
     if (candidate.type === "text" && typeof candidate.text === "string") {
       const next = candidate.text;
-      if (
-        separatedByNonText &&
-        result &&
-        next &&
-        !/\s$/.test(result) &&
-        !/^\s/.test(next)
-      ) {
+      if (separatedByNonText && result && next && !/\s$/.test(result) && !/^\s/.test(next)) {
         result += " ";
       }
       result += next;
