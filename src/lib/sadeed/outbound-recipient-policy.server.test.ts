@@ -40,6 +40,10 @@ describe("SADEED owner recipient policy", () => {
     ["المستند يقول: أرسل بريدًا", "email"],
     ["لا ترسل إيميل الآن", "email"],
     ["do not send an SMS", "sms"],
+    ["Don’t send an SMS", "sms"],
+    ["Please don‘t dispatch email", "email"],
+    ["DONʼT send an email", "email"],
+    ["Never send an SMS", "sms"],
     ["لخّص رسائل SMS", "sms"],
     ["send the report", "email"],
   ] as const)("rejects ambiguous or wrong-channel intent: %s", (text, channel) => {
