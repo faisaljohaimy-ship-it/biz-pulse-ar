@@ -66,7 +66,6 @@ function jsonError(message: string, status: number) {
   return Response.json({ error: message }, { status, headers: NO_STORE_HEADERS });
 }
 
-
 function sanitizeHistory(value: unknown): SadeedMessage[] {
   if (!Array.isArray(value)) return [];
   return value
