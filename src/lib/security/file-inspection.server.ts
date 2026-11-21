@@ -242,6 +242,17 @@ function inspectZip(bytes: Uint8Array): ZipSummary {
         "Unsafe Office archive paths are blocked.",
       );
     }
+    // ZIP extractors normalize an explicit "." segment and repeated internal
+    // separators to the same on-disk part name. Reject these aliases before
+    // duplicate detection, or two different central-directory names can
+    // resolve to the same extracted Office member.
+    // A single final empty segment is valid for directory entries ("word/").
+    if (pathSegments.includes(".") || pathSegments.slice(0, -1).includes("")) {
+      throw new FileInspectionError(
+        "invalid_zip",
+        "Office archive contains an ambiguous dot or empty path segment.",
+      );
+    }
     // Windows ZIP extraction folds trailing spaces and dots in path segments.
     // Reject these ambiguous names before trusting their apparent extension or
     // comparing archive member identities (e.g. "loader.js " or "word/.. ").
