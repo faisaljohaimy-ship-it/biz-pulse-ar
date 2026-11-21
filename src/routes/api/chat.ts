@@ -89,8 +89,6 @@ const ORG_ROLES = new Set<OrgRole>(["owner", "admin", "manager", "operator", "vi
 const responseHeaders = chatResponseHeaders;
 const jsonError = chatJsonError;
 
-
-
 /**
  * Sanitize incoming chat history before handing to the model:
  *  - Strip the hardcoded UI welcome message. Gemini
