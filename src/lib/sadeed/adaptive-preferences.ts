@@ -5,9 +5,9 @@ export type SadeedAdaptivePreference = {
 };
 
 const DURABLE_AR =
-  /(?:دائم(?:ًا|ا)?|من الآن(?:\s+فصاعد(?:ًا|ا)?)?|في كل رد|اجعل ردودك|خل(?:ي|ّ) ردودك|أفض[ّ]?ل)/;
+  /(?:دائم(?:ًا|ا)?|أبد(?:ًا|اً|ا)|من الآن(?:\s+فصاعد(?:ًا|ا)?)?|في كل رد|اجعل ردودك|خل(?:ي|ّ) ردودك|أفض[ّ]?ل)/;
 const DURABLE_EN =
-  /(?:always|from now on|in every reply|make your (?:answers|replies)|keep your (?:answers|replies)|i prefer)/i;
+  /(?:always|never|from now on|in every reply|make your (?:answers|replies)|keep your (?:answers|replies)|i prefer)/i;
 
 /** Keep negated language mentions from becoming the opposite durable preference. */
 const NEGATED_LANGUAGE_CONTEXT =
