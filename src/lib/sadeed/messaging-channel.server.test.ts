@@ -34,6 +34,80 @@ describe("SADEED messaging channels", () => {
     expect(form.getAll("MediaUrl")).toEqual(["https://assets.example.com/alert.jpg"]);
   });
 
+  it("rejects unsafe Twilio media targets before forwarding them to the provider", () => {
+    const config = { accountSid: "AC123", authToken: "secret", fromNumber: "+14155550123" };
+    for (const mediaUrl of [
+      "https://user:password@assets.example.com/alert.jpg",
+      "https://127.0.0.1:8443/private",
+      "https://[::1]/private",
+      "https://localhost/secret",
+      "https://media.corp.internal/secret",
+      "https://media.home.arpa/secret",
+      "https://assets.example.com/alert.jpg#fragment",
+    ]) {
+      expect(() =>
+        buildTwilioMessageForm(
+          { to: "+966551234567", body: "Alert", mediaUrls: [mediaUrl] },
+          config,
+        ),
+      ).toThrow(/public HTTPS/);
+    }
+    const mediaUrl = "https://assets.example.com/alert.jpg?variant=small";
+    expect(
+      buildTwilioMessageForm(
+        { to: "+966551234567", body: "Alert", mediaUrls: [mediaUrl] },
+        config,
+      ).get("MediaUrl"),
+    ).toBe(mediaUrl);
+  });
+
+  it("rejects unsafe Twilio status callback URLs before they are sent to the provider", () => {
+    const env = {
+      TWILIO_ACCOUNT_SID: "AC123",
+      TWILIO_AUTH_TOKEN: "test-token",
+      TWILIO_FROM_NUMBER: "+14155550123",
+    };
+    for (const callback of [
+      "http://events.example.com/status",
+      "https://user:password@events.example.com/status",
+      "https://127.0.0.1:8443/admin",
+      "https://[::1]/status",
+      "https://localhost/status",
+      "https://events.corp.internal/status",
+      "https://events.home.arpa/status",
+      "https://events.example.com/status#fragment",
+    ]) {
+      expect(() => resolveTwilioConfig({ ...env, TWILIO_STATUS_CALLBACK_URL: callback })).toThrow(
+        /public HTTPS/,
+      );
+    }
+    const callback = "https://events.example.com/status?event=delivery";
+    expect(
+      resolveTwilioConfig({ ...env, TWILIO_STATUS_CALLBACK_URL: callback })?.statusCallbackUrl,
+    ).toBe(callback);
+  });
+
+  it("rejects alternative IPv4 spellings and internal hostname aliases", () => {
+    const config = { accountSid: "AC123", authToken: "test-token", fromNumber: "+14155550123" };
+    for (const mediaUrl of [
+      "https://0x7f000001/private",
+      "https://2130706433/private",
+      "https://0177.0.0.1/private",
+      "https://127.1/private",
+      "https://192.168.1.1/private",
+      "https://169.254.169.254/latest/meta-data/",
+      "https://service.localhost/private",
+      "https://media.internal./private",
+    ]) {
+      expect(() =>
+        buildTwilioMessageForm(
+          { to: "+966551234567", body: "Alert", mediaUrls: [mediaUrl] },
+          config,
+        ),
+      ).toThrow(/public HTTPS/);
+    }
+  });
+
   it("prefers a Twilio Messaging Service when configured", () => {
     const form = buildTwilioMessageForm(
       { to: "+966551234567", body: "Ready" },
