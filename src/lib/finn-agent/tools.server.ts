@@ -102,12 +102,12 @@ const firstLine = (value: unknown) =>
 const shortSha = (value: unknown) =>
   typeof value === "string" && /^[0-9a-f]{7,40}$/i.test(value) ? value.slice(0, 9) : "";
 
-const isoOrNull = (value: unknown) => {
-  if (typeof value === "number" && Number.isFinite(value)) return new Date(value).toISOString();
-  if (typeof value === "string" && !Number.isNaN(Date.parse(value))) {
-    return new Date(value).toISOString();
-  }
-  return null;
+const isoOrNull = (value: unknown): string | null => {
+  if (typeof value !== "string" && typeof value !== "number") return null;
+  if (typeof value === "number" && !Number.isFinite(value)) return null;
+  const date = new Date(value);
+  // Even finite millisecond values can exceed Date's TimeClip range and throw on toISOString().
+  return Number.isFinite(date.getTime()) ? date.toISOString() : null;
 };
 
 /* ── القراءة: GET وحده ──────────────────────────────────────────────────── */
