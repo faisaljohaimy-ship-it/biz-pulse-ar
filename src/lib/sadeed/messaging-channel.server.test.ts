@@ -82,9 +82,9 @@ describe("SADEED messaging channels", () => {
       );
     }
     const callback = "https://events.example.com/status?event=delivery";
-    expect(resolveTwilioConfig({ ...env, TWILIO_STATUS_CALLBACK_URL: callback })?.statusCallbackUrl).toBe(
-      callback,
-    );
+    expect(
+      resolveTwilioConfig({ ...env, TWILIO_STATUS_CALLBACK_URL: callback })?.statusCallbackUrl,
+    ).toBe(callback);
   });
 
   it("rejects alternative IPv4 spellings and internal hostname aliases", () => {
