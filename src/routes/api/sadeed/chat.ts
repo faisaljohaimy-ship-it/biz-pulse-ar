@@ -22,6 +22,7 @@ import {
 } from "@/lib/sadeed/response-contract";
 import { buildProductionDatasetsSnapshot } from "@/lib/sadeed-context.server";
 import { finalizeSadeedOutput, renderForUI } from "@/lib/sadeed/output/finalize";
+import { isSameOrigin } from "@/lib/sadeed/same-origin.server";
 
 type SadeedMessage = { role: "user" | "assistant"; content: string };
 
@@ -65,16 +66,6 @@ function jsonError(message: string, status: number) {
   return Response.json({ error: message }, { status, headers: NO_STORE_HEADERS });
 }
 
-/** Reject cross-site browser calls; allow same-origin and non-browser callers. */
-function isSameOrigin(request: Request): boolean {
-  const origin = request.headers.get("origin");
-  if (!origin) return true; // same-origin fetches / server-to-server omit Origin
-  try {
-    return new URL(origin).host === new URL(request.url).host;
-  } catch {
-    return false;
-  }
-}
 
 function sanitizeHistory(value: unknown): SadeedMessage[] {
   if (!Array.isArray(value)) return [];
