@@ -28,7 +28,12 @@ describe("SADEED same-origin guard", () => {
   });
 
   it("rejects opaque, malformed and non-canonical Origin values", () => {
-    for (const origin of ["null", "not a URL", "https://example.test/path", "https://user@example.test"]) {
+    for (const origin of [
+      "null",
+      "not a URL",
+      "https://example.test/path",
+      "https://user@example.test",
+    ]) {
       expect(isSameOrigin(request(origin)), origin).toBe(false);
     }
   });
