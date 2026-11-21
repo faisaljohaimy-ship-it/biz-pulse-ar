@@ -103,6 +103,29 @@ describe("public incident bounded JSON parsing", () => {
     expect(await readPublicIncidentBody(req)).toMatchObject({ ok: false, status: 400 });
   });
 
+  it("reports 408 if stream.read rejects just before the request abort signal fires", async () => {
+    const disconnect = new AbortController();
+    let source!: ReadableStreamDefaultController<Uint8Array>;
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        source = controller;
+      },
+    });
+    const req = new Request(url, {
+      method: "POST",
+      body,
+      signal: disconnect.signal,
+      duplex: "half",
+    } as RequestInit & { duplex: "half" });
+    const pending = readPublicIncidentBody(req);
+
+    // A network error can settle reader.read before the abort event wins the race.
+    source.error(new Error("connection reset"));
+    disconnect.abort();
+
+    expect(await pending).toEqual({ ok: false, status: 408, message: "request timeout" });
+  });
+
   it("rejects an absent or already consumed body", async () => {
     expect(await readPublicIncidentBody(new Request(url, { method: "POST" }))).toMatchObject({
       ok: false,
