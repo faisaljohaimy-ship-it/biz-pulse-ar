@@ -85,6 +85,51 @@ describe("SADEED streaming voice first-sentence latency", () => {
     expect(onSentence).toHaveBeenCalledTimes(1);
   });
 
+  it("flushes CR-only Arabic line breaks before stream close", () => {
+    const onSentence = vi.fn();
+    const flusher = createSentenceFlusher({ onSentence });
+
+    flusher.pushToken("تم استلام البلاغ\rالتحقق جار");
+
+    expect(onSentence).toHaveBeenCalledTimes(1);
+    expect(onSentence).toHaveBeenNthCalledWith(1, "تم استلام البلاغ", 0);
+    flusher.finish();
+    expect(onSentence).toHaveBeenNthCalledWith(2, "التحقق جار", 1);
+  });
+
+  it("does not emit an empty sentence when CRLF arrives in separate tokens", () => {
+    const onSentence = vi.fn();
+    const flusher = createSentenceFlusher({ onSentence });
+
+    flusher.pushToken("تم\r");
+    expect(onSentence).toHaveBeenCalledTimes(1);
+    flusher.pushToken("\nالتحديث");
+    expect(onSentence).toHaveBeenCalledTimes(1);
+    flusher.finish();
+
+    expect(onSentence).toHaveBeenCalledTimes(2);
+    expect(onSentence).toHaveBeenNthCalledWith(1, "تم", 0);
+    expect(onSentence).toHaveBeenNthCalledWith(2, "التحديث", 1);
+  });
+
+  it("measures first-sentence latency when a CR-only boundary arrives", () => {
+    let clock = 100;
+    vi.spyOn(performance, "now").mockImplementation(() => clock);
+    const onSentence = vi.fn();
+    const onLatencyBreach = vi.fn();
+    const flusher = createSentenceFlusher({ onSentence, onLatencyBreach });
+
+    flusher.pushToken("الحالة");
+    clock = 420;
+    flusher.pushToken("\rمتابعة");
+
+    expect(onSentence).toHaveBeenCalledWith("الحالة", 0);
+    expect(onLatencyBreach).toHaveBeenCalledWith("first_sentence_slow", 320);
+    expect(flusher.stats().latencyToFirstSentence).toBe(320);
+    flusher.finish();
+    expect(onLatencyBreach).toHaveBeenCalledTimes(1);
+  });
+
   it("ignores late streamed tokens after the final flush", () => {
     const onSentence = vi.fn();
     const flusher = createSentenceFlusher({ onSentence });
