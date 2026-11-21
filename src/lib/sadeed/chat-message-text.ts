@@ -16,8 +16,8 @@ export function extractMessageText(parts: readonly unknown[] | null | undefined)
         separatedByNonText &&
         result &&
         next &&
-        !/\\s$/.test(result) &&
-        !/^\\s/.test(next)
+        !/\s$/.test(result) &&
+        !/^\s/.test(next)
       ) {
         result += " ";
       }
