@@ -115,14 +115,14 @@ export async function httpFetch(input: string | URL, init: HttpOptions = {}): Pr
   } = init;
   const outer = outerOrNull ?? undefined;
 
-  const url = typeof input === "string" ? input : input.toString();
-  const target = label ?? url;
+  // Never expose raw upstream URLs, query credentials or URL userinfo in
+  // an ApiError that may be serialised to an unprivileged client.
+  const target = label ?? "upstream service";
   const abandoned = () =>
     apiError("upstream_timeout", `Aborted by caller while calling ${target}`, {
-      details: { url, aborted: true },
+      details: { aborted: true },
     });
 
-  let lastErr: unknown;
   for (let attempt = 0; attempt <= retries; attempt++) {
     if (outer?.aborted) throw abandoned();
     const controller = new AbortController();
@@ -173,12 +173,11 @@ export async function httpFetch(input: string | URL, init: HttpOptions = {}): Pr
       return res;
     } catch (err) {
       clearTimeout(timer);
-      lastErr = err;
       if (outer?.aborted) throw abandoned();
       const aborted = (err as { name?: string })?.name === "AbortError";
       if (aborted && attempt === retries) {
         throw apiError("upstream_timeout", `Timeout after ${timeoutMs}ms calling ${target}`, {
-          details: { url, attempts: attempt + 1 },
+          details: { attempts: attempt + 1 },
         });
       }
       if (attempt < retries) {
@@ -194,7 +193,7 @@ export async function httpFetch(input: string | URL, init: HttpOptions = {}): Pr
   }
 
   throw apiError("upstream_failed", `Upstream call to ${target} failed`, {
-    details: { url, error: String(lastErr ?? "unknown") },
+    details: { attempts: retries + 1 },
   });
 }
 
@@ -296,12 +295,8 @@ export async function httpJson<T = unknown>(
   const ok = res.ok || (acceptStatuses?.includes(res.status) ?? false);
   const body = await readResponseTextWithin(res, rest.timeoutMs ?? DEFAULT_TIMEOUT_MS, rest.signal);
   if (!ok) {
-    let parsed: unknown;
-    try {
-      parsed = body ? JSON.parse(body) : undefined;
-    } catch {
-      parsed = body;
-    }
+    // Upstream errors are untrusted. They can echo credentials, request
+    // payloads, cookies or backend diagnostics; do not return their bodies.
     const code: ApiErrorCode =
       res.status === 401
         ? "unauthorized"
@@ -314,10 +309,10 @@ export async function httpJson<T = unknown>(
               : "upstream_failed";
     throw new ApiError({
       code,
-      message: `Upstream ${res.status} from ${rest.label ?? input}`,
+      message: `Upstream ${res.status} from ${rest.label ?? "upstream service"}`,
       status: res.status,
       requestId: res.headers.get("request-id") ?? res.headers.get("x-request-id") ?? undefined,
-      details: { body: parsed },
+      details: { upstreamStatus: res.status },
     });
   }
   try {

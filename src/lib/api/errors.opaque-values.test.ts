@@ -2,24 +2,25 @@ import { describe, expect, it } from "vitest";
 import { apiError, toApiErrorShape } from "./errors";
 
 describe("toApiErrorShape opaque thrown values", () => {
-  const fallback = { code: "internal_error", message: "Unknown error", status: 500 };
+  const fallback = { code: "internal_error", message: "Internal server error", status: 500 };
 
   it("preserves structured ApiError envelopes", () => {
     const error = apiError("forbidden", "Access denied");
     expect(toApiErrorShape(error)).toEqual(error.toJSON());
   });
 
-  it("preserves normal Error and primitive messages", () => {
-    expect(toApiErrorShape(new Error("network failure"))).toEqual({
-      code: "internal_error",
-      message: "network failure",
-      status: 500,
-    });
-    expect(toApiErrorShape("upstream rejected")).toEqual({
-      code: "internal_error",
-      message: "upstream rejected",
-      status: 500,
-    });
+  it("redacts raw Error, primitive and arbitrary-object details from public responses", () => {
+    const privateDiagnostic = "DB unavailable: password=synthetic-test-value";
+    for (const rejected of [
+      new Error(privateDiagnostic),
+      privateDiagnostic,
+      { message: privateDiagnostic },
+      500,
+    ]) {
+      const envelope = toApiErrorShape(rejected);
+      expect(envelope).toEqual(fallback);
+      expect(JSON.stringify(envelope)).not.toContain(privateDiagnostic);
+    }
   });
 
   it("does not throw for a null-prototype rejection object", () => {

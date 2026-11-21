@@ -73,10 +73,11 @@ export function installInteractionTracker(): void {
     } catch {
       /* bus unavailable — audio prime alone still helps */
     }
-    window.removeEventListener("pointerdown", handler);
-    window.removeEventListener("keydown", handler);
-    window.removeEventListener("touchstart", handler);
-    window.removeEventListener("click", handler);
+    // The same four first-gesture handlers are removed, without repeating
+    // the full DOM call in the client bundle.
+    for (const type of ["pointerdown", "keydown", "touchstart", "click"]) {
+      window.removeEventListener(type, handler);
+    }
   };
   window.addEventListener("pointerdown", handler, { once: true, passive: true });
   window.addEventListener("keydown", handler, { once: true });

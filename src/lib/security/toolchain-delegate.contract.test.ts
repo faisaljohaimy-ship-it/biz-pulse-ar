@@ -860,24 +860,29 @@ describe("التصدير من HEAD بقراءة blobs خام — فشل مغلق
     expect(r.content["src/styles/meta.css"]).toContain("$Format:%an <%ae> | %s | %h$");
   });
 
-  it("المحتوى غير النصّي يُرفض ولا يُكتب منه شيء: UTF-16/UTF-32 وNUL المجزّأ وغير UTF-8", () => {
-    const cases: Array<[string, Buffer]> = [
-      ["UTF-16LE بـBOM", utf16(`/* ${FAKE} */`)],
-      ["UTF-16LE بلا BOM", utf16(`/* ${FAKE} */`, false)],
-      ["NUL يقطع المفتاح", Buffer.from(`// ${FAKE.slice(0, 10)}\0${FAKE.slice(10)}`)],
-      [
-        "ثنائي PNG بامتداد .ts",
-        Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0, 0]), Buffer.alloc(64)]),
-      ],
-      ["latin1 غير UTF-8", Buffer.from([0x63, 0xe9, 0x66, 0xe9])],
-    ];
-    for (const [why, content] of cases) {
+  const binaryCases: Array<[string, Buffer]> = [
+    ["UTF-16LE بـBOM", utf16(`/* ${FAKE} */`)],
+    ["UTF-16LE بلا BOM", utf16(`/* ${FAKE} */`, false)],
+    ["NUL يقطع المفتاح", Buffer.from(`// ${FAKE.slice(0, 10)}\0${FAKE.slice(10)}`)],
+    [
+      "ثنائي PNG بامتداد .ts",
+      Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0, 0]), Buffer.alloc(64)]),
+    ],
+    ["latin1 غير UTF-8", Buffer.from([0x63, 0xe9, 0x66, 0xe9])],
+  ];
+  it("تغطي حالات المحتوى غير النصّي جميع صيغ الرفض", () => {
+    expect(binaryCases).toHaveLength(5);
+  });
+  // Keep the default 5-second deadline: each independent byte-encoding fixture
+  // gets its own test and cleanup rather than sharing one serial deadline.
+  for (const [why, content] of binaryCases) {
+    it(`المحتوى غير النصّي يُرفض ولا يُكتب منه شيء: ${why}`, () => {
       const r = attempt({ "src/lib/ui/f.ts": content }, undefined, ["src/lib/ui/"]);
       expect(r.error, why).toBeInstanceOf(Error);
       expect(String(r.error?.message), why).toMatch(/NUL|UTF-8/);
       expect(r.leftover, `${why}: لا شيء يُكتب عند الرفض`).toBe(0);
-    }
-  });
+    });
+  }
 
   it("الروابط الرمزية وgitlink وملفات حجمها فوق 1MB تُرفض", () => {
     const sym = attempt({ "src/styles/ok.css": "a{}\n" }, (repo) =>
@@ -1411,25 +1416,29 @@ describe.skipIf(process.platform === "win32")(
       }
     });
 
-    it("مخرجات عدائية من الوكيل تُرفض: لا رقعة ولا تطبيق (خروج 2)", () => {
-      const AKIA = ["AKIA", "IOSFODNN7EXAMPLE"].join("");
-      const hostile: Array<[string, string]> = [
-        ["سرّ بعد ++ (P1)", `echo '++${AKIA}' >> src/styles/a.css`],
-        ["رابط رمزي", `ln -s /etc/hostname src/styles/l.css`],
-        [".gitattributes", `printf '* filter=x\\n' > .gitattributes`],
-        ["ملف خارج الجذور", `echo x > package.json`],
-        ["صلاحية تنفيذ", `echo 'a{}' > src/styles/n.css; chmod +x src/styles/n.css`],
-        ["قيمة المفتاح الحرفية", `echo "/* $GROQ_API_KEY */" >> src/styles/a.css`],
-        ["بريد حقيقي", `echo '/* owner@corp.sa */' >> src/styles/a.css`],
-        ["ثنائي (NUL)", `printf 'a\\000b\\001' > src/styles/b.css`],
-        ["بايتات غير UTF-8", `printf 'x\\351y\\n' > src/styles/c.css`],
-        [
-          "إعدادات git عدائية",
-          `mkdir .git; printf '[core]\\n\\tfsmonitor = touch ${"__PWNED__"}\\n' > .git/config; echo 'b{}' >> src/styles/a.css; printf '* diff=x\\n' > src/styles/.gitattributes`,
-        ],
-      ];
-      expect(hostile.length).toBeGreaterThan(8);
-      for (const [why, body] of hostile) {
+    const AKIA = ["AKIA", "IOSFODNN7EXAMPLE"].join("");
+    const hostileCases: Array<[string, string]> = [
+      ["سرّ بعد ++ (P1)", `echo '++${AKIA}' >> src/styles/a.css`],
+      ["رابط رمزي", `ln -s /etc/hostname src/styles/l.css`],
+      [".gitattributes", `printf '* filter=x\\n' > .gitattributes`],
+      ["ملف خارج الجذور", `echo x > package.json`],
+      ["صلاحية تنفيذ", `echo 'a{}' > src/styles/n.css; chmod +x src/styles/n.css`],
+      ["قيمة المفتاح الحرفية", `echo "/* $GROQ_API_KEY */" >> src/styles/a.css`],
+      ["بريد حقيقي", `echo '/* owner@corp.sa */' >> src/styles/a.css`],
+      ["ثنائي (NUL)", `printf 'a\\000b\\001' > src/styles/b.css`],
+      ["بايتات غير UTF-8", `printf 'x\\351y\\n' > src/styles/c.css`],
+      [
+        "إعدادات git عدائية",
+        `mkdir .git; printf '[core]\\n\\tfsmonitor = touch ${"__PWNED__"}\\n' > .git/config; echo 'b{}' >> src/styles/a.css; printf '* diff=x\\n' > src/styles/.gitattributes`,
+      ],
+    ];
+    it("تغطي مجموعة المخرجات العدائية جميع فئات الرفض", () => {
+      expect(hostileCases.length).toBeGreaterThan(8);
+    });
+    // Keep the default 5-second test deadline: each isolated child-process fixture
+    // is its own test, rather than ten serial git setups inside one timed test.
+    for (const [why, body] of hostileCases) {
+      it(`مخرجات عدائية من الوكيل تُرفض: ${why} (خروج 2)`, () => {
         const fx = fixture("");
         try {
           const pwned = join(fx.base, "PWNED");
@@ -1451,8 +1460,8 @@ describe.skipIf(process.platform === "win32")(
         } finally {
           cleanup(fx);
         }
-      }
-    });
+      });
+    }
 
     it("قيمة المفتاح تُنقَّح من سجلّ الأحداث والمخرجات والخطأ", () => {
       const fx = fixture(

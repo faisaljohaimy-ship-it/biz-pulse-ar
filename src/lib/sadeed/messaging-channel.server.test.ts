@@ -87,6 +87,27 @@ describe("SADEED messaging channels", () => {
     );
   });
 
+  it("rejects alternative IPv4 spellings and internal hostname aliases", () => {
+    const config = { accountSid: "AC123", authToken: "test-token", fromNumber: "+14155550123" };
+    for (const mediaUrl of [
+      "https://0x7f000001/private",
+      "https://2130706433/private",
+      "https://0177.0.0.1/private",
+      "https://127.1/private",
+      "https://192.168.1.1/private",
+      "https://169.254.169.254/latest/meta-data/",
+      "https://service.localhost/private",
+      "https://media.internal./private",
+    ]) {
+      expect(() =>
+        buildTwilioMessageForm(
+          { to: "+966551234567", body: "Alert", mediaUrls: [mediaUrl] },
+          config,
+        ),
+      ).toThrow(/public HTTPS/);
+    }
+  });
+
   it("prefers a Twilio Messaging Service when configured", () => {
     const form = buildTwilioMessageForm(
       { to: "+966551234567", body: "Ready" },

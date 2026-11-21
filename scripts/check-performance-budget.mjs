@@ -1,6 +1,6 @@
-import { readdir, stat } from "node:fs/promises";
+import { lstat, readdir, stat } from "node:fs/promises";
 import { existsSync } from "node:fs";
-import { extname, join, relative } from "node:path";
+import { extname, join, relative, sep } from "node:path";
 
 // Preserve the local/CI search order; a Vercel build uses its own static output.
 // An explicit target must never fall back to stale artifacts from another build.
@@ -55,8 +55,23 @@ function assertBudget(label, actual, limit, offenders = []) {
   process.exitCode = 1;
 }
 
+// A linked output root (or parent directory) bypasses walk’s per-entry symlink
+// guard, letting foreign or stale assets pass the release budget. Fail closed.
+async function assertOrdinaryOutputPath() {
+  let prefix = process.cwd();
+  for (const component of relative(prefix, ROOT).split(sep)) {
+    prefix = join(prefix, component);
+    if ((await lstat(prefix)).isSymbolicLink()) {
+      throw new Error(
+        `Unverified symlink in production output path: ${relative(process.cwd(), prefix)}`,
+      );
+    }
+  }
+}
+
 let files;
 try {
+  await assertOrdinaryOutputPath();
   files = await walk(ROOT);
 } catch (error) {
   console.error(
@@ -66,16 +81,24 @@ try {
   process.exit(1);
 }
 
-const js = files.filter((file) => [".js", ".mjs"].includes(extname(file.absolute)));
-const css = files.filter((file) => extname(file.absolute) === ".css");
+// Asset suffixes are case-insensitive on some hosts. Never let .JS/.CSS/.MP4
+// escape category-specific limits while still counting toward the total.
+const assetExt = (file) => extname(file.absolute).toLowerCase();
+const js = files.filter((file) => [".js", ".mjs"].includes(assetExt(file)));
+const css = files.filter((file) => assetExt(file) === ".css");
 const media = files.filter((file) =>
-  [".mp4", ".webm", ".mov", ".mp3", ".wav", ".ogg"].includes(extname(file.absolute)),
+  [".mp4", ".webm", ".mov", ".mp3", ".wav", ".ogg"].includes(assetExt(file)),
 );
 // A missing/empty asset build used to pass every maximum-size budget as 0 bytes.
 // Vite's production client must emit JavaScript; fail closed instead of certifying
 // an empty, CSS-only or stale output directory as a valid deployable build.
 if (js.length === 0) {
   console.error("✗ Production output contains no JavaScript assets.");
+  process.exitCode = 1;
+} else if (js.every((file) => file.size === 0)) {
+  // A zero-byte placeholder is not a deployable JavaScript application.
+  // Keep the existing budget ceilings; require at least one nonempty JS asset.
+  console.error("✗ Production output contains only empty JavaScript assets.");
   process.exitCode = 1;
 }
 const total = files.reduce((sum, file) => sum + file.size, 0);

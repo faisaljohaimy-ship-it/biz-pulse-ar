@@ -61,7 +61,7 @@ export function resolveTwilioConfig(
   const statusCallbackUrl = env.TWILIO_STATUS_CALLBACK_URL?.trim();
   if (!accountSid || !authToken || (!fromNumber && !messagingServiceSid)) return null;
   if (statusCallbackUrl) {
-    publicTwilioHttpsUrl(statusCallbackUrl, "TWILIO_STATUS_CALLBACK_URL");
+    publicTwilioHttpsUrl(statusCallbackUrl, "TWIL_STATUS_CALLBACK_URL");
   }
   return {
     accountSid,

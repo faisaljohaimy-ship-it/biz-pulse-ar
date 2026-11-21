@@ -111,18 +111,19 @@ export function tickerLoop(
   viewWidth: number,
   speed: number = TICKER_PX_PER_S,
 ): TickerLoop | null {
-  if (!(copyWidth > 0) || !(speed > 0)) return null;
-  return {
-    seconds: copyWidth / speed,
-    copies: Math.max(2, Math.ceil(Math.max(0, viewWidth) / copyWidth) + 1),
-  };
+  const seconds = copyWidth / speed;
+  const copies = Math.max(2, Math.ceil(viewWidth / copyWidth) + 1);
+  // Keep the ticker static for invalid metrics or excessive DOM duplication.
+  return speed > 0 && viewWidth >= 0 && seconds > 0 && seconds < Infinity && copies < 65
+    ? { seconds, copies }
+    : null;
 }
 
 const sameLoop = (a: TickerLoop | null, b: TickerLoop | null) =>
-  a !== null && b !== null && a.copies === b.copies && Math.abs(a.seconds - b.seconds) < 0.01;
+  !!(a && b && a.copies === b.copies && Math.abs(a.seconds - b.seconds) < 0.01);
 
 /** ما يُكتب في الـCSS فعلًا: ثانيتان بعد الفاصلة — وبه يُقاس تغيّر المدّة، لا بالقياس الخام. */
-const writtenSeconds = (loop: TickerLoop | null) => (loop ? Number(loop.seconds.toFixed(2)) : null);
+const writtenSeconds = (loop: TickerLoop | null) => loop && +loop.seconds.toFixed(2);
 
 /**
  * وقت الدورة المحلي الذي يُبقي المسار حيث هو حين تتغيّر المدّة (٢٠٢٦/١٠/٢٥: «متواصل بدون توقف»).

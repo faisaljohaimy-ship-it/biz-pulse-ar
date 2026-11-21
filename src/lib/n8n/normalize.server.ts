@@ -88,12 +88,32 @@ function providerId(raw: string): string {
   return id.length > 0 ? id : "unknown";
 }
 
-const ISO_DATE_PREFIX = /^\d{4}-\d{2}-\d{2}/;
+const ISO_DATE_PREFIX = /^(\d{4})-(\d{2})-(\d{2})/;
+// Date.parse treats offset-free date-times as server-local time. Research source times must
+// be absolute, or date-only (UTC), so deployment timezone cannot alter their meaning.
+const ISO_PUBLICATION_FORMAT =
+  /^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:\d{2}))?$/;
 const ONE_DAY_MS = 86_400_000;
 
-/** ISO معياري أو `null`. تاريخٌ بعد الغد يُعدّ مختلَقًا فيُسقط. */
+/** ISO معياري أو `null`. Reject overflowed calendar days that Date.parse silently normalizes. */
 export function normalizePublishedAt(raw: string | null, nowMs: number): string | null {
-  if (raw === null || !ISO_DATE_PREFIX.test(raw)) return null;
+  // An invalid clock cannot establish that remote publication metadata is not from the future.
+  if (raw === null || !Number.isFinite(nowMs)) return null;
+  if (!ISO_PUBLICATION_FORMAT.test(raw)) return null;
+  const date = ISO_DATE_PREFIX.exec(raw);
+  if (!date) return null;
+  const year = Number(date[1]);
+  const month = Number(date[2]);
+  const day = Number(date[3]);
+  const calendar = new Date(0);
+  calendar.setUTCFullYear(year, month - 1, day);
+  if (
+    calendar.getUTCFullYear() !== year ||
+    calendar.getUTCMonth() !== month - 1 ||
+    calendar.getUTCDate() !== day
+  ) {
+    return null;
+  }
   const ms = Date.parse(raw);
   if (!Number.isFinite(ms) || ms > nowMs + ONE_DAY_MS) return null;
   return new Date(ms).toISOString();
@@ -109,6 +129,9 @@ export function normalizeResearchResults(
   nowMs: number,
   accept?: (u: SafeUrl) => boolean,
 ): WebResult[] {
+  // A disabled or malformed limit must not leak one result or bypass truncation.
+  // Production requests require integer 1..5; enforce the same count contract here.
+  if (!Number.isSafeInteger(max) || max < 1 || max > 5) return [];
   const seen = new Set<string>();
   const out: WebResult[] = [];
   for (const r of raw) {
