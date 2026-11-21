@@ -3,9 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 /** Bound session refresh/lock waits before starting an application request. */
 export const AUTH_SESSION_DEADLINE_MS = 10_000;
 
-function aborted() {
-  return new DOMException("Aborted", "AbortError");
-}
+const aborted = () => new DOMException("Aborted", "AbortError");
 
 type SessionLookup = Awaited<ReturnType<typeof supabase.auth.getSession>>;
 const AUTH_UNAVAILABLE = "Authentication session unavailable.";
@@ -24,7 +22,8 @@ function readSession(signal?: AbortSignal | null): Promise<SessionLookup> {
       () => finish(new DOMException("Timed out", "TimeoutError")),
       AUTH_SESSION_DEADLINE_MS,
     );
-    signal?.addEventListener("abort", onAbort, { once: true });
+    // AbortSignal emits abort once; finish always removes its listener.
+    signal?.addEventListener("abort", onAbort);
     // A late SDK response cannot restart an aborted or timed-out request.
     (async () => supabase.auth.getSession())().then(
       (value) => finish(undefined, value),
@@ -40,8 +39,11 @@ export async function authenticatedFetch(input: RequestInfo | URL, init: Request
   if (signal?.aborted) throw aborted();
   // A valid guest session is allowed; a failed session lookup is not a guest.
   // Never leak the SDK's raw error or silently downgrade a private request.
-  if (error) throw Error(AUTH_UNAVAILABLE);
-  const token = data.session?.access_token;
+  // Only an explicit null session is a guest; malformed SDK results fail closed.
+  const token = data?.session?.access_token;
+  if (error || !(data?.session === null || (typeof token === "string" && token.trim()))) {
+    throw Error(AUTH_UNAVAILABLE);
+  }
   const headers = new Headers(init.headers ?? request?.headers);
   // Never forward a bearer token inherited from a Request or caller headers
   // after a real guest lookup. A token from an earlier login belongs to a

@@ -174,6 +174,36 @@ describe("authenticated request session lifecycle", () => {
     expect(vi.getTimerCount()).toBe(0);
   });
 
+  it("rejects malformed successful session envelopes instead of downgrading to guest", async () => {
+    for (const value of [
+      null,
+      { data: null, error: null },
+      { data: {}, error: null },
+      { data: { session: undefined }, error: null },
+    ]) {
+      auth.getSession.mockResolvedValueOnce(value);
+      await expect(authenticatedFetch("/api/fnn/chat")).rejects.toThrow(
+        "Authentication session unavailable.",
+      );
+    }
+    expect(http).not.toHaveBeenCalled();
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("fails closed on malformed or empty active session bearer tokens", async () => {
+    for (const access_token of [undefined, null, 0, "", "   ", { token: "not-a-jwt" }]) {
+      auth.getSession.mockResolvedValueOnce({
+        data: { session: { access_token } },
+        error: null,
+      });
+      await expect(authenticatedFetch("/api/fnn/chat")).rejects.toThrow(
+        "Authentication session unavailable.",
+      );
+    }
+    expect(http).not.toHaveBeenCalled();
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
   it("preserves valid guest access and Request headers", async () => {
     const request = new Request("https://example.invalid/chat", { headers: { "x-test": "kept" } });
     await authenticatedFetch(request);
