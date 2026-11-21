@@ -3,10 +3,11 @@
  * event in the audio pipeline. Populated from audio-bus, SadeedCopilot,
  * aria-voice, and the voice-policy assertion.
  *
- * In the browser console:
+ * In the browser console (development diagnostics include message/payload data;
+ * production deliberately exposes only event tags and timing):
  *   __dumpSadeedTimeline()          → console.table + copy JSON to clipboard
  *   __clearSadeedTimeline()         → reset the buffer
- *   __ariaTimeline                → raw array
+ *   __ariaTimeline                → bounded ring buffer (sanitized in production)
  */
 export type VoiceTag =
   | "CHAT"
@@ -58,8 +59,12 @@ export const VoiceTimeline = {
     const t = now();
     const dt = last < 0 ? 0 : t - last;
     last = t;
-    const evt: VoiceEvent = { t, dt, tag, msg, data };
-    if (opts?.stack) {
+    // The browser timeline is globally readable. Keep message text, arbitrary
+    // payloads and stack traces in development only; production retains timing/tag.
+    const diagnostic = import.meta.env.DEV;
+    const evt: VoiceEvent = { t, dt, tag, msg: diagnostic ? msg : tag };
+    if (diagnostic && data) evt.data = data;
+    if (diagnostic && opts?.stack) {
       try {
         evt.stack = new Error().stack?.split("\n").slice(2, 6).join("\n");
       } catch {
@@ -69,7 +74,7 @@ export const VoiceTimeline = {
     buf.push(evt);
     if (buf.length > MAX) buf.shift();
 
-    console.log(`[${tag}] +${dt}ms ${msg}`, data ?? "");
+    if (diagnostic) console.log(`[${tag}] +${dt}ms ${msg}`, data ?? "");
   },
   dump(): VoiceEvent[] {
     return buf.slice();
