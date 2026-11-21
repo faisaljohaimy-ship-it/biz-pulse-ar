@@ -9,6 +9,7 @@ import {
   type UIMessage,
 } from "ai";
 import { GOOGLE_MODELS } from "@/lib/ai-gateway.server";
+import { extractMessageText } from "@/lib/sadeed/chat-message-text";
 import type { OrgRole } from "@/sadeed/shell";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import {
@@ -88,12 +89,7 @@ const ORG_ROLES = new Set<OrgRole>(["owner", "admin", "manager", "operator", "vi
 const responseHeaders = chatResponseHeaders;
 const jsonError = chatJsonError;
 
-function getMessageText(message?: UIMessage) {
-  return (message?.parts ?? [])
-    .map((part) => (part.type === "text" ? part.text : ""))
-    .join("")
-    .trim();
-}
+
 
 /**
  * Sanitize incoming chat history before handing to the model:
@@ -592,8 +588,8 @@ export const Route = createFileRoute("/api/chat")({
           }) as T;
         };
         const uiMessages = sanitizeHistory(messages as UIMessage[]);
-        const lastUserText = getMessageText(
-          [...uiMessages].reverse().find((m) => m.role === "user"),
+        const lastUserText = extractMessageText(
+          [...uiMessages].reverse().find((m) => m.role === "user")?.parts,
         );
 
         // Article 22 — deterministic response contract runs BEFORE any model
