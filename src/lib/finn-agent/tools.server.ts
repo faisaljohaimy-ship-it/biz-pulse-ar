@@ -148,9 +148,33 @@ async function readOnlyGet(
     if (status === 429) return { ok: false, code: "rate_limited" };
     return { ok: false, code: status >= 500 ? "upstream_error" : "bad_response" };
   }
-  let text: string;
+  let text = "";
   try {
-    text = await response.text();
+    const reader = response.body?.getReader();
+    if (!reader) {
+      text = await response.text();
+    } else {
+      const decoder = new TextDecoder();
+      let bytesRead = 0;
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        bytesRead += value.byteLength;
+        // Reject while streaming: response.text() buffered the entire
+        // untrusted upstream body before enforcing the 400k-character cap.
+        // UTF-8 needs at most four bytes per UTF-16 code unit.
+        if (bytesRead > MAX_BODY_CHARS * 4) {
+          void reader.cancel().catch(() => {});
+          return { ok: false, code: "too_large" };
+        }
+        text += decoder.decode(value, { stream: true });
+        if (text.length > MAX_BODY_CHARS) {
+          void reader.cancel().catch(() => {});
+          return { ok: false, code: "too_large" };
+        }
+      }
+      text += decoder.decode();
+    }
   } catch {
     return { ok: false, code: timeout.aborted ? "timeout" : "network" };
   }
