@@ -56,7 +56,6 @@ describe("voice timeline deltas", () => {
   });
 });
 
-
 describe("voice timeline production privacy", () => {
   it("does not retain or log message text, arbitrary payloads, or stacks in production", () => {
     vi.stubEnv("DEV", false);
