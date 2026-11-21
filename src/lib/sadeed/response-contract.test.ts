@@ -230,6 +230,19 @@ describe("Article 22 — forbidden filler", () => {
     expect(hasForbiddenFiller("حالة الامتثال: مطابق.")).toBe(false);
   });
 
+  it.each([
+    "الحالة: بكل سرور، البيانات متاحة.",
+    "Status: great question, here is an update.",
+    "تقرير. دعني أوضح، الحالة مستقرة.",
+    "الحالة: سؤال ممتاز! النتيجة اليوم.",
+  ])("detects padded filler at punctuation boundaries: %s", (reply) => {
+    expect(hasForbiddenFiller(reply)).toBe(true);
+  });
+
+  it("does not treat a forbidden phrase within a larger word as filler", () => {
+    expect(hasForbiddenFiller("التقرير: سؤال ممتازين عن المناوبة")).toBe(false);
+    expect(hasForbiddenFiller("The great questionnaire is available.")).toBe(false);
+  });
   it("keeps the filler list non-empty (the contract has teeth)", () => {
     expect(FORBIDDEN_FILLER.length).toBeGreaterThan(10);
   });
