@@ -158,7 +158,16 @@ export async function enforceRateLimit(
   windowSeconds = 60,
   options: RateLimitOptions = {},
 ): Promise<RateLimitDecision> {
-  const deadlineMs = options.deadlineMs ?? RATE_LIMIT_DEFAULT_DEADLINE_MS;
+  const configuredDeadlineMs = options.deadlineMs ?? RATE_LIMIT_DEFAULT_DEADLINE_MS;
+  // Node clamps NaN, negative, fractional and overflowing timeout values to
+  // near-zero delays. This would mark a healthy quota store unavailable and
+  // could repeatedly trip its breaker. Retain the bounded default instead.
+  const deadlineMs =
+    Number.isSafeInteger(configuredDeadlineMs) &&
+    configuredDeadlineMs >= 1 &&
+    configuredDeadlineMs <= 2_147_483_647
+      ? configuredDeadlineMs
+      : RATE_LIMIT_DEFAULT_DEADLINE_MS;
   const startedAt = Date.now();
   if (breakerShouldSkip(startedAt)) {
     // لا انتظار: المخزن معروفٌ أنه معطّل حتى موعد الفحص التالي.
