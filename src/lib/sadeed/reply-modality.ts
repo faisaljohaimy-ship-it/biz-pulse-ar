@@ -34,7 +34,9 @@ export function toSadeedSpeechText(value: string): string {
     // Never narrate fenced code: partial tilde openers and CR-only line breaks
     // must also be omitted before they reach voice synthesis.
     // Only a standalone same-character line can close the fence; inline markers cannot.
-    .replace(/((`|~)\2{2,})[^]*?(?:[\r\n]\s{0,3}\1\2*(?![ \t]*\S)|$)/g, " ")
+    // Only line-start Markdown fence openers remove content; inline triple
+    // markers (e.g. `label`) are part of the spoken prose.
+    .replace(/(^|[\r\n])[ \t]{0,3}((`|~)\3{2,})[^]*?(?:[\r\n][ \t]{0,3}\2\3*(?![ \t]*\S)|$)/g, " ")
     .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
     // Narrate link labels, not destination URLs, anchors, or screen paths.
     .replace(/\[([^\]]+)\]\((https?:\/\/|mailto:|tel:|\/|#|\.{1,2}\/)[^)]*\)/gi, "$1")
