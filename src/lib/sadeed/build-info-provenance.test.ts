@@ -75,7 +75,7 @@ describe("build-info provider provenance", () => {
     });
   });
 
-  it("falls back to a validated GitHub SHA if Vercel metadata is invalid", () => {
+  it("fails closed instead of borrowing GitHub metadata when Vercel SHA is invalid", () => {
     expect(
       buildInfo({
         VERCEL: "1",
@@ -84,17 +84,18 @@ describe("build-info provider provenance", () => {
         GITHUB_SHA: githubSha,
         GITHUB_REF_NAME: "main",
       }),
-    ).toMatchObject({ sha: githubSha, ref: "main", source: "GITHUB_SHA" });
+    ).toMatchObject({ sha: "unknown", ref: "unknown", source: "none" });
   });
 
-  it("does not inherit an invalid Vercel SHA's ref for a valid GitHub fallback", () => {
+  it("ignores untrusted CI SHA and invalid Vercel ref when Vercel provenance is missing", () => {
     expect(
       buildInfo({
         VERCEL: "1",
         VERCEL_GIT_COMMIT_SHA: "not-a-sha",
         VERCEL_GIT_COMMIT_REF: "main",
         GITHUB_SHA: githubSha,
+        COMMIT_SHA: overrideSha,
       }),
-    ).toMatchObject({ sha: githubSha, ref: "unknown", source: "GITHUB_SHA" });
+    ).toMatchObject({ sha: "unknown", ref: "unknown", source: "none" });
   });
 });
