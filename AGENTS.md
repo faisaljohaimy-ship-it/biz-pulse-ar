@@ -59,3 +59,28 @@ business decisions still require the appropriate explicit approval. Secrets stay
 server-side; never assume free API credit or enable paid model calls by key presence.
 The executable release process and credential prerequisites are documented in
 `docs/operations/CONTINUOUS_DELIVERY_AR.md`.
+
+
+## OMEGA evidence and iteration discipline — 2026-11-22
+
+Deliver small connected batches from an actual capability inventory and official-source
+Innovation Gap Matrix; the first OMEGA slice selects capabilities 01/04/06 under its
+Spec Kit specification. Keep the fifteen-capability roadmap explicit about working,
+partial, demo and unavailable status; source existence or a simulated run is not live
+operation. Reuse established engines/contracts and preserve hidden-route decisions.
+
+The owner's ten OMEGA targets — Functional Reliability, AI Grounding Accuracy,
+Cybersecurity, UX, Performance, Data Integrity, Architecture, Observability,
+Operational Readiness, Innovation Differentiation — are targets, not achieved scores.
+Record measured evidence, limits and missing facts; do not invent probabilities,
+causal proof, comparative superiority, uniqueness or patentability. Hypothetical
+controls do not grant operational authority. Existing safety, provider/data permissions,
+quality budgets and the permanent delivery policy above remain unchanged.
+
+
+Resume this OMEGA batch from [specification 003](specs/003-omega-decision-foundation/spec.md),
+the [15-capability roadmap](docs/strategy/OMEGA_CAPABILITY_ROADMAP_2026-11-22.md), and the
+[Innovation Gap Matrix](docs/audit/OMEGA_INNOVATION_GAP_MATRIX_2026-11-22.md). Committed
+spec/tasks record the honest pre-commit checkpoint; observed post-commit release IDs
+and receipts belong in the PR body and standalone delivery report, without predicting
+SHAs or creating an extra source commit solely to record the first commit's receipt.

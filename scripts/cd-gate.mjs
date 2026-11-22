@@ -46,10 +46,15 @@ export function deploymentCycle(env, now) {
 }
 
 export function verifiedDeploymentCount(cycle, evidence, now) {
+  const pagination = evidence?.pagination;
+  // Vercel terminal pages may omit next; pagination and the matching count are still required.
   requireCondition(
-    Array.isArray(evidence.deployments) &&
-      evidence.pagination?.next === null &&
-      evidence.pagination.count === evidence.deployments.length,
+    Array.isArray(evidence?.deployments) &&
+      pagination !== null &&
+      typeof pagination === "object" &&
+      !Array.isArray(pagination) &&
+      (pagination.next === null || !("next" in pagination)) &&
+      pagination.count === evidence.deployments.length,
     "Complete deployment count evidence is required",
   );
   const ids = new Set();

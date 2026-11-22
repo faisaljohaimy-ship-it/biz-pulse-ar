@@ -36,6 +36,11 @@ import {
   type SecurityDecisionScenarioId,
 } from "@/lib/sadeed/security-decision-scenarios";
 import { buildSecurityDecisionReport } from "@/lib/sadeed/security-decision-report";
+import {
+  getOmegaBaselineAssumptions,
+  type OmegaAssumptions,
+} from "@/lib/sadeed/omega-security-lab";
+import { SecurityDecisionOmegaLab } from "./SecurityDecisionOmegaLab";
 
 /** Entirely local rehearsal: deliberately has no server functions or operational tools. */
 export function SecurityDecisionCenter() {
@@ -43,6 +48,8 @@ export function SecurityDecisionCenter() {
   const ar = locale === "ar";
   const text = (arabic: string, english: string) => (ar ? arabic : english);
   const [scenarioId, setScenarioId] = useState<SecurityDecisionScenarioId>("access");
+  const [omegaInputs, setOmegaInputs] = useState(() => getOmegaBaselineAssumptions("access"));
+  const [labResetKey, setLabResetKey] = useState(0);
   const demo = buildSecurityDecisionScenario(scenarioId);
   const ScenarioIcon =
     scenarioId === "camera" ? Cctv : scenarioId === "patrol" ? Footprints : DoorOpen;
@@ -77,14 +84,26 @@ export function SecurityDecisionCenter() {
     text("المراجعة البشرية", "Human review"),
   ];
   const Forward = ar ? ArrowLeft : ArrowRight;
-  const reset = () => {
+  const resetDecision = () => {
     dispatch({ type: "reset" });
     setAcknowledged(false);
     setOpenEvidence(null);
     setExported(false);
   };
+  const reset = (nextScenario = scenarioId) => {
+    resetDecision();
+    setOmegaInputs(getOmegaBaselineAssumptions(nextScenario));
+    setLabResetKey((value) => value + 1);
+  };
+  const changeAssumptions = (next: OmegaAssumptions) => {
+    setOmegaInputs(next);
+    resetDecision();
+  };
   const exportReport = () => {
-    const report = buildSecurityDecisionReport(demo, state, locale);
+    const report = buildSecurityDecisionReport(demo, state, locale, new Date(), {
+      scenarioId,
+      assumptions: omegaInputs,
+    });
     const url = URL.createObjectURL(new Blob([report], { type: "text/html;charset=utf-8" }));
     const link = document.createElement("a");
     link.href = url;
@@ -109,8 +128,8 @@ export function SecurityDecisionCenter() {
           </h1>
           <p className="mt-2 text-sm leading-7 text-muted-foreground">
             {text(
-              "من إشارة غير مؤكدة إلى توصية واضحة يراجعها الإنسان. استكشف رحلة القرار الأمني خطوة بخطوة.",
-              "From an unverified signal to a clear recommendation for human review. Explore the security decision process, step by step.",
+              "استكشف سياق الحدث والأدلة، وقارن الافتراضات قبل المراجعة البشرية.",
+              "Explore event context and evidence. Compare assumptions before human review.",
             )}
           </p>
         </div>
@@ -124,7 +143,7 @@ export function SecurityDecisionCenter() {
             <Languages aria-hidden />
             {ar ? "English" : "العربية"}
           </Button>
-          <Button variant="outline" className="min-h-[44px]!" onClick={reset}>
+          <Button variant="outline" className="min-h-[44px]!" onClick={() => reset()}>
             <RotateCcw aria-hidden />
             {text("إعادة الضبط", "Reset demo")}
           </Button>
@@ -148,8 +167,8 @@ export function SecurityDecisionCenter() {
           </p>
           <p className="mt-1 leading-6 text-muted-foreground">
             {text(
-              "التصنيف والتوصيات محددة مسبقًا. لا اتصال بحساسات أو كاميرات، ولا إرسال تنبيهات أو اعتماد أو تنفيذ إجراءات أمنية. سجل العرض مؤقت ويُمسح عند إعادة الضبط أو مغادرة الصفحة.",
-              "Assessment and recommendations are predefined. No sensor or camera connections, alerts, operational approvals, or security actions. The demo log is temporary and clears on reset or leaving this page.",
+              "بيانات وقواعد افتراضية؛ لا مصادر تشغيلية أو إخطار أو اعتماد أو تنفيذ. يُمسح سجل العرض عند إعادة الضبط أو مغادرة الصفحة.",
+              "Fictional data and rules; no live sources, notifications, approvals or actions. The log clears on reset or leaving.",
             )}
           </p>
         </div>
@@ -165,8 +184,9 @@ export function SecurityDecisionCenter() {
             className="min-h-[44px]! max-w-full rounded-xl border border-border bg-background px-3 text-sm"
             value={scenarioId}
             onChange={(event) => {
-              setScenarioId(event.target.value as SecurityDecisionScenarioId);
-              reset();
+              const next = event.target.value as SecurityDecisionScenarioId;
+              setScenarioId(next);
+              reset(next);
             }}
           >
             {SECURITY_DECISION_SCENARIOS.map((s) => (
@@ -266,6 +286,14 @@ export function SecurityDecisionCenter() {
         </div>
       </section>
 
+      <SecurityDecisionOmegaLab
+        key={`${scenarioId}:${labResetKey}`}
+        ar={ar}
+        scenarioId={scenarioId}
+        inputs={omegaInputs}
+        onChange={changeAssumptions}
+      />
+
       <nav aria-label={text("مراحل القرار التجريبي", "Demo decision stages")}>
         <ol className="grid grid-cols-2 gap-2 lg:grid-cols-4">
           {labels.map((label, index) => (
@@ -304,8 +332,8 @@ export function SecurityDecisionCenter() {
                   </h3>
                   <p className="text-sm leading-7 text-muted-foreground">
                     {text(
-                      "حمّل البلاغ الافتراضي لاستعراض الأدلة، ثم انتقل إلى التقييم والتوصيات. يوضح هذا العرض مسارًا محددًا مسبقًا، ولا يحلل أحداثًا حقيقية.",
-                      "Load the synthetic report to examine evidence, then move through assessment and recommendations. This demonstration follows a predefined flow and does not analyze real incidents.",
+                      "راجع البلاغ الافتراضي وأدلته، وقارن الافتراضات ثم التوصيات. لا يحلل هذا العرض حوادث حقيقية.",
+                      "Review the fictional event and evidence, compare assumptions, then recommendations. No real incident is analyzed.",
                     )}
                   </p>
                 </>
@@ -558,8 +586,8 @@ export function SecurityDecisionCenter() {
             </h2>
             <p className="text-sm leading-7 text-muted-foreground">
               {text(
-                "سَدِيد يرتّب السياق ويعرض التوصية. التحقق والاعتماد والتعامل الميداني مسؤولية أصحاب الصلاحية وفق إجراءات الجهة.",
-                "SADEED organizes context and presents recommendations. Verification, approval, and field response remain with authorized people under their organization’s procedures.",
+                "سديد يوضح السياق. أصحاب الصلاحية يتحققون ويعتمدون ويستجيبون وفق إجراءات الجهة.",
+                "SADEED clarifies context. Authorized people verify, approve and respond under their procedures.",
               )}
             </p>
             <p className="flex items-center gap-2 border-t border-border pt-3 text-xs font-semibold text-muted-foreground">
@@ -576,8 +604,8 @@ export function SecurityDecisionCenter() {
           >
             <p className="mb-4 text-sm leading-7 text-muted-foreground">
               {text(
-                "أكمل المراجعة التجريبية لتصدير تقرير HTML قابل للطباعة، يتضمن المصدر والأسباب والبدائل والمسؤول والمهلة وسجل المحاكاة. ليس اعتمادًا أو سجل تدقيق تشغيليًا.",
-                "Complete the simulated review to export a printable HTML report with source, rationale, alternatives, owner, window, and demo log. It grants no approval and is not an operational audit record.",
+                "بعد المراجعة، صدّر تقريرًا قابلًا للطباعة بالسياق والبدائل والافتراضات؛ دون اعتماد أو تدقيق تشغيلي.",
+                "After review, export a printable report with context, alternatives and assumptions; no approval or operational audit proof.",
               )}
             </p>
             <Button

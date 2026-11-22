@@ -77,6 +77,8 @@ jobs:
           exit 1
       - name: Assert public health and liveness across desktop + Safari
         run: npx playwright test tests/e2e/07-health-endpoint.spec.ts --project=desktop --project=mobile
+      - name: Verify isolated decision and OMEGA flows (Chromium)
+        run: npx playwright test tests/e2e/16-security-decision-center.spec.ts --project=desktop --workers=1
       - name: Stop isolated dev server
         if: always()
         run: |
