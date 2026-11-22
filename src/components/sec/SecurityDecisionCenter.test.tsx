@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { I18nProvider } from "@/lib/i18n";
 import { SecurityDecisionCenter } from "./SecurityDecisionCenter";
+import { OMEGA_ASSUMPTION_LABELS, type OmegaInputKey } from "@/lib/sadeed/omega-security-lab";
 
 function renderCenter(locale: "ar" | "en" = "ar") {
   localStorage.setItem("locale", locale);
@@ -25,6 +26,78 @@ beforeEach(() => {
 });
 
 describe("Security Decision Center interaction", () => {
+  it.each<OmegaInputKey>([
+    "cameraAvailable",
+    "patrolCount",
+    "responseMinutes",
+    "routeOpen",
+    "connectivityAvailable",
+  ])("invalidates the local review and export when %s changes", async (key) => {
+    const user = userEvent.setup();
+    renderCenter("en");
+    await proceedToReview(user);
+    await user.click(screen.getByRole("checkbox"));
+    await user.click(screen.getByRole("button", { name: "Record review · simulation" }));
+    expect(screen.getByRole("button", { name: "Export report · simulation" })).toBeEnabled();
+    const name = OMEGA_ASSUMPTION_LABELS[key].labelEn;
+    if (key === "patrolCount" || key === "responseMinutes") {
+      fireEvent.change(screen.getByRole("slider", { name }), {
+        target: { value: key === "patrolCount" ? "3" : "45" },
+      });
+    } else {
+      await user.click(screen.getByRole("button", { name }));
+    }
+    expect(screen.getByRole("button", { name: "Export report · simulation" })).toBeDisabled();
+    expect(screen.queryByText("Simulated review recorded")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Start scenario" }));
+    expect(
+      screen.getByRole("heading", { name: "Critical · precautionary demo rating" }),
+    ).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "View recommendations" }));
+    await user.click(screen.getByRole("button", { name: "Continue to human review" }));
+    expect(screen.getByRole("checkbox")).not.toBeChecked();
+    expect(screen.getByRole("button", { name: "Record review · simulation" })).toBeDisabled();
+  });
+
+  it("preserves assumptions across locale changes and restores the selected scenario baseline on reset", async () => {
+    const user = userEvent.setup();
+    renderCenter("en");
+    fireEvent.change(
+      screen.getByRole("slider", { name: OMEGA_ASSUMPTION_LABELS.patrolCount.labelEn }),
+      {
+        target: { value: "4" },
+      },
+    );
+    await user.click(
+      screen.getByRole("button", { name: OMEGA_ASSUMPTION_LABELS.cameraAvailable.labelEn }),
+    );
+    await user.click(screen.getByRole("button", { name: "التبديل إلى العربية" }));
+    expect(
+      screen.getByRole("slider", { name: OMEGA_ASSUMPTION_LABELS.patrolCount.labelAr }),
+    ).toHaveValue("4");
+    expect(
+      screen.getByRole("button", { name: OMEGA_ASSUMPTION_LABELS.cameraAvailable.labelAr }),
+    ).toHaveAttribute("aria-pressed", "false");
+    await user.selectOptions(
+      screen.getByRole("combobox", { name: "اختر سيناريو العرض" }),
+      "camera",
+    );
+    expect(
+      screen.getByRole("slider", { name: OMEGA_ASSUMPTION_LABELS.patrolCount.labelAr }),
+    ).toHaveValue("2");
+    expect(
+      screen.getByRole("slider", { name: OMEGA_ASSUMPTION_LABELS.responseMinutes.labelAr }),
+    ).toHaveValue("30");
+    await user.click(
+      screen.getByRole("button", { name: OMEGA_ASSUMPTION_LABELS.cameraAvailable.labelAr }),
+    );
+    await user.click(screen.getByRole("button", { name: "إعادة الضبط" }));
+    expect(
+      screen.getByRole("button", { name: OMEGA_ASSUMPTION_LABELS.cameraAvailable.labelAr }),
+    ).toHaveAttribute("aria-pressed", "false");
+    expect(screen.getByRole("button", { name: "تصدير التقرير · محاكاة" })).toBeDisabled();
+  });
+
   it("changes Arabic RTL to English LTR without losing the current assessment or its log", async () => {
     const user = userEvent.setup();
     const { container } = renderCenter();

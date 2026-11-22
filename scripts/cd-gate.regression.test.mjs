@@ -116,11 +116,13 @@ async function fixture(options = {}) {
     }
     if (url.origin === "https://api.vercel.com") {
       if (url.pathname === "/v6/deployments") {
+        const countEvidence = staged
+          ? (options.stagedCountEvidence ?? options.countEvidence)
+          : options.countEvidence;
         const deployments =
-          options.countEvidence?.deployments ??
-          (staged ? [{ uid: candidateId, created: clock - 1 }] : []);
+          countEvidence?.deployments ?? (staged ? [{ uid: candidateId, created: clock - 1 }] : []);
         return Response.json(
-          options.countEvidence ?? {
+          countEvidence ?? {
             deployments,
             pagination: { count: deployments.length, next: null },
           },
@@ -244,6 +246,35 @@ test("valid automatic release stages without domains, verifies, then promotes ex
   assert.match(result.summary, /Production verified/);
 });
 
+test("Vercel terminal pagination without next permits a fully verified release", async () => {
+  const created = Date.parse("2026-11-22T00:00:00.000Z");
+  const deployments = ["dpl_first", "dpl_second", "dpl_third"].map((uid, index) => ({
+    uid,
+    created: created + index,
+    projectId: guards.RELEASE_PROJECT,
+  }));
+  const result = await fixture({
+    env: { SADEED_DEPLOY_CYCLE_BUDGET: "6" },
+    countEvidence: {
+      deployments,
+      pagination: { count: 3, prev: created + 2 },
+    },
+    stagedCountEvidence: {
+      deployments: [
+        ...deployments,
+        { uid: candidateId, created: created + 3, projectId: guards.RELEASE_PROJECT },
+      ],
+      pagination: { count: 4, prev: created + 3 },
+    },
+  });
+  assert.equal(result.exitCode, 0, result.summary);
+  assert.equal(result.commands[0], "deploy");
+  assert.equal(result.commands.at(-1), "promote");
+  assert.equal(result.activeId, candidateId);
+  assert.match(result.summary, /spent=3; remaining=3; reserve=2/);
+  assert.match(result.summary, /Production verified/);
+});
+
 test("secret-bearing job rejects manual feature dispatch before checkout/environment", () => {
   assert.match(
     workflow,
@@ -298,6 +329,30 @@ for (const [label, options] of [
     { countEvidence: { deployments: [], pagination: { count: 0, next: 123 } } },
   ],
   [
+    "string deployment cursor",
+    { countEvidence: { deployments: [], pagination: { count: 0, next: "123" } } },
+  ],
+  ["missing deployment pagination", { countEvidence: { deployments: [] } }],
+  [
+    "truncated deployment count without next",
+    { countEvidence: { deployments: [], pagination: { count: 1 } } },
+  ],
+  [
+    "cross-project deployment count without next",
+    {
+      countEvidence: {
+        deployments: [
+          {
+            uid: baselineId,
+            created: Date.parse("2026-11-22T00:00:00.000Z"),
+            projectId: "prj_other",
+          },
+        ],
+        pagination: { count: 1 },
+      },
+    },
+  ],
+  [
     "duplicated deployment count",
     {
       countEvidence: {
@@ -318,6 +373,18 @@ for (const [label, options] of [
           { uid: "dpl_second", created: Date.parse("2026-11-22T00:00:00.000Z") },
         ],
         pagination: { count: 2, next: null },
+      },
+    },
+  ],
+  [
+    "two emergency reserve boundary without next",
+    {
+      countEvidence: {
+        deployments: [
+          { uid: "dpl_first", created: Date.parse("2026-11-22T00:00:00.000Z") },
+          { uid: "dpl_second", created: Date.parse("2026-11-22T00:00:00.000Z") },
+        ],
+        pagination: { count: 2, prev: Date.parse("2026-11-22T00:00:00.000Z") },
       },
     },
   ],
@@ -469,6 +536,43 @@ test("one routine slot may be spent while exactly two emergency deployments rema
   assert.equal(decision.remaining, 3);
   assert.equal(decision.routineRemaining, 1);
   assert.equal(decision.allowed, true);
+});
+
+test("omitted next preserves deployment identity, time, project and completeness guards", () => {
+  const now = Date.parse("2026-11-22T00:00:01.000Z");
+  const cycle = guards.deploymentCycle(
+    { SADEED_DEPLOY_CYCLE_BUDGET: "4", SADEED_DEPLOY_CYCLE_STARTED_AT: "2026-11-22T00:00:00.000Z" },
+    now,
+  );
+  const deployment = { uid: baselineId, created: now - 1, projectId: guards.RELEASE_PROJECT };
+  const evidence = (changes) => ({
+    deployments: [{ ...deployment, ...changes }],
+    pagination: { count: 1, prev: now - 1 },
+  });
+  assert.equal(guards.verifiedDeploymentCount(cycle, evidence(), now), 1);
+  for (const [label, invalid] of [
+    ["undefined evidence", undefined],
+    ["null evidence", null],
+    ["missing deployments", { pagination: { count: 0 } }],
+    ["null pagination", { deployments: [], pagination: null }],
+    ["array pagination", { deployments: [], pagination: [] }],
+    ["explicit undefined cursor", { deployments: [], pagination: { count: 0, next: undefined } }],
+    ["boolean cursor", { deployments: [], pagination: { count: 0, next: false } }],
+    ["missing count", { deployments: [], pagination: {} }],
+    ["string count", { deployments: [], pagination: { count: "0" } }],
+    ["invalid ID", evidence({ uid: "not-a-deployment" })],
+    ["missing timestamp", evidence({ created: undefined })],
+    ["fractional timestamp", evidence({ created: now - 0.5 })],
+    ["before cycle", evidence({ created: cycle.since - 1 })],
+    ["future timestamp", evidence({ created: now + 1 })],
+    ["another project", evidence({ projectId: "prj_other" })],
+    ["duplicated ID", { deployments: [deployment, deployment], pagination: { count: 2 } }],
+  ])
+    assert.throws(
+      () => guards.verifiedDeploymentCount(cycle, invalid, now),
+      /Complete deployment count evidence is required|Deployment count evidence is invalid or duplicated/,
+      label,
+    );
 });
 
 test("another release writer is never overwritten by rollback", async () => {

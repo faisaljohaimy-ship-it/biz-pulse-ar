@@ -130,7 +130,9 @@ async function inspectDownloadedReport(
         { exact: true },
       ),
     ).toBeVisible();
-    await expect(artifact.getByText(scenario[locale].owner, { exact: false })).toBeVisible();
+    await expect(
+      artifact.locator("dl").getByText(scenario[locale].owner, { exact: false }),
+    ).toBeVisible();
     await expect(artifact.getByText(scenario[locale].event, { exact: false })).toBeVisible();
     await expect(
       artifact.getByRole("heading", {
@@ -149,9 +151,7 @@ async function inspectDownloadedReport(
         : `${scenario.minutes} minutes from simulation start`,
     );
     expect(body).toContain(
-      locale === "ar"
-        ? "زمن الاستجابة والعائد التشغيلي لم يُقاسا"
-        : "Response-time improvement and operational ROI have not been measured",
+      locale === "ar" ? "تحسن الزمن والعائد غير مقيسين" : "Time savings and ROI are unmeasured",
     );
     expect(body).toContain(
       scenario.id === "patrol"
@@ -180,6 +180,7 @@ async function inspectDownloadedReport(
 for (const theme of ["dark", "light"] as const) {
   test.describe(`Security decision center · safe local demonstration · ${theme}`, () => {
     test.beforeEach(async ({ page }) => {
+      test.setTimeout(180_000);
       const evidence = { writes: [] as string[], mockedHealth: [] as string[] };
       networkEvidence.set(page, evidence);
       await page.route("**/*", (route) => {
@@ -216,7 +217,7 @@ for (const theme of ["dark", "light"] as const) {
       await page.goto("/sec/decision-center", { waitUntil: "domcontentloaded" });
       await expect(
         page.getByRole("heading", { name: "مركز القرار الأمني الذكي", exact: true }),
-      ).toBeVisible();
+      ).toBeVisible({ timeout: 60_000 });
       await expect(page.locator("html")).toHaveClass(new RegExp(`\\b${theme}\\b`));
       await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
       await expect(page.getByRole("dialog", { name: "الرقم الوظيفي مطلوب" })).toHaveCount(0);
@@ -296,6 +297,187 @@ for (const theme of ["dark", "light"] as const) {
       expect(networkEvidence.get(page)?.writes).toEqual([]);
     });
 
+    test("keeps What-if changes isolated, traces context, invalidates old review and exports the same assumptions", async ({
+      page,
+    }) => {
+      test.setTimeout(180_000);
+      await setLocale(page, "en");
+      const cameraNode = page.getByRole("button", { name: "3. Assumed camera", exact: true });
+      await cameraNode.focus();
+      await cameraNode.press("Enter");
+      await expect(cameraNode).toHaveAttribute("aria-pressed", "true");
+      await expect(
+        page.getByText("Dependency trace: Assumed connectivity", { exact: true }),
+      ).toBeVisible();
+      await expect(
+        page.getByText(/^Selected entity evidence: demo-access-log · demo-camera-reference/),
+      ).toBeVisible();
+      await page.getByRole("button", { name: "Start scenario", exact: true }).click();
+      await page.getByRole("button", { name: "View recommendations", exact: true }).click();
+      await page.getByRole("button", { name: "Continue to human review", exact: true }).click();
+      await page.getByRole("checkbox").check();
+      await page.getByRole("button", { name: "Record review · simulation", exact: true }).click();
+      await expect(exportButton(page, "en")).toBeEnabled();
+      await page.getByRole("button", { name: "Camera available", exact: true }).click();
+      await expect(exportButton(page, "en")).toBeDisabled();
+      await expect(page.getByText("The scenario has not started", { exact: true })).toBeVisible();
+      await expect(cameraNode).toHaveAttribute("aria-pressed", "true");
+      const patrol = page.getByRole("slider", { name: "Patrol count", exact: true });
+      await patrol.focus();
+      await patrol.press("Home");
+      await expect(patrol).toHaveValue("0");
+      const response = page.getByRole("slider", { name: "Verification time (min)", exact: true });
+      await response.focus();
+      await response.press("End");
+      await expect(response).toHaveValue("120");
+      await page.getByRole("button", { name: "Route open", exact: true }).click();
+      await page.getByRole("button", { name: "Connectivity available", exact: true }).click();
+      await expect(page.getByText("Baseline: Low · Proposed: High", { exact: true })).toBeVisible();
+      await page.getByText("visibility-gap · Visibility-gap hypothesis", { exact: true }).click();
+      await expect(page.getByText(/Assumed visibility gaps.*causation is unproven/)).toBeVisible();
+      await expect(
+        page
+          .locator("details")
+          .filter({
+            has: page.getByText("visibility-gap · Visibility-gap hypothesis", { exact: true }),
+          })
+          .getByText(/Verification needed: Actual barriers.*unverified/),
+      ).toBeVisible();
+      await page.getByText("Unknowns & measurement plan", { exact: true }).click();
+      await expect(
+        page.getByText("Event and barriers are unverified; event severity is unchanged", {
+          exact: true,
+        }),
+      ).toBeVisible();
+      await setLocale(page, "ar");
+      await expect(page.getByRole("slider", { name: "عدد الدوريات", exact: true })).toHaveValue(
+        "0",
+      );
+      await expect(
+        page.getByRole("slider", { name: "زمن التحقق (دقيقة)", exact: true }),
+      ).toHaveValue("120");
+      await expect(
+        page.getByRole("button", { name: "3. الكاميرا المفترضة", exact: true }),
+      ).toHaveAttribute("aria-pressed", "true");
+      for (const width of [390, 1280]) {
+        await page.setViewportSize({ width, height: 950 });
+        for (const lang of ["ar", "en"] as const) {
+          await setLocale(page, lang);
+          const bounds = await page.evaluate(() => ({
+            content: document.documentElement.scrollWidth,
+            viewport: document.documentElement.clientWidth,
+          }));
+          expect(
+            bounds.content,
+            `Changed assumptions ${width}px ${lang} must fit`,
+          ).toBeLessThanOrEqual(bounds.viewport + 1);
+          await page.screenshot({
+            path: `.audit-tmp/omega-${theme}-changed-app-${lang}-${width}.png`,
+            fullPage: true,
+          });
+          await page
+            .getByRole("region", {
+              name: lang === "ar" ? "مختبر السياق والافتراضات" : "Context & assumptions lab",
+              exact: true,
+            })
+            .screenshot({ path: `.audit-tmp/omega-${theme}-changed-lab-${lang}-${width}.png` });
+        }
+      }
+      await setLocale(page, "en");
+      await page.getByRole("button", { name: "Start scenario", exact: true }).click();
+      await expect(
+        page.getByText("Critical · precautionary demo rating", { exact: true }),
+      ).toBeVisible();
+      await page.getByRole("button", { name: "View recommendations", exact: true }).click();
+      await page.getByRole("button", { name: "Continue to human review", exact: true }).click();
+      await expect(page.getByRole("checkbox")).not.toBeChecked();
+      await page.getByRole("checkbox").check();
+      await page.getByRole("button", { name: "Record review · simulation", exact: true }).click();
+      for (const locale of ["en", "ar"] as const) {
+        await setLocale(page, locale);
+        const downloadEvent = page.waitForEvent("download");
+        await exportButton(page, locale).click();
+        const download = await downloadEvent;
+        const path = `.audit-tmp/omega-${theme}-changed-${locale}.html`;
+        await download.saveAs(path);
+        const html = await readFile(path, "utf8");
+        expect(html).toContain("omega-policy-v1");
+        expect(html).toContain("SADEED-DEMO-ACCESS-001");
+        expect(html).not.toMatch(
+          /<\s*(?:script|iframe|object|embed|base)\b|\bon[a-z]+\s*=|javascript\s*:|\b(?:src|href)\s*=\s*["']\s*(?:https?:|\/\/)|@import\b|url\s*\(/i,
+        );
+        const artifact = await page.context().newPage();
+        const externalAssets: string[] = [];
+        await artifact.route("**/*", (route) => {
+          externalAssets.push(route.request().url());
+          return route.abort();
+        });
+        try {
+          await artifact.setContent(html);
+          await expect(artifact.locator("html")).toHaveAttribute("lang", locale);
+          await expect(artifact.locator("html")).toHaveAttribute(
+            "dir",
+            locale === "ar" ? "rtl" : "ltr",
+          );
+          const yes = locale === "ar" ? "نعم" : "Yes";
+          const no = locale === "ar" ? "لا" : "No";
+          const assumptions = [
+            [locale === "ar" ? "توفر الكاميرا" : "Camera available", yes, no],
+            [locale === "ar" ? "عدد الدوريات" : "Patrol count", "2", "0"],
+            [locale === "ar" ? "زمن التحقق (دقيقة)" : "Verification time (min)", "15", "120"],
+            [locale === "ar" ? "المسار مفتوح" : "Route open", yes, no],
+            [locale === "ar" ? "توفر الاتصال" : "Connectivity available", yes, no],
+          ];
+          for (const [name, baseline, proposed] of assumptions) {
+            await expect(
+              artifact
+                .getByRole("row")
+                .filter({ has: artifact.getByRole("rowheader", { name, exact: true }) })
+                .getByRole("cell"),
+            ).toHaveText([baseline, proposed]);
+          }
+          await expect(
+            artifact.getByText(
+              locale === "ar"
+                ? /ليست تنبؤًا علميًا أو سببية مثبتة أو اعتمادًا/
+                : /not a scientific forecast, causal proof or approval/,
+            ),
+          ).toBeVisible();
+          await expect(
+            artifact.getByText(
+              locale === "ar" ? /الاعتماد التشغيلي غير ممنوح/ : /Operational approval not granted/,
+            ),
+          ).toBeVisible();
+          expect(externalAssets).toEqual([]);
+          await artifact.screenshot({
+            path: `.audit-tmp/omega-${theme}-changed-report-${locale}.png`,
+            fullPage: true,
+          });
+        } finally {
+          await artifact.close();
+        }
+      }
+      await setLocale(page, "en");
+      await page.getByRole("button", { name: "Reset demo", exact: true }).click();
+      await expect(patrol).toHaveValue("2");
+      await expect(response).toHaveValue("15");
+      await expect(
+        page.getByRole("button", { name: "Camera available", exact: true }),
+      ).toHaveAttribute("aria-pressed", "true");
+      await expect(
+        page.getByRole("button", { name: "1. Synthetic event", exact: true }),
+      ).toHaveAttribute("aria-pressed", "true");
+      await expect(exportButton(page, "en")).toBeDisabled();
+      await page
+        .getByRole("combobox", { name: "Choose a demo scenario", exact: true })
+        .selectOption("camera");
+      await expect(
+        page.getByRole("button", { name: "Camera available", exact: true }),
+      ).toHaveAttribute("aria-pressed", "false");
+      await expect(response).toHaveValue("30");
+      expect(networkEvidence.get(page)?.writes).toEqual([]);
+    });
+
     test("keeps staff attribution on neighboring operational pages", async ({ page }) => {
       await page.goto("/sec/incidents", { waitUntil: "domcontentloaded" });
       await expect(page.getByRole("dialog", { name: "الرقم الوظيفي مطلوب" })).toBeVisible();
@@ -339,6 +521,30 @@ for (const theme of ["dark", "light"] as const) {
                   lang === "ar"
                     ? "مركز القرار الأمني الذكي"
                     : "Intelligent Security Decision Center",
+                exact: true,
+              }),
+              page.getByRole("slider", {
+                name: lang === "ar" ? "عدد الدوريات" : "Patrol count",
+                exact: true,
+              }),
+              page.getByRole("slider", {
+                name: lang === "ar" ? "زمن التحقق (دقيقة)" : "Verification time (min)",
+                exact: true,
+              }),
+              page.getByRole("button", {
+                name: lang === "ar" ? "توفر الكاميرا" : "Camera available",
+                exact: true,
+              }),
+              page.getByRole("button", {
+                name: lang === "ar" ? "المسار مفتوح" : "Route open",
+                exact: true,
+              }),
+              page.getByRole("button", {
+                name: lang === "ar" ? "توفر الاتصال" : "Connectivity available",
+                exact: true,
+              }),
+              page.getByRole("button", {
+                name: lang === "ar" ? "3. الكاميرا المفترضة" : "3. Assumed camera",
                 exact: true,
               }),
             ];

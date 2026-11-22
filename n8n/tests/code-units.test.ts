@@ -1747,7 +1747,7 @@ const mergeSuite: Suite = (M) => {
   must(
     "hostile angle-bracket fields stay cheap",
     (() => {
-      // Preserve the ten-result/two-field quadratic mutation guard within the 5s runner budget.
+      // Preserve the ten-result/two-field payload and the 400ms real-code performance guard.
       const evil = "<".repeat(6000);
       const started = Date.now();
       const r = rank([
@@ -1931,6 +1931,9 @@ expectRedOnPlanted("merge-rank", mergeSuite, [
       { from: "const TAG_RE = /<[^<>]*>/g;", to: "const TAG_RE = /<[^>]*>/g;" },
     ],
     red: "hostile angle-bracket fields stay cheap",
+    // The deliberately quadratic mutant exceeded the default 5s timeout under full-suite load.
+    // Let the mutant finish; the real-code assertion above remains at 400ms.
+    timeoutMs: 15_000,
   },
   {
     name: "toIso يقبل ما قبل 1990",

@@ -5,7 +5,8 @@ import {
   securityDecisionDemoReducer,
   type SecurityDecisionDemoState,
 } from "./security-decision-demo";
-import { buildSecurityDecisionReport } from "./security-decision-report";
+import { buildSecurityDecisionReport, type OmegaReportContext } from "./security-decision-report";
+import { buildOmegaSecurityLab, getOmegaBaselineAssumptions } from "./omega-security-lab";
 import {
   buildSecurityDecisionScenario,
   type SecurityDecisionScenario,
@@ -22,6 +23,101 @@ function finished(outcome: "reviewed" | "needs_verification"): SecurityDecisionD
 }
 
 describe("standalone synthetic security decision report", () => {
+  it.each(["ar", "en"] as const)(
+    "exports the exact OMEGA comparison and traceability in %s",
+    (locale) => {
+      const assumptions = {
+        ...getOmegaBaselineAssumptions("camera"),
+        patrolCount: 0,
+        responseMinutes: 45,
+        routeOpen: false,
+      };
+      const lab = buildOmegaSecurityLab("camera", assumptions);
+      const html = buildSecurityDecisionReport(
+        buildSecurityDecisionScenario("camera"),
+        finished("reviewed"),
+        locale,
+        exportedAt,
+        { scenarioId: "camera", assumptions },
+      );
+      const document = new DOMParser().parseFromString(html, "text/html");
+      expect(document.body.textContent).toContain("omega-policy-v1");
+      expect(document.body.textContent).toContain("45");
+      for (const node of lab.world.nodes) expect(document.body.textContent).toContain(node.id);
+      for (const edge of lab.world.edges) expect(document.body.textContent).toContain(edge.id);
+      for (const h of lab.proposed.assessment.hypotheses) {
+        expect(document.body.textContent).toContain(h.id);
+        expect(document.body.textContent).toContain(locale === "ar" ? h.reasonAr : h.reasonEn);
+        for (const id of h.evidenceIds) expect(document.body.textContent).toContain(id);
+      }
+      expect(document.querySelector("script,iframe,img,link,[src],[href],[onclick]")).toBeNull();
+      expect(document.body.textContent).toContain(
+        locale === "ar" ? "ليست تنبؤًا علميًا" : "not a scientific forecast",
+      );
+    },
+  );
+
+  it("rejects cross-scenario, forged-result and malformed-assumption report contexts", () => {
+    const demo = buildSecurityDecisionScenario("access");
+    const valid = { scenarioId: "access", assumptions: getOmegaBaselineAssumptions("access") };
+    const invalid = [
+      { ...valid, scenarioId: "camera" },
+      { ...valid, world: { is_simulation: false } },
+      { ...valid, assessment: { reviewPriority: "low" } },
+      { ...valid, assumptions: { ...valid.assumptions, responseMinutes: "15" } },
+      { ...valid, assumptions: { ...valid.assumptions, patrolCount: Number.NaN } },
+      null,
+    ];
+    for (const context of invalid) {
+      expect(() =>
+        buildSecurityDecisionReport(
+          demo,
+          finished("reviewed"),
+          "en",
+          exportedAt,
+          context as unknown as OmegaReportContext,
+        ),
+      ).toThrow();
+    }
+    expect(() =>
+      buildSecurityDecisionReport(
+        { ...demo, reviewWindowMinutes: 16 },
+        finished("reviewed"),
+        "en",
+        exportedAt,
+        valid as OmegaReportContext,
+      ),
+    ).toThrow("scenario mismatch");
+    const liveEvidence = {
+      ...demo,
+      evidence: [{ ...demo.evidence[0], simulated: false }],
+    } as unknown as SecurityDecisionScenario;
+    expect(() =>
+      buildSecurityDecisionReport(
+        liveEvidence,
+        finished("reviewed"),
+        "en",
+        exportedAt,
+        valid as OmegaReportContext,
+      ),
+    ).toThrow("Only non-operational");
+    for (const altered of [
+      { ...demo, severity: "high" },
+      { ...demo, eventEn: "Forged event" },
+      { ...demo, evidence: demo.evidence.map((e) => ({ ...e, detailEn: "Forged evidence" })) },
+    ]) {
+      expect(() =>
+        buildSecurityDecisionReport(
+          altered as SecurityDecisionScenario,
+          finished("reviewed"),
+          "en",
+          exportedAt,
+          valid as OmegaReportContext,
+        ),
+      ).toThrow("scenario mismatch");
+    }
+  });
+
   it("distinguishes an unreviewed draft from both local review outcomes without granting approval", () => {
     const demo = buildSecurityDecisionScenario("access");
     const draft = buildSecurityDecisionReport(
