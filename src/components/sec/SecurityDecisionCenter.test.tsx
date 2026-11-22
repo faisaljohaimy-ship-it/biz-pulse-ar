@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { I18nProvider } from "@/lib/i18n";
@@ -152,5 +152,117 @@ describe("Security Decision Center interaction", () => {
     await proceedToReview(user);
     await user.click(screen.getByRole("button", { name: "Synthetic camera reference" }));
     expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it("exports only a completed local review and starts a fresh journey when switching scenarios", async () => {
+    const user = userEvent.setup();
+    const createObjectURL = vi.fn((_blob: Blob) => "blob:local-synthetic-report");
+    const revokeObjectURL = vi.fn();
+    const NativeURL = globalThis.URL;
+    vi.stubGlobal(
+      "URL",
+      class extends NativeURL {
+        static createObjectURL = createObjectURL;
+        static revokeObjectURL = revokeObjectURL;
+      },
+    );
+    const downloads: Array<{ href: string; filename: string }> = [];
+    const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (
+      this: HTMLAnchorElement,
+    ) {
+      downloads.push({ href: this.href, filename: this.download });
+    });
+    const fetchSpy = vi
+      .spyOn(globalThis, "fetch")
+      .mockRejectedValue(new Error("Unexpected network call"));
+    try {
+      renderCenter("en");
+      expect(screen.getByRole("button", { name: "Export report · simulation" })).toBeDisabled();
+      await user.selectOptions(
+        screen.getByRole("combobox", { name: "Choose a demo scenario" }),
+        "camera",
+      );
+      expect(
+        screen.getByRole("heading", { name: /Camera unavailable at a fictional entry point/ }),
+      ).toBeVisible();
+      const cameraEvidence = screen.getByRole("button", { name: "Synthetic outage signal" });
+      await user.click(cameraEvidence);
+      expect(cameraEvidence).toHaveAttribute("aria-expanded", "true");
+      await proceedToReview(user);
+      expect(screen.getByRole("button", { name: "Export report · simulation" })).toBeDisabled();
+      expect(createObjectURL).not.toHaveBeenCalled();
+      await user.click(screen.getByRole("checkbox"));
+      await user.click(screen.getByRole("button", { name: "Record review · simulation" }));
+      expect(screen.getByRole("button", { name: "Export report · simulation" })).toBeEnabled();
+
+      await user.click(screen.getByRole("button", { name: "التبديل إلى العربية" }));
+      expect(screen.getByRole("combobox", { name: "اختر سيناريو العرض" })).toHaveValue("camera");
+      expect(screen.getByText("سُجّلت المراجعة التجريبية")).toBeVisible();
+      expect(screen.getByRole("button", { name: "إشارة انقطاع افتراضية" })).toHaveAttribute(
+        "aria-expanded",
+        "true",
+      );
+      expect(screen.getByRole("button", { name: "تصدير التقرير · محاكاة" })).toBeEnabled();
+
+      await user.click(screen.getByRole("button", { name: "تصدير التقرير · محاكاة" }));
+      expect(createObjectURL).toHaveBeenCalledOnce();
+      expect(downloads).toEqual([
+        { href: "blob:local-synthetic-report", filename: "SADEED-DEMO-CAMERA-002-ar.html" },
+      ]);
+      expect(screen.getByText(/جُهّز التقرير محليًا دون إرسال بيانات/)).toBeVisible();
+      await waitFor(
+        () => expect(revokeObjectURL).toHaveBeenCalledWith("blob:local-synthetic-report"),
+        { timeout: 1_500 },
+      );
+
+      const blob = createObjectURL.mock.calls[0][0];
+      expect(blob.type).toBe("text/html;charset=utf-8");
+      const report = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = () => reject(reader.error);
+        reader.readAsText(blob);
+      });
+      const reportDocument = new DOMParser().parseFromString(report, "text/html");
+      expect(reportDocument.documentElement.lang).toBe("ar");
+      expect(reportDocument.body.textContent).toContain("SADEED-DEMO-CAMERA-002");
+      expect(reportDocument.body.textContent).toContain("الاعتماد التشغيلي غير ممنوح");
+      expect(reportDocument.querySelector("script,[src],[href]")).toBeNull();
+
+      await user.click(screen.getByRole("button", { name: "Switch to English" }));
+      expect(screen.getByText(/Report prepared locally without sending data/)).toBeVisible();
+      await user.selectOptions(
+        screen.getByRole("combobox", { name: "Choose a demo scenario" }),
+        "patrol",
+      );
+      expect(
+        screen.getByRole("heading", { name: /Missed checkpoint for a fictional patrol/ }),
+      ).toBeVisible();
+      expect(screen.getByText("The scenario has not started")).toBeVisible();
+      expect(screen.queryByRole("list", { name: "Simulation log" })).not.toBeInTheDocument();
+      expect(
+        screen.queryByText(/Report prepared locally without sending data/),
+      ).not.toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Export report · simulation" })).toBeDisabled();
+      await proceedToReview(user);
+      expect(screen.getByRole("checkbox")).not.toBeChecked();
+      expect(screen.getByRole("button", { name: "Record review · simulation" })).toBeDisabled();
+      await user.selectOptions(
+        screen.getByRole("combobox", { name: "Choose a demo scenario" }),
+        "camera",
+      );
+      expect(screen.getByRole("button", { name: "Synthetic outage signal" })).toHaveAttribute(
+        "aria-expanded",
+        "false",
+      );
+      expect(screen.getByText("The scenario has not started")).toBeVisible();
+      expect(createObjectURL).toHaveBeenCalledOnce();
+      expect(fetchSpy).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+      vi.unstubAllGlobals();
+      click.mockRestore();
+      fetchSpy.mockRestore();
+    }
   });
 });

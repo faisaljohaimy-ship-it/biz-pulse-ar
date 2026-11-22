@@ -6,9 +6,11 @@ import {
   Check,
   ChevronDown,
   ClipboardCheck,
+  Cctv,
   DoorOpen,
+  Download,
   FileSearch,
-  Fingerprint,
+  Footprints,
   FlaskConical,
   Languages,
   LockKeyhole,
@@ -25,18 +27,37 @@ import { NexusPill } from "@/components/nexus-frame";
 import { useI18n } from "@/lib/i18n";
 import { screenName } from "@/lib/nav/screen-names";
 import {
-  buildUnauthorizedAccessDecisionDemo,
   createSecurityDecisionDemoState,
   securityDecisionDemoReducer,
 } from "@/lib/sadeed/security-decision-demo";
-
-const demo = buildUnauthorizedAccessDecisionDemo();
+import {
+  SECURITY_DECISION_SCENARIOS,
+  buildSecurityDecisionScenario,
+  type SecurityDecisionScenarioId,
+} from "@/lib/sadeed/security-decision-scenarios";
+import { buildSecurityDecisionReport } from "@/lib/sadeed/security-decision-report";
 
 /** Entirely local rehearsal: deliberately has no server functions or operational tools. */
 export function SecurityDecisionCenter() {
   const { locale, setLocale } = useI18n();
   const ar = locale === "ar";
   const text = (arabic: string, english: string) => (ar ? arabic : english);
+  const [scenarioId, setScenarioId] = useState<SecurityDecisionScenarioId>("access");
+  const demo = buildSecurityDecisionScenario(scenarioId);
+  const ScenarioIcon =
+    scenarioId === "camera" ? Cctv : scenarioId === "patrol" ? Footprints : DoorOpen;
+  const diagramLabel =
+    scenarioId === "camera"
+      ? text("كاميرا افتراضية · التوافر غير متحقق", "Synthetic camera · availability unverified")
+      : scenarioId === "patrol"
+        ? text(
+            "نقطة دورية افتراضية · التغطية غير متحققة",
+            "Synthetic checkpoint · coverage unverified",
+          )
+        : text(
+            "نقطة دخول افتراضية · هوية غير متحققة",
+            "Synthetic entry point · identity unverified",
+          );
   const [state, dispatch] = useReducer(
     securityDecisionDemoReducer,
     undefined,
@@ -44,6 +65,7 @@ export function SecurityDecisionCenter() {
   );
   const [acknowledged, setAcknowledged] = useState(false);
   const [openEvidence, setOpenEvidence] = useState<string | null>(null);
+  const [exported, setExported] = useState(false);
   const stages = ["idle", "assessment", "recommendation", "awaiting_review"];
   const stageIndex = Math.max(0, stages.indexOf(state.stage));
   const finished = state.stage === "reviewed" || state.stage === "needs_verification";
@@ -59,6 +81,19 @@ export function SecurityDecisionCenter() {
     dispatch({ type: "reset" });
     setAcknowledged(false);
     setOpenEvidence(null);
+    setExported(false);
+  };
+  const exportReport = () => {
+    const report = buildSecurityDecisionReport(demo, state, locale);
+    const url = URL.createObjectURL(new Blob([report], { type: "text/html;charset=utf-8" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${demo.id}-${locale}.html`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1_000);
+    setExported(true);
   };
 
   return (
@@ -121,6 +156,32 @@ export function SecurityDecisionCenter() {
       </div>
 
       <section className="nx-surface overflow-hidden" aria-labelledby="scenario-heading">
+        <div className="flex flex-wrap items-center gap-3 border-b border-border p-4">
+          <label htmlFor="decision-scenario" className="text-sm font-semibold">
+            {text("اختر سيناريو العرض", "Choose a demo scenario")}
+          </label>
+          <select
+            id="decision-scenario"
+            className="min-h-[44px]! max-w-full rounded-xl border border-border bg-background px-3 text-sm"
+            value={scenarioId}
+            onChange={(event) => {
+              setScenarioId(event.target.value as SecurityDecisionScenarioId);
+              reset();
+            }}
+          >
+            {SECURITY_DECISION_SCENARIOS.map((s) => (
+              <option key={s.id} value={s.id}>
+                {ar ? s.name_ar : s.name_en}
+              </option>
+            ))}
+          </select>
+          <span className="text-xs text-muted-foreground">
+            {text(
+              "تغيير السيناريو يبدأ سجل محاكاة جديدًا",
+              "Changing scenario starts a fresh simulation log",
+            )}
+          </span>
+        </div>
         <div className="grid lg:grid-cols-[1.5fr_1fr]">
           <div className="space-y-4 p-5 md:p-7">
             <div className="flex flex-wrap items-center gap-2">
@@ -159,17 +220,17 @@ export function SecurityDecisionCenter() {
           <div
             className="flex flex-col items-center justify-center gap-4 border-t border-border bg-[color:var(--chip)] p-6 lg:border-s lg:border-t-0"
             aria-label={text(
-              "مخطط توضيحي افتراضي لنقطة الدخول",
-              "Illustrative synthetic entry-point diagram",
+              "مخطط توضيحي للسياق الافتراضي",
+              "Illustrative synthetic scenario diagram",
             )}
           >
             <div className="flex w-full max-w-xs items-center justify-center gap-3" aria-hidden>
               <div className="rounded-2xl border border-border bg-background p-4">
-                <Fingerprint className="size-8 text-muted-foreground" />
+                <FileSearch className="size-8 text-muted-foreground" />
               </div>
               <div className="h-px flex-1 border-t border-dashed border-[color:var(--tone-amber)]" />
               <div className="relative rounded-2xl border border-[color:var(--tone-amber)]/40 bg-[color:var(--tone-amber)]/10 p-5">
-                <DoorOpen className="size-10 text-[color:var(--tone-amber)]" />
+                <ScenarioIcon className="size-10 text-[color:var(--tone-amber)]" />
                 <ShieldAlert className="absolute -end-2 -top-2 size-6 text-[color:var(--tone-amber)]" />
               </div>
               <div className="h-px flex-1 border-t border-dashed border-border" />
@@ -177,17 +238,29 @@ export function SecurityDecisionCenter() {
                 <LockKeyhole className="size-8 text-muted-foreground" />
               </div>
             </div>
-            <p className="text-sm font-semibold">
-              {text(
-                "نقطة دخول افتراضية · هوية غير متحققة",
-                "Synthetic entry point · identity unverified",
-              )}
-            </p>
+            <p className="text-sm font-semibold">{diagramLabel}</p>
             <p className="text-center text-xs leading-6 text-muted-foreground">
               {text(
                 "رسم توضيحي فقط؛ لا يمثل حالة موقع أو بوابة فعلية.",
                 "Illustration only; does not represent a real facility or gate status.",
               )}
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-5 border-t border-border px-5 py-4 text-sm">
+          <div>
+            <p className="text-xs text-muted-foreground">
+              {text("مسؤول المراجعة الافتراضي", "Fictional review owner")}
+            </p>
+            <p className="mt-1 font-semibold">{ar ? demo.ownerAr : demo.ownerEn}</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">
+              {text("المهلة الافتراضية من بدء العرض", "Preset window from demo start")}
+            </p>
+            <p className="mt-1 font-semibold">
+              {demo.reviewWindowMinutes}{" "}
+              {text("دقيقة · ليست مهلة تشغيلية", "minutes · not an operational deadline")}
             </p>
           </div>
         </div>
@@ -240,9 +313,18 @@ export function SecurityDecisionCenter() {
               {state.stage === "assessment" && (
                 <>
                   <div className="flex items-center gap-2">
-                    <ShieldAlert className="size-5 text-[color:var(--tone-rose)]" aria-hidden />
+                    <ShieldAlert
+                      className={
+                        demo.severity === "critical"
+                          ? "size-5 text-[color:var(--tone-rose)]"
+                          : "size-5 text-[color:var(--tone-amber)]"
+                      }
+                      aria-hidden
+                    />
                     <h3 className="text-lg font-bold">
-                      {text("حرج · تصنيف تجريبي احترازي", "Critical · precautionary demo rating")}
+                      {demo.severity === "critical"
+                        ? text("حرج · تصنيف تجريبي احترازي", "Critical · precautionary demo rating")
+                        : text("مرتفع · تصنيف تجريبي احترازي", "High · precautionary demo rating")}
                     </h3>
                   </div>
                   <p className="text-sm leading-7 text-muted-foreground">
@@ -250,8 +332,8 @@ export function SecurityDecisionCenter() {
                   </p>
                   <p className="rounded-xl border border-border bg-[color:var(--chip)] p-3 text-sm leading-7">
                     {text(
-                      "هوية غير متحققة + موقع افتراضي حساس = أولوية للتحقق البشري. هذه قاعدة شرح للسيناريو، وليست احتمال خطر أو درجة ثقة مقيسة.",
-                      "Unverified identity + a sensitive synthetic location = priority for human verification. This explains the scenario; it is not a measured risk probability or confidence score.",
+                      "الإشارات الافتراضية غير مؤكدة وتحتاج تحققًا بشريًا. التصنيف يشرح أولوية مراجعة السيناريو، وليس احتمال خطر أو درجة ثقة مقيسة.",
+                      "Synthetic signals are unverified and need human validation. The rating explains the scenario's review priority; it is not a measured risk probability or confidence score.",
                     )}
                   </p>
                 </>
@@ -341,6 +423,24 @@ export function SecurityDecisionCenter() {
                     "Operational approval is still required. No message was sent and no action was executed. Reset to explore the other outcome.",
                   )}
                 </p>
+              </div>
+            )}
+
+            {(state.stage === "recommendation" ||
+              state.stage === "awaiting_review" ||
+              finished) && (
+              <div className="mt-5 space-y-3 border-t border-border pt-4">
+                <h3 className="font-semibold">
+                  {text("بدائل القرار ومفاضلاتها", "Decision alternatives & tradeoffs")}
+                </h3>
+                {demo.alternatives.map((a) => (
+                  <div key={a.titleEn} className="rounded-xl border border-border p-3 text-sm">
+                    <p className="font-semibold">{ar ? a.titleAr : a.titleEn}</p>
+                    <p className="mt-1 leading-7 text-muted-foreground">
+                      {ar ? a.tradeoffAr : a.tradeoffEn}
+                    </p>
+                  </div>
+                ))}
               </div>
             )}
 
@@ -470,6 +570,34 @@ export function SecurityDecisionCenter() {
               )}
             </p>
           </div>
+          <Panel
+            icon={<Download className="size-5" />}
+            title={text("التقرير التنفيذي", "Executive report")}
+          >
+            <p className="mb-4 text-sm leading-7 text-muted-foreground">
+              {text(
+                "أكمل المراجعة التجريبية لتصدير تقرير HTML قابل للطباعة، يتضمن المصدر والأسباب والبدائل والمسؤول والمهلة وسجل المحاكاة. ليس اعتمادًا أو سجل تدقيق تشغيليًا.",
+                "Complete the simulated review to export a printable HTML report with source, rationale, alternatives, owner, window, and demo log. It grants no approval and is not an operational audit record.",
+              )}
+            </p>
+            <Button
+              variant="outline"
+              className="min-h-[44px]! h-auto whitespace-normal"
+              disabled={!finished}
+              onClick={exportReport}
+            >
+              <Download aria-hidden />
+              {text("تصدير التقرير · محاكاة", "Export report · simulation")}
+            </Button>
+            {exported && (
+              <p role="status" className="mt-3 text-sm text-muted-foreground">
+                {text(
+                  "جُهّز التقرير محليًا دون إرسال بيانات. يمكن فتحه وطباعته أو حفظه PDF من المتصفح.",
+                  "Report prepared locally without sending data. Open it to print or save as PDF from your browser.",
+                )}
+              </p>
+            )}
+          </Panel>
         </aside>
       </div>
     </div>

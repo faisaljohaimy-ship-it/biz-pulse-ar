@@ -42,8 +42,8 @@
 
 - [x] T014 Run `npm ci` and the full `npm run check` gate from `package.json`; record checks, fixes, and limitations below.
 - [x] T015 Obtain explicit QA guardian clearance for the final diff under `SADEED_CONSTITUTION.md` Article 17, including protected-file and forbidden-pattern checks.
-- [ ] T016 Fetch/check the current feature ref, preserve concurrent changes, and commit/push only the requested branch after successful checks; record SHA below.
-- [ ] T017 Verify the final matching Preview deployment and `/sec/decision-center` route, recording URL/status/commit or concrete blocker below. Do not deploy Production.
+- [x] T016 Fetch/check the current feature ref, preserve concurrent changes, and commit/push only the requested branch after successful checks; record SHA below.
+- [x] T017 Verify the final matching Preview deployment and `/sec/decision-center` route, recording URL/status/commit or concrete blocker below. Do not deploy Production.
 
 ## Dependencies and parallel work
 
@@ -77,3 +77,12 @@ T001–T002 precede T003–T004. US1 and US2 share the fixture/state foundation;
 - Final TypeScript after the two new budget boundary tests: passed. Final targeted ESLint and diff checks passed. Owner response: «أوافق على الزيادة المحدودة وإكمال Preview». The feature ref remained `ab3310c`; read-only `main` ref remained `968206f` before delivery.
 
 - QA guardian reviewed the final staged diff and all evidence and issued explicit clearance: **«مصرَّح بالدفع»**. Delivery is restricted to the named feature branch and Preview. T016/T017 are post-commit checkpoints; their actual SHA/status are reported in the final delivery response rather than predicted here.
+
+
+### Completed Preview delivery (feature 001)
+
+- T016 completed: feature commit `60b3f2f1a7f9d5b9325f88d6a195f41ac1a768ad` was pushed to `feature/sadeed-security-decision-demo-20261122`; no main change or Production deployment was part of that iteration.
+- T017 completed: Vercel Preview `dpl_4NbnNKB7kNVW5FTdmhC1kZBj55Pm` reached `READY` with `target: null` and that exact SHA. [Decision-center Preview](https://biz-pulse-b23jvpox4-faisaljohaimy-ship-its-projects.vercel.app/sec/decision-center).
+- `build-info` returned HTTP 200 with the exact SHA/ref, source `VERCEL_GIT_COMMIT_SHA`, and build time `2026-11-22T21:20:56.646Z`; the route returned HTTP 200 with noindex. Deployed-browser smoke covered Arabic → English, rationale, review checkbox guards, and local review success with zero writes/page errors (`/tmp/sadeed-preview-smoke.log`, ephemeral local evidence).
+- PR #453 was draft/mergeable at handoff. CI run `45071582284` (#2186) succeeded for static/unit/audit/build/budget; PWA run `45071582391` (#6) also succeeded.
+- Earlier pending/status statements above record checkpoints before final delivery; this section closes T016/T017. The later owner directive authorizes a separate gated Production iteration under `specs/002-enterprise-decision-delivery/`; it does not retroactively change feature 001's Preview-only scope.

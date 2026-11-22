@@ -101,8 +101,9 @@ function parseDataUrl(url: string): { bytes: number; mediaType: string } | null 
  * or controlled by the client). Read one bounded request stream and reject
  * malformed UTF-8/JSON before forwarding any attachment to an AI provider.
  */
-async function readBoundedChatJson(
+export async function readBoundedChatJson(
   request: Request,
+  maxBytes = MAX_REQUEST_BYTES,
 ): Promise<{ ok: true; value: unknown } | { ok: false; status: 400 | 408 | 413; error: string }> {
   if (request.signal.aborted) {
     return { ok: false, status: 408, error: "Chat request timed out." };
@@ -138,7 +139,7 @@ async function readBoundedChatJson(
       const { done, value } = next;
       if (done) break;
       totalBytes += value.byteLength;
-      if (totalBytes > MAX_REQUEST_BYTES) {
+      if (totalBytes > maxBytes) {
         // A hostile or broken stream can leave cancel() pending forever.
         // Reject immediately without waiting for its cancellation callback.
         void reader.cancel().catch(() => {});

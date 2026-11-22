@@ -1,5 +1,32 @@
 # ROLLBACK — NEXIOS AI OS
 
+## Current Vercel recovery baseline — 2026-11-22
+
+The sections below are historical records. Use the current release procedure in
+`docs/operations/CONTINUOUS_DELIVERY_AR.md`; never force-push main or follow old
+Lovable deployment examples as the current release path.
+
+Before the enterprise decision/delivery release, both `neexios.com` and
+`www.neexios.com` were verified on Production deployment
+`dpl_87SSgBf9CMcoJKLAh8JJRemABzSh`, SHA
+`a384a548c498dbec3a244aef723ea97f28bf5a4c`. The live build stamp matched.
+Capture and reverify the active deployment again immediately before promotion;
+another writer may have released meanwhile. Do not choose a rollback candidate
+solely from its position in deployment history.
+
+Stage the exact merged main SHA without assigning domains; verify the staged
+artifact before promotion. If post-promotion hash, routes, or browser checks fail,
+restore the captured verified Production deployment through Vercel artifact
+rollback and confirm both domains serve its SHA. Then prepare a normal `git revert`
+PR and rerun the gates; do not rewrite history. No database rollback is included:
+this iteration has no migrations or production data writes.
+
+Use `/api/public/live` for write-free liveness/build identity. Both
+`/api/public/health` and `/api/chat/health` can increment rate counters; paid AI and
+staff-attribution submissions are not implicit smoke-test permissions. Signed-in
+authorization, region isolation, and real provider generation need their own
+controlled verification. Preserve the two emergency-deployment reserve.
+
 سجل التراجع الرسمي (الدستور المادة ١٨). المنهج المعتمد: `git revert <commit>`
 (لا force-push على main)، ثم البوابة كاملة، ثم إعادة النشر عبر Vercel (`create_deployment` ثم `request_promote`).
 كل صف يذكر: الـ commit · ماذا فعل · كيف تعكسه · أثر التراجع.

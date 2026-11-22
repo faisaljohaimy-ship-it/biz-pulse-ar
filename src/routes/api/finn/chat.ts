@@ -52,6 +52,7 @@ import { FINN_LIMITS } from "@/lib/finn-agent/limits";
 import { parseFinnRequestBody, type FinnRequestErrorCode } from "@/lib/finn-agent/messages";
 import { finnNotFoundResponse, resolveFinnOwner } from "@/lib/finn-agent/owner-gate.server";
 import { encodeFinnEvent } from "@/lib/finn-agent/stream-protocol";
+import { readBoundedChatJson } from "@/routes/api/-chat-guard";
 
 const NO_STORE_HEADERS: Record<string, string> = {
   "Cache-Control": "no-store, no-cache, must-revalidate, private",
@@ -145,24 +146,20 @@ async function handlePost(request: Request, userId: string): Promise<Response> {
     return finnError(413, "too_large", "حجم الطلب أكبر من الحدّ المسموح.");
   }
 
-  // الفحص الثاني على النصّ الفعلي: جسمٌ مجزّأ بلا content-length لا يتجاوز الحدّ.
-  let rawText: string;
-  try {
-    rawText = await request.text();
-  } catch {
-    return finnError(400, "invalid_body", REQUEST_ERRORS_AR.invalid_body);
-  }
-  if (rawText.length > FINN_LIMITS.maxBodyBytes) {
-    return finnError(413, "too_large", "حجم الطلب أكبر من الحدّ المسموح.");
-  }
-  let body: unknown;
-  try {
-    body = JSON.parse(rawText);
-  } catch {
+  // Reuse the bounded transport reader: count actual UTF-8 bytes before buffering
+  // and cap the entire upload even when Content-Length is absent or forged.
+  const read = await readBoundedChatJson(request, FINN_LIMITS.maxBodyBytes);
+  if (!read.ok) {
+    if (read.status === 413) {
+      return finnError(413, "too_large", "حجم الطلب أكبر من الحدّ المسموح.");
+    }
+    if (read.status === 408) {
+      return finnError(408, "request_timeout", "انتهت مهلة قراءة الطلب أو أُلغي. أعد المحاولة.");
+    }
     return finnError(400, "invalid_body", REQUEST_ERRORS_AR.invalid_body);
   }
   // `messages` وحدها تُقرأ؛ لا نموذج ولا موجِّه ولا ميزانية من العميل.
-  const parsed = parseFinnRequestBody(body);
+  const parsed = parseFinnRequestBody(read.value);
   if (!parsed.ok) {
     return finnError(parsed.status, parsed.code, REQUEST_ERRORS_AR[parsed.code]);
   }
