@@ -8,6 +8,19 @@ export const ENTRIES_A: ReadonlyArray<readonly [string, PageNarration]> = [
   // تُعيد التوجيه إلى /sec.
   // ── SEC command surface ─────────────────────────────────────────────
   [
+    "/sec/decision-center",
+    n(
+      "مَرْكَزِ الْقَرَارِ الْأَمْنِيِّ الذَّكِيِّ",
+      "Intelligent Security Decision Center",
+      "مُحَاكَاةً تَجْرِيبِيَّةً لِبَلَاغٍ افْتِرَاضِيٍّ، وَأَدِلَّةً غَيْرَ مُتَحَقَّقَةٍ، وَتَوْصِيَاتٍ وَسِجِلًّا مَحَلِّيًّا لِلْمُرَاجَعَةِ",
+      "a synthetic report, unverified evidence, recommendations, and a local demonstration log",
+      "فَهْمُ رِحْلَةِ الْقَرَارِ مَعَ بَقَاءِ الِاعْتِمَادِ الْفِعْلِيِّ بِيَدِ صَاحِبِ الصَّلَاحِيَّةِ",
+      "understanding the decision journey while actual approval remains with authorized people",
+      "ابْدَأِ السِّينَارْيُو، ثُمَّ اسْتَعْرِضِ التَّقْيِيمَ وَالتَّوْصِيَاتِ وَالْمُرَاجَعَةَ التَّجْرِيبِيَّةَ. كُلُّ الْبَيَانَاتِ افْتِرَاضِيَّةٌ، وَلَا يُرْسَلُ أَيُّ طَلَبٍ وَلَا يُنَفَّذُ أَيُّ إِجْرَاءٍ أَمْنِيٍّ",
+      "start the scenario, then inspect the preset assessment, recommendations, and simulated review. All data is fictional; no request is sent and no security action is executed",
+    ),
+  ],
+  [
     "/sec/incidents",
     n(
       "لوحة الحوادث الأمنية",

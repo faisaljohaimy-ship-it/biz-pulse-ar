@@ -50,6 +50,7 @@ import { TopBar } from "@/components/nav/TopBar";
 import { isOperationalRoute } from "@/lib/seo/operational-noindex";
 import { StaffNumberGate } from "@/components/access/StaffNumberGate";
 import { isGatedRoute } from "@/lib/access/staff-entry";
+import { isSecurityDecisionDemoRoute } from "@/lib/sadeed/security-decision-demo";
 import { RouteTransition } from "@/components/motion/RouteTransition";
 import { SystemChrome, chromeModeFor } from "@/components/nav/SystemChrome";
 
@@ -529,10 +530,13 @@ function RootComponent() {
                   {/* لوحة الرقم الوظيفي (أمر المالك ٢٠٢٦/٠٩/١٩): تُسأل
                       مرّة لكل جهاز على الشاشات التشغيلية، ثم تُفتح الصفحة
                       المقصودة. والمقدّمة وبوّابة الدخول خارجها كالشريط:
-                      الأولى تملك الشاشة، والثانية ليست صفحة نظام. */}
-                  {!introActive && !isAccessGate && isGatedRoute(pathname) && (
-                    <StaffNumberGate path={pathname} />
-                  )}
+                      الأولى تملك الشاشة، والثانية ليست صفحة نظام.
+                      العرض الافتراضي لمركز القرار مستثنى وحده: لا يجمع
+                      رقمًا وظيفيًا ولا يكتب سجل دخول؛ منع الفهرسة باقٍ. */}
+                  {!introActive &&
+                    !isAccessGate &&
+                    !isSecurityDecisionDemoRoute(pathname) &&
+                    isGatedRoute(pathname) && <StaffNumberGate path={pathname} />}
                   {!suppressMarquee && <TopBar showClock={!suppressClock} />}
 
                   {/* قشرة النظام **خارج** `RouteTransition` (الخيار H): الصفحة

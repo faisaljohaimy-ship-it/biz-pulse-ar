@@ -38,6 +38,35 @@ function checkIsolatedBuild(assets: Record<string, string | number>) {
 }
 
 describe("production performance budget build evidence", () => {
+  it("enforces the reviewed aggregate JavaScript ceiling independently of per-file limits", () => {
+    const cap = Math.floor(10.05 * 1024 * 1024);
+    const part = 1.25 * 1024 * 1024;
+    const assets = Object.fromEntries(
+      Array.from({ length: 8 }, (_, index) => [
+        `assets/chunk-${index}.js`,
+        index === 7 ? cap - 7 * part : part,
+      ]),
+    );
+    expect(checkIsolatedBuild(assets).status).toBe(0);
+    assets["assets/chunk-7.js"] += 1;
+    const exceeded = checkIsolatedBuild(assets);
+    expect(exceeded.status).toBe(1);
+    expect(exceeded.output).toContain("✗ Total JavaScript");
+    expect(exceeded.output).toContain("✓ Largest JavaScript asset");
+  });
+
+  it("rejects even one byte beyond the reviewed aggregate CSS ceiling", () => {
+    const assets = {
+      "assets/app.js": "console.log('SADEED');",
+      "assets/app.css": 0.625 * 1024 * 1024,
+    };
+    expect(checkIsolatedBuild(assets).status).toBe(0);
+    assets["assets/app.css"] += 1;
+    const exceeded = checkIsolatedBuild(assets);
+    expect(exceeded.status).toBe(1);
+    expect(exceeded.output).toContain("✗ Total CSS");
+  });
+
   it("rejects an existing but empty client output instead of passing zero-size budgets", () => {
     const result = checkIsolatedBuild({});
     expect(result.status).not.toBe(0);

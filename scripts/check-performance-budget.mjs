@@ -13,12 +13,18 @@ const MiB = 1024 * 1024;
 
 const budgets = {
   totalOutput: 52 * MiB,
-  totalJavaScript: 10 * MiB,
+  // 2026-11-22 owner-approved feature allowance: bilingual decision-center route (18,140 B) plus its
+  // fixture/narration/navigation exceeded 10 MiB by 26,299 B in a clean build.
+  // Bounded feature allowance: +0.05 MiB (0.5%); all per-asset/output caps stay.
+  // Owner explicitly approved these two bounded changes on 2026-11-22; Preview only.
+  totalJavaScript: 10.05 * MiB,
   largestJavaScript: 1.4 * MiB,
   // 0.60 → 0.62 MiB (٢٠٢٦/١٠/٢٤، تعديلٌ موثَّق): شريط الحالة الحيّ الجديد في الرئيسية (حركةٌ سينمائية
   // بوحدات em، فوق الشريط) أضاف نحو 8 KB مصغَّرة؛ ولا حذف مأمونٌ بهذا الحجم من CSS الميت (قِيس: أقلّ من 5 KB
   // خام وبعضه مفاتيح حركة). السقف يبقى حارسًا لا هدفًا: +20 KB رحابة لا أكثر.
-  totalCss: 0.62 * MiB,
+  // Same measured feature: CSS exceeded 0.62 MiB by 1,022 B. +0.005 MiB
+  // accommodates its responsive/theme/focus/44px rules without removing guards.
+  totalCss: 0.625 * MiB,
   largestMedia: 14 * MiB,
 };
 

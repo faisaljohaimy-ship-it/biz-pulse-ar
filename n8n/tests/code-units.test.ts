@@ -33,7 +33,7 @@ type Suite = (m: any) => string[];
 function expectRedOnPlanted(
   moduleName: string,
   suite: Suite,
-  planted: { name: string; mutation: Mutation; red: string }[],
+  planted: { name: string; mutation: Mutation | Mutation[]; red: string; timeoutMs?: number }[],
   extra: string[] = [],
 ) {
   describe(moduleName + ": الفحوص خضراء على الحقيقي وتحمرّ على العطل المزروع", () => {
@@ -44,10 +44,14 @@ function expectRedOnPlanted(
       expect(planted.length).toBeGreaterThan(0);
     });
     for (const p of planted) {
-      it("عطل مزروع: " + p.name + " ⇒ يحمرّ «" + p.red + "»", () => {
-        const failed = suite(loadCode(moduleName, p.mutation));
-        expect(failed).toContain(p.red);
-      });
+      it(
+        "عطل مزروع: " + p.name + " ⇒ يحمرّ «" + p.red + "»",
+        () => {
+          const failed = suite(loadCode(moduleName, p.mutation));
+          expect(failed).toContain(p.red);
+        },
+        p.timeoutMs,
+      );
     }
     for (const note of extra) it(note, () => undefined);
   });
@@ -2542,6 +2546,9 @@ expectRedOnPlanted("build-envelope", envelopeSuite, [
       { from: "const TAG_RE = /<[^<>]*>/g;", to: "const TAG_RE = /<[^>]*>/g;" },
     ],
     red: "hostile angle-bracket fields stay cheap in the envelope",
+    // This mutant deliberately runs the quadratic regex over 12 hostile fields.
+    // Allow it to finish (~6.9s here); the real-code budget above stays at 400ms.
+    timeoutMs: 15_000,
   },
   {
     name: "السقف 6 نتائج (التحقق الذاتي يسقط إلى الاحتياطي)",

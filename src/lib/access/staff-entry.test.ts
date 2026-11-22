@@ -191,6 +191,11 @@ describe("⑤ عقود لا تُكسر", () => {
 
   it("واللوحة مركَّبة في الجذر بنطاقها", () => {
     const root = read("src/routes/__root.tsx");
-    expect(root).toMatch(/isGatedRoute\(pathname\) && \(\s*<StaffNumberGate/);
+    expect(root).toMatch(/isGatedRoute\(pathname\) &&\s*\(?\s*<StaffNumberGate/);
+    // The synthetic decision page collects no staff data; operational scope and noindex remain.
+    expect(root).toMatch(/!isSecurityDecisionDemoRoute\(pathname\) &&\s*isGatedRoute\(pathname\)/);
+    expect(root).toMatch(
+      /isOperationalRoute\(pathname\) && \(\s*<meta name="robots" content="noindex, nofollow"/,
+    );
   });
 });

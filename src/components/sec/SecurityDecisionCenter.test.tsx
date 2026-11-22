@@ -1,0 +1,156 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { axe } from "jest-axe";
+import { I18nProvider } from "@/lib/i18n";
+import { SecurityDecisionCenter } from "./SecurityDecisionCenter";
+
+function renderCenter(locale: "ar" | "en" = "ar") {
+  localStorage.setItem("locale", locale);
+  return render(
+    <I18nProvider>
+      <SecurityDecisionCenter />
+    </I18nProvider>,
+  );
+}
+
+async function proceedToReview(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(screen.getByRole("button", { name: "Start scenario" }));
+  await user.click(screen.getByRole("button", { name: "View recommendations" }));
+  await user.click(screen.getByRole("button", { name: "Continue to human review" }));
+}
+
+beforeEach(() => {
+  localStorage.clear();
+});
+
+describe("Security Decision Center interaction", () => {
+  it("changes Arabic RTL to English LTR without losing the current assessment or its log", async () => {
+    const user = userEvent.setup();
+    const { container } = renderCenter();
+
+    expect(document.documentElement).toHaveAttribute("dir", "rtl");
+    expect(container.firstElementChild).toHaveAttribute("lang", "ar");
+    expect(screen.getByRole("note")).toHaveTextContent("بيانات افتراضية بالكامل");
+    await user.click(screen.getByRole("button", { name: "ابدأ السيناريو" }));
+    expect(screen.getByRole("heading", { name: "حرج · تصنيف تجريبي احترازي" })).toBeVisible();
+
+    await user.click(screen.getByRole("button", { name: "Switch to English" }));
+    expect(document.documentElement).toHaveAttribute("dir", "ltr");
+    expect(document.documentElement).toHaveAttribute("lang", "en");
+    expect(container.firstElementChild).toHaveAttribute("dir", "ltr");
+    expect(screen.getByRole("note")).toHaveTextContent("ALL DATA IS SYNTHETIC");
+    expect(
+      screen.getByRole("heading", { name: "Critical · precautionary demo rating" }),
+    ).toBeVisible();
+    const log = screen.getByRole("list", { name: "Simulation log" });
+    expect(within(log).getAllByRole("listitem")).toHaveLength(1);
+    expect(log).toHaveTextContent("no real report was received");
+    expect(screen.queryByRole("button", { name: "Start scenario" })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "التبديل إلى العربية" }));
+    expect(document.documentElement).toHaveAttribute("dir", "rtl");
+    expect(screen.getByRole("heading", { name: "حرج · تصنيف تجريبي احترازي" })).toBeVisible();
+    expect(screen.getByRole("list", { name: "سجل المحاكاة" })).toHaveTextContent(
+      "لم يُستقبل بلاغ حقيقي",
+    );
+  });
+
+  it("expands evidence with keyboard input and exposes its limits without implying verification", async () => {
+    const user = userEvent.setup();
+    renderCenter("en");
+    const access = screen.getByRole("button", { name: "Synthetic access log" });
+    const camera = screen.getByRole("button", { name: "Synthetic camera reference" });
+    const accessDetails = document.getElementById(access.getAttribute("aria-controls")!);
+    const cameraDetails = document.getElementById(camera.getAttribute("aria-controls")!);
+    expect(access).toHaveAttribute("aria-expanded", "false");
+    expect(accessDetails).not.toBeVisible();
+
+    access.focus();
+    await user.keyboard("{Enter}");
+    expect(access).toHaveAttribute("aria-expanded", "true");
+    expect(accessDetails).toBeVisible();
+    expect(accessDetails).toHaveTextContent("scenario fixture only");
+
+    await user.click(camera);
+    expect(camera).toHaveAttribute("aria-expanded", "true");
+    expect(cameraDetails).toBeVisible();
+    expect(cameraDetails).toHaveTextContent("No images or live feed are available");
+    expect(access).toHaveAttribute("aria-expanded", "false");
+    expect(accessDetails).not.toBeVisible();
+    await user.click(camera);
+    expect(cameraDetails).not.toBeVisible();
+  });
+
+  it("gates both simulated review outcomes and resets all temporary state without making requests", async () => {
+    const user = userEvent.setup();
+    // Prevent a regression from contacting any real endpoint while exercising every action.
+    const fetchSpy = vi
+      .spyOn(globalThis, "fetch")
+      .mockRejectedValue(new Error("Unexpected network call"));
+    try {
+      renderCenter("en");
+      for (const [action, confirmation] of [
+        ["Record review · simulation", "Simulated review recorded"],
+        ["Request verification · simulation", "Simulated verification request recorded"],
+      ]) {
+        await proceedToReview(user);
+        const recordReview = screen.getByRole("button", { name: "Record review · simulation" });
+        const requestVerification = screen.getByRole("button", {
+          name: "Request verification · simulation",
+        });
+        expect(recordReview).toBeDisabled();
+        expect(requestVerification).toBeDisabled();
+        await user.click(recordReview);
+        expect(screen.queryByText("Simulated review recorded")).not.toBeInTheDocument();
+
+        const acknowledgement = screen.getByRole("checkbox", {
+          name: /recording a review grants no operational approval/,
+        });
+        await user.click(acknowledgement);
+        expect(recordReview).toBeEnabled();
+        expect(requestVerification).toBeEnabled();
+        await user.click(acknowledgement);
+        expect(recordReview).toBeDisabled();
+        expect(requestVerification).toBeDisabled();
+        await user.click(acknowledgement);
+        await user.click(screen.getByRole("button", { name: action }));
+
+        expect(screen.getByText(confirmation)).toBeVisible();
+        expect(screen.getByText("Human approval required")).toBeVisible();
+        expect(screen.getByText(/Operational approval is still required/)).toHaveTextContent(
+          "No message was sent and no action was executed",
+        );
+        expect(
+          within(screen.getByRole("list", { name: "Simulation log" })).getAllByRole("listitem"),
+        ).toHaveLength(4);
+        expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: action })).not.toBeInTheDocument();
+
+        const evidence = screen.getByRole("button", { name: "Synthetic access log" });
+        await user.click(evidence);
+        await user.click(screen.getByRole("button", { name: "Reset demo" }));
+        expect(screen.getByText("The scenario has not started")).toBeVisible();
+        expect(screen.queryByRole("list", { name: "Simulation log" })).not.toBeInTheDocument();
+        expect(evidence).toHaveAttribute("aria-expanded", "false");
+      }
+      // Revisiting review after reset requires a fresh acknowledgement.
+      await proceedToReview(user);
+      expect(screen.getByRole("checkbox")).not.toBeChecked();
+      expect(screen.getByRole("button", { name: "Record review · simulation" })).toBeDisabled();
+      expect(fetchSpy).not.toHaveBeenCalled();
+    } finally {
+      fetchSpy.mockRestore();
+    }
+  });
+
+  it("provides accessible initial Arabic and interactive English review states", async () => {
+    const user = userEvent.setup();
+    const { container } = renderCenter();
+    expect(await axe(container)).toHaveNoViolations();
+    await user.click(screen.getByRole("button", { name: "Switch to English" }));
+    await proceedToReview(user);
+    await user.click(screen.getByRole("button", { name: "Synthetic camera reference" }));
+    expect(await axe(container)).toHaveNoViolations();
+  });
+});

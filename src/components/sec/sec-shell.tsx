@@ -1,5 +1,8 @@
 import { Link, useRouterState } from "@tanstack/react-router";
+import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n";
+import { screenName } from "@/lib/nav/screen-names";
 import {
   Activity,
   AlertTriangle,
@@ -20,6 +23,7 @@ import {
   Building,
   OctagonAlert,
   CheckCircle2,
+  ShieldCheck,
 } from "lucide-react";
 
 type Item = { to: string; label: string; icon: React.ComponentType<{ className?: string }> };
@@ -32,6 +36,7 @@ const ITEMS: Item[] = [
   // «إطلاق» لا «إدارة مشاريع»، و`Radar` كشفٌ عن بُعد لا جولةٌ راجلة،
   // و`Camera` كاميرا تصوير لا كاميرا مراقبة، و`ShieldCheck` امتثالٌ لا أقسام.
   { to: "/sec/exec", label: "اللوحة التنفيذية", icon: LayoutDashboard },
+  { to: "/sec/decision-center", label: "مركز القرار الأمني الذكي", icon: ShieldCheck },
   { to: "/sec/twin", label: "التوأم الرقمي", icon: Network },
   // «الدوائر» و«الأقسام» حُجبتا بأمر المالك ٢٠٢٦/٠٨/٢٠ («حذف الواجهة
   // بالكامل») — hidden-routes.ts، ومساراهما يعودان إلى /sec.
@@ -71,6 +76,13 @@ const ITEMS: Item[] = [
  */
 export function SecSubNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { locale } = useI18n();
+  const decisionLink = useRef<HTMLAnchorElement>(null);
+  useEffect(() => {
+    if (pathname === "/sec/decision-center" || pathname === "/sec/decision-center/") {
+      decisionLink.current?.scrollIntoView({ block: "nearest", inline: "center" });
+    }
+  }, [pathname, locale]);
   return (
     <nav className="sticky top-0 z-20 -mx-4 mb-4 overflow-x-auto border-b border-[color:var(--hairline)] bg-[color:var(--surface)] px-4 md:mx-0 md:rounded-2xl md:border md:px-3 md:shadow-[var(--nx-card-shadow)]">
       <ul className="flex min-w-max gap-1 py-2">
@@ -81,10 +93,13 @@ export function SecSubNav() {
             <li key={it.to}>
               <Link
                 to={it.to}
+                ref={it.to === "/sec/decision-center" ? decisionLink : undefined}
                 className={cn(
                   // ≥44px touch target on mobile/tablet (constitution art. 5);
                   // compact on desktop where pointer precision is higher.
                   "inline-flex min-h-[44px] items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium transition-colors md:min-h-0 md:py-1.5",
+                  it.to === "/sec/decision-center" &&
+                    "min-h-[44px]! min-w-[44px]! md:min-h-[44px]!",
                   // النشط بزوج الشريط الجانبي المقيس (`--tone-blue` تحت حبر
                   // `--surface`: ٦٫٧:١ فاتحًا ونحو ٧:١ داكنًا) — كان `bg-primary`
                   // بلكنة المنطقة، فقِيس أبيض على #3b82f6 = ٣٫٦٧:١ لنصٍّ 12px.
@@ -94,7 +109,7 @@ export function SecSubNav() {
                 )}
               >
                 <Icon className="h-3.5 w-3.5" />
-                {it.label}
+                {it.to === "/sec/decision-center" ? screenName(it.to, locale === "ar") : it.label}
               </Link>
             </li>
           );
