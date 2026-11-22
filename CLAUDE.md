@@ -1885,6 +1885,13 @@ Retrieval/Web/Provider/Model/Generation`) ويُحمّر نحو خمسة ملف�
 
 ## Mandatory Direct-to-Main Delivery Policy
 
+> **Superseded delivery process — owner directive 2026-11-22:** the permanent
+> policy in `AGENTS.md` now requires an independent branch, exact-SHA green checks,
+> PR and permitted automatic merge, then staged/verified Vercel Production release.
+> The historic direct-to-main/manual-only instructions below are retained as history
+> and no longer govern delivery. Constitutional safety and sensitive-action approvals
+> remain in force; the new directive does not authorize live security actions from a demo.
+
 **قرار مالك المنتج — ٢٠٢٦/٠٨/٠١. حاكم وناسخ لأي تعليمة تتعارض معه.**
 
 كل مهمة برمجية تجتاز الفحوصات تُنشأ لها نسخة وتُدفع **مباشرة إلى

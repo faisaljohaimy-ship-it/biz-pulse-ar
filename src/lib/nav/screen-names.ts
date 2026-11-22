@@ -49,6 +49,10 @@ const EXTRA_SCREEN_NAMES: Readonly<Record<string, ScreenName>> = {
   // بعد الدمج؛ الاسم يبقى مسجَّلًا لها لأنه لا يزال يُقرأ من هنا لتسمية زر
   // الشريط الجانبي، ولأن screenNameAr ترمي على مسار غير معروف.
   "/sec/exec": { ar: "اللوحة التنفيذية", en: "Executive Dashboard" },
+  "/sec/decision-center": {
+    ar: "مركز القرار الأمني الذكي",
+    en: "Intelligent Security Decision Center",
+  },
   "/sec/incidents": { ar: "البلاغات", en: "Incidents" },
   "/sec/kpi": { ar: "مؤشرات الأداء", en: "Live KPIs" },
   "/exec": { ar: "محرك التنفيذ", en: "Execution Engine" },

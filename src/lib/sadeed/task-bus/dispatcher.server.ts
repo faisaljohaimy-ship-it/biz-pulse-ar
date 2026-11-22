@@ -14,9 +14,22 @@ export async function dispatchTask(
   ctx: Omit<TaskExecutionContext, "task" | "signal">,
   parentSignal: AbortSignal,
 ): Promise<AgentResult> {
+  const startedMs = Date.now();
   const started = new Date().toISOString();
   const linked = linkTimeout(parentSignal, task.timeout);
+  let onAbort: (() => void) | undefined;
+  const interrupted = (): AgentResult => ({
+    agent_id: task.agentId,
+    ok: false,
+    status: linked.timedOut() ? "timeout" : "cancelled",
+    contribution: {},
+    error: linked.timedOut() ? `timeout after ${task.timeout}ms` : "task cancelled",
+    started_at: started,
+    finished_at: new Date().toISOString(),
+    duration_ms: Date.now() - startedMs,
+  });
   try {
+    if (linked.signal.aborted) return interrupted();
     const agent = getAgent(task.agentId);
     if (!agent) {
       return {
@@ -31,19 +44,28 @@ export async function dispatchTask(
         duration_ms: 0,
       };
     }
-    const result = await agent.run({
-      mission_id: task.missionId,
-      request: ctx.request,
-      memory: ctx.memory,
-      prior_results: ctx.priorResults,
-      signal: linked.signal,
-      apiKey: ctx.apiKey,
+    const aborted = new Promise<AgentResult>((resolve) => {
+      onAbort = () => resolve(interrupted());
+      linked.signal.addEventListener("abort", onAbort, { once: true });
     });
-    if (linked.timedOut()) {
-      return { ...result, status: "timeout", ok: false, error: `timeout after ${task.timeout}ms` };
-    }
-    return result;
+    // Bound the caller even when a specialist ignores AbortSignal. Its underlying
+    // work cannot be force-killed here; cooperative SDK/network calls must honor
+    // the supplied signal. Late success/rejection never changes the settled result.
+    const running = Promise.resolve().then(() => {
+      if (linked.signal.aborted) return interrupted();
+      return agent.run({
+        mission_id: task.missionId,
+        request: ctx.request,
+        memory: ctx.memory,
+        prior_results: ctx.priorResults,
+        signal: linked.signal,
+        apiKey: ctx.apiKey,
+      });
+    });
+    const result = await Promise.race([running, aborted]);
+    return linked.signal.aborted ? interrupted() : result;
   } catch (e: unknown) {
+    if (linked.signal.aborted) return interrupted();
     return {
       agent_id: task.agentId,
       ok: false,
@@ -55,6 +77,7 @@ export async function dispatchTask(
       duration_ms: 0,
     };
   } finally {
+    if (onAbort) linked.signal.removeEventListener("abort", onAbort);
     linked.cancel();
   }
 }

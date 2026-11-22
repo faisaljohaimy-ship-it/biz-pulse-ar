@@ -151,6 +151,7 @@ import { Route as AuthenticatedSecAssetsRouteImport } from './routes/_authentica
 import { Route as AuthenticatedSecCctvRouteImport } from './routes/_authenticated/sec.cctv'
 import { Route as AuthenticatedSecCirclesRouteImport } from './routes/_authenticated/sec.circles'
 import { Route as AuthenticatedSecContractorsRouteImport } from './routes/_authenticated/sec.contractors'
+import { Route as AuthenticatedSecDecisionCenterRouteImport } from './routes/_authenticated/sec.decision-center'
 import { Route as AuthenticatedSecEmergencyRouteImport } from './routes/_authenticated/sec.emergency'
 import { Route as AuthenticatedSecExecRouteImport } from './routes/_authenticated/sec.exec'
 import { Route as AuthenticatedSecFacilitiesRouteImport } from './routes/_authenticated/sec.facilities'
@@ -956,6 +957,12 @@ const AuthenticatedSecContractorsRoute =
     path: '/contractors',
     getParentRoute: () => AuthenticatedSecRoute,
   } as any)
+const AuthenticatedSecDecisionCenterRoute =
+  AuthenticatedSecDecisionCenterRouteImport.update({
+    id: '/decision-center',
+    path: '/decision-center',
+    getParentRoute: () => AuthenticatedSecRoute,
+  } as any)
 const AuthenticatedSecEmergencyRoute =
   AuthenticatedSecEmergencyRouteImport.update({
     id: '/emergency',
@@ -1459,6 +1466,7 @@ export interface FileRoutesByFullPath {
   '/sec/cctv': typeof AuthenticatedSecCctvRoute
   '/sec/circles': typeof AuthenticatedSecCirclesRoute
   '/sec/contractors': typeof AuthenticatedSecContractorsRoute
+  '/sec/decision-center': typeof AuthenticatedSecDecisionCenterRoute
   '/sec/emergency': typeof AuthenticatedSecEmergencyRoute
   '/sec/exec': typeof AuthenticatedSecExecRoute
   '/sec/facilities': typeof AuthenticatedSecFacilitiesRoute
@@ -1667,6 +1675,7 @@ export interface FileRoutesByTo {
   '/sec/cctv': typeof AuthenticatedSecCctvRoute
   '/sec/circles': typeof AuthenticatedSecCirclesRoute
   '/sec/contractors': typeof AuthenticatedSecContractorsRoute
+  '/sec/decision-center': typeof AuthenticatedSecDecisionCenterRoute
   '/sec/emergency': typeof AuthenticatedSecEmergencyRoute
   '/sec/exec': typeof AuthenticatedSecExecRoute
   '/sec/facilities': typeof AuthenticatedSecFacilitiesRoute
@@ -1879,6 +1888,7 @@ export interface FileRoutesById {
   '/_authenticated/sec/cctv': typeof AuthenticatedSecCctvRoute
   '/_authenticated/sec/circles': typeof AuthenticatedSecCirclesRoute
   '/_authenticated/sec/contractors': typeof AuthenticatedSecContractorsRoute
+  '/_authenticated/sec/decision-center': typeof AuthenticatedSecDecisionCenterRoute
   '/_authenticated/sec/emergency': typeof AuthenticatedSecEmergencyRoute
   '/_authenticated/sec/exec': typeof AuthenticatedSecExecRoute
   '/_authenticated/sec/facilities': typeof AuthenticatedSecFacilitiesRoute
@@ -2091,6 +2101,7 @@ export interface FileRouteTypes {
     | '/sec/cctv'
     | '/sec/circles'
     | '/sec/contractors'
+    | '/sec/decision-center'
     | '/sec/emergency'
     | '/sec/exec'
     | '/sec/facilities'
@@ -2299,6 +2310,7 @@ export interface FileRouteTypes {
     | '/sec/cctv'
     | '/sec/circles'
     | '/sec/contractors'
+    | '/sec/decision-center'
     | '/sec/emergency'
     | '/sec/exec'
     | '/sec/facilities'
@@ -2510,6 +2522,7 @@ export interface FileRouteTypes {
     | '/_authenticated/sec/cctv'
     | '/_authenticated/sec/circles'
     | '/_authenticated/sec/contractors'
+    | '/_authenticated/sec/decision-center'
     | '/_authenticated/sec/emergency'
     | '/_authenticated/sec/exec'
     | '/_authenticated/sec/facilities'
@@ -3683,6 +3696,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSecContractorsRouteImport
       parentRoute: typeof AuthenticatedSecRoute
     }
+    '/_authenticated/sec/decision-center': {
+      id: '/_authenticated/sec/decision-center'
+      path: '/decision-center'
+      fullPath: '/sec/decision-center'
+      preLoaderRoute: typeof AuthenticatedSecDecisionCenterRouteImport
+      parentRoute: typeof AuthenticatedSecRoute
+    }
     '/_authenticated/sec/emergency': {
       id: '/_authenticated/sec/emergency'
       path: '/emergency'
@@ -4188,6 +4208,7 @@ interface AuthenticatedSecRouteChildren {
   AuthenticatedSecCctvRoute: typeof AuthenticatedSecCctvRoute
   AuthenticatedSecCirclesRoute: typeof AuthenticatedSecCirclesRoute
   AuthenticatedSecContractorsRoute: typeof AuthenticatedSecContractorsRoute
+  AuthenticatedSecDecisionCenterRoute: typeof AuthenticatedSecDecisionCenterRoute
   AuthenticatedSecEmergencyRoute: typeof AuthenticatedSecEmergencyRoute
   AuthenticatedSecExecRoute: typeof AuthenticatedSecExecRoute
   AuthenticatedSecFacilitiesRoute: typeof AuthenticatedSecFacilitiesRoute
@@ -4219,6 +4240,7 @@ const AuthenticatedSecRouteChildren: AuthenticatedSecRouteChildren = {
   AuthenticatedSecCctvRoute: AuthenticatedSecCctvRoute,
   AuthenticatedSecCirclesRoute: AuthenticatedSecCirclesRoute,
   AuthenticatedSecContractorsRoute: AuthenticatedSecContractorsRoute,
+  AuthenticatedSecDecisionCenterRoute: AuthenticatedSecDecisionCenterRoute,
   AuthenticatedSecEmergencyRoute: AuthenticatedSecEmergencyRoute,
   AuthenticatedSecExecRoute: AuthenticatedSecExecRoute,
   AuthenticatedSecFacilitiesRoute: AuthenticatedSecFacilitiesRoute,

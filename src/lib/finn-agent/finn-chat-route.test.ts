@@ -111,6 +111,8 @@ vi.mock("@/lib/sadeed/backup-provider.server", async (importOriginal) => ({
 }));
 
 import { LOCAL_REPLY_NOTICE_AR } from "./local-reply.server";
+import { FINN_LIMITS } from "./limits";
+import { CHAT_BODY_READ_TIMEOUT_MS } from "@/routes/api/-chat-guard";
 import { FINN_DENY_FLOOR_MS, setFinnDenyClockForTests } from "./owner-gate.server";
 import { createFinnEventParser, type FinnStreamEvent } from "./stream-protocol";
 
@@ -246,9 +248,131 @@ beforeEach(() => {
   sim.script["gemini-direct"] = () => parts([textPart("رد احتياطي"), finishPart]);
 });
 afterEach(() => {
+  vi.useRealTimers();
   setFinnDenyClockForTests(null);
   vi.unstubAllEnvs();
   vi.restoreAllMocks();
+});
+
+describe("FINN request transport resource limits", () => {
+  function streamingRequest(body: ReadableStream<Uint8Array>, signal?: AbortSignal): Request {
+    return new Request("http://local/api/finn/chat", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "content-length": "1",
+        authorization: `Bearer ${jwtFor(OWNER)}`,
+      },
+      body,
+      signal,
+      duplex: "half",
+    } as RequestInit & { duplex: "half" });
+  }
+
+  it("checks actual UTF-8 bytes instead of accepting oversized Arabic padding", async () => {
+    const raw = JSON.stringify({
+      messages: [{ role: "user", content: USER_TEXT }],
+      padding: "ا".repeat(160_000),
+    });
+    expect(raw.length).toBeLessThan(FINN_LIMITS.maxBodyBytes);
+    expect(new TextEncoder().encode(raw).byteLength).toBeGreaterThan(FINN_LIMITS.maxBodyBytes);
+    const result = await post(postReq(undefined, { raw, headers: { "content-length": "1" } }));
+    expect(result.status).toBe(413);
+    expect(spend()).toEqual({ rate: 0, quota: 0, models: 0 });
+  });
+
+  it("rejects overflowing streamed bytes before EOF without awaiting hostile cancellation", async () => {
+    let source!: ReadableStreamDefaultController<Uint8Array>;
+    let cancelled = false;
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        source = controller;
+        controller.enqueue(new Uint8Array(FINN_LIMITS.maxBodyBytes + 1));
+      },
+      cancel() {
+        cancelled = true;
+        return new Promise<void>(() => {});
+      },
+    });
+    let watchdog: ReturnType<typeof setTimeout> | undefined;
+    try {
+      const result = await Promise.race([
+        post(streamingRequest(body)),
+        new Promise<"hung">((resolve) => {
+          watchdog = setTimeout(() => resolve("hung"), 200);
+        }),
+      ]);
+      expect(result).toBeInstanceOf(Response);
+      expect((result as Response).status).toBe(413);
+      expect(cancelled).toBe(true);
+      expect(spend()).toEqual({ rate: 0, quota: 0, models: 0 });
+    } finally {
+      if (watchdog) clearTimeout(watchdog);
+      if (!cancelled) source.close();
+    }
+  });
+
+  it("times out a stalled upload within the shared absolute deadline", async () => {
+    const handler = (await handlers()).POST;
+    vi.useFakeTimers();
+    let source!: ReadableStreamDefaultController<Uint8Array>;
+    let cancelled = false;
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        source = controller;
+        controller.enqueue(new TextEncoder().encode('{"messages":'));
+      },
+      cancel() {
+        cancelled = true;
+        return new Promise<void>(() => {});
+      },
+    });
+    const pending = handler({ request: streamingRequest(body) });
+    let result: Response | undefined;
+    void pending.then((response) => {
+      result = response;
+    });
+    try {
+      await vi.advanceTimersByTimeAsync(CHAT_BODY_READ_TIMEOUT_MS + 1);
+      expect(result?.status).toBe(408);
+      expect(cancelled).toBe(true);
+      expect(spend()).toEqual({ rate: 0, quota: 0, models: 0 });
+    } finally {
+      if (!cancelled) source.close();
+    }
+  });
+
+  it("returns promptly when the owner disconnects during upload", async () => {
+    const handler = (await handlers()).POST;
+    vi.useFakeTimers();
+    const controller = new AbortController();
+    let source!: ReadableStreamDefaultController<Uint8Array>;
+    let cancelled = false;
+    const body = new ReadableStream<Uint8Array>({
+      start(stream) {
+        source = stream;
+      },
+      cancel() {
+        cancelled = true;
+        return new Promise<void>(() => {});
+      },
+    });
+    const pending = handler({ request: streamingRequest(body, controller.signal) });
+    let result: Response | undefined;
+    void pending.then((response) => {
+      result = response;
+    });
+    try {
+      await vi.advanceTimersByTimeAsync(0);
+      controller.abort();
+      await vi.advanceTimersByTimeAsync(0);
+      expect(result?.status).toBe(408);
+      expect(cancelled).toBe(true);
+      expect(spend()).toEqual({ rate: 0, quota: 0, models: 0 });
+    } finally {
+      if (!cancelled) source.close();
+    }
+  });
 });
 
 describe("① غير المالك: 404 متطابق، وصفر إنفاق", () => {

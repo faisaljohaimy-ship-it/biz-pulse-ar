@@ -1,3 +1,6 @@
+// @vitest-environment node
+// This server parser uses Node's Request/FormData/File implementations together;
+// jsdom's mixed web API realm rejects valid multipart bytes before assertions run.
 import { describe, expect, it, vi } from "vitest";
 import { MULTIPART_READ_TIMEOUT_MS, parseBoundedMultipart } from "./bounded-multipart.server";
 

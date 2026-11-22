@@ -12,12 +12,11 @@ name: CI Verification
 #     وحده).
 # و`rag-preflight` و`security-gap-closure-e2e` في التشغيل الكامل وحده.
 #
-# **CI فحصٌ فقط — لا نشر منه ولا يُشترط للنشر** (أمر المالك ٢٠٢٦/١٠/٢٣ «افصل الـCI عن
-# الإنتاج والدمج والنشر»): كانت وظيفة `deploy` هنا تستدعي `deploy.yml` (نشر Cloudflare
-# الاحتياطي) على كل دفعة إلى main بعد البوّابة الخفيفة. أُزيلت. النشر خطواتٌ صريحة
-# بطلب: `deploy-vercel.yml` أو نشر Lovable، و`deploy.yml` يدويّ، وفحص الإنتاج
-# (`production-check.yml`) مستقلّ بجدوله وتشغيله اليدويّ. والدمج لا يتوقّف على CI تقنيًّا
-# (لا حماية فرع على خطة المستودع)؛ والبوّابة إجرائية تُقرَّر بقراءة نتيجته.
+# **محدّث بأمر المالك ٢٠٢٦/١١/٢٢:** يبقى CI للفحص، وتستمع إليه وظيفة
+# `deploy-vercel.yml` المستقلة: نجاح push إلى main على SHA الحالي شرط للإنتاج،
+# ثم بناء مرحلي وفحص وترقية. نشر main التلقائي في Vercel معطّل لمنع الازدواج؛
+# Cloudflare يبقى يدويًا. السياسة: docs/operations/CONTINUOUS_DELIVERY_AR.md.
+# لا تُتجاوز حماية فرع أو بيئة؛ وعند غياب الحماية تبقى بوابة الدمج إجرائية.
 # شرط «الكامل» واحدٌ مكرّر حرفيًّا في كل موضع:
 #   github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
 on:
@@ -128,6 +127,8 @@ jobs:
         run: npm test
       - name: Offline production smoke regression tests
         run: node --test scripts/smoke-production.regression.test.mjs
+      - name: Offline continuous delivery gate regressions
+        run: node --experimental-strip-types --test scripts/cd-gate.regression.test.mjs
       - name: Offline production page validation regression tests
         run: node --test scripts/check-production.regression.test.mjs
       - name: Integration PostgreSQL 16 provisioning regression

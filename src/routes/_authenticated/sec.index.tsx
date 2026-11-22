@@ -1,5 +1,5 @@
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getSecOverview, numOrUnmeasured } from "@/lib/sec.functions";
@@ -9,11 +9,21 @@ import { SecOpsInsights } from "@/components/sec/sec-ops-insights";
 // تدقيق تعبيرية الأيقونات ٢٠٢٦/٠٨/٢٧ — القاعدة الموثقة في sec-shell:
 // الدوريات جولة راجلة (`Footprints` كأيقونة الشريط نفسها) لا كشفًا عن بُعد
 // (`Radar`)، والمراقبة `Cctv` لا كاميرا التصوير `Camera`.
-import { AlertTriangle, Footprints, Cctv, Building2, Layers } from "lucide-react";
+import {
+  AlertTriangle,
+  Footprints,
+  Cctv,
+  Building2,
+  Layers,
+  ShieldCheck,
+  ArrowUpRight,
+} from "lucide-react";
 import { LiveStatus } from "@/components/state/LiveStatus";
 import { useRegion } from "@/lib/region-context";
 import { regionSim } from "@/lib/sec/region-sim-data";
 import { useMemo } from "react";
+import { useI18n } from "@/lib/i18n";
+import { screenName } from "@/lib/nav/screen-names";
 
 export const Route = createFileRoute("/_authenticated/sec/")({
   errorComponent: RouteError,
@@ -22,6 +32,8 @@ export const Route = createFileRoute("/_authenticated/sec/")({
 });
 
 function OpsRoom() {
+  const { locale } = useI18n();
+  const ar = locale === "ar";
   const { user, loading: authLoading } = useAuth();
   const { region, regionId } = useRegion();
   const fetchOverview = useServerFn(getSecOverview);
@@ -62,6 +74,23 @@ function OpsRoom() {
       {/* region.labelAr يتضمّن بادئة «الأمن الصناعي» أصلًا — فلا تُضاف مرة
           ثانية (قرار الكاتب الآخر المنسوب للمالك ٢٠٢٦/٠٨/٢٤، صين في الدمج). */}
       <SecPageHeader title={region.labelAr} subtitle="بيانات تشغيلية مقيّدة بالمؤسسة" />
+
+      <Link
+        to="/sec/decision-center"
+        dir={ar ? "rtl" : "ltr"}
+        className="nx-surface flex min-h-[44px]! items-center gap-4 p-5 transition-colors hover:border-[color:var(--tone-emerald)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <ShieldCheck className="size-8 shrink-0 text-[color:var(--tone-emerald)]" aria-hidden />
+        <div className="min-w-0 flex-1">
+          <p className="font-bold">{screenName("/sec/decision-center", ar)}</p>
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">
+            {ar
+              ? "استكشف سيناريو تجريبيًا: من بلاغ افتراضي إلى توصية ومراجعة بشرية، دون تنفيذ إجراءات."
+              : "Explore a demo: from a synthetic report to recommendations and human review, with no operational actions."}
+          </p>
+        </div>
+        <ArrowUpRight className="size-5 shrink-0" aria-hidden />
+      </Link>
 
       {isLoading || !data ? (
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-5">

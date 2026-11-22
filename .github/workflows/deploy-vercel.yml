@@ -1,167 +1,233 @@
-# نشرٌ مستقلّ عبر GitHub → Vercel — لا يمرّ بـLovable ولا ينفق رصيدها.
-#
-#   workflow_dispatch → vercel deploy (البناء على Vercel بإعدادات المشروع نفسها
-#   التي تبني المعاينات) → قراءة /api/public/live من النشرة ومطابقة ختم البناء
-#   بالـcommit المنشور → حكمٌ أخضر/أحمر في الخلاصة.
-#
-# ── لماذا يدويّ فقط ──
-# المزامنة ليست نشرًا (CLAUDE.md)، والدمج لا يقترن بالنشر: `vercel.json` يعطّل
-# نشر `main` التلقائي عمدًا (`git.deploymentEnabled.main: false`)، وهذا الملفّ هو
-# خطوة النشر الصريحة التي تقع بطلبٍ وبعد موافقة المالك. نشر `production` يحتاج
-# إلى كتابة `deploy` في مُدخل التأكيد.
-#
-# ── المتطلّبات (Settings → Secrets and variables → Actions) ──
-#   Secret   VERCEL_TOKEN        — رمز وصول Vercel لحساب المالك (Account Settings → Tokens)
-#   Variable VERCEL_ORG_ID       — معرّف الفريق (team_…)، ويُقبل كـSecret أيضًا
-#   Variable VERCEL_PROJECT_ID   — معرّف المشروع (prj_…)، ويُقبل كـSecret أيضًا
-#   Secret   VERCEL_AUTOMATION_BYPASS_SECRET — اختياري؛ لقراءة نشرةٍ خلف حماية SSO
-#            أثناء التحقّق (Project → Settings → Deployment Protection → Protection Bypass for Automation)
-#
-# ── متغيّرات التشغيل: على مشروع Vercel لا هنا ──
-# (Project → Settings → Environment Variables؛ القائمة الكاملة والمقابلة في
-# docs/operations/SADEED_MIGRATION_RUNBOOK.md §1): SUPABASE_URL ·
-# SUPABASE_PUBLISHABLE_KEY · SUPABASE_SERVICE_ROLE_KEY · GEMINI_API_KEY ·
-# ELEVENLABS_API_KEY · CRON_HOOK_SECRET · PUBLIC_SITE_URL · SADEED_* · RESEND_* ·
-# LOVABLE_API_KEY وMICROSOFT_* ما دامت تكاملات Lovable قائمة. لا سرّ في git.
-#
-# ── ما لا يفعله ──
-# لا يغيّر DNS ولا إعدادات الحماية ولا متغيّرات البيئة؛ لا يمسّ القاعدة؛ غياب
-# الرموز يُسقطه أحمر بوضوح (تشغيلٌ يدويّ طُلب فلم يتمّ — لا تخطٍّ صامت).
+# Standing authorization: docs/operations/CONTINUOUS_DELIVERY_AR.md.
+# main's native Vercel deploy remains disabled; this is the only release controller.
 name: Deploy to Vercel
 
 on:
+  workflow_run:
+    workflows: ["CI Verification"]
+    types: [completed]
+    branches: [main]
   workflow_dispatch:
     inputs:
       target:
-        description: "الوجهة: preview (افتراضي) أو production"
+        description: "preview أو production؛ الإنتاج من main بعد نجاح CI فقط"
         required: true
         type: choice
-        options:
-          - preview
-          - production
+        options: [preview, production]
         default: preview
       confirm:
-        description: "اكتب deploy لتأكيد نشر production (يُتجاهل للمعاينة)"
-        required: false
+        description: "اكتب deploy لنشر production"
         type: string
       expected_sha:
-        description: "الـcommit الذي يجب أن تخدمه النشرة (افتراضيًّا الـcommit المشغَّل منه)"
-        required: false
+        description: "SHA كامل؛ يجب أن يطابق النسخة المشغّل منها الطلب"
+        type: string
+      owner_review_sha:
+        description: "للتغييرات الحساسة: SHA الكامل الذي راجعه المالك"
+        type: string
+      owner_review_context:
+        description: "للتغييرات الحساسة: رابط PR أو issue في هذا المستودع يسجل مراجعة المالك"
         type: string
 
 concurrency:
-  group: deploy-vercel-${{ inputs.target }}
+  group: sadeed-vercel-release
   cancel-in-progress: false
 
+permissions:
+  contents: read
+  actions: read
+
 jobs:
-  deploy:
+  release:
+    # Never give a PR/fork workflow_run a secret-bearing runner.
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_branch == 'main' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    environment: ${{ inputs.target == 'production' && 'production' || 'preview' }}
-    permissions:
-      contents: read
+    environment: ${{ (github.event_name == 'workflow_run' || inputs.target == 'production') && 'Production' || 'Preview' }}
     env:
-      VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID || secrets.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID || secrets.VERCEL_PROJECT_ID }}
+      VERCEL_CLI_VERSION: "64.5.0"
+      VERCEL_TELEMETRY_DISABLED: "1"
+      NO_UPDATE_NOTIFIER: "1"
+      RELEASE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+      RELEASE_REF: ${{ github.event.workflow_run.head_branch || github.ref_name }}
     steps:
-      - name: Guard production
-        if: inputs.target == 'production' && inputs.confirm != 'deploy'
-        run: |
-          echo "::error::نشر production يحتاج إلى كتابة deploy في مُدخل التأكيد — لم يُنفَّذ شيء."
-          exit 1
-
-      - name: Check credentials
-        env:
-          TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        run: |
-          missing=0
-          check() { if [ -n "$2" ]; then echo "  ✓ $1 = set"; else echo "  ✗ $1 = EMPTY"; missing=1; fi; }
-          check VERCEL_TOKEN "$TOKEN"
-          check VERCEL_ORG_ID "$VERCEL_ORG_ID"
-          check VERCEL_PROJECT_ID "$VERCEL_PROJECT_ID"
-          if [ "$missing" = "1" ]; then
-            echo "::error::رموز Vercel ناقصة — أضف VERCEL_TOKEN (Secret) وVERCEL_ORG_ID وVERCEL_PROJECT_ID (Variables) ثم أعد التشغيل."
-            exit 1
-          fi
-
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          ref: ${{ env.RELEASE_SHA }}
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
         with:
           node-version: 22
-
-      # البناء يقع على Vercel (installCommand/buildCommand من vercel.json، والـpreset
-      # `vercel` من vite.config.ts عند VERCEL=1). SADEED_BUILD_SHA يثبّت ختم البناء على
-      # الـcommit المنشور ولو غاب VERCEL_GIT_COMMIT_SHA عن رفعٍ من سطر الأوامر.
-      - name: Deploy
-        id: deploy
+      - name: Offline release guard regressions
+        run: node --experimental-strip-types --test scripts/cd-gate.regression.test.mjs
+      # No Vercel/GitHub credentials are exposed to this package installation.
+      - name: Install exact reviewed CLI
+        run: npm install --global "vercel@${VERCEL_CLI_VERSION}"
+      - name: Guard, stage, verify, promote and verify domains
         env:
+          GH_TOKEN: ${{ github.token }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          TARGET: ${{ inputs.target }}
+          VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID || secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID || secrets.VERCEL_PROJECT_ID }}
+          SADEED_DEPLOY_CYCLE_BUDGET: ${{ vars.SADEED_DEPLOY_CYCLE_BUDGET }}
+          SADEED_DEPLOY_CYCLE_STARTED_AT: ${{ vars.SADEED_DEPLOY_CYCLE_STARTED_AT }}
+        shell: bash
         run: |
-          set -euo pipefail
-          FLAGS=(--yes --token "$VERCEL_TOKEN" --build-env "SADEED_BUILD_SHA=$GITHUB_SHA")
-          if [ "$TARGET" = "production" ]; then FLAGS+=(--prod); fi
-          # الإصدار الرئيسي مثبَّت (قِيست الأعلام --prod/--yes/--token/--build-env على 64.5.0).
-          URL="$(npx --yes vercel@64 deploy "${FLAGS[@]}" 2> >(tee vercel-deploy.log >&2))"
-          if [ -z "$URL" ]; then
-            echo "::error::لم يُطبع عنوان النشرة — راجع vercel-deploy.log أعلاه."
-            exit 1
-          fi
-          echo "النشرة: $URL"
-          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          node --experimental-strip-types --input-type=module <<'NODE'
+          import { readFileSync, appendFileSync } from 'node:fs';
+          import { spawnSync } from 'node:child_process';
+          import {
+            RELEASE_REPOSITORY, RELEASE_PROJECT, RELEASE_TEAM, PRODUCTION_DOMAINS, RELEASE_ROUTES,
+            assertReleaseCandidate, assertReleaseConfig, assertOwnerReview, assertSha,
+            assertDeployment, assertAliases, assertLive, deploymentOrigin, probePublicLive,
+            assertPageHtml, assertAsset, probePublicPages,
+            deploymentCycle, assertDeploymentBudget, verifiedDeploymentCount,
+          } from './scripts/cd-gate.mjs';
 
-      # الشهادة لا الظنّ: النشرة تقول أيّ commit تخدم. مختلف ⇐ أحمر. غياب الختم
-      # مع 401 ⇐ حماية SSO (أضف VERCEL_AUTOMATION_BYPASS_SECRET أو افحص من نطاق مخصّص).
-      - name: Verify build stamp on the deployment
-        id: verify
-        env:
-          DEPLOY_URL: ${{ steps.deploy.outputs.url }}
-          EXPECTED_SHA: ${{ inputs.expected_sha || github.sha }}
-          BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
-        run: |
-          set -u
-          H=(-H 'cache-control: no-cache')
-          if [ -n "$BYPASS" ]; then H+=(-H "x-vercel-protection-bypass: $BYPASS"); fi
-          SHA=""; CODE=""
-          for i in 1 2 3 4 5; do
-            CODE="$(curl -sS -o live.json -w '%{http_code}' --max-time 20 "${H[@]}" "$DEPLOY_URL/api/public/live" || echo 000)"
-            SHA="$(node -e 'const fs=require("fs");try{const j=JSON.parse(fs.readFileSync("live.json","utf8"));process.stdout.write(j.build&&j.build.sha?String(j.build.sha):"")}catch{process.stdout.write("")}')"
-            if [ -n "$SHA" ]; then break; fi
-            sleep $((i * 10))
-          done
-          echo "http=$CODE" >> "$GITHUB_OUTPUT"
-          echo "served_sha=$SHA" >> "$GITHUB_OUTPUT"
-          if [ -z "$SHA" ]; then
-            echo "::error::لا ختم بناء من $DEPLOY_URL/api/public/live (HTTP $CODE). 401/403 ⇐ حماية SSO على نطاقات vercel.app؛ غير ذلك ⇐ النشرة لا تردّ."
-            exit 1
-          fi
-          case "$SHA" in
-            "$EXPECTED_SHA"*) echo "✓ النشرة تخدم $SHA — يطابق المتوقَّع" ;;
-            *) echo "::error::النشرة تخدم $SHA والمتوقَّع $EXPECTED_SHA"; exit 1 ;;
-          esac
+          const env = process.env;
+          const event = JSON.parse(readFileSync(env.GITHUB_EVENT_PATH, 'utf8'));
+          const sha = assertSha(env.RELEASE_SHA);
+          const ref = env.RELEASE_REF;
+          const summary = (line) => appendFileSync(env.GITHUB_STEP_SUMMARY, line + '\n');
+          // Never log headers, tokens, raw upstream errors or response bodies.
+          async function api(origin, path, token) {
+            const response = await fetch(origin + path, {
+              method: 'GET', redirect: 'error', signal: AbortSignal.timeout(20000),
+              headers: { authorization: `Bearer ${token}`, accept: 'application/json' },
+            });
+            if (!response.ok) throw new Error(`Release API GET failed: HTTP ${response.status}`);
+            return response.json();
+          }
+          const github = (path) => api('https://api.github.com', `/repos/${RELEASE_REPOSITORY}${path}`, env.GH_TOKEN);
+          const vercel = (path) => api('https://api.vercel.com', `${path}${path.includes('?') ? '&' : '?'}teamId=${RELEASE_TEAM}`, env.VERCEL_TOKEN);
+          const currentMain = async () => (await github('/git/ref/heads/main')).object.sha;
+          const aliases = async () => Promise.all(PRODUCTION_DOMAINS.map((domain) => vercel(`/v4/aliases/${domain}`)));
+          const inspect = (id) => vercel(`/v13/deployments/${encodeURIComponent(id)}`);
+          function cli(args, timeout = 900000) {
+            // Vercel 64.5.0 reads VERCEL_TOKEN from env, never argv.
+            const result = spawnSync('vercel', args, { encoding: 'utf8', timeout, maxBuffer: 8 * 1024 * 1024 });
+            if (result.error || result.status !== 0) throw new Error('Vercel command failed; release stopped');
+            return result.stdout.trim();
+          }
+          function stagePages(origin) {
+            const checked = new Set();
+            function get(path) {
+              const response = cli(['curl', `${origin}${path}`, '--', '--silent', '--show-error', '--fail', '--max-time', '10', '--write-out', '\n%{http_code}\n%{content_type}']);
+              const lines = response.split('\n');
+              const contentType = lines.pop();
+              const status = Number(lines.pop());
+              return { status, contentType, body: lines.join('\n') };
+            }
+            for (const route of RELEASE_ROUTES) {
+              const page = get(route);
+              for (const path of assertPageHtml(page.status, page.contentType, page.body)) {
+                if (checked.has(path)) continue;
+                const asset = get(path);
+                assertAsset(asset.status, asset.contentType, asset.body, path);
+                checked.add(path);
+              }
+            }
+          }
+          async function gate() {
+            const mainSha = await currentMain();
+            const runs = await github(`/actions/workflows/ci.yml/runs?event=push&head_sha=${sha}&status=success&per_page=100`);
+            return assertReleaseCandidate({ eventName: env.GITHUB_EVENT_NAME, event, sha, ref, mainSha, ciRuns: runs.workflow_runs });
+          }
 
-      - name: Summary
-        if: always()
-        env:
-          TARGET: ${{ inputs.target }}
-          DEPLOY_URL: ${{ steps.deploy.outputs.url }}
-          SERVED: ${{ steps.verify.outputs.served_sha }}
-          HTTP: ${{ steps.verify.outputs.http }}
-          EXPECTED_SHA: ${{ inputs.expected_sha || github.sha }}
-        run: |
-          {
-            if [ "${{ job.status }}" = "success" ]; then
-              echo "### ✓ نشر Vercel ($TARGET) — ${DEPLOY_URL:-—}"
-            else
-              echo "### ✗ نشر Vercel ($TARGET) لم يكتمل — ${DEPLOY_URL:-لا نشرة}"
-            fi
-            echo ""
-            echo "| البند | القيمة |"
-            echo "| --- | --- |"
-            echo "| الـcommit المتوقَّع | \`$EXPECTED_SHA\` |"
-            echo "| الـcommit المخدوم | \`${SERVED:-غير معروف}\` |"
-            echo "| /api/public/live | HTTP ${HTTP:-—} |"
-            echo ""
-            echo "التراجع: Vercel → Deployments → النشرة السابقة الناجحة → Promote to Production، أو \`vercel rollback\` (docs/operations/SADEED_ROLLBACK_RUNBOOK.md)."
-          } >> "$GITHUB_STEP_SUMMARY"
+          let cycle, baseline, candidate, promoted = false, creationAttempted = false;
+          try {
+            const target = await gate();
+            assertReleaseConfig(env); // Missing/mis-scoped credentials stop before any deployment.
+            cycle = deploymentCycle(env, Date.now());
+            const count = () => vercel(`/v6/deployments?projectId=${RELEASE_PROJECT}&since=${cycle.since}&limit=100`);
+            const budget = assertDeploymentBudget(cycle, await count(), Date.now());
+            summary(`Budget ${cycle.start}: total=${cycle.total}; spent=${budget.spent}; remaining=${budget.remaining}; reserve=2`);
+            if (target === 'production') {
+              const before = await aliases();
+              baseline = await inspect(before[0]?.deploymentId);
+              const baselineSha = assertSha(baseline.meta?.githubCommitSha);
+              assertDeployment(baseline, baselineSha, 'production');
+              assertAliases(before, baseline.id);
+              await Promise.all(PRODUCTION_DOMAINS.map((domain) => probePublicLive(`https://${domain}`, baselineSha)));
+              const diff = await github(`/compare/${baselineSha}...${sha}`);
+              if (diff.status !== 'ahead' || diff.behind_by !== 0 || diff.merge_base_commit?.sha !== baselineSha || !Array.isArray(diff.files) || diff.files.length >= 300) {
+                throw new Error('Release ancestry or complete change evidence is missing');
+              }
+              assertOwnerReview(env.GITHUB_EVENT_NAME, event, sha, diff.files.flatMap((file) => [file.filename, file.previous_filename].filter(Boolean)));
+              summary(`Rollback baseline: ${baseline.id} / ${baselineSha}`);
+            }
+            const args = ['deploy', '--yes', '--build-env', `SADEED_BUILD_SHA=${sha}`, '--build-env', `SADEED_BUILD_REF=${ref}`, '--meta', `githubCommitSha=${sha}`, '--meta', `githubCommitRef=${ref}`];
+            if (target === 'production') args.push('--prod', '--skip-domain');
+            creationAttempted = true;
+            const origin = deploymentOrigin(cli(args));
+            candidate = await inspect(new URL(origin).hostname);
+            assertDeployment(candidate, sha, target);
+            const after = await count();
+            const spent = verifiedDeploymentCount(cycle, after, Date.now());
+            const remaining = cycle.total - spent;
+            summary(`Deployment created: ${candidate.id}; remaining=${remaining}; reserve=2`);
+            if (!after.deployments.some((deployment) => (deployment.uid ?? deployment.id) === candidate.id) || remaining < 2) throw new Error('Post-build budget evidence missing or emergency reserve consumed');
+            // Authenticated CLI curl reads only liveness; no DB/rate-store probe or paid chat.
+            const stamp = cli(['curl', `${origin}/api/public/live`, '--', '--silent', '--show-error', '--fail', '--max-time', '10']);
+            assertLive(JSON.parse(stamp), sha, ref);
+            stagePages(origin);
+            summary(`Staged ${target}: ${origin} / ${candidate.id} / ${sha}`);
+            if (target === 'preview') {
+              summary('Preview verified; no production promotion.');
+              process.exit(0);
+            }
+            assertAliases(await aliases(), baseline.id); // Stage must leave both live domains untouched.
+            await gate(); // A newer main invalidates this candidate before traffic changes.
+            promoted = true;
+            const deadline = Date.now() + 90000;
+            cli(['promote', origin, '--yes'], 90000);
+            let verified = false;
+            while (Date.now() < deadline) {
+              try {
+                assertAliases(await aliases(), candidate.id);
+                await Promise.all(PRODUCTION_DOMAINS.map((domain) => probePublicLive(`https://${domain}`, sha, { timeoutMs: Math.max(1, Math.min(10000, deadline - Date.now())) })));
+                await Promise.all(PRODUCTION_DOMAINS.map((domain) => probePublicPages(`https://${domain}`, { timeoutMs: Math.max(1, Math.min(10000, deadline - Date.now())) })));
+                if (Date.now() > deadline) throw new Error('Production verification deadline exceeded');
+                verified = true;
+                break;
+              } catch {
+                if (Date.now() + 5000 >= deadline) break;
+                await new Promise((resolve) => setTimeout(resolve, 5000));
+              }
+            }
+            if (!verified) throw new Error('Production liveness/build verification failed within 90 seconds');
+            summary(`Production verified: ${sha} on ${PRODUCTION_DOMAINS.join(', ')}`);
+          } catch (error) {
+            summary(`Release failed: ${error.message}`);
+            if (creationAttempted && cycle) {
+              try {
+                const evidence = await vercel(`/v6/deployments?projectId=${RELEASE_PROJECT}&since=${cycle.since}&limit=100`);
+                summary(`Budget after failed attempt: remaining=${cycle.total - verifiedDeploymentCount(cycle, evidence, Date.now())}; reserve=2`);
+              } catch { summary('Budget after failed attempt: UNKNOWN; no retry authorized by this run'); }
+            }
+            if (promoted && baseline && candidate) {
+              // Never roll back a staging failure or overwrite another release writer.
+              try {
+                const current = await aliases();
+                if (current.some((alias) => ![baseline.id, candidate.id].includes(alias.deploymentId))) {
+                  throw new Error('Concurrent production writer detected; no automatic rollback');
+                }
+                if (current.some((alias) => alias.deploymentId === candidate.id)) {
+                  cli(['rollback', `https://${baseline.url}`, '--yes']);
+                }
+                assertAliases(await aliases(), baseline.id);
+                await Promise.all(PRODUCTION_DOMAINS.map((domain) => probePublicLive(`https://${domain}`, baseline.meta.githubCommitSha)));
+                // The previous release can legitimately predate the new decision-center route.
+                await Promise.all(PRODUCTION_DOMAINS.map((domain) => probePublicPages(`https://${domain}`, { routes: ['/auth', '/sec/incidents'] })));
+                summary(`Rollback verified: ${baseline.id} / ${baseline.meta.githubCommitSha}`);
+              } catch {
+                summary(`ROLLBACK UNVERIFIED: inspect production immediately; baseline ${baseline.id}`);
+              }
+            }
+            process.exitCode = 1;
+          }
+          NODE
