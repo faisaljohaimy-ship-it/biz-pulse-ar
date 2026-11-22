@@ -24,6 +24,10 @@ const workflow = readFileSync(
   new URL("../.github/workflows/deploy-vercel.yml", import.meta.url),
   "utf8",
 );
+const formattingWorkflow = readFileSync(
+  new URL("../.github/workflows/autoformat.yml", import.meta.url),
+  "utf8",
+);
 const embedded = workflow.match(
   /node --experimental-strip-types --input-type=module <<'NODE'\n([\s\S]*?)\n          NODE/,
 )[1];
@@ -246,6 +250,23 @@ test("secret-bearing job rejects manual feature dispatch before checkout/environ
     /github\.event_name == 'workflow_dispatch' && github\.ref == 'refs\/heads\/main'/,
   );
   assert.match(workflow, /persist-credentials: false/);
+});
+
+test("formatter only proposes a manual trusted-main patch and cannot advance checked main", () => {
+  assert.match(formattingWorkflow, /workflow_dispatch:/);
+  assert.doesNotMatch(formattingWorkflow, /^\s*(?:push|pull_request|workflow_run):/m);
+  assert.match(
+    formattingWorkflow,
+    /github\.event_name == 'workflow_dispatch' && github\.ref == 'refs\/heads\/main'/,
+  );
+  assert.match(formattingWorkflow, /contents: read/);
+  assert.doesNotMatch(
+    formattingWorkflow,
+    /contents: write|\[skip ci\]|git\s+(?:commit|push|pull)\b/,
+  );
+  assert.match(formattingWorkflow, /persist-credentials: false/);
+  assert.match(formattingWorkflow, /git diff --binary/);
+  assert.match(formattingWorkflow, /actions\/upload-artifact@[0-9a-f]{40}/);
 });
 
 for (const [label, options] of [

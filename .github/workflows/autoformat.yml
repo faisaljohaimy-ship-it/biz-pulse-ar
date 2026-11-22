@@ -1,62 +1,51 @@
-# تنسيق آلي — حسم «الكاتب الآلي» على main.
-#
-# السبب المُنشئ لهذا الملف: خط النشر الآلي يدفع إلى `main` مباشرة دون أن
-# يشغّل prettier، فكانت خمس نسخات متتالية تُسقط CI بأربعمئة وسبعة وأربعين
-# خطأ تنسيق — كلها قابلة للإصلاح آليًّا، ولا واحد منها عطلٌ حقيقي. النتيجة
-# الأسوأ ليست الحُمرة نفسها بل اعتيادها: بوابة حمراء دائمًا تتوقف عن كونها
-# بوابة، فيمرّ العطل الحقيقي وسط الضجيج.
-#
-# لا يُخفَّض المعيار: `npm run lint` يبقى حاجزًا صارمًا في CI. هذه الوظيفة
-# تُزيل السبب المتكرّر قبل أن يصل الحاجز، ولا تلمس إلا المسافات.
-#
-# منع الحلقة اللانهائية بثلاث طبقات:
-#   ① لا تعمل على نسخة كتبها هذا الملف نفسه (فحص رسالة النسخة).
-#   ② تدفع بـ[skip ci] فلا تُطلق دورة جديدة.
-#   ③ لا تدفع شيئًا إن لم يتغيّر شيء.
-name: Auto-format
+# Read-only formatting proposal. The reviewed main SHA is never advanced by a bot.
+# Apply the downloaded patch on a feature branch and pass the normal review/CI gate.
+name: Formatting proposal
 
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 concurrency:
-  group: autoformat-${{ github.ref }}
+  group: formatting-proposal
   cancel-in-progress: true
 
 jobs:
-  format:
-    # لا تعمل على ناتج نفسها — الطبقة الأولى من منع الحلقة.
-    if: "!contains(github.event.head_commit.message, 'style: تنسيق آلي')"
+  propose:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    timeout-minutes: 13
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
         with:
-          # التاريخ الكامل مطلوب للدفع، والرمز الافتراضي يكفي لأن
-          # الوظيفة تدفع إلى الفرع نفسه الذي أطلقها.
-          fetch-depth: 0
+          ref: ${{ github.sha }}
+          persist-credentials: false
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
         with:
           node-version: 22
           cache: npm
       - name: Install
         run: npm ci --no-audit --no-fund
-
-      - name: Format
+      - name: Format proposal
         run: npm run format
-
-      - name: Commit if anything changed
+      - name: Export reviewed diff without changing Git history
         run: |
-          if git diff --quiet; then
-            echo "لا تغييرات تنسيق — لا شيء يُدفع."
-            exit 0
-          fi
-          git config user.name  "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -m "style: تنسيق آلي [skip ci]"
-          # rebase قبل الدفع: الكاتب الآلي قد يكون دفع نسخة أخرى أثناء
-          # التنسيق، ودفعٌ غير متزامن هنا يخسر عمله.
-          git pull --rebase origin main
-          git push origin HEAD:main
+          git diff --binary > "$RUNNER_TEMP/sadeed-format.patch"
+          git diff --stat > "$RUNNER_TEMP/sadeed-format-stat.txt"
+          {
+            echo "### Formatting proposal for $GITHUB_SHA"
+            echo 'Download the patch artifact, review it, and apply it on a feature branch.'
+            echo 'The regular pull request and CI checks are required before delivery.'
+            cat "$RUNNER_TEMP/sadeed-format-stat.txt"
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload proposed patch
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
+        with:
+          name: sadeed-format-proposal-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/sadeed-format.patch
+            ${{ runner.temp }}/sadeed-format-stat.txt
+          if-no-files-found: error
+          retention-days: 7

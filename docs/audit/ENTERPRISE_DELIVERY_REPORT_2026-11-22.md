@@ -138,3 +138,9 @@
 ## Final local QA clearance
 
 QA guardian explicitly cleared commit, push, and PR after final source review and green local gates: **«مصرَّح بالدفع»**. Remote CI, merge, staged Production, promotion, and live smoke remain post-commit delivery checkpoints. Their final identities and observed outcomes are recorded in the PR delivery addendum and owner-facing final report, not predicted in this pre-commit snapshot.
+
+## Pre-merge governance correction
+
+A final workflow inventory found the legacy formatter automatically committed directly to main with `[skip ci]`, allowing the base to move after successful checks without a new CI run. It is now a trusted-main, manually requested, read-only formatting proposal: no write token, no Git commit/push, and a reviewable patch artifact for a feature PR. The regression fails against the old formatter and passes against the fixed source. The CD suite is now **46/46**; the application source and measured build are unchanged by this correction. Fresh exact-head CI/Preview are still required before merge.
+
+The bounded one-off release plan was revised **4 → 5 attempts**, for the necessary second native Preview, one Production build, and two untouched emergency reserves. The original cycle boundary **2026-11-22T21:56:15.241Z** and actual spent attempt are preserved; this is a documented operator plan revision under the owner's routine engineering delegation, not a claim of a new explicit human budget approval or a new standing default. Before the correction push, the complete project deployment listing showed **1/5** spent. No performance, API-provider, DB or authority limit was raised.
