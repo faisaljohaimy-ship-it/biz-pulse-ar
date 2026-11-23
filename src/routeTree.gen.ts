@@ -203,6 +203,7 @@ import { Route as ApiWebhooksResendRouteImport } from './routes/api/webhooks/res
 import { Route as ApiWebhooksTwilioRouteImport } from './routes/api/webhooks/twilio'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as VerifyPermitPermitIdRouteImport } from './routes/verify.permit.$permitId'
+import { Route as AuthenticatedSecAssetAssetIdRouteImport } from './routes/_authenticated/sec.asset.$assetId'
 import { Route as ApiPublicHooksExecutiveReportsRunRouteImport } from './routes/api/public/hooks/executive-reports-run'
 import { Route as ApiPublicHooksMicrosoftSyncRouteImport } from './routes/api/public/hooks/microsoft-sync'
 import { Route as ApiPublicHooksResendMessageStatusRouteImport } from './routes/api/public/hooks/resend-message-status'
@@ -1233,6 +1234,12 @@ const VerifyPermitPermitIdRoute = VerifyPermitPermitIdRouteImport.update({
   path: '/verify/permit/$permitId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedSecAssetAssetIdRoute =
+  AuthenticatedSecAssetAssetIdRouteImport.update({
+    id: '/asset/$assetId',
+    path: '/asset/$assetId',
+    getParentRoute: () => AuthenticatedSecRoute,
+  } as any)
 const ApiPublicHooksExecutiveReportsRunRoute =
   ApiPublicHooksExecutiveReportsRunRouteImport.update({
     id: '/api/public/hooks/executive-reports-run',
@@ -1521,6 +1528,7 @@ export interface FileRoutesByFullPath {
   '/assistant/': typeof AuthenticatedAssistantIndexRoute
   '/learn/': typeof AuthenticatedLearnIndexRoute
   '/sec/': typeof AuthenticatedSecIndexRoute
+  '/sec/asset/$assetId': typeof AuthenticatedSecAssetAssetIdRoute
   '/api/public/hooks/executive-reports-run': typeof ApiPublicHooksExecutiveReportsRunRoute
   '/api/public/hooks/microsoft-sync': typeof ApiPublicHooksMicrosoftSyncRoute
   '/api/public/hooks/resend-message-status': typeof ApiPublicHooksResendMessageStatusRoute
@@ -1730,6 +1738,7 @@ export interface FileRoutesByTo {
   '/assistant': typeof AuthenticatedAssistantIndexRoute
   '/learn': typeof AuthenticatedLearnIndexRoute
   '/sec': typeof AuthenticatedSecIndexRoute
+  '/sec/asset/$assetId': typeof AuthenticatedSecAssetAssetIdRoute
   '/api/public/hooks/executive-reports-run': typeof ApiPublicHooksExecutiveReportsRunRoute
   '/api/public/hooks/microsoft-sync': typeof ApiPublicHooksMicrosoftSyncRoute
   '/api/public/hooks/resend-message-status': typeof ApiPublicHooksResendMessageStatusRoute
@@ -1943,6 +1952,7 @@ export interface FileRoutesById {
   '/_authenticated/assistant/': typeof AuthenticatedAssistantIndexRoute
   '/_authenticated/learn/': typeof AuthenticatedLearnIndexRoute
   '/_authenticated/sec/': typeof AuthenticatedSecIndexRoute
+  '/_authenticated/sec/asset/$assetId': typeof AuthenticatedSecAssetAssetIdRoute
   '/api/public/hooks/executive-reports-run': typeof ApiPublicHooksExecutiveReportsRunRoute
   '/api/public/hooks/microsoft-sync': typeof ApiPublicHooksMicrosoftSyncRoute
   '/api/public/hooks/resend-message-status': typeof ApiPublicHooksResendMessageStatusRoute
@@ -2156,6 +2166,7 @@ export interface FileRouteTypes {
     | '/assistant/'
     | '/learn/'
     | '/sec/'
+    | '/sec/asset/$assetId'
     | '/api/public/hooks/executive-reports-run'
     | '/api/public/hooks/microsoft-sync'
     | '/api/public/hooks/resend-message-status'
@@ -2365,6 +2376,7 @@ export interface FileRouteTypes {
     | '/assistant'
     | '/learn'
     | '/sec'
+    | '/sec/asset/$assetId'
     | '/api/public/hooks/executive-reports-run'
     | '/api/public/hooks/microsoft-sync'
     | '/api/public/hooks/resend-message-status'
@@ -2577,6 +2589,7 @@ export interface FileRouteTypes {
     | '/_authenticated/assistant/'
     | '/_authenticated/learn/'
     | '/_authenticated/sec/'
+    | '/_authenticated/sec/asset/$assetId'
     | '/api/public/hooks/executive-reports-run'
     | '/api/public/hooks/microsoft-sync'
     | '/api/public/hooks/resend-message-status'
@@ -4060,6 +4073,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VerifyPermitPermitIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/sec/asset/$assetId': {
+      id: '/_authenticated/sec/asset/$assetId'
+      path: '/asset/$assetId'
+      fullPath: '/sec/asset/$assetId'
+      preLoaderRoute: typeof AuthenticatedSecAssetAssetIdRouteImport
+      parentRoute: typeof AuthenticatedSecRoute
+    }
     '/api/public/hooks/executive-reports-run': {
       id: '/api/public/hooks/executive-reports-run'
       path: '/api/public/hooks/executive-reports-run'
@@ -4231,6 +4251,7 @@ interface AuthenticatedSecRouteChildren {
   AuthenticatedSecVehiclesRoute: typeof AuthenticatedSecVehiclesRoute
   AuthenticatedSecVisitorsRoute: typeof AuthenticatedSecVisitorsRoute
   AuthenticatedSecIndexRoute: typeof AuthenticatedSecIndexRoute
+  AuthenticatedSecAssetAssetIdRoute: typeof AuthenticatedSecAssetAssetIdRoute
 }
 
 const AuthenticatedSecRouteChildren: AuthenticatedSecRouteChildren = {
@@ -4263,6 +4284,7 @@ const AuthenticatedSecRouteChildren: AuthenticatedSecRouteChildren = {
   AuthenticatedSecVehiclesRoute: AuthenticatedSecVehiclesRoute,
   AuthenticatedSecVisitorsRoute: AuthenticatedSecVisitorsRoute,
   AuthenticatedSecIndexRoute: AuthenticatedSecIndexRoute,
+  AuthenticatedSecAssetAssetIdRoute: AuthenticatedSecAssetAssetIdRoute,
 }
 
 const AuthenticatedSecRouteWithChildren =

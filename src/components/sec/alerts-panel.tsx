@@ -13,6 +13,7 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import { getSecOverview } from "@/lib/sec.functions";
+import { isAssetId } from "@/lib/sec/asset-detail.functions";
 import { useAuth } from "@/lib/auth-context";
 import { EvidenceBadge } from "@/components/evidence/EvidenceBadge";
 import { probeEvidence } from "@/lib/evidence/gate";
@@ -29,6 +30,7 @@ type AlertItem = {
   ref: string;
   ts: string;
   to: string;
+  assetId?: string;
 };
 
 const PRIO_STYLE: Record<
@@ -185,13 +187,18 @@ export function AlertsPanel() {
         ref: a.code,
         ts: a.last_seen_at,
         to: "/sec/assets",
+        // Only actual caller-visible rows enter the new protected detail path.
+        assetId:
+          user && isAssetId(a.id) && !("is_simulation" in a && a.is_simulation === true)
+            ? a.id
+            : undefined,
       });
     }
 
     const order: Record<Priority, number> = { critical: 0, high: 1, medium: 2, low: 3 };
     out.sort((x, y) => order[x.priority] - order[y.priority] || +new Date(y.ts) - +new Date(x.ts));
     return out;
-  }, [data]);
+  }, [data, user]);
 
   const counts = useMemo(() => {
     const c = { all: items.length, critical: 0, high: 0, medium: 0, low: 0 } as Record<
@@ -321,7 +328,9 @@ export function AlertsPanel() {
           return (
             <li key={a.id}>
               <Link
-                to={a.to}
+                {...(a.assetId
+                  ? { to: "/sec/asset/$assetId" as const, params: { assetId: a.assetId } }
+                  : { to: a.to })}
                 className="group flex items-start gap-3 px-4 py-2.5 hover:bg-[color:var(--chip)] transition-colors"
               >
                 <span

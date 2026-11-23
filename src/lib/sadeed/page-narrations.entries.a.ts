@@ -3,6 +3,19 @@ import type { PageNarration } from "./page-narrations.base";
 import { n } from "./page-narrations.base";
 
 export const ENTRIES_A: ReadonlyArray<readonly [string, PageNarration]> = [
+  [
+    "/sec/asset",
+    n(
+      "سجل الأصل",
+      "Asset record",
+      "سجل أصل حقيقي ضمن صلاحيات الحساب والمؤسسة، مع وقت تحديث المصدر ووقت القراءة",
+      "a real asset record within account and organization permissions, with source-update and fetch times",
+      "فتح رابط الأصل نفسه برمز QR مع إعادة التحقق من الصلاحيات",
+      "opening the same asset through a QR link while checking permissions again",
+      "هذه قراءة متصلة فقط. رمز الأصل لا يمنح صلاحيات ولا يتيح استخدامًا دون اتصال. السجل غير المتاح لا يُستبدل ببيانات محاكاة",
+      "this is an online read only. The code grants no permissions or offline access. An unavailable record is never replaced with simulation",
+    ),
+  ],
   // حُذفت صفوف «/sec/assets» و«/sec/kpi» و«/sec/safety» و«/sec/integrations»
   // و«/sec/knowledge»: مسارات مخفية بأمر المالك ٢٠٢٦/٠٨/٢٠ (hidden-routes.ts)
   // تُعيد التوجيه إلى /sec.

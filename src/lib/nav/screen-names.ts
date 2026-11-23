@@ -42,6 +42,7 @@ export interface ScreenName {
  * while مركز القيادة is the live mission-control stream listed in MODULES.
  */
 const EXTRA_SCREEN_NAMES: Readonly<Record<string, ScreenName>> = {
+  "/sec/asset": { ar: "سجل الأصل", en: "Asset record" },
   "/": { ar: "الرئيسية", en: "Home" },
   // Its own heading said «غرفة العمليات» while the command palette called it
   // «جسر تنفيذي» — a THIRD route claiming /situation-room's name.
