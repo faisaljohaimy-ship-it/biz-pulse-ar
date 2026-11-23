@@ -1,0 +1,67 @@
+.command-room-screens {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  contain: paint;
+}
+
+.command-room-screens[data-active="false"] {
+  visibility: hidden;
+}
+
+.command-room-screens__scan {
+  animation: command-room-screen-scan 24s linear infinite;
+}
+
+.command-room-screens__pulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: command-room-screen-pulse 24s ease-in-out infinite;
+}
+
+.command-room-screens__pulse--globe {
+  animation-delay: -8s;
+}
+
+.command-room-screens__pulse--desk {
+  animation-delay: -16s;
+}
+
+.command-room-screens[data-active="false"] .command-room-screens__scan,
+.command-room-screens[data-active="false"] .command-room-screens__pulse {
+  animation-play-state: paused;
+}
+
+@keyframes command-room-screen-scan {
+  from {
+    transform: translateY(-36px);
+  }
+  to {
+    transform: translateY(720px);
+  }
+}
+
+@keyframes command-room-screen-pulse {
+  0%,
+  100% {
+    opacity: 0.025;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 0.16;
+    transform: scale(1.1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .command-room-screens {
+    display: none;
+  }
+  .command-room-screens__scan,
+  .command-room-screens__pulse {
+    animation: none;
+  }
+}

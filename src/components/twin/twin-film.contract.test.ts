@@ -30,6 +30,7 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import postcss, { type AtRule, type ChildNode, type Node } from "postcss";
 import { describe, expect, it } from "vitest";
 import { FILM_UPSCALE_LIMIT } from "@/components/home/HomeBrandRow";
+import { TWIN_FILM_CATALOG } from "./twin-film-catalog";
 import { ENTRIES_C } from "@/lib/sadeed/page-narrations.entries.c";
 import { narrationFor } from "@/lib/sadeed/page-narrations";
 import {
@@ -141,7 +142,7 @@ const filmResidue = (code: string) => {
 const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 /** استيرادات `lazy(() => import("…"))` — ومعها وسيط النوع `lazy<…>(…)` — مساراتها بترتيبها. */
-const LAZY_IMPORT = /lazy(?:<[^>]*>)?\(\(\)\s*=>\s*import\("([^"]+)"\)/g;
+const LAZY_IMPORT = /lazy(?:<[^\n]*>)?\(\(\)\s*=>\s*import\("([^"]+)"\)/g;
 const lazyImports = (code: string) => [...strip(code).matchAll(LAZY_IMPORT)].map((m) => m[1]);
 
 /**
@@ -149,7 +150,9 @@ const lazyImports = (code: string) => [...strip(code).matchAll(LAZY_IMPORT)].map
  * (كلاهما يسحب الحزمة إلى حزمة الصفحة؛ الثاني كان ثقبًا في الكاشف، سُدّ ٢٠٢٦/١٠/٢٩) — منفَّذٌ لا معلَّق.
  */
 const staticImportOf = (code: string, mod: string) =>
-  strip(code).match(new RegExp(`^import\\s+(?:[^;]*?from\\s+)?"${escapeRe(mod)}"`, "gm")) ?? [];
+  strip(code).match(
+    new RegExp(`^import\\s+(?!type\\b)(?:[^;]*?from\\s+)?"${escapeRe(mod)}"`, "gm"),
+  ) ?? [];
 
 /** مسار وسائط مكتوبٌ باليد — الملصق يأتي من ثابته `TWIN_FILM_POSTER` لا من نصّ. */
 const mediaPaths = (code: string) => strip(code).match(/["'`]\/media\/[^"'`]*["'`]/g) ?? [];
@@ -217,7 +220,7 @@ function videoGaps(code: string): string[] {
     "muted",
     "playsInline",
     "aria-hidden",
-    "preload=",
+    'preload="none"',
     "disablePictureInPicture",
   ]) {
     if (!tag.includes(need)) out.push(`بلا ${need}`);
@@ -240,9 +243,15 @@ function gateGaps(code: string): string[] {
   // ما يُبقي فيلمًا عرض إطاره تحت الاتصال البطيء: `saver` وحدها — لا `reduced` (يُسقطه تقليل الحركة
   // المفعَّل في أثناء العرض) ولا `off`، ولا بدءٌ لم يُعرض إطاره.
   if (!c.includes('const keepsPlaying = gate === "saver" && played;')) out.push("سطر keepsPlaying");
-  if (!/setPlayed\(true\)/.test(c) || !/setPlayed\(false\)/.test(c))
+  if (!/setPlayed\(true\)/.test(c) || !/releaseVideo\(video\);[^}]*setPlayed\(false\)/.test(c))
     out.push("played يُمنح ويُسحب");
-  if (!c.includes("const mounted = allowed && (armed || started) && !failed && src !== null;")) {
+  if (
+    !c
+      .replace(/\s+/g, " ")
+      .includes(
+        "const mounted = allowed && (manual ? started : armed || started) && !failed && src !== null;",
+      )
+  ) {
     out.push("سطر mounted");
   }
   if (!c.includes("{mounted && src && (")) out.push("الفيديو خلف mounted");
@@ -524,8 +533,11 @@ describe("الكواشف تحمرّ على انتهاكٍ مزروع", () => {
   });
 
   it("فيديو بـloop أو autoPlay أو controls أو poster أو بلا muted/playsInline — يُلتقط", () => {
-    const ok = `<video muted playsInline preload="auto" aria-hidden disablePictureInPicture><source type="video/mp4" /><source type="video/webm" /></video>`;
+    const ok = `<video muted playsInline preload="none" aria-hidden disablePictureInPicture><source type="video/mp4" /><source type="video/webm" /></video>`;
     expect(videoGaps(ok)).toEqual([]);
+    expect(videoGaps(ok.replace('preload="none"', 'preload="auto"'))).toContain(
+      'بلا preload="none"',
+    );
     expect(videoGaps(ok.replace("<video ", "<video loop "))).toContain("loop");
     expect(videoGaps(ok.replace("<video ", "<video autoPlay "))).toContain("autoPlay");
     expect(videoGaps(ok.replace("<video ", "<video controls "))).toContain("controls الأصلية");
@@ -545,7 +557,9 @@ describe("الكواشف تحمرّ على انتهاكٍ مزروع", () => {
       "سطر keepsPlaying",
     );
     expect(gateGaps(PLAYER.replace("setPlayed(false)", ""))).toContain("played يُمنح ويُسحب");
-    expect(gateGaps(PLAYER.replace("(armed || started) && ", ""))).toContain("سطر mounted");
+    expect(gateGaps(PLAYER.replace("(manual ? started : armed || started) && ", ""))).toContain(
+      "سطر mounted",
+    );
     expect(gateGaps(PLAYER.replace("{mounted && src && (", "{src && ("))).toContain(
       "الفيديو خلف mounted",
     );
@@ -820,9 +834,8 @@ describe("الرئيسية — قسم فيلم التوأم في أسفل الص
   it("القسم مُسمًّى بعنوانه وسطره، ورابط /cinematic يسمّي ما يفعله بزرّ المشغّل وحلقة التركيز", () => {
     expect(code).toMatch(/<section\s+aria-labelledby="nx-home-twin-title"/);
     expect(code).toMatch(/<h2 id="nx-home-twin-title"[^>]*>\s*\{ar \? "التوأم الرقمي السينمائي"/);
-    expect(code).toContain(
-      "فيلم موشن جرافيك توضيحي يشرح فكرة التوأم الرقمي للأمن الصناعي، مستقلّ عن بيانات المراقبة الحقيقية.",
-    );
+    expect(code).toContain("فيلم التوأم الأصلي، ثم لماذا سديد؟ باللغة المختارة.");
+    expect(code).toContain("The original twin film, then Why Sadeed? in your selected language.");
     expect(code).toMatch(
       /<Link to="\/cinematic" className="twin-film-btn nx-focus-ring">\s*\{ar \? "فتح التجربة السينمائية"/,
     );
@@ -855,9 +868,10 @@ describe("الرئيسية — قسم فيلم التوأم في أسفل الص
     expect(textDigits(HOME_TWIN), "رقمٌ في نصّ القسم").toEqual([]);
     expect(quotedDigits(code), "رقمٌ في سلسلةٍ معروضة").toEqual([]);
     expect(mediaPaths(HOME_TWIN)).toEqual([]);
-    expect(code).toContain("src={TWIN_FILM_POSTER.src}");
-    expect(code).toContain("width={TWIN_FILM_POSTER.width}");
-    expect(code).toContain("height={TWIN_FILM_POSTER.height}");
+    expect(code).toContain("src={media.poster.src}");
+    expect(code).toContain("width={media.poster.width}");
+    expect(code).toContain("height={media.poster.height}");
+    expect(TWIN_FILM_CATALOG.twin.poster).toEqual(TWIN_FILM_POSTER);
   });
 
   it("ذيل الصفحة: الخاتمة ← فيلم التوأم ← الإفصاح، كلٌّ مرّةً واحدة", () => {
@@ -883,7 +897,7 @@ describe("الرئيسية — قسم فيلم التوأم في أسفل الص
       staticImportOf(`import * as P from "${PLAYER_MODULE}";\n${HOME_TWIN}`, PLAYER_MODULE),
     ).toHaveLength(1);
     const eager = HOME_TWIN.replace(
-      /lazy(?:<[^>]*>)?\(\(\)\s*=>\s*import\("[^"]+"\)[^;]*;/,
+      /lazy(?:<[^\n]*>)?\(\(\)\s*=>\s*import\("[^"]+"\)[^;]*;/,
       "null;",
     );
     expect(eager).not.toBe(HOME_TWIN);
@@ -892,7 +906,7 @@ describe("الرئيسية — قسم فيلم التوأم في أسفل الص
     expect(lazyImports('const X = lazy<ComponentType>(() => import("@/x"));')).toEqual(["@/x"]);
     // مسار ملصقٍ مكتوب باليد، ورقمٌ في نصٍّ معروض، وإطارٌ يضمّ صفحة.
     const handwritten = HOME_TWIN.replace(
-      "src={TWIN_FILM_POSTER.src}",
+      "src={media.poster.src}",
       'src="/media/twin/sadeed-twin-poster.webp"',
     );
     expect(handwritten).not.toBe(HOME_TWIN);
@@ -1038,8 +1052,8 @@ describe("CSS المشغّل — رموزٌ لا ألوان، زجاجٌ ساك�
     expect(targetGaps(FILM_CSS)).toEqual([]);
     expect(baseDecls(FILM_CSS, ".twin-film-frame")["aspect-ratio"]).toBe("16 / 9");
     expect(TWIN_FILM_POSTER.width / TWIN_FILM_POSTER.height).toBeCloseTo(16 / 9, 3);
-    expect(PLAYER).toContain("width={TWIN_FILM_POSTER.width}");
-    expect(PLAYER).toContain("height={TWIN_FILM_POSTER.height}");
+    expect(PLAYER).toContain("width={media.poster.width}");
+    expect(PLAYER).toContain("height={media.poster.height}");
   });
 
   it("بدائل forced-colors وreduced-transparency، وملء الشاشة بنسبة 16:9", () => {
@@ -1118,16 +1132,19 @@ describe("سبب الإيقاف — التلميح بالسبب لا بالبو�
   });
 });
 
-describe("إيقاف الحركة المحفوظ — يطابق ما يكتبه زرّ الرئيسية (#14)", () => {
+describe("إيقاف الحركة المحفوظ — يطابق التفضيل التاريخي وتحريره في الرئيسية (#14)", () => {
   const ROW = read("src/components/home/HomeBrandRow.tsx");
   const PLATE = read("src/components/brand/SadeedPlateLockup.tsx");
   const constOf = (src: string, name: string) =>
     new RegExp(`const ${name} = "([^"]+)"`).exec(src)?.[1] ?? null;
 
-  it("المفتاح هو مفتاح الرئيسية ومفتاح اللوحة نفسه، والقيمة «paused» كما يكتبها الزرّ", () => {
+  it("المفتاح مشترك؛ الرئيسية الساكنة تحرّر التفضيل القديم والمشغّل يقرأه فقط", () => {
     expect(MOTION_PREF_KEY).toBe(constOf(ROW, "PAUSE_KEY"));
     expect(MOTION_PREF_KEY).toBe(constOf(PLATE, "SAVED_PAUSE_KEY"));
-    expect(ROW).toContain(`localStorage.setItem(PAUSE_KEY, "${MOTION_PREF_PAUSED}")`);
+    expect(ROW).toContain(
+      `localStorage.getItem(PAUSE_KEY) === "${MOTION_PREF_PAUSED}") localStorage.removeItem(PAUSE_KEY)`,
+    );
+    expect(ROW).not.toContain("localStorage.setItem(PAUSE_KEY");
     // والمشغّل يقرؤه ولا يكتبه: القراءة بالثابتين لا بنصٍّ مكرَّر.
     expect(strip(PLAYER)).toMatch(
       /localStorage\.getItem\(MOTION_PREF_KEY\) === MOTION_PREF_PAUSED/,

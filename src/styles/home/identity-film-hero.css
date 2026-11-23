@@ -1,0 +1,113 @@
+.identity-film-hero {
+  min-inline-size: 0;
+  overflow: hidden;
+  border: 1px solid var(--glass-rim);
+  border-radius: 18px;
+  color: var(--ink);
+  background: var(--surface);
+}
+
+.identity-film-hero__head,
+.identity-film-hero__languages {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.identity-film-hero__head {
+  justify-content: space-between;
+  padding: 16px;
+}
+
+.identity-film-hero__head h2 {
+  margin: 0;
+  font-size: clamp(22px, 3vw, 32px);
+}
+
+.identity-film-hero button,
+.identity-film-hero summary {
+  min-inline-size: 44px;
+  min-block-size: 44px;
+}
+
+.identity-film-hero__languages button,
+.identity-film-placeholder button {
+  padding: 8px 14px;
+  border: 1px solid var(--glass-rim);
+  border-radius: 12px;
+  color: var(--ink);
+  background: var(--surface);
+  font: inherit;
+  cursor: pointer;
+}
+
+.identity-film-hero__languages button[aria-pressed="true"] {
+  border-color: var(--sd-azure);
+  background: color-mix(in srgb, var(--sd-azure) 15%, var(--surface));
+}
+
+.identity-film-hero .twin-film {
+  margin: 0;
+}
+
+.identity-film-placeholder img {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  aspect-ratio: 3 / 1;
+  object-fit: contain;
+}
+
+.identity-film-placeholder p,
+.identity-film-placeholder button {
+  margin: 12px 16px;
+}
+
+.identity-film-hero__copy {
+  padding: 4px 16px 16px;
+}
+
+.identity-film-hero__scene {
+  margin-block: 12px;
+  font-size: 16px;
+}
+
+.identity-film-hero__disclosure {
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.identity-film-hero__transcript {
+  border-block-start: 1px solid var(--glass-rim);
+}
+
+.identity-film-hero__transcript summary {
+  align-content: center;
+  padding-block: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.identity-film-hero__transcript ol {
+  padding-inline-start: 24px;
+  font-size: 16px;
+  line-height: 1.9;
+  overflow-wrap: anywhere;
+}
+
+.identity-film-hero__transcript h3 {
+  margin-block-end: 4px;
+  font-size: 17px;
+}
+
+.identity-film-hero__transcript p {
+  margin-block-start: 0;
+}
+
+.identity-film-hero video::cue {
+  color: #fff;
+  background: rgb(0 0 0 / 85%);
+  font-size: clamp(12px, 1.3vw, 18px);
+}

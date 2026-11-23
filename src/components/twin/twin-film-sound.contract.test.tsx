@@ -312,6 +312,12 @@ describe("صوت فيلم التوأم", () => {
     await act(async () => {
       fireEvent.click(view.container.querySelector(".twin-film-toggle")!);
     });
+    expect(videoOf(view.container).paused).toBe(true);
+    expect(videoOf(view.container).muted).toBe(true);
+    // Pausing revokes audible playback, while the next intentional resume retains the sound preference.
+    await act(async () => {
+      fireEvent.click(view.container.querySelector(".twin-film-toggle")!);
+    });
     expect(videoOf(view.container).muted).toBe(false);
     view.unmount();
   });

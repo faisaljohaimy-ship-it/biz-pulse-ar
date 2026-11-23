@@ -92,6 +92,27 @@
   gap: 12px;
 }
 
+/* The gallery has a reset control too: keep every touch target visible on narrow screens. */
+.twin-film[data-manual="true"] .twin-film-bar {
+  flex-wrap: wrap;
+}
+
+.twin-film[data-manual="true"] .twin-film-progress {
+  flex-basis: 100%;
+}
+
+.nx-home-twin-gallery {
+  display: grid;
+  align-items: start;
+  gap: 24px;
+}
+
+@media (min-width: 1024px) {
+  .nx-home-twin-gallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 /* خطّ التقدّم زخرفة (`aria-hidden`): الحال في الزرّ، لا في هذا الخطّ. */
 .twin-film-progress {
   flex: 1 1 auto;
