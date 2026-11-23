@@ -15,7 +15,7 @@ import {
   CartesianGrid,
   Legend,
 } from "recharts";
-// مكتبتا التصدير (xlsx / jspdf) ثقيلتان ولا تُستدعيان إلا من زر التصدير،
+// مكتبتا التصدير ثقيلتان ولا تُستدعيان إلا من زر التصدير،
 // فتُحمَّلان بالاستيراد الديناميكي داخل المعالِج — لا في حزمة الصفحة.
 import {
   Activity,
@@ -250,55 +250,32 @@ function LiveExecutiveDashboard() {
 
   async function exportPdf() {
     if (!ts) return;
-    // تُجلب jspdf عند الضغط فقط؛ محتوى التقرير كما هو دون تغيير.
-    const { default: jsPDF } = await import("jspdf");
-    const doc = new jsPDF({ orientation: "landscape" });
-    doc.setFontSize(16);
-    doc.text("SADEED — Executive Dashboard", 14, 16);
-    doc.setFontSize(10);
-    doc.text(`Range: last ${range} days   Generated: ${new Date().toISOString()}`, 14, 23);
-    if (k) {
-      doc.text(
-        `Open Incidents: ${k.incidents_open}   Critical: ${k.incidents_critical ?? "not measured"}   ` +
-          `Active Patrols: ${k.patrols_active}   Work Orders (open): ${k.wo_open}   ` +
-          `Readiness: ${pctText(k.executive_readiness)}   Risk: ${pctText(k.risk_index)}`,
-        14,
-        30,
-      );
-    }
-    doc.setFontSize(11);
-    doc.text("Totals", 14, 42);
-    doc.setFontSize(9);
-    doc.text(
-      `Incidents: ${ts.totals.incidents}   Resolved: ${ts.totals.incidents_resolved}   ` +
-        `Resolution: ${pctText(ts.totals.resolution_rate)}   WO opened: ${ts.totals.work_orders_opened}   ` +
-        `WO closed: ${ts.totals.work_orders_closed}   Patrols: ${ts.totals.patrols_completed}   ` +
-        `Avg response: ${pctText(ts.totals.avg_response_minutes, " min")}`,
-      14,
-      48,
-    );
-    doc.setFontSize(11);
-    doc.text("Daily Series", 14, 60);
-    doc.setFontSize(8);
-    let y = 66;
-    doc.text("Date        Inc  Crit High Res  WO+  WO-  Patrol  AvgResp", 14, y);
-    y += 5;
-    for (const p of filteredPoints.slice(-40)) {
-      doc.text(
-        `${p.day}  ${countText(p.incidents_total).padStart(3)}  ${countText(p.incidents_critical).padStart(3)}  ` +
-          `${countText(p.incidents_high).padStart(3)}  ${countText(p.incidents_resolved).padStart(3)}  ` +
-          `${countText(p.work_orders_opened).padStart(3)}  ${countText(p.work_orders_closed).padStart(3)}  ` +
-          `${countText(p.patrols_completed).padStart(5)}   ${countText(p.avg_response_minutes)}`,
-        14,
-        y,
-      );
-      y += 4;
-      if (y > 195) {
-        doc.addPage();
-        y = 20;
+    const { buildLiveDashboardPdf, liveDashboardPdfFilename } =
+      await import("@/lib/executive/live-dashboard-pdf");
+    const generatedAt = new Date().toISOString();
+    const bytes = await buildLiveDashboardPdf({
+      range,
+      generatedAt,
+      kpis: k,
+      totals: ts.totals,
+      points: filteredPoints,
+    });
+    const url = URL.createObjectURL(new Blob([new Uint8Array(bytes)], { type: "application/pdf" }));
+    try {
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = liveDashboardPdfFilename(range, generatedAt);
+      link.rel = "noopener";
+      document.body.appendChild(link);
+      try {
+        link.click();
+      } finally {
+        link.remove();
       }
+    } finally {
+      // Safari begins the download after the click handler returns.
+      setTimeout(() => URL.revokeObjectURL(url), 30_000);
     }
-    doc.save(`sadeed-executive-${range}d-${new Date().toISOString().slice(0, 10)}.pdf`);
   }
 
   // لافتات المحاور تُقرأ كنصّ — أرضية ١٢px تسري عليها كما تسري على المتن.
