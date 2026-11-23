@@ -604,11 +604,7 @@ function freezeGaps(code: string): string[] {
   ]) {
     if (!code.includes(need)) out.push(need);
   }
-  if (
-    !/useEffect\(\(\) => \{\s*if \(known\) announcePause\(paused\);\s*\}, \[known, paused\]\);/.test(
-      code,
-    )
-  )
+  if (!/useEffect\(\(\) => \{\s*if \(known\) announcePause\(false\);\s*\}, \[known\]\);/.test(code))
     out.push("الأثر");
   return out;
 }
@@ -928,7 +924,7 @@ describe("الكواشف تحمرّ على انتهاكٍ مزروع (الماد
     const sticky = ROW_CODE.replace("delete root.dataset.nxMotionPaused;", "");
     expect(sticky).not.toBe(ROW_CODE);
     expect(freezeGaps(sticky)).toEqual(["delete root.dataset.nxMotionPaused;"]);
-    const once = ROW_CODE.replace("}, [known, paused]);", "}, []);");
+    const once = ROW_CODE.replace("}, [known]);", "}, []);");
     expect(once).not.toBe(ROW_CODE);
     expect(freezeGaps(once)).toEqual(["الأثر"]);
   });
@@ -988,9 +984,11 @@ describe("الحركة اختيارٌ لا افتراض — بلا زرّ إيق
     expect(shorthandResets(BRAND_CSS)).toEqual([]);
   });
 
-  it("يقف خارج الإطار وبتركيز لوحة المفاتيح — لا بالفأرة ولا بزرّ؛ والتوهّج كما كان", () => {
+  it("الشريط يقف خارج الإطار وبالتركيز، والصورة الافتتاحية ساكنة", () => {
     expect(missingPauses(CSS, ".nx-ticker-track")).toEqual([]);
-    expect(missingPauses(BRAND_CSS, ".nx-brand-halo").sort()).toEqual(["focus"]);
+    // The owner's static opening image supersedes the old animated film halo.
+    expect(BRAND_CSS).not.toContain(".nx-brand-halo");
+    expect(BRAND_CSS).not.toMatch(/\banimation(?:-name)?\s*:/);
   });
 
   it("الحال الأساسية ساكنة ومُمرَّرة، والحركة تُبدّلها داخل البوابة وحدها", () => {

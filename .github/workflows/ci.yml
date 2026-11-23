@@ -86,6 +86,98 @@ jobs:
             kill "$(cat /tmp/public-health-dev.pid)" 2>/dev/null || true
           fi
 
+  # Keep media verification isolated from the existing 13-minute health job.
+  # Each real browser runs the same public, write-blocked gallery/source suite.
+  # The mobile project is WebKit emulation; physical iPhone evidence is separate.
+  media-gallery-e2e:
+    name: media gallery E2E (${{ matrix.project }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 13
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - project: desktop
+            browser: chromium
+          - project: mobile
+            browser: webkit
+    env:
+      PLAYWRIGHT_BASE_URL: https://127.0.0.1:8443
+      SADEED_E2E_LOCAL_HTTPS: "1"
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install
+        run: npm ci --no-audit --no-fund
+      - name: Install selected browser
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+      - name: Start isolated media test server
+        run: |
+          node node_modules/vite/bin/vite.js --host 127.0.0.1 --port 8080 --strictPort > /tmp/media-dev.log 2>&1 &
+          echo $! > /tmp/media-dev.pid
+          for i in $(seq 1 60); do
+            if curl --max-time 5 -sf http://127.0.0.1:8080/ > /dev/null; then
+              echo "media server ready"; exit 0
+            fi
+            sleep 2
+          done
+          tail -n 80 /tmp/media-dev.log
+          exit 1
+      - name: Start loopback HTTPS transport for production CSP
+        run: |
+          openssl req -x509 -newkey rsa:2048 -nodes \
+            -keyout "$RUNNER_TEMP/sadeed-e2e.key" -out "$RUNNER_TEMP/sadeed-e2e.crt" \
+            -days 1 -subj /CN=localhost -addext 'subjectAltName=DNS:localhost,IP:127.0.0.1' \
+            > /tmp/media-tls.log 2>&1
+          chmod 600 "$RUNNER_TEMP/sadeed-e2e.key"
+          node tests/e2e/support/local-https-proxy.mjs \
+            --listen-port 8443 --upstream-port 8080 \
+            --cert "$RUNNER_TEMP/sadeed-e2e.crt" --key "$RUNNER_TEMP/sadeed-e2e.key" \
+            > /tmp/media-https.log 2>&1 &
+          echo $! > /tmp/media-https.pid
+          for i in $(seq 1 30); do
+            if curl --max-time 5 --cacert "$RUNNER_TEMP/sadeed-e2e.crt" -sf https://127.0.0.1:8443/ > /dev/null; then
+              echo "loopback HTTPS ready"; exit 0
+            fi
+            sleep 2
+          done
+          tail -n 40 /tmp/media-https.log
+          exit 1
+      - name: Verify original media and bounded source disclosure
+        # Trace HTML must stay outside Vite's watched repository: writing it
+        # during a failed assertion can otherwise reload an unrelated test page.
+        env:
+          PLAYWRIGHT_HTML_OUTPUT_DIR: ${{ runner.temp }}/sadeed-media-report
+        run: npx playwright test tests/e2e/17-media-gallery.spec.ts --project=${{ matrix.project }} --workers=1 --output="$RUNNER_TEMP/sadeed-media-results"
+      - name: Preserve public fixture evidence
+        if: always()
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
+        with:
+          name: media-gallery-${{ matrix.project }}
+          path: |
+            .audit-tmp/media-evidence
+            ${{ runner.temp }}/sadeed-media-results
+            ${{ runner.temp }}/sadeed-media-report
+          include-hidden-files: true
+          if-no-files-found: ignore
+      - name: Stop isolated media test server
+        if: always()
+        run: |
+          if [ -f /tmp/media-https.pid ]; then
+            kill "$(cat /tmp/media-https.pid)" 2>/dev/null || true
+          fi
+          if [ -f /tmp/media-dev.pid ]; then
+            kill "$(cat /tmp/media-dev.pid)" 2>/dev/null || true
+          fi
+          rm -f -- "$RUNNER_TEMP/sadeed-e2e.key" "$RUNNER_TEMP/sadeed-e2e.crt"
+
   static:
     name: static (types · lint · dead code)
     runs-on: ubuntu-latest

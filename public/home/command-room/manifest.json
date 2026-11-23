@@ -1,0 +1,26 @@
+{
+  "sourceAttachment": "1-صورة-1.jpg",
+  "original": "docs/design/reference/command-room-owner-2026-11-23.jpg",
+  "sha256": "1008e89f8ef301f286dd1448ecfd6bc1805e91547c66a491ee99626fab8b574a",
+  "width": 1280,
+  "height": 698,
+  "originalBytes": 189560,
+  "transform": "Full-frame proportional resize only; WebP quality 75, method 6",
+  "illustrative": true,
+  "variants": [
+    {
+      "file": "command-room-640.webp",
+      "width": 640,
+      "height": 349,
+      "bytes": 21112,
+      "sha256": "aac28d35a22b0110729dbc2ffa9e2e7d46a8b9827848538a95a0f06ec9fc555b"
+    },
+    {
+      "file": "command-room-1280.webp",
+      "width": 1280,
+      "height": 698,
+      "bytes": 54304,
+      "sha256": "b0d1b960aac5420d5f001f4fd98a5b3326b43539726f9aa244d6a5dc763db605"
+    }
+  ]
+}

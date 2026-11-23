@@ -134,6 +134,11 @@ describe("الرئيسية — قسم فيلم التوأم حين تتعذّر 
     });
     const view = await mountPage("rejects");
     expect(sectionOf(view.container)).not.toBeNull();
+    expect(
+      Array.from(view.container.querySelectorAll<HTMLElement>("[data-gallery-film]"), (film) =>
+        film.getAttribute("data-gallery-film"),
+      ),
+    ).toEqual(["twin", "opening"]);
     expect(pendingOf(view.container), "البديل غائب قبل الاقتراب").not.toBeNull();
     expect(playerOf(view.container)).toBeNull();
     expect(importSpy, "طُلبت الحزمة قبل الاقتراب").not.toHaveBeenCalled();

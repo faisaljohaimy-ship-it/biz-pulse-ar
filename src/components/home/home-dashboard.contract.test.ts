@@ -1105,13 +1105,11 @@ describe("الصدق العددي — المادة ٢٧", () => {
   });
 
   it("ولا صورة كاميرا: الصور توضيحيةٌ موسومة من بيانها، ولا فيديو (N3)", () => {
-    // صفّ الهوية مستثنًى بنصّ قرار المالك (المواصفة ١٠ §2.3: B2 «As is» وB3
-    // «Water motion»): لوحتاه علامة المالك كما هي لا صورٌ توضيحية، وحلقة الماء
-    // فيلمٌ صامت فوقهما — ولهما حارسهما (`home-brand.contract.test.ts`). والاستثناء
-    // محصورٌ عددًا: صورةٌ وفيلمٌ واحدان في مكوّن اللوحة، وما عداه تحت N3 كاملًا.
+    // 2026-11-23: the owner's exact static image replaces the opening film;
+    // its provenance and full-frame derivatives have their dedicated contract.
     const BRAND = "HomeBrandRow.tsx";
     expect((src(BRAND).match(/<img\b/g) ?? []).length).toBe(1);
-    expect(videos(src(BRAND))).toHaveLength(1);
+    expect(videos(src(BRAND))).toEqual([]);
     const CODE = Object.entries(SOURCES)
       .filter(([f]) => f !== BRAND)
       .map(([, c]) => c)

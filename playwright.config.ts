@@ -1,5 +1,16 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:8080";
+const localHttps = process.env.SADEED_E2E_LOCAL_HTTPS === "1";
+if (localHttps) {
+  const match = /^https:\/\/(?:localhost|127\.0\.0\.1):([1-9]\d{0,4})\/?$/.exec(baseURL);
+  if (!match || Number(match[1]) > 65535) {
+    throw new Error(
+      "SADEED_E2E_LOCAL_HTTPS requires an HTTPS loopback origin with an explicit valid port",
+    );
+  }
+}
+
 /**
  * Playwright E2E — critical executive-demo paths only.
  * The security subset is wired into CI; run the full suite with `npm run test:e2e`.
@@ -23,7 +34,8 @@ export default defineConfig({
   fullyParallel: true,
   reporter: [["list"], ["html", { open: "never", outputFolder: "playwright-report" }]],
   use: {
-    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:8080",
+    baseURL,
+    ignoreHTTPSErrors: localHttps,
     trace: "retain-on-failure",
     video: "retain-on-failure",
     screenshot: "only-on-failure",

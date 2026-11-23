@@ -92,6 +92,7 @@ import type { UIMessage } from "ai";
 // تُحمَّل ديناميكيًّا عند النقر فلا تكبر الحزمة الأولى.
 import type { ExportableMessage } from "./chat-export";
 import { THINKING_AR, ThinkingBubble, autoRetryNoticeAr } from "./ThinkingBubble";
+import { AnswerSources } from "./AnswerSources";
 import { SADEED_PORTRAIT_SRC } from "@/lib/sadeed/portrait";
 // وضع العرض التنفيذي — نُقل من شاشة مركز القيادة المحجوبة (قرار المالك
 // ٢٠٢٦/٠٨/١٢) إلى زرّ في ترويسة هذه اللوحة. يُحمَّل كسولًا وجوبًا:
@@ -2207,6 +2208,7 @@ export function SadeedCopilot() {
                     part={part as Parameters<typeof ToolInvocation>[0]["part"]}
                   />
                 ))}
+                {!mine && <AnswerSources message={m} displayedText={text} />}
                 {!mine && text && !isBusy && (
                   <div className="mt-2 flex items-center gap-1 border-t border-white/10 pt-1.5 opacity-70 transition-opacity group-hover/message:opacity-100">
                     <button

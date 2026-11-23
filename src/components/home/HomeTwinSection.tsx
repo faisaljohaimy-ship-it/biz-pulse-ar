@@ -39,16 +39,17 @@
 import { lazy, Suspense, useEffect, useRef, useState, type ComponentType } from "react";
 import { Link } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
-import { TWIN_FILM_POSTER, TWIN_FILM_TEXT } from "@/components/twin/twin-film-model";
+import { TWIN_FILM_CATALOG, type TwinFilmId } from "@/components/twin/twin-film-catalog";
+import type { TwinFilmPlayerProps } from "@/components/twin/TwinFilmPlayer";
 import "@/styles/twin-film.css";
 
 /** حزمة المشغّل تعذّرت: البديل بلغة الواجهة مكانه — لا حدّ خطأ يهدم الصفحة. */
-function FilmUnavailable() {
+function FilmUnavailable({ film = "twin" }: TwinFilmPlayerProps) {
   const { locale } = useI18n();
-  return <FilmPlaceholder lang={locale === "ar" ? "ar" : "en"} state="unavailable" />;
+  return <FilmPlaceholder lang={locale === "ar" ? "ar" : "en"} film={film} state="unavailable" />;
 }
 
-const TwinFilmPlayer = lazy<ComponentType>(() =>
+const TwinFilmPlayer = lazy<ComponentType<TwinFilmPlayerProps>>(() =>
   import("@/components/twin/TwinFilmPlayer")
     .then((m) => ({ default: m.TwinFilmPlayer }))
     .catch(() => ({ default: FilmUnavailable })),
@@ -63,20 +64,23 @@ export const APPROACH_MARGIN = "600px";
  */
 function FilmPlaceholder({
   lang,
+  film = "twin",
   state,
 }: {
   readonly lang: "ar" | "en";
+  readonly film?: TwinFilmId;
   readonly state: "pending" | "unavailable";
 }) {
-  const text = TWIN_FILM_TEXT[lang];
+  const media = TWIN_FILM_CATALOG[film];
+  const text = media.text[lang];
   return (
     <div className="twin-film" data-placeholder={state}>
-      <div className="twin-film-frame">
+      <div className="twin-film-frame" style={{ aspectRatio: media.aspectRatio }}>
         <img
           className="twin-film-poster"
-          src={TWIN_FILM_POSTER.src}
-          width={TWIN_FILM_POSTER.width}
-          height={TWIN_FILM_POSTER.height}
+          src={media.poster.src}
+          width={media.poster.width}
+          height={media.poster.height}
           alt=""
           decoding="async"
           loading="lazy"
@@ -121,7 +125,7 @@ export function HomeTwinSection() {
     return () => watcher.disconnect();
   }, [near]);
 
-  const placeholder = <FilmPlaceholder lang={lang} state="pending" />;
+  const films: readonly TwinFilmId[] = ["twin", "opening"];
 
   return (
     <section aria-labelledby="nx-home-twin-title" dir={ar ? "rtl" : "ltr"} className="nx-home-twin">
@@ -132,22 +136,30 @@ export function HomeTwinSection() {
           </h2>
           <p className="nx-home-twin-text">
             {ar
-              ? "فيلم موشن جرافيك توضيحي يشرح فكرة التوأم الرقمي للأمن الصناعي، مستقلّ عن بيانات المراقبة الحقيقية."
-              : "An illustrative motion-graphics film that explains the digital-twin idea for industrial security, independent of real monitoring data."}
+              ? "فيلمان أصليان. شغّل أحدهما بالصوت الأصلي."
+              : "Two original films. Play one at a time with original audio."}
           </p>
         </div>
         <Link to="/cinematic" className="twin-film-btn nx-focus-ring">
           {ar ? "فتح التجربة السينمائية" : "Open the cinematic experience"}
         </Link>
       </div>
-      <div ref={stageRef} className="nx-home-twin-stage">
-        {near ? (
-          <Suspense fallback={placeholder}>
-            <TwinFilmPlayer />
-          </Suspense>
-        ) : (
-          placeholder
-        )}
+      <div ref={stageRef} className="nx-home-twin-stage nx-home-twin-gallery">
+        {films.map((film) => {
+          const placeholder = <FilmPlaceholder lang={lang} film={film} state="pending" />;
+          return (
+            <div key={film} className="min-w-0" data-gallery-film={film}>
+              <h3 className="mb-3 font-semibold">{TWIN_FILM_CATALOG[film].text[lang].title}</h3>
+              {near ? (
+                <Suspense fallback={placeholder}>
+                  <TwinFilmPlayer film={film} manual />
+                </Suspense>
+              ) : (
+                placeholder
+              )}
+            </div>
+          );
+        })}
       </div>
     </section>
   );
