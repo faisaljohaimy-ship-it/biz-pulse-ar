@@ -595,7 +595,7 @@ export function TwinFilmPlayer({
     // عنصرٌ جديد على بدايته: الشريط يتبعه لا عرضه القديم (فيلمٌ انتهى يبقى شريطه ممتلئًا).
     progress(video, finishedRef.current);
     const releaseRate = film === "opening" ? holdFilmRate(video) : () => {};
-    if (film === "twin") {
+    if (film !== "opening") {
       video.defaultPlaybackRate = 1;
       video.playbackRate = 1;
     }
@@ -779,7 +779,7 @@ export function TwinFilmPlayer({
             }}
           >
             <source src={catalogFilmSource(film, src)} type="video/mp4" />
-            <source src={catalogFilmSource(film, webmOf(src))} type="video/webm" />
+            {media.webm && <source src={catalogFilmSource(film, webmOf(src))} type="video/webm" />}
           </video>
         )}
       </div>

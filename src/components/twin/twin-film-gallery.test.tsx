@@ -87,7 +87,8 @@ beforeEach(() => {
   vi.spyOn(HTMLMediaElement.prototype, "duration", "get").mockImplementation(function (
     this: HTMLMediaElement,
   ) {
-    return this.querySelector("source")?.getAttribute("src")?.includes("/brand/") ? 26 : 56;
+    const src = this.querySelector("source")?.getAttribute("src") ?? "";
+    return src.includes("/brand/") ? 26 : src.includes("/refinery/") ? 15 : 56;
   });
   vi.spyOn(HTMLMediaElement.prototype, "currentTime", "get").mockImplementation(function (
     this: HTMLMediaElement,
@@ -162,6 +163,79 @@ const click = async (button: HTMLElement) => {
 };
 
 describe("two original films — intentional source requests and exclusive playback", () => {
+  it("defers the single-source reference film until its own action and shares ownership across all three profiles", async () => {
+    const fetch = vi.spyOn(globalThis, "fetch");
+    const view = render(
+      <I18nProvider>
+        <TwinFilmPlayer film="opening" manual />
+        <TwinFilmPlayer film="twin" manual />
+        <TwinFilmPlayer film="reference" manual />
+      </I18nProvider>,
+    );
+    await act(async () => Observer.show(true));
+    expect(view.container.querySelector("video,source")).toBeNull();
+    const figures = ["opening", "twin", "reference"].map((id) =>
+      view.container.querySelector<HTMLElement>(`[data-film="${id}"]`)!,
+    );
+    const [openingFigure, twinFigure, referenceFigure] = figures;
+    await click(toggle(referenceFigure));
+    const reference = videoOf(referenceFigure);
+    expect(videoOf(openingFigure)).toBeNull();
+    expect(videoOf(twinFigure)).toBeNull();
+    expect(reference.preload).toBe("none");
+    expect(reference.querySelectorAll("source")).toHaveLength(1);
+    expect(reference.querySelector("source")).toHaveAttribute(
+      "src",
+      "/media/refinery/refinery-illustrative.mp4",
+    );
+    expect(reference.querySelector("source")).toHaveAttribute("type", "video/mp4");
+    expect(referenceFigure.querySelector('[type="video/webm"]')).toBeNull();
+    expect(reference.playbackRate).toBe(1);
+    expect(reference.defaultPlaybackRate).toBe(1);
+    expect(reference.muted).toBe(false);
+    reference.currentTime = 7.5;
+    fireEvent(reference, new Event("timeupdate"));
+    expect(
+      referenceFigure
+        .querySelector<HTMLElement>(".twin-film-bar")!
+        .style.getPropertyValue("--twin-progress"),
+    ).toBe("0.5");
+    for (const figure of [openingFigure, twinFigure, referenceFigure]) {
+      await click(toggle(figure));
+      expect(videoOf(figure).paused).toBe(false);
+      expect(figures.map(videoOf).filter((video) => video && !video.paused)).toHaveLength(1);
+    }
+    expect(videoOf(referenceFigure)).toBe(reference);
+    expect(videoOf(openingFigure).playbackRate).toBe(0.5);
+    expect(videoOf(twinFigure).playbackRate).toBe(1);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it.each(["ar", "en"] as const)(
+    "identifies the new %s film as fictional authored motion, with known duration and no operational claim",
+    async (locale) => {
+      localStorage.setItem("locale", locale);
+      const view = render(
+        <I18nProvider>
+          <TwinFilmPlayer film="reference" manual />
+        </I18nProvider>,
+      );
+      const caption = view.container.querySelector("figcaption")!;
+      expect(caption.textContent).toContain("15");
+      for (const term of locale === "ar"
+        ? ["خيالي", "حركة مصممة", "ليس بثًا حيًا", "تمثيلًا هندسيًا", "بيانات تشغيلية"]
+        : [
+            "fictional",
+            "authored motion",
+            "not a live feed",
+            "engineering model",
+            "operational data",
+          ])
+        expect(caption.textContent).toContain(term);
+      expect(view.container.querySelector("video,source")).toBeNull();
+    },
+  );
+
   it("scopes the additional gallery controls to manual players without changing the cinematic player", () => {
     const view = render(
       <I18nProvider>

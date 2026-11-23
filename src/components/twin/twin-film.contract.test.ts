@@ -61,6 +61,7 @@ const SEC_TWIN = read("src/routes/_authenticated/sec.twin.tsx");
 const HOME_TWIN = read("src/components/home/HomeTwinSection.tsx");
 const HOME_PAGE = read("src/routes/-blueprint-page.tsx");
 const PLAYER_MODULE = "@/components/twin/TwinFilmPlayer";
+const REFERENCE_MODULE = "@/components/twin/executive/TwinReferencePanel";
 const PLAYER = read("src/components/twin/TwinFilmPlayer.tsx");
 const MODEL = read("src/components/twin/twin-film-model.ts");
 const FILM_CSS = read("src/styles/twin-film.css");
@@ -769,7 +770,17 @@ describe("/cinematic — حشوة الأسفل تُخلي زرّ سَدِيد ا
   });
 });
 
-describe("/sec/twin — بلا iframe ولا بثّ، وقسم الفيلم نُقل إلى الرئيسية (أمر المالك ٢٠٢٦/١٠/٢٩)", () => {
+describe("/sec/twin — الفيلمان السابقان في الرئيسية؛ المشهد المرجعي الجديد مستقل (2026-11-23)", () => {
+  it("يربط طلب المالك الجديد كسولًا بمشغّل reference اليدوي دون إعادة الفيلمين السابقين", () => {
+    const module = "@/components/twin/executive/TwinReferencePanel";
+    const panel = strip(read("src/components/twin/executive/TwinReferencePanel.tsx"));
+    expect(lazyImports(SEC_TWIN)).toContain(module);
+    expect(staticImportOf(SEC_TWIN, module)).toEqual([]);
+    expect(SEC_TWIN).toContain("<TwinReferencePanel");
+    expect(panel).toContain('<TwinFilmPlayer film="reference" manual />');
+    expect(panel).not.toMatch(/film=["'](?:twin|opening)["']/);
+    expect(panel.match(/<TwinFilmPlayer\b/g)).toHaveLength(1);
+  });
   it("لا iframe ولا رابط خارجي ولا ألفاظ بثّ", () => {
     expect(iframes(SEC_TWIN)).toEqual([]);
     expect(externalUrls(SEC_TWIN)).toEqual([]);
@@ -840,12 +851,14 @@ describe("الرئيسية — قسم فيلم التوأم في أسفل الص
     );
     // الرابط ينتقل إلى صفحة التجربة — لا «ملء الشاشة» (ذاك زرّ /cinematic وحده) ولا لوحة تُفتح.
     expect(code, "رابط يسمّي التنقّل شاشةً كاملة").not.toMatch(/ملء الشاشة|Full screen/);
-    expect(code).not.toMatch(/cinemaOpen|setCinemaOpen|aria-expanded/);
+    expect(code).not.toMatch(/cinemaOpen|setCinemaOpen/);
+    expect(code.match(/<Link to="\/cinematic"[^>]*>/)?.[0]).not.toContain("aria-expanded");
+    expect(code).toContain('aria-controls="nx-twin-reference"');
     expect(code).not.toMatch(/speechSynthesis/);
   });
 
   it("المشغّل كسولٌ عند الاقتراب: lazy + Suspense + IntersectionObserver، ولا استيراد ساكن له في سطح الرئيسية", () => {
-    expect(lazyImports(HOME_TWIN)).toEqual([PLAYER_MODULE]);
+    expect(lazyImports(HOME_TWIN)).toEqual([PLAYER_MODULE, REFERENCE_MODULE]);
     // رفض الحزمة يُلتقط في الاستيراد نفسه (السلوك في `home-twin-section.contract.test.tsx`).
     expect(code).toContain(".catch(() => ({ default: FilmUnavailable }))");
     expect(code).toContain("<Suspense fallback={placeholder}>");
@@ -857,6 +870,10 @@ describe("الرئيسية — قسم فيلم التوأم في أسفل الص
     expect(surface.has("src/components/home/HomeTwinSection.tsx"), "القسم خارج السطح").toBe(true);
     for (const [file, src] of surface) {
       expect(staticImportOf(src, PLAYER_MODULE), `${file}: استيرادٌ ساكن للمشغّل`).toEqual([]);
+      expect(
+        staticImportOf(src, REFERENCE_MODULE),
+        `${file}: استيرادٌ ساكن للمشهد المرجعي`,
+      ).toEqual([]);
     }
   });
 
@@ -900,7 +917,7 @@ describe("الرئيسية — قسم فيلم التوأم في أسفل الص
       "null;",
     );
     expect(eager).not.toBe(HOME_TWIN);
-    expect(lazyImports(eager)).toEqual([]);
+    expect(lazyImports(eager)).toEqual([REFERENCE_MODULE]);
     expect(lazyImports('const X = lazy(() => import("@/x"));')).toEqual(["@/x"]);
     expect(lazyImports('const X = lazy<ComponentType>(() => import("@/x"));')).toEqual(["@/x"]);
     // مسار ملصقٍ مكتوب باليد، ورقمٌ في نصٍّ معروض، وإطارٌ يضمّ صفحة.
@@ -1195,6 +1212,13 @@ describe("الدرجة بالحاجة المقيسة", () => {
       expect(text.ar.disclosure).toBe(TWIN_FILM_TEXT.ar.disclosure);
       expect(text.en.disclosure).toBe(TWIN_FILM_TEXT.en.disclosure);
     }
+    const reference = TWIN_FILM_CATALOG.reference;
+    expect(reference.films).toHaveLength(1);
+    expect(reference.webm).toBe(false);
+    for (const current of [null, "unknown", reference.films[0].src])
+      for (const width of [-1, 0, 360, 1280, Infinity, NaN])
+        for (const dpr of [-1, 0, 1, 3, Infinity, NaN])
+          expect(upgradeCatalogFilm("reference", current, width, dpr)).toBe(reference.films[0].src);
   });
 
   it("الجوال يأخذ 640 والمكتب 1280، والتكبير لا يتجاوز الحدّ", () => {

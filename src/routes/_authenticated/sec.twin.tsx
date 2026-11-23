@@ -2,10 +2,12 @@ import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { getTwinTree, type TwinTree } from "@/lib/sec.functions";
 import { SecPageHeader, statusClass, severityClass } from "@/components/sec/sec-shell";
 import { useRegion } from "@/lib/region-context";
+import { useI18n } from "@/lib/i18n";
+import { TwinLoadState } from "@/components/twin/executive/TwinLoadState";
 import type { Region } from "@/lib/regions";
 // تدقيق تعبيرية الأيقونات ٢٠٢٦/٠٨/٢٧ — القاعدة الموثقة في sec-shell نفسها:
 // `Camera` كاميرا تصوير لا مراقبة (الكانونية `Cctv`)، و`Radar` كشفٌ عن بُعد
@@ -28,6 +30,16 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+const TwinReferencePanel = lazy(() =>
+  import("@/components/twin/executive/TwinReferencePanel")
+    .then((m) => ({ default: m.TwinReferencePanel }))
+    .catch(() => ({ default: ReferenceUnavailable })),
+);
+
+function ReferenceUnavailable() {
+  return <TwinLoadState failed />;
+}
+
 export const Route = createFileRoute("/_authenticated/sec/twin")({
   errorComponent: RouteError,
   notFoundComponent: RouteNotFound,
@@ -47,6 +59,8 @@ type SelectedKind =
 type Selected = { kind: SelectedKind; id: string } | null;
 
 function TwinPage() {
+  const { locale } = useI18n();
+  const ar = locale === "ar";
   const fetchTree = useServerFn(getTwinTree);
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["sec-twin"],
@@ -72,9 +86,24 @@ function TwinPage() {
   return (
     <div className="space-y-4">
       <SecPageHeader
-        title="التوأم الرقمي للمناطق"
-        subtitle="مشهد مرسوم لكل منطقة، ونموذج هرمي تفاعلي لجميع الأصول الأمنية"
+        title={ar ? "التوأم الرقمي للمناطق" : "Regional digital twin"}
+        subtitle={
+          ar
+            ? "مشهد مرجعي تفاعلي، وشجرة الأصول الأمنية القائمة"
+            : "An interactive reference scene and the existing security asset tree"
+        }
       />
+
+      {/* Owner's 2026-11-23 reference scene; isolated from the asset-tree data below. */}
+      <Suspense
+        fallback={
+          <div className="min-h-64 rounded-xl bg-muted p-6">
+            <TwinLoadState />
+          </div>
+        }
+      >
+        <TwinReferencePanel key={region.id} initialRegionId={region.id} />
+      </Suspense>
 
       {/* قسم فيلم التوأم الرقمي نُقل إلى أسفل الرئيسية بأمر المالك ٢٠٢٦/١٠/٢٩ (`src/components/home/HomeTwinSection.tsx`). */}
 
