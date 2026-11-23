@@ -1,10 +1,12 @@
-/** Static owner-supplied opening image; original films live in the twin gallery. */
+/** Owner update: narrated identity first, then the unchanged command-room photograph. */
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { useI18n } from "@/lib/i18n";
 import { HomeTicker } from "@/components/home/HomeTicker";
+import { IdentityFilmHero } from "@/components/home/IdentityFilmHero";
+import { CommandRoomScreens } from "@/components/home/CommandRoomScreens";
 import "@/styles/home/home-brand.css";
 
-export const BRAND_RATIO = { width: 1280, height: 698 } as const;
+export const BRAND_RATIO = { width: 1320, height: 720 } as const;
 // Shared historical tier tolerance; the opening film remains unchanged in the gallery.
 export const FILM_UPSCALE_LIMIT = 1.15;
 export {
@@ -16,9 +18,9 @@ export {
 } from "./brand-film-playback";
 
 export const HOME_OPENING_IMAGE = {
-  src: "/home/command-room/command-room-1280.webp",
+  src: "/home/command-room/command-room-1320.webp",
   srcSet:
-    "/home/command-room/command-room-640.webp 640w, /home/command-room/command-room-1280.webp 1280w",
+    "/home/command-room/command-room-640.webp 640w, /home/command-room/command-room-1320.webp 1320w",
   sizes: "(min-width: 1664px) 1394px, (min-width: 1024px) calc(100vw - 270px), calc(100vw - 46px)",
   alt: {
     ar: "غرفة قيادة زرقاء بخرائط ومؤشرات ومكاتب؛ صورة توضيحية.",
@@ -89,12 +91,65 @@ function useOffscreen(ref: RefObject<HTMLElement | null>): boolean {
   return offscreen;
 }
 
+function useRoomMotion(
+  ref: RefObject<HTMLElement | null>,
+  ready: boolean,
+  paused: boolean,
+): boolean {
+  const [active, setActive] = useState(false);
+  useEffect(() => {
+    const node = ref.current;
+    if (!node || !ready || paused || typeof IntersectionObserver === "undefined") {
+      setActive(false);
+      return;
+    }
+    const root = document.documentElement;
+    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+    let inView = false;
+    const sync = () =>
+      setActive(
+        inView &&
+          document.visibilityState === "visible" &&
+          !reduced?.matches &&
+          root.getAttribute("data-nx-motion") !== "off" &&
+          root.getAttribute("data-nx-motion-paused") !== "1" &&
+          !root.classList.contains("safe-mode"),
+      );
+    const observer = new IntersectionObserver((entries) => {
+      const entry = entries[entries.length - 1];
+      inView = Boolean(entry?.isIntersecting);
+      sync();
+    });
+    observer.observe(node);
+    const mutations = new MutationObserver(sync);
+    mutations.observe(root, {
+      attributes: true,
+      attributeFilter: ["data-nx-motion", "data-nx-motion-paused", "class"],
+    });
+    document.addEventListener("visibilitychange", sync);
+    window.addEventListener(MOTION_PAUSE_EVENT, sync);
+    reduced?.addEventListener?.("change", sync);
+    sync();
+    return () => {
+      observer?.disconnect();
+      mutations.disconnect();
+      document.removeEventListener("visibilitychange", sync);
+      window.removeEventListener(MOTION_PAUSE_EVENT, sync);
+      reduced?.removeEventListener?.("change", sync);
+    };
+  }, [ref, ready, paused]);
+  return active;
+}
+
 export function HomeBrandRow() {
   const { locale } = useI18n();
   const ar = locale === "ar";
   const known = useMotionReady();
   const ref = useRef<HTMLElement>(null);
   const offscreen = useOffscreen(ref);
+  const imageRef = useRef<HTMLDivElement>(null);
+  const [roomPaused, setRoomPaused] = useState(false);
+  const roomActive = useRoomMotion(imageRef, known, roomPaused);
   const plate = HOME_BRAND.banner;
   return (
     <section
@@ -106,19 +161,23 @@ export function HomeBrandRow() {
       data-offscreen={offscreen || undefined}
     >
       <HomeTicker offscreen={offscreen} ready={known} />
+      <IdentityFilmHero />
       <figure className="nx-brand" data-kind="command-room" data-testid="home-opening-image">
-        <img
-          src={HOME_OPENING_IMAGE.src}
-          srcSet={HOME_OPENING_IMAGE.srcSet}
-          sizes={HOME_OPENING_IMAGE.sizes}
-          width={BRAND_RATIO.width}
-          height={BRAND_RATIO.height}
-          alt={ar ? HOME_OPENING_IMAGE.alt.ar : HOME_OPENING_IMAGE.alt.en}
-          loading="eager"
-          decoding="async"
-          fetchPriority="high"
-          className="nx-command-room-poster"
-        />
+        <div ref={imageRef} className="nx-command-room-stage">
+          <img
+            src={HOME_OPENING_IMAGE.src}
+            srcSet={HOME_OPENING_IMAGE.srcSet}
+            sizes={HOME_OPENING_IMAGE.sizes}
+            width={BRAND_RATIO.width}
+            height={BRAND_RATIO.height}
+            alt={ar ? HOME_OPENING_IMAGE.alt.ar : HOME_OPENING_IMAGE.alt.en}
+            loading="lazy"
+            decoding="async"
+            fetchPriority="auto"
+            className="nx-command-room-poster"
+          />
+          <CommandRoomScreens active={roomActive} />
+        </div>
         <figcaption className="nx-command-room-copy" dir={ar ? "rtl" : "ltr"}>
           <p className="nx-brand-title" dir="ltr">
             <span lang="en">{plate.title.en}</span>
@@ -135,6 +194,20 @@ export function HomeBrandRow() {
               ? "صورة توضيحية؛ خرائطها ومؤشراتها ليست بيانات تشغيلية حية."
               : "Illustrative image; its maps and indicators are not live operational data."}
           </p>
+          <button
+            type="button"
+            className="twin-film-btn nx-focus-ring nx-command-room-motion-toggle"
+            aria-pressed={roomPaused}
+            onClick={() => setRoomPaused((value) => !value)}
+          >
+            {ar
+              ? roomPaused
+                ? "تحريك الشاشات"
+                : "إيقاف حركة الشاشات"
+              : roomPaused
+                ? "Animate screens"
+                : "Pause screen motion"}
+          </button>
         </figcaption>
       </figure>
     </section>

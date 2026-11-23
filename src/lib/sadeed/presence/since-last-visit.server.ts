@@ -5,7 +5,7 @@
  * bilingual delta from live tables:
  *   • incidents resolved since cursor
  *   • risks escalated since cursor
- *   • inspection completion delta
+ *   • observed completion in an updated inspection sample (no comparison baseline)
  *   • new critical alerts since cursor
  *
  * Never fabricates numbers — if a table is unreachable the delta line
@@ -20,10 +20,11 @@ export interface PresenceDelta {
   lines_en: string[];
   lines_ar: string[];
   metrics: {
-    incidentsResolved: number;
-    risksEscalated: number;
+    incidentsResolved: number | null;
+    risksEscalated: number | null;
+    /** No prior completion baseline is stored; this remains null, not the sample's completion rate. */
     inspectionDeltaPct: number | null;
-    newCriticalAlerts: number;
+    newCriticalAlerts: number | null;
   };
 }
 
@@ -52,10 +53,10 @@ export async function computePresenceDelta(
     lines_en: [],
     lines_ar: [],
     metrics: {
-      incidentsResolved: 0,
-      risksEscalated: 0,
+      incidentsResolved: null,
+      risksEscalated: null,
       inspectionDeltaPct: null,
-      newCriticalAlerts: 0,
+      newCriticalAlerts: null,
     },
   };
 
@@ -66,13 +67,14 @@ export async function computePresenceDelta(
 
   await Promise.all([
     (async () => {
-      const { count } = await admin
+      const { count, error } = await admin
         .from("sec_incidents")
         .select("id", { count: "exact", head: true })
         .eq("org_id", orgId)
         .in("status", ["resolved", "closed"])
         .gte("updated_at", from);
-      const n = count ?? 0;
+      if (error || typeof count !== "number" || !Number.isFinite(count) || count < 0) return;
+      const n = count;
       delta.metrics.incidentsResolved = n;
       if (n > 0) {
         delta.lines_en.push(`${n} incident${n === 1 ? "" : "s"} resolved`);
@@ -80,13 +82,14 @@ export async function computePresenceDelta(
       }
     })().catch(() => {}),
     (async () => {
-      const { count } = await admin
+      const { count, error } = await admin
         .from("sim_risks")
         .select("id", { count: "exact", head: true })
         .eq("org_id", orgId)
         .gte("updated_at", from)
         .in("status", ["escalated", "elevated", "critical"]);
-      const n = count ?? 0;
+      if (error || typeof count !== "number" || !Number.isFinite(count) || count < 0) return;
+      const n = count;
       delta.metrics.risksEscalated = n;
       if (n > 0) {
         delta.lines_en.push(`${n} risk${n === 1 ? "" : "s"} escalated`);
@@ -103,22 +106,22 @@ export async function computePresenceDelta(
       if (!data || !data.length) return;
       const done = data.filter((r) => r.status === "completed" || r.status === "closed").length;
       const pct = Math.round((done / data.length) * 100);
-      delta.metrics.inspectionDeltaPct = pct;
-      if (pct !== 0) {
-        const dir_en = pct >= 0 ? "improved by" : "declined by";
-        const dir_ar = pct >= 0 ? "تحسّن بنسبة" : "تراجع بنسبة";
-        delta.lines_en.push(`inspection completion ${dir_en} ${Math.abs(pct)}%`);
-        delta.lines_ar.push(`اكتمال التفتيش ${dir_ar} ${Math.abs(pct)}%`);
-      }
+      delta.lines_en.push(
+        `inspection sample: ${done} of ${data.length} updated records completed (${pct}%); comparison baseline unavailable`,
+      );
+      delta.lines_ar.push(
+        `اكتمال عينة التفتيش: ${done} من ${data.length} سجلًا محدّثًا (${pct}٪)؛ لا يوجد خط أساس للمقارنة`,
+      );
     })().catch(() => {}),
     (async () => {
-      const { count } = await admin
+      const { count, error } = await admin
         .from("sim_notifications")
         .select("id", { count: "exact", head: true })
         .eq("org_id", orgId)
         .eq("severity", "critical")
         .gte("created_at", from);
-      const n = count ?? 0;
+      if (error || typeof count !== "number" || !Number.isFinite(count) || count < 0) return;
+      const n = count;
       delta.metrics.newCriticalAlerts = n;
       if (n > 0) {
         delta.lines_en.push(`${n} new critical alert${n === 1 ? "" : "s"}`);

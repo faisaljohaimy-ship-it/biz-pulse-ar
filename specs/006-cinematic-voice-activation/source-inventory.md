@@ -1,0 +1,44 @@
+# Source Inventory and Status: 006
+
+هذه حالات مصدر وإنتاج محلي، لا تفعيل حي شامل. تحفظ 004/005، ولا تُنسب فحوص ac4 التاريخية إلى 006. لم تُشغّل اختبارات أو CI يدوي أو smoke harness اختيارية.
+
+## مصادر المالك والوسائط
+
+| المصدر           | ما ثبت                                                                                                                                    | الحد                                                                                                 |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| ZIP              | SHA `d8f2126b80f4121f9269ea44bf345bbaa6816154e93fa5a7b530db11f5f0464a`؛ ثلاثة أعضاء MD/TXT/JPEG                                           | لا VO أو storyboard منفصل                                                                            |
+| MD/TXT           | متطابقان؛ SHA `eebfac42c75cc70fd2ef94339f36815712e4a5f7002cb6ef92bc78228f47acd9`                                                          | التعليمات المباشرة أعلى من ترتيب المرحلة الثانية فيهما                                               |
+| غرفة التحكم      | ‏1320×720، 227,440 B؛ SHA `54411bb22a9f487a4dcea8546cbba56515ec8b49ca7cdc1e08cf5d5dca89e0e4`                                              | أصل ثابت وحركة داخل الشاشات فقط                                                                      |
+| النصان المباشران | `voiceover-owner-{ar,en}.txt` تحت `.audit-tmp/owner-upgrade-20261123/`                                                                    | من الرسالة، لا صوت من ZIP؛ المدخلات الفعلية موثقة في provenance                                      |
+| AR النهائي       | `/media/identity/sadeed-identity-ar.mp4`؛ 2,826,849 B/71.400 s؛ SHA `66d9e52f3a825e2fc11a322153f1a94dfdf100d38c470651f18c9329e6778291`    | VO 71.381179 s؛ 1344×448/30 fps/H.264/AAC واحد                                                       |
+| EN النهائي       | `/media/identity/sadeed-identity-en.mp4`؛ 2,782,554 B/69.566667 s؛ SHA `75291993a66ca91251fd89be7f49bfd383bfc25ca728bf356591cfcc43f5a893` | VO 69.554717 s؛ 1344×448/30 fps/H.264/AAC واحد                                                       |
+| المصدر والتوقيت  | `media-production/sadeed-identity-20261123/`: ‏FLAC lossless و alignment وستة scenes و VTT والتصيير/provenance                            | محاذاة المزود مطابقة للنص، وليست تفريغًا سمعيًا مستقلًا                                              |
+| التوليد          | HeyGen prerecorded product narrator بتفويض صريح؛ دعوتان ورصيد 150 قبل/بعد                                                                 | لم يعد model/charge receipt؛ لا free أو تكلفة صفر مفترضة. لم يتغير ElevenLabs/runtime أو صوت المساعد |
+| الأرشيف          | مشتق 1280 السابق و welcome11,488,594 B، مع README وبصمة ومصدر و ROLLBACK                                                                  | نقل بايت مطابق محليًا؛ URL القديم لا يتوقف في الإنتاج إلا بعد النشر                                  |
+
+**مثبت تقنيًا:** decode/faststart/loudness ومراجعة contact sheets محدودة. **غير متحقق:** التشغيل الكامل والاستماع والنطق والمطابقة السمعية للكلمات/VTT، وملاحظة runtime للتطبيق. راجع [PRODUCTION_NOTES](../../media-production/sadeed-identity-20261123/PRODUCTION_NOTES.md).
+
+## الميزات الاثنتا عشرة
+
+الجرد الأول في `.audit-tmp/owner-twelve-feature-inventory.md`، وتحديثات 1/3/4/12 من العمل المحدود الحالي. لا ExecutiveCard في الدردشة، ولا كتابة أو مزود أو راية أو 12 تفعيلًا من الجرد.
+
+| #   | الاسم                                     | الحالة الحالية                                                                              | الحد                                                                                           |
+| --- | ----------------------------------------- | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| 1   | Page-aware assistant                      | جزئي؛ مسودة AR/EN عن route وتلميحات diagnostics، 2048 حرفًا، وإصلاح React/late-mount/locale | لا autosend أو حقائق تشغيلية/PII/سلطة؛ الخادم مصدر السلطة                                      |
+| 2   | Interactive answers (3 constrained forms) | تحضير metadata؛ النماذج غير موصولة                                                          | يلزم مخطط وتحقق وربط بالإجراء القائم؛ لا ExecutiveCard أو موافقة ثانية                         |
+| 3   | What changed                              | جزئي؛ أُزيلت عبارة التحسن؛ delta=null مع عينة إكمال و baseline مفقود، ومفقود/خطأ العدد null | لا baseline دائم أو تحسن زمني مقيس أو تكامل حي شامل                                            |
+| 4   | Unified command bar                       | موصول؛ مسودة للمساعد وتنقل حتمي إلى المسارات الظاهرة                                        | filters diagnostics عند الدخول من صفحة أخرى فقط؛ لا autosend أو إجراء أو صلاحية أو نداء مزود   |
+| 5   | Bilingual executive briefing/PDF          | مكونات منفصلة؛ dashboard PDF إنجليزي فقط                                                    | لا مسار عرض وتصدير AR/EN موحد بمصدر وحداثة مثبتين                                              |
+| 6   | Temporal twin                             | graph/timeline حاليان ومرجع 005؛ لا as-of transport                                         | لا snapshot/reconstruction زمني؛ slider مرجعي ليس توأمًا زمنيًا                                |
+| 7   | Shared decision workspace                 | قراءات وقرارات ومراجعة محلية                                                                | لا تعليقات وإصدارات وتعارضات وأدلة مشتركة دائمة مثبتة                                          |
+| 8   | Arabic voice                              | mic/STT/TTS في المصدر؛ تعليق WhySadeed المسبق صار ملفين فعليين                              | الفيلم لا يثبت المساعد الصوتي الحي أو الجهاز/المزود؛ الاستماع غير متحقق                        |
+| 9   | Natural-language video search             | غير متاح كبحث تسجيلات؛ cctv alerts ليست فهرس فيديو                                          | يلزم NVR/clips/وقت/ACL وفهرس وخصوصية وربما ميزانية                                             |
+| 10  | What-if alternatives                      | محاكاة OMEGA محلية صريحة                                                                    | ليست احتمالًا مقيسًا أو سببية أو معايرة تشغيلية                                                |
+| 11  | Arabic-to-workflow                        | engine/create/auth موجودة؛ NL draft غير موصول                                               | يلزم مخطط ومراجعة قبل الواجهات القائمة؛ لا تفعيل تلقائي                                        |
+| 12  | Asset QR/offline                          | BLOCKED؛ permit QR/static PWA فقط، و`/sec/assets` مخفي ويعيد التوجيه                        | لا approved real-row deep-link/auth resolver؛ قد يستخدم التوأم محاكاة. لا QR ميت أو مصدر مختلق |
+
+## البوابات والإصدار
+
+TypeScript و Lint والبناء والميزانية محليًا PASS بالأرقام في [plan.md](plan.md)، دون تغيير caps/deps/lock/protections. ci.yml مطابق origin/main بأربع وظائف؛ أزيل media job غير المنشور فقط. عُدلت assertions في أربعة ملفات قائمة للـ CI المحتفظ به، دون حالات أو ملفات أو تشغيل اختبارات جديدة.
+
+Source QA قراءة جارية، ولا publish clearance أو push/PR/merge/deploy أو SHA نهائي 006. رصد 04:28:53 يتضمن live04:27 عند 03ff، ودورة 4 محاولات بلا جواب. لا Safari/login يدوي إضافي مفروض هنا، ولا ادعاء اجتيازهما.

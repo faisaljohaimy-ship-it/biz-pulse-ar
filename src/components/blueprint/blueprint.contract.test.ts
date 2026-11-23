@@ -1461,16 +1461,22 @@ describe("الرئيسية — شبكات الصفوف وترتيبها", () => 
     const ticker = stripComments(surfaceFile("HomeTicker.tsx"));
     const focusables = (code: string) => code.match(/<(?:Link|a|button)\b/g) ?? [];
     const focusStops = (code: string) => code.match(/tabIndex=\{?["']?0\b/g) ?? [];
-    // The 2026-11-23 static-image directive removes the old autoplay audio button.
-    expect(focusables(brandRow)).toEqual([]);
-    expect(focusables(`${brandRow}\n<button type="button" />`)).toEqual(["<button"]);
+    // Only the explicitly named room-motion toggle belongs to this row; the
+    // narrated identity hero owns its own controls in its existing wrapper.
+    const roomToggle =
+      /<button\s+type="button"\s+className="twin-film-btn nx-focus-ring nx-command-room-motion-toggle"/g;
+    const extraFocusables = (code: string) => focusables(code.replace(roomToggle, ""));
+    expect(brandRow.match(roomToggle)).toHaveLength(1);
+    expect(focusables(brandRow)).toEqual(["<button"]);
+    expect(extraFocusables(brandRow)).toEqual([]);
+    expect(extraFocusables(`${brandRow}\n<button type="button" />`)).toEqual(["<button"]);
     expect(focusables(ticker)).toEqual([]);
     expect(focusables(`${ticker}\n<button type="button" />`)).toEqual(["<button"]);
     expect(focusStops(brandRow), "عنصرٌ قابلٌ للتركيز في البانر").toEqual([]);
     expect(focusStops(ticker)).toHaveLength(1);
     expect(ticker).toMatch(/className="nx-ticker-view" role="region"[^>]*tabIndex=\{0\}/);
     expect(focusStops(`${ticker}\n<span tabIndex={0} />`)).toHaveLength(2);
-    expect(focusables(`${brandRow}\n<a href="/x">x</a>`)).toEqual(["<a"]);
+    expect(extraFocusables(`${brandRow}\n<a href="/x">x</a>`)).toEqual(["<a"]);
 
     // يحمرّ على المزروع (المادة ٣٠): الصدر مقلوبًا، وأداة `order-*`، وقاعدة
     // ترتيبٍ على بطاقة الصدر، و`dense` على الشبكة.

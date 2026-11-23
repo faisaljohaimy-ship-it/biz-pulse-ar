@@ -1,0 +1,72 @@
+{
+  "generation_date": "2026-11-23",
+  "purpose": "Prerecorded product narration; no assistant voice/provider change",
+  "generation_calls": 2,
+  "alternate_takes": 0,
+  "purchases_upgrades_topups": 0,
+  "model_returned": false,
+  "charge_receipt_returned": false,
+  "listening_review": "not performed",
+  "languages": {
+    "ar": {
+      "voice": {
+        "name": "Fouad - Deep & Evocative",
+        "native_language": "ar",
+        "catalog_locale": "ar-001",
+        "voice_id": "dc4ee8e4f0bc4099ad5be2a8431ca556",
+        "mode": "instant",
+        "catalog_status": "ACTIVE"
+      },
+      "requested_model": "omitted; server selected",
+      "provider_reported_model": null,
+      "speed": 1,
+      "with_timestamps": true,
+      "pronunciation_dictionary": "omitted: field exists but entry notation not verified; approved text unchanged",
+      "submitted_text_sha256": "5c91e44c8081fe4c8844ad3f42d576bb59988820054d2bf75b52ec8bbbcfc538",
+      "submitted_characters": 835,
+      "original_bytes": 6295864,
+      "original_sha256": "b6cea54825cddc32ee3d07036784aad7c2ecea2dfc9264a206463d24b8712114",
+      "provider_duration_seconds": 71.381179138322,
+      "measured_duration_seconds": 71.381179,
+      "timed_characters": 835,
+      "timed_words": 130,
+      "alignment_character_match": true,
+      "alignment_monotonic_and_in_duration": true,
+      "flac_path": "assets/narration-ar.flac",
+      "flac_bytes": 2519450,
+      "flac_sha256": "d27485a6c7afebf4069e867bfc4e481e653d37e3d0bbddca989a62239eff24d4",
+      "lossless_pcm_match_to_original_wav": true,
+      "source_urls_and_full_responses": "Retained in ignored intake; not copied to public runtime"
+    },
+    "en": {
+      "voice": {
+        "name": "Ambrose - Calm & Scholarly",
+        "native_language": "en",
+        "catalog_locale": "en-GB",
+        "voice_id": "f2255bc5c44246a28a99a86b4285a90d",
+        "mode": "instant",
+        "catalog_status": "ACTIVE"
+      },
+      "requested_model": "omitted; server selected",
+      "provider_reported_model": null,
+      "speed": 1,
+      "with_timestamps": true,
+      "pronunciation_dictionary": "omitted: field exists but entry notation not verified; approved text unchanged",
+      "submitted_text_sha256": "c10e8399c9e7f67ff475b10d31e50a210a1258ab12a4192103a2f57b59561b3e",
+      "submitted_characters": 1104,
+      "original_bytes": 6134770,
+      "original_sha256": "285c63db52e6b360e84be3d746b46864fe9895cfd9ec33ec92fc03246753a33f",
+      "provider_duration_seconds": 69.55471655328799,
+      "measured_duration_seconds": 69.554717,
+      "timed_characters": 1104,
+      "timed_words": 158,
+      "alignment_character_match": true,
+      "alignment_monotonic_and_in_duration": true,
+      "flac_path": "assets/narration-en.flac",
+      "flac_bytes": 2382803,
+      "flac_sha256": "83171945722f0403d1e2b6fe11cbfff77359fa1b6a6c1c517d211638fc352c90",
+      "lossless_pcm_match_to_original_wav": true,
+      "source_urls_and_full_responses": "Retained in ignored intake; not copied to public runtime"
+    }
+  }
+}

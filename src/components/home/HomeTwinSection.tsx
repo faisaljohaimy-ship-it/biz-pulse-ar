@@ -41,6 +41,8 @@ import { Link } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
 import { DEFAULT_REGION_ID } from "@/lib/regions";
 import { TwinLoadState } from "@/components/twin/executive/TwinLoadState";
+import { IdentityFilmHero } from "@/components/home/IdentityFilmHero";
+import { IDENTITY_FILMS } from "@/components/home/identity-film-model";
 import { TWIN_FILM_CATALOG, type TwinFilmId } from "@/components/twin/twin-film-catalog";
 import type { TwinFilmPlayerProps } from "@/components/twin/TwinFilmPlayer";
 import "@/styles/twin-film.css";
@@ -138,7 +140,7 @@ export function HomeTwinSection() {
     return () => watcher.disconnect();
   }, [near]);
 
-  const films: readonly TwinFilmId[] = ["twin", "opening"];
+  const films: readonly TwinFilmId[] = ["twin", IDENTITY_FILMS[lang].film];
 
   return (
     <section aria-labelledby="nx-home-twin-title" dir={ar ? "rtl" : "ltr"} className="nx-home-twin">
@@ -149,8 +151,8 @@ export function HomeTwinSection() {
           </h2>
           <p className="nx-home-twin-text">
             {ar
-              ? "فيلمان أصليان. شغّل أحدهما بالصوت الأصلي."
-              : "Two original films. Play one at a time with original audio."}
+              ? "فيلم التوأم الأصلي، ثم لماذا سديد؟ باللغة المختارة. شغّل فيلمًا واحدًا في كل مرة."
+              : "The original twin film, then Why Sadeed? in your selected language. Play one film at a time."}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -182,11 +184,17 @@ export function HomeTwinSection() {
         {films.map((film) => {
           const placeholder = <FilmPlaceholder lang={lang} film={film} state="pending" />;
           return (
-            <div key={film} className="min-w-0" data-gallery-film={film}>
-              <h3 className="mb-3 font-semibold">{TWIN_FILM_CATALOG[film].text[lang].title}</h3>
+            <div
+              key={film === "twin" ? film : "identity"}
+              className="min-w-0"
+              data-gallery-film={film}
+            >
+              {(!near || film === "twin") && (
+                <h3 className="mb-3 font-semibold">{TWIN_FILM_CATALOG[film].text[lang].title}</h3>
+              )}
               {near ? (
                 <Suspense fallback={placeholder}>
-                  <TwinFilmPlayer film={film} manual />
+                  {film === "twin" ? <TwinFilmPlayer film={film} manual /> : <IdentityFilmHero />}
                 </Suspense>
               ) : (
                 placeholder

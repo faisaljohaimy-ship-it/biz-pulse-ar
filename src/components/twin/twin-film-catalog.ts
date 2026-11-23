@@ -1,5 +1,6 @@
 import { brandFilmSource } from "@/components/home/brand-film-assets";
 import { FILM_EFFECTIVE_SECONDS, FILM_SOURCE_SECONDS } from "@/components/home/brand-film-playback";
+import { IDENTITY_FILMS, IDENTITY_FILM_POSTER } from "@/components/home/identity-film-model";
 import {
   TWIN_FILMS,
   TWIN_FILM_POSTER,
@@ -10,8 +11,42 @@ import {
 
 const REFERENCE_FILM_SECONDS = 15;
 
+function identityMedia(locale: "ar" | "en") {
+  const film = IDENTITY_FILMS[locale];
+  return {
+    films: [{ width: 1344, src: film.src }],
+    poster: IDENTITY_FILM_POSTER,
+    seconds: film.duration,
+    aspectRatio: "3 / 1",
+    webm: false,
+    text: {
+      ar: {
+        ...TWIN_FILM_TEXT.ar,
+        title: "لماذا سديد؟",
+        kind: "فيلم تعريفي ناطق",
+        meta: `${film.duration.toFixed(1)} ثانية · 1× · ${locale === "ar" ? "العربية" : "الإنجليزية"}`,
+        description: "تعريف مسجل برؤية سديد ودعم القرار والمسؤولية البشرية.",
+        disclosure:
+          "فيلم تعريفي مسجل بلقطات توضيحية. القدرات التشغيلية بحسب تهيئة التكاملات وصلاحيات المستخدم.",
+      },
+      en: {
+        ...TWIN_FILM_TEXT.en,
+        title: "Why Sadeed?",
+        kind: "Narrated introduction",
+        meta: `${film.duration.toFixed(1)}s · 1× · ${locale === "ar" ? "Arabic" : "English"}`,
+        description:
+          "A recorded introduction to Sadeed's design and human decision accountability.",
+        disclosure:
+          "Recorded introduction with illustrative scenes. Operational capabilities depend on configured integrations and user permissions.",
+      },
+    },
+  } as const;
+}
+
 /** Declared media profiles never fetch or create a media element by themselves. */
 export const TWIN_FILM_CATALOG = {
+  identityAr: identityMedia("ar"),
+  identityEn: identityMedia("en"),
   twin: {
     films: TWIN_FILMS,
     poster: TWIN_FILM_POSTER,
@@ -33,13 +68,13 @@ export const TWIN_FILM_CATALOG = {
       ar: {
         ...TWIN_FILM_TEXT.ar,
         title: "فيلم هوية سديد",
-        meta: `${FILM_EFFECTIVE_SECONDS} ثانية · 0.5× · الصوت الأصلي`,
+        meta: `${FILM_EFFECTIVE_SECONDS} ثانية · 1× · الصوت الأصلي`,
         description: "افتتاحية سديد الأصلية بصوتها.",
       },
       en: {
         ...TWIN_FILM_TEXT.en,
         title: "SADEED identity film",
-        meta: `${FILM_EFFECTIVE_SECONDS}s · 0.5× · original audio`,
+        meta: `${FILM_EFFECTIVE_SECONDS}s · 1× · original audio`,
         description: "Original SADEED opening and audio.",
       },
     },

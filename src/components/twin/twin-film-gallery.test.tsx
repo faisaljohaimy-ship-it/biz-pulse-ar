@@ -206,7 +206,7 @@ describe("two original films — intentional source requests and exclusive playb
       expect(figures.map(videoOf).filter((video) => video && !video.paused)).toHaveLength(1);
     }
     expect(videoOf(referenceFigure)).toBe(reference);
-    expect(videoOf(openingFigure).playbackRate).toBe(0.5);
+    expect(videoOf(openingFigure).playbackRate).toBe(1);
     expect(videoOf(twinFigure).playbackRate).toBe(1);
     expect(fetch).not.toHaveBeenCalled();
   });
@@ -271,17 +271,17 @@ describe("two original films — intentional source requests and exclusive playb
     expect(videoOf(view.twin)).toBeNull();
     expect(opening.preload).toBe("none");
     expect(opening.muted).toBe(false);
-    expect(opening.playbackRate).toBe(0.5);
-    expect(opening.defaultPlaybackRate).toBe(0.5);
+    expect(opening.playbackRate).toBe(1);
+    expect(opening.defaultPlaybackRate).toBe(1);
     expect(opening.querySelector("source")?.getAttribute("src")).toMatch(
       /^\/media\/brand\/sadeed-film-(804|1608)\.mp4\?v=/,
     );
     expect(opening.querySelectorAll("source")).toHaveLength(2);
     await act(async () => {
-      opening.playbackRate = 1;
+      opening.playbackRate = 0.5;
       fireEvent(opening, new Event("ratechange"));
     });
-    expect(opening.playbackRate).toBe(0.5);
+    expect(opening.playbackRate).toBe(1);
     await click(toggle(view.twin));
     expect(opening.paused).toBe(true);
     expect(opening.muted).toBe(true);

@@ -472,13 +472,14 @@ function SadeedTopAvatar() {
 }
 
 export function SadeedCopilot() {
-  const { chat, composerRef } = useSadeedChat();
+  const { chat, composerRef, bindComposerDraft } = useSadeedChat();
   const mode = useSadeedStore((s) => s.mode);
   const voice = useSadeedStore((s) => s.voice);
   const pageContext = useSadeedStore((s) => s.pageContext);
   const setMode = useSadeedStore((s) => s.setMode);
 
   const [draft, setDraft] = useState("");
+  useEffect(() => bindComposerDraft?.(setDraft), [bindComposerDraft]);
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   // تصدير PDF: "chat" للمحادثة كاملة أو معرّف الرد؛ والمرجع يمنع النقر المزدوج
   // قبل أن تصل الحالة إلى الرسم.

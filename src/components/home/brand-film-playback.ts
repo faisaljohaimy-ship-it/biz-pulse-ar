@@ -1,11 +1,11 @@
-/** Original 26-second container, displayed at half speed; never re-encode its audio/video. */
-export const FILM_PLAYBACK_RATE = 0.5;
+/** Owner update 2026-11-23: original footage and narrated edits play naturally at 1×. */
+export const FILM_PLAYBACK_RATE = 1;
 export const FILM_SOURCE_SECONDS = 26;
 export const FILM_EFFECTIVE_SECONDS = FILM_SOURCE_SECONDS / FILM_PLAYBACK_RATE;
 
-/** Already slowed containers must not be slowed twice. */
-export function filmRateFor(duration: number): number {
-  return Number.isFinite(duration) && duration > FILM_SOURCE_SECONDS * 1.5 ? 1 : FILM_PLAYBACK_RATE;
+/** Preserve the historical helper contract without applying a global slow-down. */
+export function filmRateFor(_duration: number): number {
+  return FILM_PLAYBACK_RATE;
 }
 
 /** Reapply the rate after source loads and browser rate resets, without an event loop. */

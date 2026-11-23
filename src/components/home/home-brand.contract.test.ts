@@ -1,7 +1,7 @@
 /**
  * Owner acceptance, 2026-11-23: a full-frame static command-room image replaces
  * the former autoplay/jewel hero. Those presentation requirements are retired;
- * the original films, embedded soundtracks, byte limits and half-speed contract
+ * the original films, embedded soundtracks, byte limits and natural-speed contract
  * remain protected for their intentional-play home in the twin gallery.
  */
 import { createHash } from "node:crypto";
@@ -43,22 +43,22 @@ const OWNER = {
     "An AI assistant giving executive insight into industrial security across all Saudi regions.",
 };
 const IMAGE_CEILING = 400 * 1024;
-const OWNER_IMAGE_ARCHIVE = "docs/design/reference/command-room-owner-2026-11-23.jpg";
-const OWNER_IMAGE_SHA256 = "1008e89f8ef301f286dd1448ecfd6bc1805e91547c66a491ee99626fab8b574a";
+const OWNER_IMAGE_ARCHIVE = "docs/design/reference/command-room-owner-package-2026-11-23.jpeg";
+const OWNER_IMAGE_SHA256 = "54411bb22a9f487a4dcea8546cbba56515ec8b49ca7cdc1e08cf5d5dca89e0e4";
 const OPENING_VARIANTS = [
   {
     file: "command-room-640.webp",
     width: 640,
     height: 349,
-    bytes: 21112,
-    sha256: "aac28d35a22b0110729dbc2ffa9e2e7d46a8b9827848538a95a0f06ec9fc555b",
+    bytes: 19286,
+    sha256: "30969a946ec04ec44c43b4d5a2d2b77e51eb59b36ecfcfc145e0c1ba8ea391e0",
   },
   {
-    file: "command-room-1280.webp",
-    width: 1280,
-    height: 698,
-    bytes: 54304,
-    sha256: "b0d1b960aac5420d5f001f4fd98a5b3326b43539726f9aa244d6a5dc763db605",
+    file: "command-room-1320.webp",
+    width: 1320,
+    height: 720,
+    bytes: 58736,
+    sha256: "c72efa92885692017878a888f7ae891477b280ed63e8bf51cfcee5364ed28699",
   },
 ] as const;
 const FILM_CEILING = { each: 4_500_000, phone: 2_000_000, total: 10_000_000 };
@@ -255,11 +255,11 @@ function mountHero(locale: "ar" | "en" = "ar") {
 describe("static owner opening image", () => {
   it("archives the exact original owner JPEG without shipping another public copy", () => {
     const bytes = readFileSync(OWNER_IMAGE_ARCHIVE);
-    expect(bytes.length).toBe(189560);
+    expect(bytes.length).toBe(227440);
     expect(createHash("sha256").update(bytes).digest("hex")).toBe(OWNER_IMAGE_SHA256);
-    expect(jpegSize(bytes)).toEqual({ width: 1280, height: 698 });
+    expect(jpegSize(bytes)).toEqual({ width: 1320, height: 720 });
     expect(readdirSync("public/home/command-room").sort()).toEqual([
-      "command-room-1280.webp",
+      "command-room-1320.webp",
       "command-room-640.webp",
       "manifest.json",
     ]);
@@ -269,7 +269,7 @@ describe("static owner opening image", () => {
     const manifest = JSON.parse(readFileSync("public/home/command-room/manifest.json", "utf8"));
     expect(manifest.original).toBe(OWNER_IMAGE_ARCHIVE);
     expect(manifest.sha256).toBe(OWNER_IMAGE_SHA256);
-    expect(manifest.originalBytes).toBe(189560);
+    expect(manifest.originalBytes).toBe(227440);
     expect(manifest.variants).toEqual(OPENING_VARIANTS);
     for (const variant of OPENING_VARIANTS) {
       const bytes = readFileSync(`public/home/command-room/${variant.file}`);
@@ -279,13 +279,13 @@ describe("static owner opening image", () => {
         width: variant.width,
         height: variant.height,
       });
-      expect(variant.height).toBe(Math.round((variant.width * 698) / 1280));
+      expect(variant.height).toBe(Math.round((variant.width * 720) / 1320));
     }
   });
 
   it("maps rendered source selection to the real derivative widths with the full-size fallback", () => {
     const view = mountHero();
-    const image = view.getByRole("img");
+    const image = view.getByTestId("home-opening-image").querySelector("img")!;
     const candidates = image
       .getAttribute("srcset")!
       .split(",")
@@ -300,7 +300,7 @@ describe("static owner opening image", () => {
         width: variant.width,
       })),
     );
-    expect(image).toHaveAttribute("src", "/home/command-room/command-room-1280.webp");
+    expect(image).toHaveAttribute("src", "/home/command-room/command-room-1320.webp");
     expect(image.getAttribute("sizes")).toBe(HOME_OPENING_IMAGE.sizes);
     expect(image.getAttribute("sizes")).toMatch(/100vw/);
     view.unmount();
@@ -310,9 +310,9 @@ describe("static owner opening image", () => {
     "preserves real owner text, localized alt and illustrative disclosure: %s",
     (locale) => {
       const view = mountHero(locale);
-      const figure = view.container.querySelector("figure")!;
+      const figure = view.getByTestId("home-opening-image");
       const caption = figure.querySelector("figcaption")!;
-      const image = view.getByRole("img");
+      const image = figure.querySelector("img")!;
       expect(HOME_BRAND.banner.title).toEqual({ ar: OWNER.ar, en: OWNER.en });
       expect(HOME_BRAND.banner.tagline).toEqual({ ar: OWNER.taglineAr, en: OWNER.taglineEn });
       expect(caption.querySelector('[lang="en"]')).toHaveTextContent(OWNER.en);
@@ -339,18 +339,23 @@ describe("static owner opening image", () => {
     },
   );
 
-  it("ships a visible non-lazy, high-priority responsive image before hydration effects", () => {
+  it("ships the responsive room image lazily after the identity film before hydration effects", () => {
     const server = document.createElement("div");
     server.innerHTML = renderToString(
       createElement(I18nProvider, null, createElement(HomeBrandRow)),
     );
-    const image = server.querySelector("figure img")!;
-    expect(image).toHaveAttribute("loading", "eager");
-    expect(image).toHaveAttribute("fetchpriority", "high");
+    const figure = server.querySelector('[data-testid="home-opening-image"]')!;
+    const image = figure.querySelector("img")!;
+    expect(
+      server.querySelector(".identity-film-hero")!.compareDocumentPosition(figure) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).not.toBe(0);
+    expect(image).toHaveAttribute("loading", "lazy");
+    expect(image).toHaveAttribute("fetchpriority", "auto");
     expect(image).toHaveAttribute("decoding", "async");
-    expect(image).toHaveAttribute("width", "1280");
-    expect(image).toHaveAttribute("height", "698");
-    expect(BRAND_RATIO).toEqual({ width: 1280, height: 698 });
+    expect(image).toHaveAttribute("width", "1320");
+    expect(image).toHaveAttribute("height", "720");
+    expect(BRAND_RATIO).toEqual({ width: 1320, height: 720 });
     expect(image.getAttribute("src")).toMatch(/\.webp$/);
     expect(image.getAttribute("srcset")).toBeTruthy();
     expect(image.getAttribute("sizes")).toBeTruthy();
@@ -366,7 +371,7 @@ describe("static owner opening image", () => {
     const poster = declarations(".nx-command-room-poster");
     expect(poster["inline-size"]).toBe("100%");
     expect(poster["block-size"]).toBe("auto");
-    expect(poster["aspect-ratio"]).toBe("1280 / 698");
+    expect(poster["aspect-ratio"]).toBe("1320 / 720");
     expect(poster["object-fit"]).toBe("contain");
     expect(sceneStyleGaps(CSS)).toEqual([]);
   });
@@ -461,7 +466,7 @@ describe("static owner opening image", () => {
       let view: ReturnType<typeof mountHero> | undefined;
       try {
         view = mountHero();
-        const image = view.getByRole("img");
+        const image = view.getByTestId("home-opening-image").querySelector("img")!;
         await act(async () => {
           fireEvent.load(image);
           fireEvent.click(image);
@@ -560,25 +565,25 @@ describe("original gallery media and embedded soundtracks remain unchanged", () 
   });
 });
 
-describe("shared original-film half-speed contract", () => {
-  it("keeps26 seconds of untouched source at0.5x for52 seconds, including the historical tier tolerance", () => {
-    expect(FILM_PLAYBACK_RATE).toBe(0.5);
+describe("shared original-film natural-speed contract", () => {
+  it("keeps26 seconds of untouched source at1x for26 seconds, including the historical tier tolerance", () => {
+    expect(FILM_PLAYBACK_RATE).toBe(1);
     expect(FILM_SOURCE_SECONDS).toBe(26);
-    expect(FILM_EFFECTIVE_SECONDS).toBe(52);
+    expect(FILM_EFFECTIVE_SECONDS).toBe(26);
     expect(FILM_UPSCALE_LIMIT).toBe(1.15);
   });
 
   it.each([
-    [26, 0.5],
-    [26.008, 0.5],
-    [0, 0.5],
-    [Number.NaN, 0.5],
-    [Infinity, 0.5],
-    [39, 0.5],
+    [26, 1],
+    [26.008, 1],
+    [0, 1],
+    [Number.NaN, 1],
+    [Infinity, 1],
+    [39, 1],
     [39.01, 1],
     [51.934, 1],
     [52, 1],
-  ])("selects the original or already-slowed container rate for%s", (duration, expected) => {
+  ])("keeps natural playback for every container duration%s", (duration, expected) => {
     expect(filmRateFor(duration)).toBe(expected);
   });
 
@@ -588,14 +593,14 @@ describe("shared original-film half-speed contract", () => {
     const play = vi.spyOn(video, "play");
     const load = vi.spyOn(video, "load");
     const release = holdFilmRate(video);
-    expect(video.defaultPlaybackRate).toBe(0.5);
-    expect(video.playbackRate).toBe(0.5);
+    expect(video.defaultPlaybackRate).toBe(1);
+    expect(video.playbackRate).toBe(1);
     for (const event of ["loadstart", "loadedmetadata", "playing", "ratechange"]) {
-      video.defaultPlaybackRate = 1;
-      video.playbackRate = 1;
+      video.defaultPlaybackRate = 0.5;
+      video.playbackRate = 0.5;
       video.dispatchEvent(new Event(event));
-      expect(video.defaultPlaybackRate, event).toBe(0.5);
-      expect(video.playbackRate, event).toBe(0.5);
+      expect(video.defaultPlaybackRate, event).toBe(1);
+      expect(video.playbackRate, event).toBe(1);
     }
     Object.defineProperty(video, "duration", { configurable: true, value: 52 });
     video.dispatchEvent(new Event("loadedmetadata"));
@@ -609,7 +614,7 @@ describe("shared original-film half-speed contract", () => {
   it("settles a synchronous ratechange after one corrective write and removes all listeners on release", () => {
     const video = document.createElement("video");
     Object.defineProperty(video, "duration", { configurable: true, value: 26 });
-    let rate = 1;
+    let rate = 0.5;
     const writes: number[] = [];
     Object.defineProperty(video, "playbackRate", {
       configurable: true,
@@ -621,18 +626,18 @@ describe("shared original-film half-speed contract", () => {
       },
     });
     const release = holdFilmRate(video);
-    expect(writes).toEqual([0.5]);
+    expect(writes).toEqual([1]);
     writes.length = 0;
-    rate = 1;
+    rate = 0.5;
     video.dispatchEvent(new Event("ratechange"));
-    expect(writes).toEqual([0.5]);
+    expect(writes).toEqual([1]);
     release();
-    rate = 1;
-    video.defaultPlaybackRate = 1;
+    rate = 0.5;
+    video.defaultPlaybackRate = 0.5;
     for (const event of ["loadstart", "loadedmetadata", "playing", "ratechange"])
       video.dispatchEvent(new Event(event));
-    expect(rate).toBe(1);
-    expect(video.defaultPlaybackRate).toBe(1);
-    expect(writes).toEqual([0.5]);
+    expect(rate).toBe(0.5);
+    expect(video.defaultPlaybackRate).toBe(0.5);
+    expect(writes).toEqual([1]);
   });
 });

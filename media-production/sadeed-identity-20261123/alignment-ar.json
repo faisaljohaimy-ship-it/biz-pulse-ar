@@ -1,0 +1,4832 @@
+{
+  "duration": 71.381179138322,
+  "original_characters": [
+    {
+      "text": "ف",
+      "start_time": 0.213,
+      "end_time": 0.384
+    },
+    {
+      "text": "ي",
+      "start_time": 0.384,
+      "end_time": 0.469
+    },
+    {
+      "text": " ",
+      "start_time": 0.469,
+      "end_time": 0.512
+    },
+    {
+      "text": "ق",
+      "start_time": 0.512,
+      "end_time": 0.555
+    },
+    {
+      "text": "ط",
+      "start_time": 0.555,
+      "end_time": 0.597
+    },
+    {
+      "text": "ا",
+      "start_time": 0.597,
+      "end_time": 0.725
+    },
+    {
+      "text": "ع",
+      "start_time": 0.725,
+      "end_time": 0.768
+    },
+    {
+      "text": " ",
+      "start_time": 0.768,
+      "end_time": 0.853
+    },
+    {
+      "text": "ا",
+      "start_time": 0.853,
+      "end_time": 0.896
+    },
+    {
+      "text": "ل",
+      "start_time": 0.896,
+      "end_time": 0.939
+    },
+    {
+      "text": "ط",
+      "start_time": 0.939,
+      "end_time": 0.981
+    },
+    {
+      "text": "ا",
+      "start_time": 0.981,
+      "end_time": 1.067
+    },
+    {
+      "text": "ق",
+      "start_time": 1.067,
+      "end_time": 1.109
+    },
+    {
+      "text": "ة",
+      "start_time": 1.109,
+      "end_time": 1.28
+    },
+    {
+      "text": "،",
+      "start_time": 1.28,
+      "end_time": 1.408
+    },
+    {
+      "text": " ",
+      "start_time": 1.408,
+      "end_time": 1.536
+    },
+    {
+      "text": "ت",
+      "start_time": 1.536,
+      "end_time": 1.707
+    },
+    {
+      "text": "ب",
+      "start_time": 1.707,
+      "end_time": 1.749
+    },
+    {
+      "text": "د",
+      "start_time": 1.749,
+      "end_time": 1.792
+    },
+    {
+      "text": "أ",
+      "start_time": 1.792,
+      "end_time": 1.877
+    },
+    {
+      "text": " ",
+      "start_time": 1.877,
+      "end_time": 1.92
+    },
+    {
+      "text": "ا",
+      "start_time": 1.92,
+      "end_time": 1.963
+    },
+    {
+      "text": "ل",
+      "start_time": 1.963,
+      "end_time": 2.005
+    },
+    {
+      "text": "ح",
+      "start_time": 2.005,
+      "end_time": 2.091
+    },
+    {
+      "text": "م",
+      "start_time": 2.091,
+      "end_time": 2.176
+    },
+    {
+      "text": "ا",
+      "start_time": 2.176,
+      "end_time": 2.304
+    },
+    {
+      "text": "ي",
+      "start_time": 2.304,
+      "end_time": 2.347
+    },
+    {
+      "text": "ة",
+      "start_time": 2.347,
+      "end_time": 2.432
+    },
+    {
+      "text": " ",
+      "start_time": 2.432,
+      "end_time": 2.56
+    },
+    {
+      "text": "ب",
+      "start_time": 2.56,
+      "end_time": 2.603
+    },
+    {
+      "text": "و",
+      "start_time": 2.603,
+      "end_time": 2.688
+    },
+    {
+      "text": "ض",
+      "start_time": 2.688,
+      "end_time": 2.773
+    },
+    {
+      "text": "و",
+      "start_time": 2.773,
+      "end_time": 2.901
+    },
+    {
+      "text": "ح",
+      "start_time": 2.901,
+      "end_time": 2.944
+    },
+    {
+      "text": " ",
+      "start_time": 2.944,
+      "end_time": 3.072
+    },
+    {
+      "text": "ا",
+      "start_time": 3.072,
+      "end_time": 3.115
+    },
+    {
+      "text": "ل",
+      "start_time": 3.115,
+      "end_time": 3.157
+    },
+    {
+      "text": "ر",
+      "start_time": 3.157,
+      "end_time": 3.2
+    },
+    {
+      "text": "ؤ",
+      "start_time": 3.2,
+      "end_time": 3.243
+    },
+    {
+      "text": "ي",
+      "start_time": 3.243,
+      "end_time": 3.285
+    },
+    {
+      "text": "ة",
+      "start_time": 3.285,
+      "end_time": 3.413
+    },
+    {
+      "text": ".",
+      "start_time": 3.413,
+      "end_time": 3.648
+    },
+    {
+      "text": " ",
+      "start_time": 3.648,
+      "end_time": 3.883
+    },
+    {
+      "text": "م",
+      "start_time": 3.883,
+      "end_time": 3.968
+    },
+    {
+      "text": "ع",
+      "start_time": 3.968,
+      "end_time": 4.011
+    },
+    {
+      "text": "ل",
+      "start_time": 4.011,
+      "end_time": 4.053
+    },
+    {
+      "text": "و",
+      "start_time": 4.053,
+      "end_time": 4.139
+    },
+    {
+      "text": "م",
+      "start_time": 4.139,
+      "end_time": 4.181
+    },
+    {
+      "text": "ا",
+      "start_time": 4.181,
+      "end_time": 4.224
+    },
+    {
+      "text": "ت",
+      "start_time": 4.224,
+      "end_time": 4.309
+    },
+    {
+      "text": " ",
+      "start_time": 4.309,
+      "end_time": 4.437
+    },
+    {
+      "text": "ت",
+      "start_time": 4.437,
+      "end_time": 4.48
+    },
+    {
+      "text": "ص",
+      "start_time": 4.48,
+      "end_time": 4.608
+    },
+    {
+      "text": "ل",
+      "start_time": 4.608,
+      "end_time": 4.779
+    },
+    {
+      "text": " ",
+      "start_time": 4.779,
+      "end_time": 4.864
+    },
+    {
+      "text": "م",
+      "start_time": 4.864,
+      "end_time": 4.907
+    },
+    {
+      "text": "ن",
+      "start_time": 4.907,
+      "end_time": 4.949
+    },
+    {
+      "text": " ",
+      "start_time": 4.949,
+      "end_time": 4.992
+    },
+    {
+      "text": "م",
+      "start_time": 4.992,
+      "end_time": 5.077
+    },
+    {
+      "text": "و",
+      "start_time": 5.077,
+      "end_time": 5.12
+    },
+    {
+      "text": "ا",
+      "start_time": 5.12,
+      "end_time": 5.205
+    },
+    {
+      "text": "ق",
+      "start_time": 5.205,
+      "end_time": 5.291
+    },
+    {
+      "text": "ع",
+      "start_time": 5.291,
+      "end_time": 5.461
+    },
+    {
+      "text": " ",
+      "start_time": 5.461,
+      "end_time": 5.547
+    },
+    {
+      "text": "و",
+      "start_time": 5.547,
+      "end_time": 5.675
+    },
+    {
+      "text": "أ",
+      "start_time": 5.675,
+      "end_time": 5.717
+    },
+    {
+      "text": "ن",
+      "start_time": 5.717,
+      "end_time": 5.76
+    },
+    {
+      "text": "ظ",
+      "start_time": 5.76,
+      "end_time": 5.845
+    },
+    {
+      "text": "م",
+      "start_time": 5.845,
+      "end_time": 5.973
+    },
+    {
+      "text": "ة",
+      "start_time": 5.973,
+      "end_time": 6.0587
+    },
+    {
+      "text": " ",
+      "start_time": 6.059,
+      "end_time": 6.229
+    },
+    {
+      "text": "م",
+      "start_time": 6.229,
+      "end_time": 6.315
+    },
+    {
+      "text": "ت",
+      "start_time": 6.315,
+      "end_time": 6.4
+    },
+    {
+      "text": "ع",
+      "start_time": 6.4,
+      "end_time": 6.485
+    },
+    {
+      "text": "د",
+      "start_time": 6.485,
+      "end_time": 6.571
+    },
+    {
+      "text": "د",
+      "start_time": 6.571,
+      "end_time": 6.741
+    },
+    {
+      "text": "ة",
+      "start_time": 6.741,
+      "end_time": 6.869
+    },
+    {
+      "text": "،",
+      "start_time": 6.869,
+      "end_time": 6.976
+    },
+    {
+      "text": " ",
+      "start_time": 6.976,
+      "end_time": 7.083
+    },
+    {
+      "text": "و",
+      "start_time": 7.083,
+      "end_time": 7.253
+    },
+    {
+      "text": "ق",
+      "start_time": 7.253,
+      "end_time": 7.296
+    },
+    {
+      "text": "ر",
+      "start_time": 7.296,
+      "end_time": 7.424
+    },
+    {
+      "text": "ا",
+      "start_time": 7.424,
+      "end_time": 7.509
+    },
+    {
+      "text": "ر",
+      "start_time": 7.509,
+      "end_time": 7.552
+    },
+    {
+      "text": "ا",
+      "start_time": 7.552,
+      "end_time": 7.637
+    },
+    {
+      "text": "ت",
+      "start_time": 7.637,
+      "end_time": 7.68
+    },
+    {
+      "text": " ",
+      "start_time": 7.68,
+      "end_time": 7.808
+    },
+    {
+      "text": "ت",
+      "start_time": 7.808,
+      "end_time": 7.936
+    },
+    {
+      "text": "ح",
+      "start_time": 7.936,
+      "end_time": 7.979
+    },
+    {
+      "text": "ت",
+      "start_time": 7.979,
+      "end_time": 8.064
+    },
+    {
+      "text": "ا",
+      "start_time": 8.064,
+      "end_time": 8.149
+    },
+    {
+      "text": "ج",
+      "start_time": 8.149,
+      "end_time": 8.192
+    },
+    {
+      "text": " ",
+      "start_time": 8.192,
+      "end_time": 8.32
+    },
+    {
+      "text": "إ",
+      "start_time": 8.32,
+      "end_time": 8.405
+    },
+    {
+      "text": "ل",
+      "start_time": 8.405,
+      "end_time": 8.448
+    },
+    {
+      "text": "ى",
+      "start_time": 8.448,
+      "end_time": 8.533
+    },
+    {
+      "text": " ",
+      "start_time": 8.533,
+      "end_time": 8.576
+    },
+    {
+      "text": "د",
+      "start_time": 8.576,
+      "end_time": 8.661
+    },
+    {
+      "text": "ل",
+      "start_time": 8.661,
+      "end_time": 8.704
+    },
+    {
+      "text": "ي",
+      "start_time": 8.704,
+      "end_time": 8.789
+    },
+    {
+      "text": "ل",
+      "start_time": 8.789,
+      "end_time": 8.875
+    },
+    {
+      "text": "،",
+      "start_time": 8.875,
+      "end_time": 9.024
+    },
+    {
+      "text": " ",
+      "start_time": 9.024,
+      "end_time": 9.173
+    },
+    {
+      "text": "و",
+      "start_time": 9.173,
+      "end_time": 9.387
+    },
+    {
+      "text": "م",
+      "start_time": 9.387,
+      "end_time": 9.429
+    },
+    {
+      "text": "س",
+      "start_time": 9.429,
+      "end_time": 9.472
+    },
+    {
+      "text": "ؤ",
+      "start_time": 9.472,
+      "end_time": 9.557
+    },
+    {
+      "text": "و",
+      "start_time": 9.557,
+      "end_time": 9.685
+    },
+    {
+      "text": "ل",
+      "start_time": 9.685,
+      "end_time": 9.728
+    },
+    {
+      "text": "ي",
+      "start_time": 9.728,
+      "end_time": 9.813
+    },
+    {
+      "text": "ة",
+      "start_time": 9.813,
+      "end_time": 9.941
+    },
+    {
+      "text": " ",
+      "start_time": 9.941,
+      "end_time": 10.112
+    },
+    {
+      "text": "و",
+      "start_time": 10.112,
+      "end_time": 10.197
+    },
+    {
+      "text": "ا",
+      "start_time": 10.197,
+      "end_time": 10.24
+    },
+    {
+      "text": "ض",
+      "start_time": 10.24,
+      "end_time": 10.283
+    },
+    {
+      "text": "ح",
+      "start_time": 10.283,
+      "end_time": 10.411
+    },
+    {
+      "text": "ة",
+      "start_time": 10.411,
+      "end_time": 10.581
+    },
+    {
+      "text": ".",
+      "start_time": 10.581,
+      "end_time": 10.725
+    },
+    {
+      "text": "\n",
+      "start_time": 10.725,
+      "end_time": 10.868
+    },
+    {
+      "text": "\n",
+      "start_time": 10.868,
+      "end_time": 11.011
+    },
+    {
+      "text": "م",
+      "start_time": 11.011,
+      "end_time": 11.097
+    },
+    {
+      "text": "ن",
+      "start_time": 11.097,
+      "end_time": 11.182
+    },
+    {
+      "text": " ",
+      "start_time": 11.182,
+      "end_time": 11.225
+    },
+    {
+      "text": "ه",
+      "start_time": 11.225,
+      "end_time": 11.267
+    },
+    {
+      "text": "ن",
+      "start_time": 11.267,
+      "end_time": 11.353
+    },
+    {
+      "text": "ا",
+      "start_time": 11.353,
+      "end_time": 11.438
+    },
+    {
+      "text": " ",
+      "start_time": 11.438,
+      "end_time": 11.481
+    },
+    {
+      "text": "ي",
+      "start_time": 11.481,
+      "end_time": 11.609
+    },
+    {
+      "text": "أ",
+      "start_time": 11.609,
+      "end_time": 11.651
+    },
+    {
+      "text": "ت",
+      "start_time": 11.651,
+      "end_time": 11.694
+    },
+    {
+      "text": "ي",
+      "start_time": 11.694,
+      "end_time": 11.779
+    },
+    {
+      "text": " ",
+      "start_time": 11.779,
+      "end_time": 11.822
+    },
+    {
+      "text": "س",
+      "start_time": 11.822,
+      "end_time": 11.907
+    },
+    {
+      "text": "َ",
+      "start_time": 11.907,
+      "end_time": 11.95
+    },
+    {
+      "text": "د",
+      "start_time": 11.95,
+      "end_time": 11.993
+    },
+    {
+      "text": "ي",
+      "start_time": 11.993,
+      "end_time": 12.078
+    },
+    {
+      "text": "د",
+      "start_time": 12.078,
+      "end_time": 12.163
+    },
+    {
+      "text": ":",
+      "start_time": 12.163,
+      "end_time": 12.398
+    },
+    {
+      "text": " ",
+      "start_time": 12.398,
+      "end_time": 12.633
+    },
+    {
+      "text": "م",
+      "start_time": 12.633,
+      "end_time": 12.718
+    },
+    {
+      "text": "ن",
+      "start_time": 12.718,
+      "end_time": 12.803
+    },
+    {
+      "text": "ص",
+      "start_time": 12.803,
+      "end_time": 12.889
+    },
+    {
+      "text": "ة",
+      "start_time": 12.889,
+      "end_time": 13.059
+    },
+    {
+      "text": " ",
+      "start_time": 13.059,
+      "end_time": 13.23
+    },
+    {
+      "text": "ل",
+      "start_time": 13.23,
+      "end_time": 13.315
+    },
+    {
+      "text": "د",
+      "start_time": 13.315,
+      "end_time": 13.358
+    },
+    {
+      "text": "ع",
+      "start_time": 13.358,
+      "end_time": 13.486
+    },
+    {
+      "text": "م",
+      "start_time": 13.486,
+      "end_time": 13.5288
+    },
+    {
+      "text": " ",
+      "start_time": 13.529,
+      "end_time": 13.614
+    },
+    {
+      "text": "ا",
+      "start_time": 13.614,
+      "end_time": 13.657
+    },
+    {
+      "text": "ل",
+      "start_time": 13.657,
+      "end_time": 13.699
+    },
+    {
+      "text": "أ",
+      "start_time": 13.699,
+      "end_time": 13.742
+    },
+    {
+      "text": "م",
+      "start_time": 13.742,
+      "end_time": 13.785
+    },
+    {
+      "text": "ن",
+      "start_time": 13.785,
+      "end_time": 13.87
+    },
+    {
+      "text": " ",
+      "start_time": 13.87,
+      "end_time": 13.913
+    },
+    {
+      "text": "ا",
+      "start_time": 13.913,
+      "end_time": 13.955
+    },
+    {
+      "text": "ل",
+      "start_time": 13.955,
+      "end_time": 13.998
+    },
+    {
+      "text": "ص",
+      "start_time": 13.998,
+      "end_time": 14.083
+    },
+    {
+      "text": "ن",
+      "start_time": 14.083,
+      "end_time": 14.126
+    },
+    {
+      "text": "ا",
+      "start_time": 14.126,
+      "end_time": 14.211
+    },
+    {
+      "text": "ع",
+      "start_time": 14.211,
+      "end_time": 14.254
+    },
+    {
+      "text": "ي",
+      "start_time": 14.254,
+      "end_time": 14.425
+    },
+    {
+      "text": "،",
+      "start_time": 14.425,
+      "end_time": 14.638
+    },
+    {
+      "text": " ",
+      "start_time": 14.638,
+      "end_time": 14.851
+    },
+    {
+      "text": "ص",
+      "start_time": 14.851,
+      "end_time": 15.022
+    },
+    {
+      "text": "ُ",
+      "start_time": 15.022,
+      "end_time": 15.065
+    },
+    {
+      "text": "م",
+      "start_time": 15.065,
+      "end_time": 15.107
+    },
+    {
+      "text": "م",
+      "start_time": 15.107,
+      "end_time": 15.235
+    },
+    {
+      "text": "ت",
+      "start_time": 15.235,
+      "end_time": 15.3208
+    },
+    {
+      "text": " ",
+      "start_time": 15.321,
+      "end_time": 15.406
+    },
+    {
+      "text": "ل",
+      "start_time": 15.406,
+      "end_time": 15.491
+    },
+    {
+      "text": "ت",
+      "start_time": 15.491,
+      "end_time": 15.577
+    },
+    {
+      "text": "ج",
+      "start_time": 15.577,
+      "end_time": 15.619
+    },
+    {
+      "text": "م",
+      "start_time": 15.619,
+      "end_time": 15.705
+    },
+    {
+      "text": "ع",
+      "start_time": 15.705,
+      "end_time": 15.8328
+    },
+    {
+      "text": " ",
+      "start_time": 15.833,
+      "end_time": 15.875
+    },
+    {
+      "text": "ا",
+      "start_time": 15.875,
+      "end_time": 15.918
+    },
+    {
+      "text": "ل",
+      "start_time": 15.918,
+      "end_time": 15.961
+    },
+    {
+      "text": "ب",
+      "start_time": 15.961,
+      "end_time": 16.003
+    },
+    {
+      "text": "ل",
+      "start_time": 16.003,
+      "end_time": 16.046
+    },
+    {
+      "text": "ا",
+      "start_time": 16.046,
+      "end_time": 16.174
+    },
+    {
+      "text": "غ",
+      "start_time": 16.174,
+      "end_time": 16.217
+    },
+    {
+      "text": "ا",
+      "start_time": 16.217,
+      "end_time": 16.345
+    },
+    {
+      "text": "ت",
+      "start_time": 16.345,
+      "end_time": 16.515
+    },
+    {
+      "text": " ",
+      "start_time": 16.515,
+      "end_time": 16.601
+    },
+    {
+      "text": "و",
+      "start_time": 16.601,
+      "end_time": 16.686
+    },
+    {
+      "text": "ا",
+      "start_time": 16.686,
+      "end_time": 16.729
+    },
+    {
+      "text": "ل",
+      "start_time": 16.729,
+      "end_time": 16.771
+    },
+    {
+      "text": "أ",
+      "start_time": 16.771,
+      "end_time": 16.814
+    },
+    {
+      "text": "ص",
+      "start_time": 16.814,
+      "end_time": 16.899
+    },
+    {
+      "text": "و",
+      "start_time": 16.899,
+      "end_time": 17.07
+    },
+    {
+      "text": "ل",
+      "start_time": 17.07,
+      "end_time": 17.1128
+    },
+    {
+      "text": " ",
+      "start_time": 17.113,
+      "end_time": 17.283
+    },
+    {
+      "text": "و",
+      "start_time": 17.283,
+      "end_time": 17.369
+    },
+    {
+      "text": "ا",
+      "start_time": 17.369,
+      "end_time": 17.411
+    },
+    {
+      "text": "ل",
+      "start_time": 17.411,
+      "end_time": 17.454
+    },
+    {
+      "text": "م",
+      "start_time": 17.454,
+      "end_time": 17.539
+    },
+    {
+      "text": "خ",
+      "start_time": 17.539,
+      "end_time": 17.582
+    },
+    {
+      "text": "ا",
+      "start_time": 17.582,
+      "end_time": 17.753
+    },
+    {
+      "text": "ط",
+      "start_time": 17.753,
+      "end_time": 17.838
+    },
+    {
+      "text": "ر",
+      "start_time": 17.838,
+      "end_time": 17.966
+    },
+    {
+      "text": " ",
+      "start_time": 17.966,
+      "end_time": 18.051
+    },
+    {
+      "text": "و",
+      "start_time": 18.051,
+      "end_time": 18.094
+    },
+    {
+      "text": "ا",
+      "start_time": 18.094,
+      "end_time": 18.137
+    },
+    {
+      "text": "ل",
+      "start_time": 18.137,
+      "end_time": 18.179
+    },
+    {
+      "text": "إ",
+      "start_time": 18.179,
+      "end_time": 18.222
+    },
+    {
+      "text": "ج",
+      "start_time": 18.222,
+      "end_time": 18.265
+    },
+    {
+      "text": "ر",
+      "start_time": 18.265,
+      "end_time": 18.393
+    },
+    {
+      "text": "ا",
+      "start_time": 18.393,
+      "end_time": 18.521
+    },
+    {
+      "text": "ء",
+      "start_time": 18.521,
+      "end_time": 18.563
+    },
+    {
+      "text": "ا",
+      "start_time": 18.563,
+      "end_time": 18.649
+    },
+    {
+      "text": "ت",
+      "start_time": 18.649,
+      "end_time": 18.734
+    },
+    {
+      "text": " ",
+      "start_time": 18.734,
+      "end_time": 18.819
+    },
+    {
+      "text": "ف",
+      "start_time": 18.819,
+      "end_time": 18.862
+    },
+    {
+      "text": "ي",
+      "start_time": 18.862,
+      "end_time": 18.9048
+    },
+    {
+      "text": " ",
+      "start_time": 18.905,
+      "end_time": 18.947
+    },
+    {
+      "text": "س",
+      "start_time": 18.947,
+      "end_time": 19.075
+    },
+    {
+      "text": "ي",
+      "start_time": 19.075,
+      "end_time": 19.118
+    },
+    {
+      "text": "ا",
+      "start_time": 19.118,
+      "end_time": 19.203
+    },
+    {
+      "text": "ق",
+      "start_time": 19.203,
+      "end_time": 19.246
+    },
+    {
+      "text": " ",
+      "start_time": 19.246,
+      "end_time": 19.374
+    },
+    {
+      "text": "و",
+      "start_time": 19.374,
+      "end_time": 19.502
+    },
+    {
+      "text": "ا",
+      "start_time": 19.502,
+      "end_time": 19.545
+    },
+    {
+      "text": "ح",
+      "start_time": 19.545,
+      "end_time": 19.63
+    },
+    {
+      "text": "د",
+      "start_time": 19.63,
+      "end_time": 19.758
+    },
+    {
+      "text": "،",
+      "start_time": 19.758,
+      "end_time": 20.047
+    },
+    {
+      "text": " ",
+      "start_time": 20.047,
+      "end_time": 20.336
+    },
+    {
+      "text": "ي",
+      "start_time": 20.336,
+      "end_time": 20.464
+    },
+    {
+      "text": "س",
+      "start_time": 20.464,
+      "end_time": 20.506
+    },
+    {
+      "text": "ا",
+      "start_time": 20.506,
+      "end_time": 20.634
+    },
+    {
+      "text": "ع",
+      "start_time": 20.634,
+      "end_time": 20.677
+    },
+    {
+      "text": "د",
+      "start_time": 20.677,
+      "end_time": 20.762
+    },
+    {
+      "text": " ",
+      "start_time": 20.762,
+      "end_time": 20.805
+    },
+    {
+      "text": "ا",
+      "start_time": 20.805,
+      "end_time": 20.848
+    },
+    {
+      "text": "ل",
+      "start_time": 20.848,
+      "end_time": 20.89
+    },
+    {
+      "text": "م",
+      "start_time": 20.89,
+      "end_time": 20.933
+    },
+    {
+      "text": "س",
+      "start_time": 20.933,
+      "end_time": 20.976
+    },
+    {
+      "text": "ؤ",
+      "start_time": 20.976,
+      "end_time": 21.061
+    },
+    {
+      "text": "و",
+      "start_time": 21.061,
+      "end_time": 21.189
+    },
+    {
+      "text": "ل",
+      "start_time": 21.189,
+      "end_time": 21.2316
+    },
+    {
+      "text": " ",
+      "start_time": 21.232,
+      "end_time": 21.317
+    },
+    {
+      "text": "ع",
+      "start_time": 21.317,
+      "end_time": 21.402
+    },
+    {
+      "text": "ل",
+      "start_time": 21.402,
+      "end_time": 21.445
+    },
+    {
+      "text": "ى",
+      "start_time": 21.445,
+      "end_time": 21.53
+    },
+    {
+      "text": " ",
+      "start_time": 21.53,
+      "end_time": 21.573
+    },
+    {
+      "text": "ف",
+      "start_time": 21.573,
+      "end_time": 21.658
+    },
+    {
+      "text": "ه",
+      "start_time": 21.658,
+      "end_time": 21.701
+    },
+    {
+      "text": "م",
+      "start_time": 21.701,
+      "end_time": 21.7436
+    },
+    {
+      "text": " ",
+      "start_time": 21.744,
+      "end_time": 21.829
+    },
+    {
+      "text": "ا",
+      "start_time": 21.829,
+      "end_time": 21.872
+    },
+    {
+      "text": "ل",
+      "start_time": 21.872,
+      "end_time": 21.914
+    },
+    {
+      "text": "م",
+      "start_time": 21.914,
+      "end_time": 21.957
+    },
+    {
+      "text": "و",
+      "start_time": 21.957,
+      "end_time": 22.042
+    },
+    {
+      "text": "ق",
+      "start_time": 22.042,
+      "end_time": 22.085
+    },
+    {
+      "text": "ف",
+      "start_time": 22.085,
+      "end_time": 22.2129
+    },
+    {
+      "text": " ",
+      "start_time": 22.213,
+      "end_time": 22.341
+    },
+    {
+      "text": "و",
+      "start_time": 22.341,
+      "end_time": 22.426
+    },
+    {
+      "text": "ت",
+      "start_time": 22.426,
+      "end_time": 22.512
+    },
+    {
+      "text": "ح",
+      "start_time": 22.512,
+      "end_time": 22.554
+    },
+    {
+      "text": "د",
+      "start_time": 22.554,
+      "end_time": 22.64
+    },
+    {
+      "text": "ي",
+      "start_time": 22.64,
+      "end_time": 22.725
+    },
+    {
+      "text": "د",
+      "start_time": 22.725,
+      "end_time": 22.7676
+    },
+    {
+      "text": " ",
+      "start_time": 22.768,
+      "end_time": 22.896
+    },
+    {
+      "text": "م",
+      "start_time": 22.896,
+      "end_time": 22.938
+    },
+    {
+      "text": "ا",
+      "start_time": 22.938,
+      "end_time": 22.9809
+    },
+    {
+      "text": " ",
+      "start_time": 22.981,
+      "end_time": 23.024
+    },
+    {
+      "text": "ي",
+      "start_time": 23.024,
+      "end_time": 23.109
+    },
+    {
+      "text": "ح",
+      "start_time": 23.109,
+      "end_time": 23.152
+    },
+    {
+      "text": "ت",
+      "start_time": 23.152,
+      "end_time": 23.194
+    },
+    {
+      "text": "ا",
+      "start_time": 23.194,
+      "end_time": 23.322
+    },
+    {
+      "text": "ج",
+      "start_time": 23.322,
+      "end_time": 23.3649
+    },
+    {
+      "text": " ",
+      "start_time": 23.365,
+      "end_time": 23.493
+    },
+    {
+      "text": "إ",
+      "start_time": 23.493,
+      "end_time": 23.536
+    },
+    {
+      "text": "ل",
+      "start_time": 23.536,
+      "end_time": 23.578
+    },
+    {
+      "text": "ى",
+      "start_time": 23.578,
+      "end_time": 23.6636
+    },
+    {
+      "text": " ",
+      "start_time": 23.664,
+      "end_time": 23.706
+    },
+    {
+      "text": "م",
+      "start_time": 23.706,
+      "end_time": 23.792
+    },
+    {
+      "text": "ت",
+      "start_time": 23.792,
+      "end_time": 23.834
+    },
+    {
+      "text": "ا",
+      "start_time": 23.834,
+      "end_time": 23.962
+    },
+    {
+      "text": "ب",
+      "start_time": 23.962,
+      "end_time": 24.005
+    },
+    {
+      "text": "ع",
+      "start_time": 24.005,
+      "end_time": 24.09
+    },
+    {
+      "text": "ة",
+      "start_time": 24.09,
+      "end_time": 24.261
+    },
+    {
+      "text": ".",
+      "start_time": 24.261,
+      "end_time": 24.4
+    },
+    {
+      "text": "\n",
+      "start_time": 24.4,
+      "end_time": 24.539
+    },
+    {
+      "text": "\n",
+      "start_time": 24.539,
+      "end_time": 24.679
+    },
+    {
+      "text": "و",
+      "start_time": 24.679,
+      "end_time": 24.892
+    },
+    {
+      "text": "ي",
+      "start_time": 24.892,
+      "end_time": 24.977
+    },
+    {
+      "text": "ق",
+      "start_time": 24.977,
+      "end_time": 25.02
+    },
+    {
+      "text": "و",
+      "start_time": 25.02,
+      "end_time": 25.148
+    },
+    {
+      "text": "م",
+      "start_time": 25.148,
+      "end_time": 25.1907
+    },
+    {
+      "text": " ",
+      "start_time": 25.191,
+      "end_time": 25.276
+    },
+    {
+      "text": "ت",
+      "start_time": 25.276,
+      "end_time": 25.319
+    },
+    {
+      "text": "ص",
+      "start_time": 25.319,
+      "end_time": 25.404
+    },
+    {
+      "text": "م",
+      "start_time": 25.404,
+      "end_time": 25.489
+    },
+    {
+      "text": "ي",
+      "start_time": 25.489,
+      "end_time": 25.575
+    },
+    {
+      "text": "م",
+      "start_time": 25.575,
+      "end_time": 25.617
+    },
+    {
+      "text": " ",
+      "start_time": 25.617,
+      "end_time": 25.788
+    },
+    {
+      "text": "س",
+      "start_time": 25.788,
+      "end_time": 25.873
+    },
+    {
+      "text": "د",
+      "start_time": 25.873,
+      "end_time": 25.959
+    },
+    {
+      "text": "ي",
+      "start_time": 25.959,
+      "end_time": 26.044
+    },
+    {
+      "text": "د",
+      "start_time": 26.044,
+      "end_time": 26.129
+    },
+    {
+      "text": " ",
+      "start_time": 26.129,
+      "end_time": 26.343
+    },
+    {
+      "text": "ع",
+      "start_time": 26.343,
+      "end_time": 26.428
+    },
+    {
+      "text": "ل",
+      "start_time": 26.428,
+      "end_time": 26.471
+    },
+    {
+      "text": "ى",
+      "start_time": 26.471,
+      "end_time": 26.556
+    },
+    {
+      "text": " ",
+      "start_time": 26.556,
+      "end_time": 26.599
+    },
+    {
+      "text": "ر",
+      "start_time": 26.599,
+      "end_time": 26.641
+    },
+    {
+      "text": "ب",
+      "start_time": 26.641,
+      "end_time": 26.684
+    },
+    {
+      "text": "ط",
+      "start_time": 26.684,
+      "end_time": 26.769
+    },
+    {
+      "text": " ",
+      "start_time": 26.769,
+      "end_time": 26.855
+    },
+    {
+      "text": "ا",
+      "start_time": 26.855,
+      "end_time": 26.897
+    },
+    {
+      "text": "ل",
+      "start_time": 26.897,
+      "end_time": 26.94
+    },
+    {
+      "text": "ح",
+      "start_time": 26.94,
+      "end_time": 27.025
+    },
+    {
+      "text": "د",
+      "start_time": 27.025,
+      "end_time": 27.111
+    },
+    {
+      "text": "ث",
+      "start_time": 27.111,
+      "end_time": 27.196
+    },
+    {
+      "text": " ",
+      "start_time": 27.196,
+      "end_time": 27.367
+    },
+    {
+      "text": "ب",
+      "start_time": 27.367,
+      "end_time": 27.495
+    },
+    {
+      "text": "م",
+      "start_time": 27.495,
+      "end_time": 27.537
+    },
+    {
+      "text": "و",
+      "start_time": 27.537,
+      "end_time": 27.58
+    },
+    {
+      "text": "ق",
+      "start_time": 27.58,
+      "end_time": 27.665
+    },
+    {
+      "text": "ع",
+      "start_time": 27.665,
+      "end_time": 27.836
+    },
+    {
+      "text": "ه",
+      "start_time": 27.836,
+      "end_time": 27.921
+    },
+    {
+      "text": " ",
+      "start_time": 27.921,
+      "end_time": 28.092
+    },
+    {
+      "text": "و",
+      "start_time": 28.092,
+      "end_time": 28.177
+    },
+    {
+      "text": "أ",
+      "start_time": 28.177,
+      "end_time": 28.263
+    },
+    {
+      "text": "ث",
+      "start_time": 28.263,
+      "end_time": 28.305
+    },
+    {
+      "text": "ر",
+      "start_time": 28.305,
+      "end_time": 28.476
+    },
+    {
+      "text": "ه",
+      "start_time": 28.476,
+      "end_time": 28.604
+    },
+    {
+      "text": "،",
+      "start_time": 28.604,
+      "end_time": 28.732
+    },
+    {
+      "text": " ",
+      "start_time": 28.732,
+      "end_time": 28.86
+    },
+    {
+      "text": "و",
+      "start_time": 28.86,
+      "end_time": 29.073
+    },
+    {
+      "text": "إ",
+      "start_time": 29.073,
+      "end_time": 29.116
+    },
+    {
+      "text": "ظ",
+      "start_time": 29.116,
+      "end_time": 29.159
+    },
+    {
+      "text": "ه",
+      "start_time": 29.159,
+      "end_time": 29.244
+    },
+    {
+      "text": "ا",
+      "start_time": 29.244,
+      "end_time": 29.287
+    },
+    {
+      "text": "ر",
+      "start_time": 29.287,
+      "end_time": 29.372
+    },
+    {
+      "text": " ",
+      "start_time": 29.372,
+      "end_time": 29.457
+    },
+    {
+      "text": "ا",
+      "start_time": 29.457,
+      "end_time": 29.5
+    },
+    {
+      "text": "ل",
+      "start_time": 29.5,
+      "end_time": 29.543
+    },
+    {
+      "text": "م",
+      "start_time": 29.543,
+      "end_time": 29.585
+    },
+    {
+      "text": "ع",
+      "start_time": 29.585,
+      "end_time": 29.671
+    },
+    {
+      "text": "ل",
+      "start_time": 29.671,
+      "end_time": 29.713
+    },
+    {
+      "text": "و",
+      "start_time": 29.713,
+      "end_time": 29.799
+    },
+    {
+      "text": "م",
+      "start_time": 29.799,
+      "end_time": 29.841
+    },
+    {
+      "text": "ة",
+      "start_time": 29.841,
+      "end_time": 29.969
+    },
+    {
+      "text": " ",
+      "start_time": 29.969,
+      "end_time": 30.097
+    },
+    {
+      "text": "م",
+      "start_time": 30.097,
+      "end_time": 30.14
+    },
+    {
+      "text": "ع",
+      "start_time": 30.14,
+      "end_time": 30.225
+    },
+    {
+      "text": " ",
+      "start_time": 30.225,
+      "end_time": 30.311
+    },
+    {
+      "text": "م",
+      "start_time": 30.311,
+      "end_time": 30.353
+    },
+    {
+      "text": "ص",
+      "start_time": 30.353,
+      "end_time": 30.396
+    },
+    {
+      "text": "د",
+      "start_time": 30.396,
+      "end_time": 30.524
+    },
+    {
+      "text": "ر",
+      "start_time": 30.524,
+      "end_time": 30.609
+    },
+    {
+      "text": "ه",
+      "start_time": 30.609,
+      "end_time": 30.737
+    },
+    {
+      "text": "ا",
+      "start_time": 30.737,
+      "end_time": 30.865
+    },
+    {
+      "text": " ",
+      "start_time": 30.865,
+      "end_time": 30.908
+    },
+    {
+      "text": "و",
+      "start_time": 30.908,
+      "end_time": 31.036
+    },
+    {
+      "text": "و",
+      "start_time": 31.036,
+      "end_time": 31.079
+    },
+    {
+      "text": "ق",
+      "start_time": 31.079,
+      "end_time": 31.164
+    },
+    {
+      "text": "ت",
+      "start_time": 31.164,
+      "end_time": 31.2067
+    },
+    {
+      "text": " ",
+      "start_time": 31.207,
+      "end_time": 31.335
+    },
+    {
+      "text": "ت",
+      "start_time": 31.335,
+      "end_time": 31.377
+    },
+    {
+      "text": "ح",
+      "start_time": 31.377,
+      "end_time": 31.463
+    },
+    {
+      "text": "د",
+      "start_time": 31.463,
+      "end_time": 31.548
+    },
+    {
+      "text": "ي",
+      "start_time": 31.548,
+      "end_time": 31.633
+    },
+    {
+      "text": "ث",
+      "start_time": 31.633,
+      "end_time": 31.676
+    },
+    {
+      "text": "ه",
+      "start_time": 31.676,
+      "end_time": 31.847
+    },
+    {
+      "text": "ا",
+      "start_time": 31.847,
+      "end_time": 31.975
+    },
+    {
+      "text": "،",
+      "start_time": 31.975,
+      "end_time": 32.124
+    },
+    {
+      "text": " ",
+      "start_time": 32.124,
+      "end_time": 32.273
+    },
+    {
+      "text": "م",
+      "start_time": 32.273,
+      "end_time": 32.487
+    },
+    {
+      "text": "ت",
+      "start_time": 32.487,
+      "end_time": 32.529
+    },
+    {
+      "text": "ى",
+      "start_time": 32.529,
+      "end_time": 32.657
+    },
+    {
+      "text": " ",
+      "start_time": 32.657,
+      "end_time": 32.7
+    },
+    {
+      "text": "ت",
+      "start_time": 32.7,
+      "end_time": 32.785
+    },
+    {
+      "text": "و",
+      "start_time": 32.785,
+      "end_time": 32.828
+    },
+    {
+      "text": "ف",
+      "start_time": 32.828,
+      "end_time": 32.913
+    },
+    {
+      "text": "ر",
+      "start_time": 32.913,
+      "end_time": 33.084
+    },
+    {
+      "text": "ت",
+      "start_time": 33.084,
+      "end_time": 33.169
+    },
+    {
+      "text": " ",
+      "start_time": 33.169,
+      "end_time": 33.255
+    },
+    {
+      "text": "ا",
+      "start_time": 33.255,
+      "end_time": 33.297
+    },
+    {
+      "text": "ل",
+      "start_time": 33.297,
+      "end_time": 33.34
+    },
+    {
+      "text": "ب",
+      "start_time": 33.34,
+      "end_time": 33.383
+    },
+    {
+      "text": "ي",
+      "start_time": 33.383,
+      "end_time": 33.468
+    },
+    {
+      "text": "ا",
+      "start_time": 33.468,
+      "end_time": 33.553
+    },
+    {
+      "text": "ن",
+      "start_time": 33.553,
+      "end_time": 33.596
+    },
+    {
+      "text": "ا",
+      "start_time": 33.596,
+      "end_time": 33.681
+    },
+    {
+      "text": "ت",
+      "start_time": 33.681,
+      "end_time": 33.7667
+    },
+    {
+      "text": " ",
+      "start_time": 33.767,
+      "end_time": 33.852
+    },
+    {
+      "text": "ا",
+      "start_time": 33.852,
+      "end_time": 33.895
+    },
+    {
+      "text": "ل",
+      "start_time": 33.895,
+      "end_time": 33.937
+    },
+    {
+      "text": "م",
+      "start_time": 33.937,
+      "end_time": 33.98
+    },
+    {
+      "text": "ع",
+      "start_time": 33.98,
+      "end_time": 34.023
+    },
+    {
+      "text": "ت",
+      "start_time": 34.023,
+      "end_time": 34.108
+    },
+    {
+      "text": "م",
+      "start_time": 34.108,
+      "end_time": 34.236
+    },
+    {
+      "text": "د",
+      "start_time": 34.236,
+      "end_time": 34.321
+    },
+    {
+      "text": "ة",
+      "start_time": 34.321,
+      "end_time": 34.449
+    },
+    {
+      "text": ".",
+      "start_time": 34.449,
+      "end_time": 34.584
+    },
+    {
+      "text": "\n",
+      "start_time": 34.584,
+      "end_time": 34.719
+    },
+    {
+      "text": "\n",
+      "start_time": 34.719,
+      "end_time": 34.854
+    },
+    {
+      "text": "و",
+      "start_time": 34.854,
+      "end_time": 35.025
+    },
+    {
+      "text": "ص",
+      "start_time": 35.025,
+      "end_time": 35.068
+    },
+    {
+      "text": "ُ",
+      "start_time": 35.068,
+      "end_time": 35.11
+    },
+    {
+      "text": "م",
+      "start_time": 35.11,
+      "end_time": 35.196
+    },
+    {
+      "text": "م",
+      "start_time": 35.196,
+      "end_time": 35.324
+    },
+    {
+      "text": "ت",
+      "start_time": 35.324,
+      "end_time": 35.4089
+    },
+    {
+      "text": " ",
+      "start_time": 35.409,
+      "end_time": 35.494
+    },
+    {
+      "text": "ق",
+      "start_time": 35.494,
+      "end_time": 35.537
+    },
+    {
+      "text": "د",
+      "start_time": 35.537,
+      "end_time": 35.58
+    },
+    {
+      "text": "ر",
+      "start_time": 35.58,
+      "end_time": 35.665
+    },
+    {
+      "text": "ا",
+      "start_time": 35.665,
+      "end_time": 35.793
+    },
+    {
+      "text": "ت",
+      "start_time": 35.793,
+      "end_time": 35.8355
+    },
+    {
+      "text": " ",
+      "start_time": 35.836,
+      "end_time": 35.921
+    },
+    {
+      "text": "ا",
+      "start_time": 35.921,
+      "end_time": 35.964
+    },
+    {
+      "text": "ل",
+      "start_time": 35.964,
+      "end_time": 36.006
+    },
+    {
+      "text": "ذ",
+      "start_time": 36.006,
+      "end_time": 36.049
+    },
+    {
+      "text": "ك",
+      "start_time": 36.049,
+      "end_time": 36.092
+    },
+    {
+      "text": "ا",
+      "start_time": 36.092,
+      "end_time": 36.219
+    },
+    {
+      "text": "ء",
+      "start_time": 36.219,
+      "end_time": 36.262
+    },
+    {
+      "text": " ",
+      "start_time": 36.262,
+      "end_time": 36.305
+    },
+    {
+      "text": "ا",
+      "start_time": 36.305,
+      "end_time": 36.347
+    },
+    {
+      "text": "ل",
+      "start_time": 36.347,
+      "end_time": 36.39
+    },
+    {
+      "text": "ا",
+      "start_time": 36.39,
+      "end_time": 36.433
+    },
+    {
+      "text": "ص",
+      "start_time": 36.433,
+      "end_time": 36.475
+    },
+    {
+      "text": "ط",
+      "start_time": 36.475,
+      "end_time": 36.561
+    },
+    {
+      "text": "ن",
+      "start_time": 36.561,
+      "end_time": 36.603
+    },
+    {
+      "text": "ا",
+      "start_time": 36.603,
+      "end_time": 36.689
+    },
+    {
+      "text": "ع",
+      "start_time": 36.689,
+      "end_time": 36.731
+    },
+    {
+      "text": "ي",
+      "start_time": 36.731,
+      "end_time": 36.902
+    },
+    {
+      "text": " ",
+      "start_time": 36.902,
+      "end_time": 37.03
+    },
+    {
+      "text": "و",
+      "start_time": 37.03,
+      "end_time": 37.073
+    },
+    {
+      "text": "ا",
+      "start_time": 37.073,
+      "end_time": 37.115
+    },
+    {
+      "text": "ل",
+      "start_time": 37.115,
+      "end_time": 37.158
+    },
+    {
+      "text": "و",
+      "start_time": 37.158,
+      "end_time": 37.243
+    },
+    {
+      "text": "ك",
+      "start_time": 37.243,
+      "end_time": 37.286
+    },
+    {
+      "text": "ل",
+      "start_time": 37.286,
+      "end_time": 37.414
+    },
+    {
+      "text": "ا",
+      "start_time": 37.414,
+      "end_time": 37.499
+    },
+    {
+      "text": "ء",
+      "start_time": 37.499,
+      "end_time": 37.542
+    },
+    {
+      "text": " ",
+      "start_time": 37.542,
+      "end_time": 37.585
+    },
+    {
+      "text": "ا",
+      "start_time": 37.585,
+      "end_time": 37.627
+    },
+    {
+      "text": "ل",
+      "start_time": 37.627,
+      "end_time": 37.67
+    },
+    {
+      "text": "م",
+      "start_time": 37.67,
+      "end_time": 37.755
+    },
+    {
+      "text": "ت",
+      "start_time": 37.755,
+      "end_time": 37.798
+    },
+    {
+      "text": "خ",
+      "start_time": 37.798,
+      "end_time": 37.883
+    },
+    {
+      "text": "ص",
+      "start_time": 37.883,
+      "end_time": 38.011
+    },
+    {
+      "text": "ص",
+      "start_time": 38.011,
+      "end_time": 38.139
+    },
+    {
+      "text": "ي",
+      "start_time": 38.139,
+      "end_time": 38.31
+    },
+    {
+      "text": "ن",
+      "start_time": 38.31,
+      "end_time": 38.395
+    },
+    {
+      "text": " ",
+      "start_time": 38.395,
+      "end_time": 38.438
+    },
+    {
+      "text": "ل",
+      "start_time": 38.438,
+      "end_time": 38.566
+    },
+    {
+      "text": "ت",
+      "start_time": 38.566,
+      "end_time": 38.651
+    },
+    {
+      "text": "ي",
+      "start_time": 38.651,
+      "end_time": 38.694
+    },
+    {
+      "text": "س",
+      "start_time": 38.694,
+      "end_time": 38.779
+    },
+    {
+      "text": "ي",
+      "start_time": 38.779,
+      "end_time": 38.865
+    },
+    {
+      "text": "ر",
+      "start_time": 38.865,
+      "end_time": 38.907
+    },
+    {
+      "text": " ",
+      "start_time": 38.907,
+      "end_time": 39.035
+    },
+    {
+      "text": "ا",
+      "start_time": 39.035,
+      "end_time": 39.078
+    },
+    {
+      "text": "ل",
+      "start_time": 39.078,
+      "end_time": 39.121
+    },
+    {
+      "text": "ب",
+      "start_time": 39.121,
+      "end_time": 39.163
+    },
+    {
+      "text": "ح",
+      "start_time": 39.163,
+      "end_time": 39.206
+    },
+    {
+      "text": "ث",
+      "start_time": 39.206,
+      "end_time": 39.334
+    },
+    {
+      "text": "،",
+      "start_time": 39.334,
+      "end_time": 39.484
+    },
+    {
+      "text": " ",
+      "start_time": 39.484,
+      "end_time": 39.633
+    },
+    {
+      "text": "و",
+      "start_time": 39.633,
+      "end_time": 39.803
+    },
+    {
+      "text": "ت",
+      "start_time": 39.803,
+      "end_time": 39.889
+    },
+    {
+      "text": "ل",
+      "start_time": 39.889,
+      "end_time": 39.931
+    },
+    {
+      "text": "خ",
+      "start_time": 39.931,
+      "end_time": 40.017
+    },
+    {
+      "text": "ي",
+      "start_time": 40.017,
+      "end_time": 40.102
+    },
+    {
+      "text": "ص",
+      "start_time": 40.102,
+      "end_time": 40.1449
+    },
+    {
+      "text": " ",
+      "start_time": 40.145,
+      "end_time": 40.273
+    },
+    {
+      "text": "ا",
+      "start_time": 40.273,
+      "end_time": 40.316
+    },
+    {
+      "text": "ل",
+      "start_time": 40.316,
+      "end_time": 40.358
+    },
+    {
+      "text": "أ",
+      "start_time": 40.358,
+      "end_time": 40.401
+    },
+    {
+      "text": "د",
+      "start_time": 40.401,
+      "end_time": 40.444
+    },
+    {
+      "text": "ل",
+      "start_time": 40.444,
+      "end_time": 40.572
+    },
+    {
+      "text": "ة",
+      "start_time": 40.572,
+      "end_time": 40.742
+    },
+    {
+      "text": "،",
+      "start_time": 40.742,
+      "end_time": 40.828
+    },
+    {
+      "text": " ",
+      "start_time": 40.828,
+      "end_time": 40.913
+    },
+    {
+      "text": "و",
+      "start_time": 40.913,
+      "end_time": 41.169
+    },
+    {
+      "text": "ت",
+      "start_time": 41.169,
+      "end_time": 41.254
+    },
+    {
+      "text": "و",
+      "start_time": 41.254,
+      "end_time": 41.297
+    },
+    {
+      "text": "ض",
+      "start_time": 41.297,
+      "end_time": 41.34
+    },
+    {
+      "text": "ي",
+      "start_time": 41.34,
+      "end_time": 41.425
+    },
+    {
+      "text": "ح",
+      "start_time": 41.425,
+      "end_time": 41.4675
+    },
+    {
+      "text": " ",
+      "start_time": 41.468,
+      "end_time": 41.596
+    },
+    {
+      "text": "ا",
+      "start_time": 41.596,
+      "end_time": 41.638
+    },
+    {
+      "text": "ل",
+      "start_time": 41.638,
+      "end_time": 41.681
+    },
+    {
+      "text": "أ",
+      "start_time": 41.681,
+      "end_time": 41.724
+    },
+    {
+      "text": "و",
+      "start_time": 41.724,
+      "end_time": 41.766
+    },
+    {
+      "text": "ل",
+      "start_time": 41.766,
+      "end_time": 41.809
+    },
+    {
+      "text": "و",
+      "start_time": 41.809,
+      "end_time": 41.852
+    },
+    {
+      "text": "ي",
+      "start_time": 41.852,
+      "end_time": 41.98
+    },
+    {
+      "text": "ا",
+      "start_time": 41.98,
+      "end_time": 42.108
+    },
+    {
+      "text": "ت",
+      "start_time": 42.108,
+      "end_time": 42.236
+    },
+    {
+      "text": "،",
+      "start_time": 42.236,
+      "end_time": 42.342
+    },
+    {
+      "text": " ",
+      "start_time": 42.342,
+      "end_time": 42.449
+    },
+    {
+      "text": "و",
+      "start_time": 42.449,
+      "end_time": 42.705
+    },
+    {
+      "text": "ا",
+      "start_time": 42.705,
+      "end_time": 42.748
+    },
+    {
+      "text": "ق",
+      "start_time": 42.748,
+      "end_time": 42.79
+    },
+    {
+      "text": "ت",
+      "start_time": 42.79,
+      "end_time": 42.833
+    },
+    {
+      "text": "ر",
+      "start_time": 42.833,
+      "end_time": 42.918
+    },
+    {
+      "text": "ا",
+      "start_time": 42.918,
+      "end_time": 43.004
+    },
+    {
+      "text": "ح",
+      "start_time": 43.004,
+      "end_time": 43.046
+    },
+    {
+      "text": " ",
+      "start_time": 43.046,
+      "end_time": 43.132
+    },
+    {
+      "text": "ا",
+      "start_time": 43.132,
+      "end_time": 43.174
+    },
+    {
+      "text": "ل",
+      "start_time": 43.174,
+      "end_time": 43.217
+    },
+    {
+      "text": "خ",
+      "start_time": 43.217,
+      "end_time": 43.302
+    },
+    {
+      "text": "ط",
+      "start_time": 43.302,
+      "end_time": 43.345
+    },
+    {
+      "text": "و",
+      "start_time": 43.345,
+      "end_time": 43.43
+    },
+    {
+      "text": "ة",
+      "start_time": 43.43,
+      "end_time": 43.5155
+    },
+    {
+      "text": " ",
+      "start_time": 43.516,
+      "end_time": 43.601
+    },
+    {
+      "text": "ا",
+      "start_time": 43.601,
+      "end_time": 43.644
+    },
+    {
+      "text": "ل",
+      "start_time": 43.644,
+      "end_time": 43.686
+    },
+    {
+      "text": "ت",
+      "start_time": 43.686,
+      "end_time": 43.729
+    },
+    {
+      "text": "ا",
+      "start_time": 43.729,
+      "end_time": 43.814
+    },
+    {
+      "text": "ل",
+      "start_time": 43.814,
+      "end_time": 43.857
+    },
+    {
+      "text": "ي",
+      "start_time": 43.857,
+      "end_time": 43.942
+    },
+    {
+      "text": "ة",
+      "start_time": 43.942,
+      "end_time": 44.07
+    },
+    {
+      "text": "،",
+      "start_time": 44.07,
+      "end_time": 44.298
+    },
+    {
+      "text": " ",
+      "start_time": 44.298,
+      "end_time": 44.527
+    },
+    {
+      "text": "م",
+      "start_time": 44.527,
+      "end_time": 44.612
+    },
+    {
+      "text": "ع",
+      "start_time": 44.612,
+      "end_time": 44.697
+    },
+    {
+      "text": " ",
+      "start_time": 44.697,
+      "end_time": 44.783
+    },
+    {
+      "text": "ب",
+      "start_time": 44.783,
+      "end_time": 44.825
+    },
+    {
+      "text": "ق",
+      "start_time": 44.825,
+      "end_time": 44.868
+    },
+    {
+      "text": "ا",
+      "start_time": 44.868,
+      "end_time": 45.039
+    },
+    {
+      "text": "ء",
+      "start_time": 45.039,
+      "end_time": 45.081
+    },
+    {
+      "text": " ",
+      "start_time": 45.081,
+      "end_time": 45.124
+    },
+    {
+      "text": "ا",
+      "start_time": 45.124,
+      "end_time": 45.167
+    },
+    {
+      "text": "ع",
+      "start_time": 45.167,
+      "end_time": 45.209
+    },
+    {
+      "text": "ت",
+      "start_time": 45.209,
+      "end_time": 45.252
+    },
+    {
+      "text": "م",
+      "start_time": 45.252,
+      "end_time": 45.38
+    },
+    {
+      "text": "ا",
+      "start_time": 45.38,
+      "end_time": 45.465
+    },
+    {
+      "text": "د",
+      "start_time": 45.465,
+      "end_time": 45.508
+    },
+    {
+      "text": " ",
+      "start_time": 45.508,
+      "end_time": 45.551
+    },
+    {
+      "text": "ا",
+      "start_time": 45.551,
+      "end_time": 45.593
+    },
+    {
+      "text": "ل",
+      "start_time": 45.593,
+      "end_time": 45.636
+    },
+    {
+      "text": "ق",
+      "start_time": 45.636,
+      "end_time": 45.721
+    },
+    {
+      "text": "ر",
+      "start_time": 45.721,
+      "end_time": 45.807
+    },
+    {
+      "text": "ا",
+      "start_time": 45.807,
+      "end_time": 45.977
+    },
+    {
+      "text": "ر",
+      "start_time": 45.977,
+      "end_time": 46.02
+    },
+    {
+      "text": " ",
+      "start_time": 46.02,
+      "end_time": 46.148
+    },
+    {
+      "text": "ل",
+      "start_time": 46.148,
+      "end_time": 46.191
+    },
+    {
+      "text": "د",
+      "start_time": 46.191,
+      "end_time": 46.233
+    },
+    {
+      "text": "ى",
+      "start_time": 46.233,
+      "end_time": 46.276
+    },
+    {
+      "text": " ",
+      "start_time": 46.276,
+      "end_time": 46.319
+    },
+    {
+      "text": "ا",
+      "start_time": 46.319,
+      "end_time": 46.361
+    },
+    {
+      "text": "ل",
+      "start_time": 46.361,
+      "end_time": 46.404
+    },
+    {
+      "text": "م",
+      "start_time": 46.404,
+      "end_time": 46.447
+    },
+    {
+      "text": "س",
+      "start_time": 46.447,
+      "end_time": 46.489
+    },
+    {
+      "text": "ؤ",
+      "start_time": 46.489,
+      "end_time": 46.575
+    },
+    {
+      "text": "و",
+      "start_time": 46.575,
+      "end_time": 46.703
+    },
+    {
+      "text": "ل",
+      "start_time": 46.703,
+      "end_time": 46.745
+    },
+    {
+      "text": " ",
+      "start_time": 46.745,
+      "end_time": 46.831
+    },
+    {
+      "text": "ا",
+      "start_time": 46.831,
+      "end_time": 46.873
+    },
+    {
+      "text": "ل",
+      "start_time": 46.873,
+      "end_time": 46.916
+    },
+    {
+      "text": "م",
+      "start_time": 46.916,
+      "end_time": 46.959
+    },
+    {
+      "text": "خ",
+      "start_time": 46.959,
+      "end_time": 47.001
+    },
+    {
+      "text": "و",
+      "start_time": 47.001,
+      "end_time": 47.129
+    },
+    {
+      "text": "ّ",
+      "start_time": 47.129,
+      "end_time": 47.172
+    },
+    {
+      "text": "ل",
+      "start_time": 47.172,
+      "end_time": 47.343
+    },
+    {
+      "text": ".",
+      "start_time": 47.343,
+      "end_time": 47.556
+    },
+    {
+      "text": "\n",
+      "start_time": 47.556,
+      "end_time": 47.769
+    },
+    {
+      "text": "\n",
+      "start_time": 47.769,
+      "end_time": 47.983
+    },
+    {
+      "text": "و",
+      "start_time": 47.983,
+      "end_time": 48.111
+    },
+    {
+      "text": "ل",
+      "start_time": 48.111,
+      "end_time": 48.196
+    },
+    {
+      "text": "أ",
+      "start_time": 48.196,
+      "end_time": 48.239
+    },
+    {
+      "text": "ن",
+      "start_time": 48.239,
+      "end_time": 48.281
+    },
+    {
+      "text": " ",
+      "start_time": 48.281,
+      "end_time": 48.367
+    },
+    {
+      "text": "ا",
+      "start_time": 48.367,
+      "end_time": 48.409
+    },
+    {
+      "text": "ل",
+      "start_time": 48.409,
+      "end_time": 48.452
+    },
+    {
+      "text": "و",
+      "start_time": 48.452,
+      "end_time": 48.495
+    },
+    {
+      "text": "ق",
+      "start_time": 48.495,
+      "end_time": 48.537
+    },
+    {
+      "text": "ت",
+      "start_time": 48.537,
+      "end_time": 48.6226
+    },
+    {
+      "text": " ",
+      "start_time": 48.623,
+      "end_time": 48.751
+    },
+    {
+      "text": "ي",
+      "start_time": 48.751,
+      "end_time": 48.793
+    },
+    {
+      "text": "ص",
+      "start_time": 48.793,
+      "end_time": 48.879
+    },
+    {
+      "text": "ن",
+      "start_time": 48.879,
+      "end_time": 48.921
+    },
+    {
+      "text": "ع",
+      "start_time": 48.921,
+      "end_time": 49.049
+    },
+    {
+      "text": " ",
+      "start_time": 49.049,
+      "end_time": 49.135
+    },
+    {
+      "text": "ا",
+      "start_time": 49.135,
+      "end_time": 49.177
+    },
+    {
+      "text": "ل",
+      "start_time": 49.177,
+      "end_time": 49.22
+    },
+    {
+      "text": "ف",
+      "start_time": 49.22,
+      "end_time": 49.263
+    },
+    {
+      "text": "ر",
+      "start_time": 49.263,
+      "end_time": 49.348
+    },
+    {
+      "text": "ق",
+      "start_time": 49.348,
+      "end_time": 49.433
+    },
+    {
+      "text": "،",
+      "start_time": 49.433,
+      "end_time": 49.647
+    },
+    {
+      "text": " ",
+      "start_time": 49.647,
+      "end_time": 49.86
+    },
+    {
+      "text": "ص",
+      "start_time": 49.86,
+      "end_time": 50.031
+    },
+    {
+      "text": "ُ",
+      "start_time": 50.031,
+      "end_time": 50.073
+    },
+    {
+      "text": "م",
+      "start_time": 50.073,
+      "end_time": 50.116
+    },
+    {
+      "text": "م",
+      "start_time": 50.116,
+      "end_time": 50.244
+    },
+    {
+      "text": "ت",
+      "start_time": 50.244,
+      "end_time": 50.329
+    },
+    {
+      "text": " ",
+      "start_time": 50.329,
+      "end_time": 50.457
+    },
+    {
+      "text": "ت",
+      "start_time": 50.457,
+      "end_time": 50.5
+    },
+    {
+      "text": "ج",
+      "start_time": 50.5,
+      "end_time": 50.543
+    },
+    {
+      "text": "ر",
+      "start_time": 50.543,
+      "end_time": 50.628
+    },
+    {
+      "text": "ب",
+      "start_time": 50.628,
+      "end_time": 50.671
+    },
+    {
+      "text": "ة",
+      "start_time": 50.671,
+      "end_time": 50.7986
+    },
+    {
+      "text": " ",
+      "start_time": 50.799,
+      "end_time": 50.927
+    },
+    {
+      "text": "س",
+      "start_time": 50.927,
+      "end_time": 50.969
+    },
+    {
+      "text": "د",
+      "start_time": 50.969,
+      "end_time": 51.055
+    },
+    {
+      "text": "ي",
+      "start_time": 51.055,
+      "end_time": 51.14
+    },
+    {
+      "text": "د",
+      "start_time": 51.14,
+      "end_time": 51.225
+    },
+    {
+      "text": " ",
+      "start_time": 51.225,
+      "end_time": 51.396
+    },
+    {
+      "text": "ل",
+      "start_time": 51.396,
+      "end_time": 51.481
+    },
+    {
+      "text": "ت",
+      "start_time": 51.481,
+      "end_time": 51.567
+    },
+    {
+      "text": "ق",
+      "start_time": 51.567,
+      "end_time": 51.609
+    },
+    {
+      "text": "ل",
+      "start_time": 51.609,
+      "end_time": 51.695
+    },
+    {
+      "text": "ي",
+      "start_time": 51.695,
+      "end_time": 51.78
+    },
+    {
+      "text": "ل",
+      "start_time": 51.78,
+      "end_time": 51.8226
+    },
+    {
+      "text": " ",
+      "start_time": 51.823,
+      "end_time": 51.908
+    },
+    {
+      "text": "خ",
+      "start_time": 51.908,
+      "end_time": 51.993
+    },
+    {
+      "text": "ط",
+      "start_time": 51.993,
+      "end_time": 52.079
+    },
+    {
+      "text": "و",
+      "start_time": 52.079,
+      "end_time": 52.164
+    },
+    {
+      "text": "ا",
+      "start_time": 52.164,
+      "end_time": 52.207
+    },
+    {
+      "text": "ت",
+      "start_time": 52.207,
+      "end_time": 52.292
+    },
+    {
+      "text": " ",
+      "start_time": 52.292,
+      "end_time": 52.377
+    },
+    {
+      "text": "ا",
+      "start_time": 52.377,
+      "end_time": 52.42
+    },
+    {
+      "text": "ل",
+      "start_time": 52.42,
+      "end_time": 52.463
+    },
+    {
+      "text": "ب",
+      "start_time": 52.463,
+      "end_time": 52.548
+    },
+    {
+      "text": "ح",
+      "start_time": 52.548,
+      "end_time": 52.591
+    },
+    {
+      "text": "ث",
+      "start_time": 52.591,
+      "end_time": 52.719
+    },
+    {
+      "text": "،",
+      "start_time": 52.719,
+      "end_time": 52.963
+    },
+    {
+      "text": " ",
+      "start_time": 52.963,
+      "end_time": 53.208
+    },
+    {
+      "text": "و",
+      "start_time": 53.208,
+      "end_time": 53.422
+    },
+    {
+      "text": "إ",
+      "start_time": 53.422,
+      "end_time": 53.464
+    },
+    {
+      "text": "ي",
+      "start_time": 53.464,
+      "end_time": 53.55
+    },
+    {
+      "text": "ص",
+      "start_time": 53.55,
+      "end_time": 53.592
+    },
+    {
+      "text": "ا",
+      "start_time": 53.592,
+      "end_time": 53.72
+    },
+    {
+      "text": "ل",
+      "start_time": 53.72,
+      "end_time": 53.7628
+    },
+    {
+      "text": " ",
+      "start_time": 53.763,
+      "end_time": 53.806
+    },
+    {
+      "text": "ا",
+      "start_time": 53.806,
+      "end_time": 53.848
+    },
+    {
+      "text": "ل",
+      "start_time": 53.848,
+      "end_time": 53.891
+    },
+    {
+      "text": "م",
+      "start_time": 53.891,
+      "end_time": 53.934
+    },
+    {
+      "text": "ع",
+      "start_time": 53.934,
+      "end_time": 54.019
+    },
+    {
+      "text": "ل",
+      "start_time": 54.019,
+      "end_time": 54.062
+    },
+    {
+      "text": "و",
+      "start_time": 54.062,
+      "end_time": 54.19
+    },
+    {
+      "text": "م",
+      "start_time": 54.19,
+      "end_time": 54.232
+    },
+    {
+      "text": "ة",
+      "start_time": 54.232,
+      "end_time": 54.36
+    },
+    {
+      "text": " ",
+      "start_time": 54.36,
+      "end_time": 54.488
+    },
+    {
+      "text": "ذ",
+      "start_time": 54.488,
+      "end_time": 54.531
+    },
+    {
+      "text": "ا",
+      "start_time": 54.531,
+      "end_time": 54.574
+    },
+    {
+      "text": "ت",
+      "start_time": 54.574,
+      "end_time": 54.616
+    },
+    {
+      "text": " ",
+      "start_time": 54.616,
+      "end_time": 54.744
+    },
+    {
+      "text": "ا",
+      "start_time": 54.744,
+      "end_time": 54.787
+    },
+    {
+      "text": "ل",
+      "start_time": 54.787,
+      "end_time": 54.83
+    },
+    {
+      "text": "ص",
+      "start_time": 54.83,
+      "end_time": 54.915
+    },
+    {
+      "text": "ل",
+      "start_time": 54.915,
+      "end_time": 54.958
+    },
+    {
+      "text": "ة",
+      "start_time": 54.958,
+      "end_time": 55.0855
+    },
+    {
+      "text": " ",
+      "start_time": 55.086,
+      "end_time": 55.214
+    },
+    {
+      "text": "ب",
+      "start_time": 55.214,
+      "end_time": 55.256
+    },
+    {
+      "text": "س",
+      "start_time": 55.256,
+      "end_time": 55.299
+    },
+    {
+      "text": "ر",
+      "start_time": 55.299,
+      "end_time": 55.469
+    },
+    {
+      "text": "ع",
+      "start_time": 55.469,
+      "end_time": 55.555
+    },
+    {
+      "text": "ة",
+      "start_time": 55.555,
+      "end_time": 55.6828
+    },
+    {
+      "text": " ",
+      "start_time": 55.683,
+      "end_time": 55.853
+    },
+    {
+      "text": "و",
+      "start_time": 55.853,
+      "end_time": 55.939
+    },
+    {
+      "text": "و",
+      "start_time": 55.939,
+      "end_time": 55.981
+    },
+    {
+      "text": "ض",
+      "start_time": 55.981,
+      "end_time": 56.067
+    },
+    {
+      "text": "و",
+      "start_time": 56.067,
+      "end_time": 56.195
+    },
+    {
+      "text": "ح",
+      "start_time": 56.195,
+      "end_time": 56.323
+    },
+    {
+      "text": "،",
+      "start_time": 56.323,
+      "end_time": 56.536
+    },
+    {
+      "text": " ",
+      "start_time": 56.536,
+      "end_time": 56.749
+    },
+    {
+      "text": "م",
+      "start_time": 56.749,
+      "end_time": 56.835
+    },
+    {
+      "text": "ع",
+      "start_time": 56.835,
+      "end_time": 56.877
+    },
+    {
+      "text": " ",
+      "start_time": 56.877,
+      "end_time": 56.92
+    },
+    {
+      "text": "ب",
+      "start_time": 56.92,
+      "end_time": 57.048
+    },
+    {
+      "text": "ي",
+      "start_time": 57.048,
+      "end_time": 57.091
+    },
+    {
+      "text": "ا",
+      "start_time": 57.091,
+      "end_time": 57.133
+    },
+    {
+      "text": "ن",
+      "start_time": 57.133,
+      "end_time": 57.219
+    },
+    {
+      "text": " ",
+      "start_time": 57.219,
+      "end_time": 57.304
+    },
+    {
+      "text": "م",
+      "start_time": 57.304,
+      "end_time": 57.347
+    },
+    {
+      "text": "ا",
+      "start_time": 57.347,
+      "end_time": 57.432
+    },
+    {
+      "text": " ",
+      "start_time": 57.432,
+      "end_time": 57.475
+    },
+    {
+      "text": "ي",
+      "start_time": 57.475,
+      "end_time": 57.56
+    },
+    {
+      "text": "ح",
+      "start_time": 57.56,
+      "end_time": 57.645
+    },
+    {
+      "text": "ت",
+      "start_time": 57.645,
+      "end_time": 57.688
+    },
+    {
+      "text": "ا",
+      "start_time": 57.688,
+      "end_time": 57.773
+    },
+    {
+      "text": "ج",
+      "start_time": 57.773,
+      "end_time": 57.8588
+    },
+    {
+      "text": " ",
+      "start_time": 57.859,
+      "end_time": 57.944
+    },
+    {
+      "text": "إ",
+      "start_time": 57.944,
+      "end_time": 57.987
+    },
+    {
+      "text": "ل",
+      "start_time": 57.987,
+      "end_time": 58.029
+    },
+    {
+      "text": "ى",
+      "start_time": 58.029,
+      "end_time": 58.1148
+    },
+    {
+      "text": " ",
+      "start_time": 58.115,
+      "end_time": 58.115
+    },
+    {
+      "text": "ا",
+      "start_time": 58.115,
+      "end_time": 58.157
+    },
+    {
+      "text": "س",
+      "start_time": 58.157,
+      "end_time": 58.2
+    },
+    {
+      "text": "ت",
+      "start_time": 58.2,
+      "end_time": 58.243
+    },
+    {
+      "text": "ك",
+      "start_time": 58.243,
+      "end_time": 58.285
+    },
+    {
+      "text": "م",
+      "start_time": 58.285,
+      "end_time": 58.371
+    },
+    {
+      "text": "ا",
+      "start_time": 58.371,
+      "end_time": 58.499
+    },
+    {
+      "text": "ل",
+      "start_time": 58.499,
+      "end_time": 58.541
+    },
+    {
+      "text": ".",
+      "start_time": 58.541,
+      "end_time": 58.739
+    },
+    {
+      "text": "\n",
+      "start_time": 58.739,
+      "end_time": 58.937
+    },
+    {
+      "text": "\n",
+      "start_time": 58.937,
+      "end_time": 59.134
+    },
+    {
+      "text": "و",
+      "start_time": 59.134,
+      "end_time": 59.305
+    },
+    {
+      "text": "م",
+      "start_time": 59.305,
+      "end_time": 59.348
+    },
+    {
+      "text": "ن",
+      "start_time": 59.348,
+      "end_time": 59.39
+    },
+    {
+      "text": " ",
+      "start_time": 59.39,
+      "end_time": 59.433
+    },
+    {
+      "text": "ا",
+      "start_time": 59.433,
+      "end_time": 59.476
+    },
+    {
+      "text": "ل",
+      "start_time": 59.476,
+      "end_time": 59.518
+    },
+    {
+      "text": "س",
+      "start_time": 59.518,
+      "end_time": 59.561
+    },
+    {
+      "text": "ؤ",
+      "start_time": 59.561,
+      "end_time": 59.646
+    },
+    {
+      "text": "ا",
+      "start_time": 59.646,
+      "end_time": 59.774
+    },
+    {
+      "text": "ل",
+      "start_time": 59.774,
+      "end_time": 59.817
+    },
+    {
+      "text": " ",
+      "start_time": 59.817,
+      "end_time": 59.902
+    },
+    {
+      "text": "إ",
+      "start_time": 59.902,
+      "end_time": 59.945
+    },
+    {
+      "text": "ل",
+      "start_time": 59.945,
+      "end_time": 59.988
+    },
+    {
+      "text": "ى",
+      "start_time": 59.988,
+      "end_time": 60.03
+    },
+    {
+      "text": " ",
+      "start_time": 60.03,
+      "end_time": 60.073
+    },
+    {
+      "text": "ا",
+      "start_time": 60.073,
+      "end_time": 60.116
+    },
+    {
+      "text": "ل",
+      "start_time": 60.116,
+      "end_time": 60.158
+    },
+    {
+      "text": "ت",
+      "start_time": 60.158,
+      "end_time": 60.201
+    },
+    {
+      "text": "و",
+      "start_time": 60.201,
+      "end_time": 60.286
+    },
+    {
+      "text": "ص",
+      "start_time": 60.286,
+      "end_time": 60.329
+    },
+    {
+      "text": "ي",
+      "start_time": 60.329,
+      "end_time": 60.457
+    },
+    {
+      "text": "ة",
+      "start_time": 60.457,
+      "end_time": 60.585
+    },
+    {
+      "text": "،",
+      "start_time": 60.585,
+      "end_time": 60.692
+    },
+    {
+      "text": " ",
+      "start_time": 60.692,
+      "end_time": 60.798
+    },
+    {
+      "text": "و",
+      "start_time": 60.798,
+      "end_time": 60.969
+    },
+    {
+      "text": "م",
+      "start_time": 60.969,
+      "end_time": 61.012
+    },
+    {
+      "text": "ن",
+      "start_time": 61.012,
+      "end_time": 61.054
+    },
+    {
+      "text": " ",
+      "start_time": 61.054,
+      "end_time": 61.097
+    },
+    {
+      "text": "ا",
+      "start_time": 61.097,
+      "end_time": 61.14
+    },
+    {
+      "text": "ل",
+      "start_time": 61.14,
+      "end_time": 61.182
+    },
+    {
+      "text": "ا",
+      "start_time": 61.182,
+      "end_time": 61.225
+    },
+    {
+      "text": "ع",
+      "start_time": 61.225,
+      "end_time": 61.268
+    },
+    {
+      "text": "ت",
+      "start_time": 61.268,
+      "end_time": 61.353
+    },
+    {
+      "text": "م",
+      "start_time": 61.353,
+      "end_time": 61.396
+    },
+    {
+      "text": "ا",
+      "start_time": 61.396,
+      "end_time": 61.524
+    },
+    {
+      "text": "د",
+      "start_time": 61.524,
+      "end_time": 61.566
+    },
+    {
+      "text": " ",
+      "start_time": 61.566,
+      "end_time": 61.652
+    },
+    {
+      "text": "إ",
+      "start_time": 61.652,
+      "end_time": 61.694
+    },
+    {
+      "text": "ل",
+      "start_time": 61.694,
+      "end_time": 61.737
+    },
+    {
+      "text": "ى",
+      "start_time": 61.737,
+      "end_time": 61.7797
+    },
+    {
+      "text": " ",
+      "start_time": 61.78,
+      "end_time": 61.822
+    },
+    {
+      "text": "م",
+      "start_time": 61.822,
+      "end_time": 61.95
+    },
+    {
+      "text": "ت",
+      "start_time": 61.95,
+      "end_time": 61.993
+    },
+    {
+      "text": "ا",
+      "start_time": 61.993,
+      "end_time": 62.078
+    },
+    {
+      "text": "ب",
+      "start_time": 62.078,
+      "end_time": 62.121
+    },
+    {
+      "text": "ع",
+      "start_time": 62.121,
+      "end_time": 62.206
+    },
+    {
+      "text": "ة",
+      "start_time": 62.206,
+      "end_time": 62.2917
+    },
+    {
+      "text": " ",
+      "start_time": 62.292,
+      "end_time": 62.377
+    },
+    {
+      "text": "ا",
+      "start_time": 62.377,
+      "end_time": 62.42
+    },
+    {
+      "text": "ل",
+      "start_time": 62.42,
+      "end_time": 62.462
+    },
+    {
+      "text": "إ",
+      "start_time": 62.462,
+      "end_time": 62.505
+    },
+    {
+      "text": "ج",
+      "start_time": 62.505,
+      "end_time": 62.548
+    },
+    {
+      "text": "ر",
+      "start_time": 62.548,
+      "end_time": 62.633
+    },
+    {
+      "text": "ا",
+      "start_time": 62.633,
+      "end_time": 62.761
+    },
+    {
+      "text": "ء",
+      "start_time": 62.761,
+      "end_time": 62.804
+    },
+    {
+      "text": "،",
+      "start_time": 62.804,
+      "end_time": 62.974
+    },
+    {
+      "text": " ",
+      "start_time": 62.974,
+      "end_time": 63.145
+    },
+    {
+      "text": "ص",
+      "start_time": 63.145,
+      "end_time": 63.401
+    },
+    {
+      "text": "ُ",
+      "start_time": 63.401,
+      "end_time": 63.444
+    },
+    {
+      "text": "م",
+      "start_time": 63.444,
+      "end_time": 63.486
+    },
+    {
+      "text": "م",
+      "start_time": 63.486,
+      "end_time": 63.614
+    },
+    {
+      "text": " ",
+      "start_time": 63.614,
+      "end_time": 63.657
+    },
+    {
+      "text": "ا",
+      "start_time": 63.657,
+      "end_time": 63.7
+    },
+    {
+      "text": "ل",
+      "start_time": 63.7,
+      "end_time": 63.742
+    },
+    {
+      "text": "م",
+      "start_time": 63.742,
+      "end_time": 63.828
+    },
+    {
+      "text": "س",
+      "start_time": 63.828,
+      "end_time": 63.87
+    },
+    {
+      "text": "ا",
+      "start_time": 63.87,
+      "end_time": 63.998
+    },
+    {
+      "text": "ر",
+      "start_time": 63.998,
+      "end_time": 64.169
+    },
+    {
+      "text": " ",
+      "start_time": 64.169,
+      "end_time": 64.254
+    },
+    {
+      "text": "ل",
+      "start_time": 64.254,
+      "end_time": 64.34
+    },
+    {
+      "text": "ي",
+      "start_time": 64.34,
+      "end_time": 64.382
+    },
+    {
+      "text": "ب",
+      "start_time": 64.382,
+      "end_time": 64.425
+    },
+    {
+      "text": "ق",
+      "start_time": 64.425,
+      "end_time": 64.553
+    },
+    {
+      "text": "ى",
+      "start_time": 64.553,
+      "end_time": 64.681
+    },
+    {
+      "text": " ",
+      "start_time": 64.681,
+      "end_time": 64.724
+    },
+    {
+      "text": "و",
+      "start_time": 64.724,
+      "end_time": 64.809
+    },
+    {
+      "text": "ا",
+      "start_time": 64.809,
+      "end_time": 64.852
+    },
+    {
+      "text": "ض",
+      "start_time": 64.852,
+      "end_time": 64.937
+    },
+    {
+      "text": "ح",
+      "start_time": 64.937,
+      "end_time": 65.065
+    },
+    {
+      "text": "ً",
+      "start_time": 65.065,
+      "end_time": 65.108
+    },
+    {
+      "text": "ا",
+      "start_time": 65.108,
+      "end_time": 65.2357
+    },
+    {
+      "text": " ",
+      "start_time": 65.236,
+      "end_time": 65.321
+    },
+    {
+      "text": "و",
+      "start_time": 65.321,
+      "end_time": 65.449
+    },
+    {
+      "text": "ق",
+      "start_time": 65.449,
+      "end_time": 65.492
+    },
+    {
+      "text": "ا",
+      "start_time": 65.492,
+      "end_time": 65.62
+    },
+    {
+      "text": "ب",
+      "start_time": 65.62,
+      "end_time": 65.705
+    },
+    {
+      "text": "ل",
+      "start_time": 65.705,
+      "end_time": 65.79
+    },
+    {
+      "text": "ً",
+      "start_time": 65.79,
+      "end_time": 65.833
+    },
+    {
+      "text": "ا",
+      "start_time": 65.833,
+      "end_time": 65.8757
+    },
+    {
+      "text": " ",
+      "start_time": 65.876,
+      "end_time": 65.961
+    },
+    {
+      "text": "ل",
+      "start_time": 65.961,
+      "end_time": 66.004
+    },
+    {
+      "text": "ل",
+      "start_time": 66.004,
+      "end_time": 66.089
+    },
+    {
+      "text": "م",
+      "start_time": 66.089,
+      "end_time": 66.132
+    },
+    {
+      "text": "ر",
+      "start_time": 66.132,
+      "end_time": 66.174
+    },
+    {
+      "text": "ا",
+      "start_time": 66.174,
+      "end_time": 66.26
+    },
+    {
+      "text": "ج",
+      "start_time": 66.26,
+      "end_time": 66.302
+    },
+    {
+      "text": "ع",
+      "start_time": 66.302,
+      "end_time": 66.43
+    },
+    {
+      "text": "ة",
+      "start_time": 66.43,
+      "end_time": 66.601
+    },
+    {
+      "text": ".",
+      "start_time": 66.601,
+      "end_time": 66.827
+    },
+    {
+      "text": " ",
+      "start_time": 66.827,
+      "end_time": 67.054
+    },
+    {
+      "text": "س",
+      "start_time": 67.054,
+      "end_time": 67.182
+    },
+    {
+      "text": "َ",
+      "start_time": 67.182,
+      "end_time": 67.224
+    },
+    {
+      "text": "د",
+      "start_time": 67.224,
+      "end_time": 67.267
+    },
+    {
+      "text": "ي",
+      "start_time": 67.267,
+      "end_time": 67.352
+    },
+    {
+      "text": "د",
+      "start_time": 67.352,
+      "end_time": 67.438
+    },
+    {
+      "text": "…",
+      "start_time": 67.438,
+      "end_time": 67.651
+    },
+    {
+      "text": " ",
+      "start_time": 67.651,
+      "end_time": 67.864
+    },
+    {
+      "text": "ر",
+      "start_time": 67.864,
+      "end_time": 68.163
+    },
+    {
+      "text": "ؤ",
+      "start_time": 68.163,
+      "end_time": 68.206
+    },
+    {
+      "text": "ي",
+      "start_time": 68.206,
+      "end_time": 68.291
+    },
+    {
+      "text": "ة",
+      "start_time": 68.291,
+      "end_time": 68.376
+    },
+    {
+      "text": " ",
+      "start_time": 68.376,
+      "end_time": 68.547
+    },
+    {
+      "text": "أ",
+      "start_time": 68.547,
+      "end_time": 68.59
+    },
+    {
+      "text": "و",
+      "start_time": 68.59,
+      "end_time": 68.675
+    },
+    {
+      "text": "ض",
+      "start_time": 68.675,
+      "end_time": 68.76
+    },
+    {
+      "text": "ح",
+      "start_time": 68.76,
+      "end_time": 68.888
+    },
+    {
+      "text": "،",
+      "start_time": 68.888,
+      "end_time": 69.08
+    },
+    {
+      "text": " ",
+      "start_time": 69.08,
+      "end_time": 69.272
+    },
+    {
+      "text": "و",
+      "start_time": 69.272,
+      "end_time": 69.443
+    },
+    {
+      "text": "ق",
+      "start_time": 69.443,
+      "end_time": 69.486
+    },
+    {
+      "text": "ر",
+      "start_time": 69.486,
+      "end_time": 69.614
+    },
+    {
+      "text": "ا",
+      "start_time": 69.614,
+      "end_time": 69.699
+    },
+    {
+      "text": "ر",
+      "start_time": 69.699,
+      "end_time": 69.784
+    },
+    {
+      "text": " ",
+      "start_time": 69.784,
+      "end_time": 69.955
+    },
+    {
+      "text": "ي",
+      "start_time": 69.955,
+      "end_time": 70.083
+    },
+    {
+      "text": "س",
+      "start_time": 70.083,
+      "end_time": 70.126
+    },
+    {
+      "text": "ت",
+      "start_time": 70.126,
+      "end_time": 70.254
+    },
+    {
+      "text": "ن",
+      "start_time": 70.254,
+      "end_time": 70.339
+    },
+    {
+      "text": "د",
+      "start_time": 70.339,
+      "end_time": 70.424
+    },
+    {
+      "text": " ",
+      "start_time": 70.424,
+      "end_time": 70.552
+    },
+    {
+      "text": "إ",
+      "start_time": 70.552,
+      "end_time": 70.595
+    },
+    {
+      "text": "ل",
+      "start_time": 70.595,
+      "end_time": 70.638
+    },
+    {
+      "text": "ى",
+      "start_time": 70.638,
+      "end_time": 70.68
+    },
+    {
+      "text": " ",
+      "start_time": 70.68,
+      "end_time": 70.723
+    },
+    {
+      "text": "ا",
+      "start_time": 70.723,
+      "end_time": 70.766
+    },
+    {
+      "text": "ل",
+      "start_time": 70.766,
+      "end_time": 70.808
+    },
+    {
+      "text": "د",
+      "start_time": 70.808,
+      "end_time": 70.851
+    },
+    {
+      "text": "ل",
+      "start_time": 70.851,
+      "end_time": 70.894
+    },
+    {
+      "text": "ي",
+      "start_time": 70.894,
+      "end_time": 70.979
+    },
+    {
+      "text": "ل",
+      "start_time": 70.979,
+      "end_time": 71.064
+    },
+    {
+      "text": ".",
+      "start_time": 71.064,
+      "end_time": 71.361
+    }
+  ],
+  "original_words": [
+    {
+      "text": "في",
+      "start_time": 0.213,
+      "end_time": 0.469
+    },
+    {
+      "text": "قطاع",
+      "start_time": 0.512,
+      "end_time": 0.768
+    },
+    {
+      "text": "الطاقة",
+      "start_time": 0.853,
+      "end_time": 1.28
+    },
+    {
+      "text": "تبدأ",
+      "start_time": 1.536,
+      "end_time": 1.877
+    },
+    {
+      "text": "الحماية",
+      "start_time": 1.92,
+      "end_time": 2.432
+    },
+    {
+      "text": "بوضوح",
+      "start_time": 2.56,
+      "end_time": 2.944
+    },
+    {
+      "text": "الرؤية",
+      "start_time": 3.072,
+      "end_time": 3.413
+    },
+    {
+      "text": "معلومات",
+      "start_time": 3.883,
+      "end_time": 4.309
+    },
+    {
+      "text": "تصل",
+      "start_time": 4.437,
+      "end_time": 4.779
+    },
+    {
+      "text": "من",
+      "start_time": 4.864,
+      "end_time": 4.949
+    },
+    {
+      "text": "مواقع",
+      "start_time": 4.992,
+      "end_time": 5.461
+    },
+    {
+      "text": "وأنظمة",
+      "start_time": 5.547,
+      "end_time": 6.0587
+    },
+    {
+      "text": "متعددة",
+      "start_time": 6.229,
+      "end_time": 6.869
+    },
+    {
+      "text": "وقرارات",
+      "start_time": 7.083,
+      "end_time": 7.68
+    },
+    {
+      "text": "تحتاج",
+      "start_time": 7.808,
+      "end_time": 8.192
+    },
+    {
+      "text": "إلى",
+      "start_time": 8.32,
+      "end_time": 8.533
+    },
+    {
+      "text": "دليل",
+      "start_time": 8.576,
+      "end_time": 8.875
+    },
+    {
+      "text": "ومسؤولية",
+      "start_time": 9.173,
+      "end_time": 9.941
+    },
+    {
+      "text": "واضحة",
+      "start_time": 10.112,
+      "end_time": 10.581
+    },
+    {
+      "text": "من",
+      "start_time": 11.011,
+      "end_time": 11.182
+    },
+    {
+      "text": "هنا",
+      "start_time": 11.225,
+      "end_time": 11.438
+    },
+    {
+      "text": "يأتي",
+      "start_time": 11.481,
+      "end_time": 11.779
+    },
+    {
+      "text": "سَديد",
+      "start_time": 11.822,
+      "end_time": 12.163
+    },
+    {
+      "text": "منصة",
+      "start_time": 12.633,
+      "end_time": 13.059
+    },
+    {
+      "text": "لدعم",
+      "start_time": 13.23,
+      "end_time": 13.5288
+    },
+    {
+      "text": "الأمن",
+      "start_time": 13.614,
+      "end_time": 13.87
+    },
+    {
+      "text": "الصناعي",
+      "start_time": 13.913,
+      "end_time": 14.425
+    },
+    {
+      "text": "صُممت",
+      "start_time": 14.851,
+      "end_time": 15.3208
+    },
+    {
+      "text": "لتجمع",
+      "start_time": 15.406,
+      "end_time": 15.8328
+    },
+    {
+      "text": "البلاغات",
+      "start_time": 15.875,
+      "end_time": 16.515
+    },
+    {
+      "text": "والأصول",
+      "start_time": 16.601,
+      "end_time": 17.1128
+    },
+    {
+      "text": "والمخاطر",
+      "start_time": 17.283,
+      "end_time": 17.966
+    },
+    {
+      "text": "والإجراءات",
+      "start_time": 18.051,
+      "end_time": 18.734
+    },
+    {
+      "text": "في",
+      "start_time": 18.819,
+      "end_time": 18.9048
+    },
+    {
+      "text": "سياق",
+      "start_time": 18.947,
+      "end_time": 19.246
+    },
+    {
+      "text": "واحد",
+      "start_time": 19.374,
+      "end_time": 19.758
+    },
+    {
+      "text": "يساعد",
+      "start_time": 20.336,
+      "end_time": 20.762
+    },
+    {
+      "text": "المسؤول",
+      "start_time": 20.805,
+      "end_time": 21.2316
+    },
+    {
+      "text": "على",
+      "start_time": 21.317,
+      "end_time": 21.53
+    },
+    {
+      "text": "فهم",
+      "start_time": 21.573,
+      "end_time": 21.7436
+    },
+    {
+      "text": "الموقف",
+      "start_time": 21.829,
+      "end_time": 22.2129
+    },
+    {
+      "text": "وتحديد",
+      "start_time": 22.341,
+      "end_time": 22.7676
+    },
+    {
+      "text": "ما",
+      "start_time": 22.896,
+      "end_time": 22.9809
+    },
+    {
+      "text": "يحتاج",
+      "start_time": 23.024,
+      "end_time": 23.3649
+    },
+    {
+      "text": "إلى",
+      "start_time": 23.493,
+      "end_time": 23.6636
+    },
+    {
+      "text": "متابعة",
+      "start_time": 23.706,
+      "end_time": 24.261
+    },
+    {
+      "text": "ويقوم",
+      "start_time": 24.679,
+      "end_time": 25.1907
+    },
+    {
+      "text": "تصميم",
+      "start_time": 25.276,
+      "end_time": 25.617
+    },
+    {
+      "text": "سديد",
+      "start_time": 25.788,
+      "end_time": 26.129
+    },
+    {
+      "text": "على",
+      "start_time": 26.343,
+      "end_time": 26.556
+    },
+    {
+      "text": "ربط",
+      "start_time": 26.599,
+      "end_time": 26.769
+    },
+    {
+      "text": "الحدث",
+      "start_time": 26.855,
+      "end_time": 27.196
+    },
+    {
+      "text": "بموقعه",
+      "start_time": 27.367,
+      "end_time": 27.921
+    },
+    {
+      "text": "وأثره",
+      "start_time": 28.092,
+      "end_time": 28.604
+    },
+    {
+      "text": "وإظهار",
+      "start_time": 28.86,
+      "end_time": 29.372
+    },
+    {
+      "text": "المعلومة",
+      "start_time": 29.457,
+      "end_time": 29.969
+    },
+    {
+      "text": "مع",
+      "start_time": 30.097,
+      "end_time": 30.225
+    },
+    {
+      "text": "مصدرها",
+      "start_time": 30.311,
+      "end_time": 30.865
+    },
+    {
+      "text": "ووقت",
+      "start_time": 30.908,
+      "end_time": 31.2067
+    },
+    {
+      "text": "تحديثها",
+      "start_time": 31.335,
+      "end_time": 31.975
+    },
+    {
+      "text": "متى",
+      "start_time": 32.273,
+      "end_time": 32.657
+    },
+    {
+      "text": "توفرت",
+      "start_time": 32.7,
+      "end_time": 33.169
+    },
+    {
+      "text": "البيانات",
+      "start_time": 33.255,
+      "end_time": 33.7667
+    },
+    {
+      "text": "المعتمدة",
+      "start_time": 33.852,
+      "end_time": 34.449
+    },
+    {
+      "text": "وصُممت",
+      "start_time": 34.854,
+      "end_time": 35.4089
+    },
+    {
+      "text": "قدرات",
+      "start_time": 35.494,
+      "end_time": 35.8355
+    },
+    {
+      "text": "الذكاء",
+      "start_time": 35.921,
+      "end_time": 36.262
+    },
+    {
+      "text": "الاصطناعي",
+      "start_time": 36.305,
+      "end_time": 36.902
+    },
+    {
+      "text": "والوكلاء",
+      "start_time": 37.03,
+      "end_time": 37.542
+    },
+    {
+      "text": "المتخصصين",
+      "start_time": 37.585,
+      "end_time": 38.395
+    },
+    {
+      "text": "لتيسير",
+      "start_time": 38.438,
+      "end_time": 38.907
+    },
+    {
+      "text": "البحث",
+      "start_time": 39.035,
+      "end_time": 39.334
+    },
+    {
+      "text": "وتلخيص",
+      "start_time": 39.633,
+      "end_time": 40.1449
+    },
+    {
+      "text": "الأدلة",
+      "start_time": 40.273,
+      "end_time": 40.742
+    },
+    {
+      "text": "وتوضيح",
+      "start_time": 40.913,
+      "end_time": 41.4675
+    },
+    {
+      "text": "الأولويات",
+      "start_time": 41.596,
+      "end_time": 42.236
+    },
+    {
+      "text": "واقتراح",
+      "start_time": 42.449,
+      "end_time": 43.046
+    },
+    {
+      "text": "الخطوة",
+      "start_time": 43.132,
+      "end_time": 43.5155
+    },
+    {
+      "text": "التالية",
+      "start_time": 43.601,
+      "end_time": 44.07
+    },
+    {
+      "text": "مع",
+      "start_time": 44.527,
+      "end_time": 44.697
+    },
+    {
+      "text": "بقاء",
+      "start_time": 44.783,
+      "end_time": 45.081
+    },
+    {
+      "text": "اعتماد",
+      "start_time": 45.124,
+      "end_time": 45.508
+    },
+    {
+      "text": "القرار",
+      "start_time": 45.551,
+      "end_time": 46.02
+    },
+    {
+      "text": "لدى",
+      "start_time": 46.148,
+      "end_time": 46.276
+    },
+    {
+      "text": "المسؤول",
+      "start_time": 46.319,
+      "end_time": 46.745
+    },
+    {
+      "text": "المخوّل",
+      "start_time": 46.831,
+      "end_time": 47.343
+    },
+    {
+      "text": "ولأن",
+      "start_time": 47.983,
+      "end_time": 48.281
+    },
+    {
+      "text": "الوقت",
+      "start_time": 48.367,
+      "end_time": 48.6226
+    },
+    {
+      "text": "يصنع",
+      "start_time": 48.751,
+      "end_time": 49.049
+    },
+    {
+      "text": "الفرق",
+      "start_time": 49.135,
+      "end_time": 49.433
+    },
+    {
+      "text": "صُممت",
+      "start_time": 49.86,
+      "end_time": 50.329
+    },
+    {
+      "text": "تجربة",
+      "start_time": 50.457,
+      "end_time": 50.7986
+    },
+    {
+      "text": "سديد",
+      "start_time": 50.927,
+      "end_time": 51.225
+    },
+    {
+      "text": "لتقليل",
+      "start_time": 51.396,
+      "end_time": 51.8226
+    },
+    {
+      "text": "خطوات",
+      "start_time": 51.908,
+      "end_time": 52.292
+    },
+    {
+      "text": "البحث",
+      "start_time": 52.377,
+      "end_time": 52.719
+    },
+    {
+      "text": "وإيصال",
+      "start_time": 53.208,
+      "end_time": 53.7628
+    },
+    {
+      "text": "المعلومة",
+      "start_time": 53.806,
+      "end_time": 54.36
+    },
+    {
+      "text": "ذات",
+      "start_time": 54.488,
+      "end_time": 54.616
+    },
+    {
+      "text": "الصلة",
+      "start_time": 54.744,
+      "end_time": 55.0855
+    },
+    {
+      "text": "بسرعة",
+      "start_time": 55.214,
+      "end_time": 55.6828
+    },
+    {
+      "text": "ووضوح",
+      "start_time": 55.853,
+      "end_time": 56.323
+    },
+    {
+      "text": "مع",
+      "start_time": 56.749,
+      "end_time": 56.877
+    },
+    {
+      "text": "بيان",
+      "start_time": 56.92,
+      "end_time": 57.219
+    },
+    {
+      "text": "ما",
+      "start_time": 57.304,
+      "end_time": 57.432
+    },
+    {
+      "text": "يحتاج",
+      "start_time": 57.475,
+      "end_time": 57.8588
+    },
+    {
+      "text": "إلى",
+      "start_time": 57.944,
+      "end_time": 58.1148
+    },
+    {
+      "text": "استكمال",
+      "start_time": 58.115,
+      "end_time": 58.541
+    },
+    {
+      "text": "ومن",
+      "start_time": 59.134,
+      "end_time": 59.39
+    },
+    {
+      "text": "السؤال",
+      "start_time": 59.433,
+      "end_time": 59.817
+    },
+    {
+      "text": "إلى",
+      "start_time": 59.902,
+      "end_time": 60.03
+    },
+    {
+      "text": "التوصية",
+      "start_time": 60.073,
+      "end_time": 60.585
+    },
+    {
+      "text": "ومن",
+      "start_time": 60.798,
+      "end_time": 61.054
+    },
+    {
+      "text": "الاعتماد",
+      "start_time": 61.097,
+      "end_time": 61.566
+    },
+    {
+      "text": "إلى",
+      "start_time": 61.652,
+      "end_time": 61.7797
+    },
+    {
+      "text": "متابعة",
+      "start_time": 61.822,
+      "end_time": 62.2917
+    },
+    {
+      "text": "الإجراء",
+      "start_time": 62.377,
+      "end_time": 62.804
+    },
+    {
+      "text": "صُمم",
+      "start_time": 63.145,
+      "end_time": 63.614
+    },
+    {
+      "text": "المسار",
+      "start_time": 63.657,
+      "end_time": 64.169
+    },
+    {
+      "text": "ليبقى",
+      "start_time": 64.254,
+      "end_time": 64.681
+    },
+    {
+      "text": "واضحًا",
+      "start_time": 64.724,
+      "end_time": 65.2357
+    },
+    {
+      "text": "وقابلًا",
+      "start_time": 65.321,
+      "end_time": 65.8757
+    },
+    {
+      "text": "للمراجعة",
+      "start_time": 65.961,
+      "end_time": 66.601
+    },
+    {
+      "text": "سَديد",
+      "start_time": 67.054,
+      "end_time": 67.438
+    },
+    {
+      "text": "رؤية",
+      "start_time": 67.864,
+      "end_time": 68.376
+    },
+    {
+      "text": "أوضح",
+      "start_time": 68.547,
+      "end_time": 68.888
+    },
+    {
+      "text": "وقرار",
+      "start_time": 69.272,
+      "end_time": 69.784
+    },
+    {
+      "text": "يستند",
+      "start_time": 69.955,
+      "end_time": 70.424
+    },
+    {
+      "text": "إلى",
+      "start_time": 70.552,
+      "end_time": 70.68
+    },
+    {
+      "text": "الدليل",
+      "start_time": 70.723,
+      "end_time": 71.064
+    }
+  ]
+}

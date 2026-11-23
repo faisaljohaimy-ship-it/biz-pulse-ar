@@ -8,6 +8,7 @@
  */
 export { SadeedProvider, useSadeedChat } from "./providers/sadeed-provider";
 export { useSadeed, setSadeedPageContext } from "./hooks/useSadeed";
+export { pageContextDraft, resolvePageCommand } from "./page-context-draft";
 export { useSadeedStore } from "./state/sadeed-store";
 export { sadeedBrain } from "./core/sadeed-brain";
 export { aiRouter } from "./core/ai-router";
