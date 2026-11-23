@@ -845,7 +845,8 @@ describe("الرئيسية — قسم فيلم التوأم في أسفل الص
   it("القسم مُسمًّى بعنوانه وسطره، ورابط /cinematic يسمّي ما يفعله بزرّ المشغّل وحلقة التركيز", () => {
     expect(code).toMatch(/<section\s+aria-labelledby="nx-home-twin-title"/);
     expect(code).toMatch(/<h2 id="nx-home-twin-title"[^>]*>\s*\{ar \? "التوأم الرقمي السينمائي"/);
-    expect(code).toContain("فيلمان أصليان.");
+    expect(code).toContain("فيلم التوأم الأصلي، ثم لماذا سديد؟ باللغة المختارة.");
+    expect(code).toContain("The original twin film, then Why Sadeed? in your selected language.");
     expect(code).toMatch(
       /<Link to="\/cinematic" className="twin-film-btn nx-focus-ring">\s*\{ar \? "فتح التجربة السينمائية"/,
     );

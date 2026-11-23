@@ -2,7 +2,16 @@
 
 **Input**: [spec.md](spec.md)، [plan.md](plan.md)، [source-inventory.md](source-inventory.md).
 
-**Status**: اكتمل إنتاج الوسائط وربطها في المصدر، واجتازت فحوص الأنواع و Lint والبناء والميزانية محليًا. لم تُتحقق المراجعة السمعية أو التشغيل الكامل، ولم يحدث نشر جديد. سؤال دورة النشر الأربع لم يُجب.
+**Historical pre-commit status**: اكتمل إنتاج الوسائط وربطها في المصدر، واجتازت فحوص الأنواع و Lint والبناء والميزانية محليًا. لم تُتحقق المراجعة السمعية أو التشغيل الكامل، ولم يحدث نشر جديد. سؤال دورة النشر الأربع لم يُجب.
+
+## Current release recovery — 2026-11-23
+
+Resume from [release-recovery.md](release-recovery.md). PR456 exists, but its old head
+failed one stale copy assertion and diverged from the later media-only main commit.
+The owner now approved six attempts for the same cycle, counting the two existing
+artifacts and retaining two emergency attempts. Current merge reconciliation preserves
+the newer Arabic MP4/VTT/scene clock and restores the broader archived features.
+No release or fresh gate result is claimed before it occurs.
 
 ## Phase 1 — المصادر وحدود القبول
 

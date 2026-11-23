@@ -1,3 +1,18 @@
+> Release reconciliation, 2026-11-23: Arabic output below is the historical
+> PR456 export, **not** the current Arabic film. Current main's later Fusha
+> derivative is preserved byte-for-byte: `public/media/identity/sadeed-identity-ar.mp4`,
+> 2,936,712 bytes, 74.366667 seconds, SHA-256
+> `0d52e422c201f044ee63f080a62fb5cf67d75daa70afa340108fd86d0182f681`.
+> Its matching public VTT SHA-256 is
+> `5d4ab0baeac48d006ebca14cb3db390fa7aed1bdf971f50085d4633f11e3d4b3`.
+> The retained Arabic FLAC, alignment, scenes, script and production manifest
+> describe the earlier 71.381179-second take and cannot reproduce this replacement.
+> Replacement Arabic separate stems/edit receipts were not present in the recovered
+> repository; provenance, listening and caption fidelity for that replacement remain
+> unverified. Do not run the historical renderer over the replacement. English
+> output remains unchanged (69.566667-second picture / 69.554717-second narration).
+> See `specs/006-cinematic-voice-activation/release-recovery.md` for current scope.
+
 # Actual derivative delivery — 2026-11-23
 
 | Export | Video | Audio | Bytes | SHA-256 |
