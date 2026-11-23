@@ -22,7 +22,9 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SOURCE="${SOURCE:-$SCRATCH/video/source.mp4}"
 OVERLAY_DIR="${OVERLAY_DIR:-$SCRATCH/video/overlay}"
 OVERLAY_PNG="$OVERLAY_DIR/overlay.png"
-OUT="${OUT:-$REPO_ROOT/public/sadeed-welcome.mp4}"
+# Retired film: keep manual derivatives in the source archive, never reintroduce
+# an unused 10.96 MiB public asset or overwrite the preserved original blob.
+OUT="${OUT:-$REPO_ROOT/media-production/archive/welcome/sadeed-welcome-derived.mp4}"
 PW_BROWSERS="${PLAYWRIGHT_BROWSERS_PATH:-/opt/pw-browsers}"
 
 # عقد الصوت (من BRIEF): أول كلمة عند 2.236s، مدة الكلام الأصلي 48.3s

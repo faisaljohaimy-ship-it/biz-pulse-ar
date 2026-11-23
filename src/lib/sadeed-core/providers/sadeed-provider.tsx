@@ -11,7 +11,7 @@
  */
 import { useChat } from "@ai-sdk/react";
 import { type UIMessage } from "ai";
-import { createContext, useContext, useEffect, useMemo, useRef } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef } from "react";
 import { useRouterState } from "@tanstack/react-router";
 import { useSadeedStore } from "../state/sadeed-store";
 import { createSadeedTransport } from "../services/sadeed-service";
@@ -20,10 +20,13 @@ import { voiceManager } from "../core/voice-manager";
 import { avatarLifecycle } from "../core/avatar-lifecycle";
 import { avatarBrain } from "../core/avatar-brain";
 import { trackMount } from "@/lib/sadeed/singletons";
+import { useI18n } from "@/lib/i18n";
+import { pageContextDraft } from "../page-context-draft";
 
 interface SadeedProviderValue {
   chat: ReturnType<typeof useChat>;
   composerRef: React.MutableRefObject<HTMLTextAreaElement | null>;
+  bindComposerDraft: (setter: (draft: string) => void) => () => void;
 }
 
 const SadeedContext = createContext<SadeedProviderValue | null>(null);
@@ -40,7 +43,22 @@ const SADEED_WELCOME_AR: UIMessage = {
 };
 
 export function SadeedProvider({ children }: { children: React.ReactNode }) {
+  const { locale } = useI18n();
   const composerRef = useRef<HTMLTextAreaElement | null>(null);
+  const draftSetter = useRef<((draft: string) => void) | null>(null);
+  const pendingDraft = useRef<{ text: string; focus: boolean } | null>(null);
+  const bindComposerDraft = useCallback((setter: (draft: string) => void) => {
+    draftSetter.current = setter;
+    const pending = pendingDraft.current;
+    pendingDraft.current = null;
+    if (pending) {
+      setter(pending.text);
+      if (pending.focus) requestAnimationFrame(() => composerRef.current?.focus());
+    }
+    return () => {
+      if (draftSetter.current === setter) draftSetter.current = null;
+    };
+  }, []);
   const setMode = useSadeedStore((s) => s.setMode);
   const setPageContext = useSadeedStore((s) => s.setPageContext);
   const drainCommands = useSadeedStore((s) => s.drainCommands);
@@ -76,16 +94,17 @@ export function SadeedProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // ── Route → ContextManager (via store) ────────────────────────────────
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { pathname, searchStr } = useRouterState({ select: (s) => s.location });
   useEffect(() => {
-    const locale =
-      (typeof document !== "undefined" && (document.documentElement.lang as "ar" | "en")) || "en";
+    const context = pageContextDraft(pathname, searchStr, locale);
+    const previous = useSadeedStore.getState().pageContext;
     setPageContext({
       pathname,
-      label: labelForPath(pathname),
+      label: context.label,
       locale,
+      ...(previous?.pathname === pathname && previous.facts ? { facts: previous.facts } : {}),
     });
-  }, [pathname, setPageContext]);
+  }, [pathname, searchStr, locale, setPageContext]);
 
   // ── Imperative command drain (open / focus / send from any component) ─
   useEffect(() => {
@@ -94,8 +113,10 @@ export function SadeedProvider({ children }: { children: React.ReactNode }) {
     for (const cmd of cmds) {
       if (cmd.kind === "open") {
         setMode("docked");
-        if (cmd.options?.draft && composerRef.current) {
-          composerRef.current.value = cmd.options.draft;
+        if (typeof cmd.options?.draft === "string") {
+          const draft = cmd.options.draft.slice(0, 2048);
+          if (draftSetter.current) draftSetter.current(draft);
+          else pendingDraft.current = { text: draft, focus: cmd.options.focus !== false };
         }
         if (cmd.options?.send) {
           void sadeedBrain.submit(cmd.options.send);
@@ -146,7 +167,10 @@ export function SadeedProvider({ children }: { children: React.ReactNode }) {
   // ── stomped each other, and the loser dropped into browser
   // ── legacy browser-voice fallback mid-reply (removed). Do NOT re-add speak here.
 
-  const value = useMemo(() => ({ chat, composerRef }), [chat]);
+  const value = useMemo(
+    () => ({ chat, composerRef, bindComposerDraft }),
+    [chat, bindComposerDraft],
+  );
   return <SadeedContext.Provider value={value}>{children}</SadeedContext.Provider>;
 }
 
@@ -154,15 +178,4 @@ export function useSadeedChat() {
   const ctx = useContext(SadeedContext);
   if (!ctx) throw new Error("useSadeedChat must be used inside <SadeedProvider>");
   return ctx;
-}
-
-// ── Path → human label (fallback; routes may override via setPageContext)
-function labelForPath(pathname: string): string {
-  const clean = pathname.replace(/^\/+/, "").replace(/\/$/, "");
-  if (!clean) return "Home";
-  const parts = clean.split("/").filter(Boolean);
-  return parts
-    .map((p) => p.replace(/[-_]/g, " ").replace(/\$/g, ""))
-    .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
-    .join(" · ");
 }

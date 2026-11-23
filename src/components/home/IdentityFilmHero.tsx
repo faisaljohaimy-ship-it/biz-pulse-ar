@@ -1,7 +1,7 @@
 import { lazy, Suspense, useCallback, useId, useLayoutEffect, useRef, useState } from "react";
 import { useI18n, type Locale } from "@/lib/i18n";
 import type { TwinFilmHandle } from "@/components/twin/TwinFilmPlayer";
-import { TwinLoadState } from "@/components/twin/TwinLoadState";
+import { TwinLoadState } from "@/components/twin/executive/TwinLoadState";
 import {
   IDENTITY_FILMS,
   IDENTITY_FILM_POSTER,

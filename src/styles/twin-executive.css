@@ -1,0 +1,335 @@
+/* Reference-only twin surface. Shared semantic tokens preserve both themes. */
+.tx-executive {
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--glass-edge);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: var(--glass-lift);
+}
+.tx-head {
+  padding: 20px 20px 12px;
+}
+.tx-head h2,
+.tx-department-head h3,
+.tx-detail h3 {
+  margin: 4px 0;
+  font-size: clamp(18px, 3vw, 26px);
+}
+.tx-eyebrow {
+  color: var(--tone-blue);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+.tx-reference,
+.tx-footnote {
+  margin: 4px 0;
+  color: var(--ink-2);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.tx-scene {
+  position: relative;
+  min-block-size: 330px;
+  overflow: hidden;
+  background: radial-gradient(
+    ellipse at 70% 25%,
+    color-mix(in srgb, var(--tone-cyan) 25%, var(--surface)),
+    var(--surface-2)
+  );
+}
+.tx-poster {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+.tx-scene-caption,
+.tx-orbit,
+.tx-assets,
+.tx-film-button {
+  position: absolute;
+}
+.tx-scene-caption {
+  inset-block-start: 16px;
+  inset-inline-start: 16px;
+  display: grid;
+  gap: 4px;
+  max-inline-size: 42%;
+  padding: 10px;
+  border-radius: 12px;
+  background: var(--surface);
+  font-size: 12px;
+}
+.tx-scene-caption strong {
+  font-size: 20px;
+  color: var(--tone-blue);
+}
+.tx-orbit {
+  inset-inline-end: 12px;
+  inset-block-start: 18px;
+  inline-size: clamp(160px, 33vw, 240px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  box-shadow: 0 0 30px color-mix(in srgb, var(--tone-cyan) 35%, transparent);
+}
+.tx-globe {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  fill: none;
+  stroke: var(--tone-cyan);
+  stroke-width: 0.8;
+  opacity: 0.7;
+}
+.tx-north {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 100%;
+  padding: 3px;
+  border: 1px dashed var(--glass-edge);
+  border-radius: 8px;
+  background: var(--surface);
+  text-align: center;
+  font-size: 11px;
+  line-height: 1.2;
+}
+.tx-region-list {
+  position: absolute;
+  inset: 16% 5%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: space-between;
+  gap: 12px 0;
+}
+.tx-executive button {
+  min-inline-size: 44px;
+  min-block-size: 44px;
+  cursor: pointer;
+  border: 1px solid var(--glass-edge);
+  border-radius: 12px;
+  color: var(--ink);
+  background: var(--surface);
+  font: inherit;
+}
+.tx-executive button:focus-visible {
+  outline: 3px solid var(--tone-blue);
+  outline-offset: 3px;
+}
+.tx-executive button[aria-pressed="true"] {
+  border-color: var(--tone-blue);
+  box-shadow: inset 0 0 0 1px var(--tone-blue);
+}
+.tx-region-list button {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  padding: 3px;
+  font-size: 11px;
+}
+.tx-region-list i {
+  inline-size: 6px;
+  block-size: 6px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--tx-accent);
+}
+.tx-assets {
+  inset-inline: 12px;
+  inset-block-end: 66px;
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+}
+.tx-assets button {
+  display: grid;
+  place-items: center;
+  color: var(--tone-cyan);
+}
+.tx-film-button {
+  inset-inline-start: 12px;
+  inset-block-end: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-inline: 12px;
+  font-size: 12px !important;
+}
+.tx-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 16px;
+}
+.tx-tools button,
+.tx-film > button {
+  padding: 8px 12px;
+  font-size: 12px;
+}
+.tx-film {
+  padding: 16px;
+  border-block: 1px solid var(--glass-edge);
+}
+.tx-metrics {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0 12px 16px;
+}
+.tx-metrics > div {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  padding: 10px 3px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--tone-blue) 13%, var(--surface)),
+    var(--surface)
+  );
+  border: 1px solid var(--glass-edge);
+  border-radius: 14px;
+  text-align: center;
+}
+.tx-metrics svg {
+  color: var(--tone-cyan);
+}
+.tx-metrics strong {
+  font-size: clamp(15px, 3.7vw, 24px);
+}
+.tx-metrics span {
+  font-size: 11px;
+  overflow-wrap: normal;
+}
+
+/* Keep words intact on phones: three cards, then two balanced cards. */
+@media (max-width: 480px) {
+  .tx-metrics {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+  .tx-metrics > div {
+    grid-column: span 2;
+  }
+  .tx-metrics > div:nth-last-child(-n + 2) {
+    grid-column: span 3;
+  }
+}
+.tx-department-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--surface-2);
+}
+.tx-department-head h3 {
+  font-size: 15px;
+}
+.tx-department-head > span {
+  font-size: 11px;
+  color: var(--ink-2);
+}
+.tx-departments {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+}
+.tx-department {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 52px;
+  gap: 10px;
+  align-items: center;
+  text-align: start;
+  padding: 10px;
+}
+.tx-percent {
+  display: grid;
+  place-items: center;
+  inline-size: 44px;
+  block-size: 44px;
+  border-radius: 50%;
+  background: conic-gradient(var(--tone-cyan) var(--tx-pct), var(--surface-2) 0);
+}
+.tx-percent bdi {
+  display: grid;
+  place-items: center;
+  inline-size: 36px;
+  block-size: 36px;
+  border-radius: 50%;
+  background: var(--surface);
+  font-size: 12px;
+  font-weight: 800;
+}
+.tx-department-copy {
+  display: grid;
+  gap: 4px;
+}
+.tx-department-copy strong {
+  font-size: 13px;
+}
+.tx-department-copy small,
+.tx-department-copy em {
+  font-size: 11px;
+  color: var(--ink-2);
+  font-style: normal;
+}
+.tx-department-art {
+  display: grid;
+  place-items: center;
+  align-self: stretch;
+  color: var(--tone-blue);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--tone-cyan) 15%, var(--surface));
+}
+.tx-detail {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin: 0 12px 12px;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--surface-2);
+}
+.tx-detail > svg {
+  flex-shrink: 0;
+  color: var(--tone-blue);
+}
+.tx-detail h3 {
+  font-size: 16px;
+}
+.tx-detail p {
+  margin: 4px 0;
+}
+.tx-footnote {
+  padding: 0 16px 16px;
+}
+@media (min-width: 768px) {
+  .tx-scene {
+    min-block-size: 400px;
+  }
+  .tx-departments {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .tx-assets {
+    inset-inline: 24px;
+    max-inline-size: 420px;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .tx-executive button {
+    transition: border-color 160ms ease;
+  }
+}
+@media (forced-colors: active) {
+  .tx-executive button {
+    border-color: ButtonText;
+  }
+  .tx-executive button[aria-pressed="true"] {
+    outline: 2px solid Highlight;
+  }
+}

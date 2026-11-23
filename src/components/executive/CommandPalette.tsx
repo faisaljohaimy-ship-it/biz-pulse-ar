@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { Search, ArrowLeft, ArrowRight, SearchX } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { screenNameAr, screenNameEn } from "@/lib/nav/screen-names";
+import { pageContextDraft, resolvePageCommand, useSadeed } from "@/lib/sadeed-core";
 
 type CmdGroup = "Navigate" | "Agents" | "Reports" | "System";
 
@@ -12,6 +13,7 @@ type Cmd = {
   title_en: string;
   hint?: string;
   to?: string;
+  trace?: "failed" | "running";
   action?: () => void;
   group: CmdGroup;
 };
@@ -72,6 +74,12 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema?: () => void } =
   const [q, setQ] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
+  const { open: openSadeed } = useSadeed();
+  const { pathname, searchStr } = useRouterState({ select: (state) => state.location });
+  const context = useMemo(
+    () => pageContextDraft(pathname, searchStr, locale),
+    [pathname, searchStr, locale],
+  );
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -95,12 +103,21 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema?: () => void } =
   useEffect(() => {
     if (open) {
       setQ("");
-      setTimeout(() => inputRef.current?.focus(), 50);
+      const timer = setTimeout(() => inputRef.current?.focus(), 50);
+      return () => clearTimeout(timer);
     }
   }, [open]);
 
   const commands: Cmd[] = useMemo(
     () => [
+      {
+        id: "ask-current-page",
+        title_ar: "اسأل سديد عن هذه الصفحة",
+        title_en: "Ask SADEED about this page",
+        hint: context.route ?? undefined,
+        action: () => openSadeed({ draft: context.draft }),
+        group: "System",
+      },
       {
         id: "home",
         title_ar: screenNameAr("/"),
@@ -187,13 +204,13 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema?: () => void } =
     ],
     // `navigate` لا تُقرأ هنا (القائمة تحمل `to` نصًّا)، فوجودها في
     // التبعيات كان يعيد بناء القائمة بلا سبب.
-    [onOpenCinema],
+    [onOpenCinema, openSadeed, context],
   );
 
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
     if (!term) return commands;
-    return commands.filter(
+    const matches = commands.filter(
       (c) =>
         c.title_ar.toLowerCase().includes(term) ||
         c.title_en.toLowerCase().includes(term) ||
@@ -201,7 +218,21 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema?: () => void } =
         // اسم المجموعة العربي مبحوث أيضًا — وإلا كانت كتابة «الوكلاء» تعيد لا شيء.
         GROUP_AR[c.group].includes(term),
     );
-  }, [commands, q]);
+    const routed = resolvePageCommand(q, pathname);
+    return routed
+      ? [
+          {
+            id: "matched-page-command",
+            to: routed.to,
+            trace: routed.trace,
+            title_ar: routed.ar,
+            title_en: routed.en,
+            group: "Navigate" as const,
+          },
+          ...matches.filter((item) => item.to !== routed.to),
+        ]
+      : matches;
+  }, [commands, q, pathname]);
 
   const grouped = useMemo(() => {
     const g = new Map<CmdGroup, Cmd[]>();
@@ -215,7 +246,8 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema?: () => void } =
 
   function run(cmd: Cmd) {
     setOpen(false);
-    if (cmd.to) navigate({ to: cmd.to });
+    if (cmd.trace) navigate({ to: "/diagnostics", search: { trace: cmd.trace } });
+    else if (cmd.to) navigate({ to: cmd.to });
     else cmd.action?.();
   }
 
@@ -225,7 +257,7 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema?: () => void } =
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Universal command"
+      aria-label={ar ? "شريط الأوامر الموحد" : "Universal command"}
       dir={ar ? "rtl" : "ltr"}
       className="fixed inset-0 z-[95] flex items-start justify-center bg-black/60 px-4 pt-[12vh] backdrop-blur-md"
       onClick={() => setOpen(false)}
@@ -240,7 +272,7 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema?: () => void } =
             ref={inputRef}
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder={ar ? "ابحث، انتقل، شغّل وكيلاً…" : "Search, navigate, run an agent…"}
+            placeholder={ar ? "ابحث، افتح شاشة، اسأل سديد…" : "Search, open a page, ask SADEED…"}
             aria-label={ar ? "ابحث أو انتقل" : "Search or navigate"}
             className="flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/35"
             onKeyDown={(e) => {
@@ -251,6 +283,12 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema?: () => void } =
             ESC
           </kbd>
         </div>
+
+        <p className="px-4 pt-3 text-xs text-white/72">
+          {context.label}
+          {context.route ? ` · ${context.route}` : ""}
+          {context.hint ? ` · ${context.hint}` : ""}
+        </p>
 
         <div className="max-h-[60vh] overflow-y-auto p-2">
           {grouped.map(([group, items]) => (
@@ -264,7 +302,7 @@ export function CommandPalette({ onOpenCinema }: { onOpenCinema?: () => void } =
                     <button
                       type="button"
                       onClick={() => run(c)}
-                      className={`group flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 ${ar ? "text-right" : "text-left"} transition hover:bg-[#3AE8FF]/10 focus:bg-[#3AE8FF]/10 focus:outline-none`}
+                      className={`group flex min-h-[44px] w-full items-center justify-between gap-3 rounded-lg px-3 py-2 ${ar ? "text-right" : "text-left"} transition hover:bg-[#3AE8FF]/10 focus:bg-[#3AE8FF]/10 focus:outline-none`}
                     >
                       <div className="min-w-0">
                         <div className="truncate text-sm font-bold text-white">

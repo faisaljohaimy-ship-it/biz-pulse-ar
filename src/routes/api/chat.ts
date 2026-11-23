@@ -1470,11 +1470,9 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
         const safe = finalizeSadeedOutput({
           userText: lastUserText ?? "",
           // دورٌ حملت كتلته مادة ويب: الصور والروابط تُجرَّد (neutralizeWebTurnOutput)؛ وغيره بايتًا كما كان.
-          modelText: generationErrorText
-            ? ""
-            : webBlockInjected
-              ? neutralizeWebTurnOutput(rawModelText)
-              : rawModelText,
+          modelText:
+            generationErrorText ??
+            (webBlockInjected ? neutralizeWebTurnOutput(rawModelText) : rawModelText),
           actor: { userId, appRoles: [], orgRole, orgId },
           // دليل البوّابة (ج) = استشهادٌ يحمل نصًّا وراء رمزه وعنوانه؛ اسم HCIS
           // وحده من الفهرس الداخلي ليس دليلًا على نطاقٍ (مراجعة ثالثة ٢٠٢٦/١٠/٢٩:
@@ -1489,8 +1487,8 @@ ${untrustedPromptData(JSON.stringify(advisory), 16_000)}
           isSimulationEnv: false,
           simulationDataAvailable: false,
         });
-        // On a provider error, show the mapped safe line (still a safe fixed string).
-        const safeDisplayText = generationErrorText ?? renderForUI(safe);
+        // Fixed provider-error lines obey the same gateway; text, envelope and speech share its result.
+        const safeDisplayText = renderForUI(safe);
         const speakableText = normalizeSadeedSpeechText(safeDisplayText, { lang: "ar" }).speech;
         const safeEnvelope = sealEnvelope(safe, {
           requestId,

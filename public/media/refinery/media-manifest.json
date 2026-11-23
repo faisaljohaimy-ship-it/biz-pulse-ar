@@ -1,0 +1,33 @@
+{
+  "isSimulation": true,
+  "source": "authored photomotion of one generated fictional still; no live feed or engineering model",
+  "files": [
+    {
+      "file": "refinery-illustrative.mp4",
+      "bytes": 627455,
+      "sha256": "71f167587086f3cf899b2249295994cb499046b9f65e77471799e7e94345f386"
+    },
+    {
+      "file": "refinery-poster.webp",
+      "bytes": 34434,
+      "sha256": "629865ab4fd88f17d5ac86bed620293973fd399e5dfd9d3026e18ce49750719a"
+    }
+  ],
+  "durationSeconds": 15.0,
+  "video": [
+    {
+      "codec": "h264",
+      "width": 1280,
+      "height": 720,
+      "fps": "24/1",
+      "frames": 360
+    }
+  ],
+  "audio": [
+    {
+      "codec": "aac",
+      "sampleRate": "48000",
+      "channels": 1
+    }
+  ]
+}

@@ -9,6 +9,8 @@ import {
   TWIN_UPSCALE_LIMIT,
 } from "./twin-film-model";
 
+const REFERENCE_FILM_SECONDS = 15;
+
 function identityMedia(locale: "ar" | "en") {
   const film = IDENTITY_FILMS[locale];
   return {
@@ -74,6 +76,33 @@ export const TWIN_FILM_CATALOG = {
         title: "SADEED identity film",
         meta: `${FILM_EFFECTIVE_SECONDS}s · 1× · original audio`,
         description: "Original SADEED opening and audio.",
+      },
+    },
+  },
+  reference: {
+    films: [{ width: 1280, src: "/media/refinery/refinery-illustrative.mp4" }],
+    poster: { src: "/media/refinery/refinery-poster.webp", width: 640, height: 360 },
+    seconds: REFERENCE_FILM_SECONDS,
+    aspectRatio: "16 / 9",
+    webm: false,
+    text: {
+      ar: {
+        ...TWIN_FILM_TEXT.ar,
+        title: "فيلم المنشأة التوضيحي",
+        kind: "تصور مرئي · حركة مصممة",
+        meta: `${REFERENCE_FILM_SECONDS} ثانية · صوت مُصنّع`,
+        description: "تصور لمنشأة صناعية مع صوت مُصنّع.",
+        disclosure:
+          "مشهد خيالي من صورة واقعية مولّدة مع حركة مصممة؛ ليس بثًا حيًا ولا تمثيلًا هندسيًا أو بيانات تشغيلية.",
+      },
+      en: {
+        ...TWIN_FILM_TEXT.en,
+        title: "Illustrative facility film",
+        kind: "Visual concept · authored motion",
+        meta: `${REFERENCE_FILM_SECONDS} seconds · synthesized audio`,
+        description: "An industrial concept with synthesized audio.",
+        disclosure:
+          "A fictional photorealistic still with authored motion; not a live feed, engineering model or operational data.",
       },
     },
   },

@@ -39,6 +39,8 @@
 import { lazy, Suspense, useEffect, useRef, useState, type ComponentType } from "react";
 import { Link } from "@tanstack/react-router";
 import { useI18n } from "@/lib/i18n";
+import { DEFAULT_REGION_ID } from "@/lib/regions";
+import { TwinLoadState } from "@/components/twin/executive/TwinLoadState";
 import { IdentityFilmHero } from "@/components/home/IdentityFilmHero";
 import { IDENTITY_FILMS } from "@/components/home/identity-film-model";
 import { TWIN_FILM_CATALOG, type TwinFilmId } from "@/components/twin/twin-film-catalog";
@@ -56,6 +58,16 @@ const TwinFilmPlayer = lazy<ComponentType<TwinFilmPlayerProps>>(() =>
     .then((m) => ({ default: m.TwinFilmPlayer }))
     .catch(() => ({ default: FilmUnavailable })),
 );
+
+const TwinReferencePanel = lazy(() =>
+  import("@/components/twin/executive/TwinReferencePanel")
+    .then((m) => ({ default: m.TwinReferencePanel }))
+    .catch(() => ({ default: ReferenceUnavailable })),
+);
+
+function ReferenceUnavailable() {
+  return <TwinLoadState failed />;
+}
 
 /** مسافة الاقتراب (حول الإطار) التي يُطلب عندها المشغّل قبل أن يبلغ القسم الإطار. */
 export const APPROACH_MARGIN = "600px";
@@ -107,6 +119,7 @@ export function HomeTwinSection() {
   const stageRef = useRef<HTMLDivElement>(null);
   /** اقترب القسم من الإطار مرّةً — بعدها يُطلب المشغّل ولا يعود البديل. */
   const [near, setNear] = useState(false);
+  const [showReference, setShowReference] = useState(false);
 
   useEffect(() => {
     const stage = stageRef.current;
@@ -142,10 +155,31 @@ export function HomeTwinSection() {
               : "The original twin film, then Why Sadeed? in your selected language. Play one film at a time."}
           </p>
         </div>
-        <Link to="/cinematic" className="twin-film-btn nx-focus-ring">
-          {ar ? "فتح التجربة السينمائية" : "Open the cinematic experience"}
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            className="twin-film-btn nx-focus-ring"
+            aria-expanded={showReference}
+            aria-controls="nx-twin-reference"
+            onClick={() => setShowReference((value) => !value)}
+          >
+            {ar ? "التوأم التفاعلي" : "Interactive twin"}
+          </button>
+          <Link to="/sec/twin" className="twin-film-btn nx-focus-ring">
+            {ar ? "شجرة الأصول" : "Asset tree"}
+          </Link>
+          <Link to="/cinematic" className="twin-film-btn nx-focus-ring">
+            {ar ? "فتح التجربة السينمائية" : "Open the cinematic experience"}
+          </Link>
+        </div>
       </div>
+      {showReference && (
+        <div id="nx-twin-reference" className="mb-5">
+          <Suspense fallback={<TwinLoadState />}>
+            <TwinReferencePanel initialRegionId={DEFAULT_REGION_ID} />
+          </Suspense>
+        </div>
+      )}
       <div ref={stageRef} className="nx-home-twin-stage nx-home-twin-gallery">
         {films.map((film) => {
           const placeholder = <FilmPlaceholder lang={lang} film={film} state="pending" />;

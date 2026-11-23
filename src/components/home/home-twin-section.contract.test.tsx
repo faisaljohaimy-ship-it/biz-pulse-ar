@@ -89,6 +89,11 @@ async function mountPage(player: "rejects" | "arrives") {
     ),
   );
   await act(async () => {});
+  expect(
+    Array.from(view.container.querySelectorAll<HTMLElement>("[data-gallery-film]"), (film) =>
+      film.getAttribute("data-gallery-film"),
+    ),
+  ).toEqual(["twin", localStorage.getItem("locale") === "en" ? "identityEn" : "identityAr"]);
   return view;
 }
 

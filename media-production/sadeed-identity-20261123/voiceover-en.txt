@@ -1,0 +1,11 @@
+In the energy sector, protection begins with a clear view. Information arrives from multiple sites and systems, while decisions need evidence and clear accountability.
+
+That is the purpose of Sadeed: an industrial security platform designed to bring incidents, assets, risks, and actions into one connected context, helping decision-makers understand the situation and see what needs attention.
+
+The platform is designed to link events to their locations and potential impact, showing the source and freshness of information when approved data is available.
+
+Its AI capabilities and specialized agents are designed to support search, evidence summaries, priority explanations, and suggested next steps. Authorized people remain responsible for approving decisions.
+
+Because time matters, Sadeed is designed to reduce searching and unnecessary steps, bringing relevant information forward clearly while showing what is still missing.
+
+From a question to a recommendation, and from approval to action tracking, the aim is a clear, reviewable process. Sadeed. A clearer view. Decisions grounded in evidence.

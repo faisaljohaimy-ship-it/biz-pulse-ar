@@ -28,8 +28,8 @@
  * ## الفروق الباقية فروق خانات لا فروق هيئة (قرارات المالك)
  *
  * مبدّل الوضع على الرئيسية وحدها، و«بلّغ» على الداخلية وحدها — يقرّرهما
- * `useChromeSlots()` في `SystemHeader`. والفيلم للرئيسية وحدها (`film`)،
- * والسطح الساكن نفسه خلف كل صفحة.
+ * `useChromeSlots()` في `SystemHeader`. منذ أمر المالك ٢٠٢٦/١١/٢٣ تبقى
+ * الخلفية ساكنة: صورة البداية أولًا، والفيلمان لا يطلبان قبل تشغيل صريح في التوأم.
  */
 import { useRef, type MouseEvent, type ReactNode } from "react";
 import { HoloVideoEngine } from "@/components/home/HoloVideoEngine";
@@ -95,7 +95,7 @@ export function isSystemRoute(routeIds: readonly string[]): boolean {
  */
 export function SystemChrome({ children, mode }: { children: ReactNode; mode: ChromeMode }) {
   if (mode === "none") return <>{children}</>;
-  return <Chrome film={mode === "home"}>{children}</Chrome>;
+  return <Chrome film={false}>{children}</Chrome>;
 }
 
 function Chrome({ children, film }: { children: ReactNode; film: boolean }) {
