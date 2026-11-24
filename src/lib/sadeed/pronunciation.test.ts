@@ -48,6 +48,33 @@ describe("englishNumberWords (hundreds → millions)", () => {
   });
 });
 
+describe("English executive-scale narration regressions", () => {
+  it.each([
+    [
+      999_999_999,
+      "nine hundred ninety-nine million nine hundred ninety-nine thousand nine hundred ninety-nine",
+    ],
+    [1_000_000_000, "one billion"],
+    [2_000_000_000, "two billion"],
+    [3_500_000_000, "three billion five hundred million"],
+    [1_000_000_000_000, "one trillion"],
+  ] as const)("speaks %d without a malformed million group", (value, expected) => {
+    expect(englishNumberWords(value)).toBe(expected);
+  });
+
+  it("never voices undefined for safe multi-billion English replies", () => {
+    expect(applySadeedPronunciation("Exposure: 2,000,000,000 units")).toBe(
+      "Exposure: two billion units",
+    );
+  });
+
+  it("does not invent an imprecise cardinal beyond safe integers", () => {
+    expect(englishNumberWords(Number.MAX_SAFE_INTEGER + 1)).toBe(
+      String(Number.MAX_SAFE_INTEGER + 1),
+    );
+  });
+});
+
 describe("applySadeedPronunciation — directive codes", () => {
   it("speaks SEC-18 as «سِك ثمانية عشر» (not letter-spelled, digit read)", () => {
     expect(applySadeedPronunciation("راجع توجيه SEC-18 الآن")).toBe(
