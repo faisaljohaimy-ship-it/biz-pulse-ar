@@ -115,10 +115,18 @@ const playerOf = (c: HTMLElement) => c.querySelector("figure.twin-film");
  * `Suspense` قبل أن يُعالَج الرفض أصلًا.
  */
 async function settle(container: HTMLElement, expected: "unavailable" | "player") {
-  await waitFor(() => {
-    const found = expected === "player" ? playerOf(container) : unavailableOf(container);
-    expect(found, expected === "player" ? "المشغّل لم يصل" : "بديل التعذّر لم يحلّ").not.toBeNull();
-  });
+  await waitFor(
+    () => {
+      const found = expected === "player" ? playerOf(container) : unavailableOf(container);
+      expect(
+        found,
+        expected === "player" ? "المشغّل لم يصل" : "بديل التعذّر لم يحلّ",
+      ).not.toBeNull();
+      if (expected === "player")
+        expect(container.querySelectorAll("figure.twin-film")).toHaveLength(3);
+    },
+    { timeout: 4000 },
+  );
   await act(async () => {});
 }
 
@@ -149,7 +157,7 @@ describe("صفحة التوأم — معرض الأفلام حين تتعذّر 
     expect(FakeObserver.all.length, "لا مراقب اقتراب").toBeGreaterThan(0);
     expect(view.getByRole("status")).toHaveTextContent("لم يجهز التسجيل الصوتي بصوت سديد بعد");
     expect(view.getByRole("status")).toHaveTextContent("1.25×");
-    expect(view.getByText("قراءة نص التعليق المقترح")).toBeVisible();
+    expect(view.getByText("قراءة نص المشاهد")).toBeVisible();
     expect(view.container.querySelector("details ol")?.children).toHaveLength(5);
     expect(view.container.querySelector("details ol")).toHaveTextContent("محطات الطاقة لا تنام");
     expect(view.container.querySelector('[data-gallery-film^="twinNarrated"]')).toBeNull();
@@ -202,7 +210,7 @@ describe("صفحة التوأم — معرض الأفلام حين تتعذّر 
       /not a live feed/,
     );
     expect(view.getByRole("status")).toHaveTextContent("Sadeed voice recording is not ready yet");
-    expect(view.getByText("Read the proposed narration")).toBeVisible();
+    expect(view.getByText("Read the scene script")).toBeVisible();
     expect(view.container.querySelector("details ol")).toHaveTextContent("Energy never sleeps");
     expect(view.container.querySelector("details ol")).not.toHaveTextContent("محطات الطاقة");
     view.unmount();
@@ -223,6 +231,7 @@ describe("صفحة التوأم — معرض الأفلام حين تتعذّر 
         film.getAttribute("data-controls"),
       ),
     ).toEqual(["native", "native", "native"]);
+    expect(view.container.querySelector("figure[data-manual]")).toBeNull();
     view.unmount();
   });
 });

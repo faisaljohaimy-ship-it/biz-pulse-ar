@@ -27,25 +27,20 @@ const words = {
     opening: "فيلم هوية سديد",
     twin: "فيلم التوأم الرقمي",
     play: "تشغيل الفيلم",
-    pause: "إيقاف الفيلم مؤقتًا",
-    resume: "متابعة الفيلم",
-    sound: "الصوت",
   },
   en: {
     opening: "SADEED identity film",
     twin: "Digital twin film",
     play: "Play film",
-    pause: "Pause film",
-    resume: "Resume film",
-    sound: "Sound",
   },
 } as const;
 const figure = (page: Page, film: Film) => page.locator(`figure[data-film='${film}']`);
 test.use({ serviceWorkers: "block" });
 function noEarlyMedia(ledger: Ledger) {
-  expect(ledger.media, "no video bytes may be requested before an explicit film action").toEqual(
-    [],
-  );
+  expect(
+    ledger.media,
+    "no video bytes may be requested while reduced motion is active and playback has not been requested",
+  ).toEqual([]);
 }
 function exclusive(playing: string[]) {
   expect(playing.length, `simultaneous films: ${playing.join(", ")}`).toBeLessThanOrEqual(1);
@@ -77,20 +72,16 @@ async function frame(page: Page) {
   );
 }
 async function gallery(page: Page, locale: Locale) {
-  await expect(page.locator(".nx-home-brand")).toHaveAttribute("data-run", "true");
-  await frame(page);
-  await page.locator(".nx-home-twin-stage").scrollIntoViewIfNeeded();
-  await expect(page.locator("figure[data-film]")).toHaveCount(2);
+  await page.goto("/sec/twin", { waitUntil: "domcontentloaded" });
+  const stage = page.locator(".nx-home-twin-stage");
+  await stage.scrollIntoViewIfNeeded();
   await expect(page.locator(".nx-home-twin")).toHaveAttribute(
     "dir",
     locale === "ar" ? "rtl" : "ltr",
   );
   for (const film of ["opening", "twin"] as const) {
     await expect(figure(page, film)).toHaveAccessibleName(words[locale][film]);
-    await expect(
-      figure(page, film).getByRole("button", { name: words[locale].play, exact: true }),
-    ).toBeVisible();
-    await expect(figure(page, film).locator("video, video source")).toHaveCount(0);
+    await expect(figure(page, film)).toHaveAttribute("data-controls", "native");
   }
   await frame(page);
 }
@@ -100,33 +91,14 @@ async function touchSize(control: Locator) {
   expect(box?.height).toBeGreaterThanOrEqual(44);
   expect(box?.width).toBeGreaterThanOrEqual(44);
 }
-async function activeBar(page: Page, film: Film, state: string) {
-  const item = figure(page, film);
-  const buttons = item.locator(".twin-film-bar button");
-  await expect(buttons).toHaveCount(3);
-  const box = (await item.boundingBox())!;
-  const viewport = await page.evaluate(() => document.documentElement.clientWidth);
-  for (const button of await buttons.all()) {
-    await touchSize(button);
-    const target = (await button.boundingBox())!;
-    expect(target.x, `${film} ${state} left boundary`).toBeGreaterThanOrEqual(
-      Math.max(0, box.x) - 1,
-    );
-    expect(target.x + target.width, `${film} ${state} right boundary`).toBeLessThanOrEqual(
-      Math.min(viewport, box.x + box.width) + 1,
-    );
-  }
-  const content = await page.evaluate(() => document.documentElement.scrollWidth);
-  expect(content, `${film} ${state} no horizontal overflow`).toBeLessThanOrEqual(viewport + 1);
-}
-async function playing(page: Page, film: Film, locale: Locale) {
+async function playing(page: Page, film: Film) {
   const item = figure(page, film);
   const video = item.locator("video");
-  await expect(video).toHaveCount(1);
+  await expect(video).toBeVisible();
+  await expect(video).toHaveAttribute("controls", "");
   await expect
     .poll(() => video.evaluate((v: HTMLVideoElement) => !v.paused && v.readyState >= 2))
     .toBe(true);
-  await expect(item.getByRole("button", { name: words[locale].pause, exact: true })).toBeVisible();
   const state = await video.evaluate((v: HTMLVideoElement) => ({
     rate: v.playbackRate,
     defaultRate: v.defaultPlaybackRate,
@@ -141,7 +113,7 @@ async function playing(page: Page, film: Film, locale: Locale) {
     source: new URL(v.currentSrc).pathname,
     time: v.currentTime,
   }));
-  expect(state.rate).toBe(film === "opening" ? 0.5 : 1);
+  expect(state.rate).toBe(1);
   expect(state.defaultRate).toBe(state.rate);
   expect(state.duration).toBeCloseTo(film === "opening" ? 26 : 56, 0);
   expect(state.width / state.height).toBeCloseTo(film === "opening" ? 3 : 16 / 9, 1);
@@ -149,9 +121,7 @@ async function playing(page: Page, film: Film, locale: Locale) {
   expect(state.preload).toBe("none");
   expect(state.loop).toBe(false);
   expect(state.volume).toBeGreaterThan(0);
-  expect(state.muted, "a direct user gesture should enable the original container audio").toBe(
-    false,
-  );
+  expect(state.muted).toBe(true);
   expect(state.source).toMatch(
     film === "opening"
       ? /^\/media\/brand\/sadeed-film-(804|1608)\.(mp4|webm)$/
@@ -160,7 +130,6 @@ async function playing(page: Page, film: Film, locale: Locale) {
   await expect
     .poll(() => video.evaluate((v: HTMLVideoElement) => v.currentTime))
     .toBeGreaterThan(state.time + 0.15);
-  await touchSize(item.getByRole("button", { name: words[locale].sound, exact: true }));
   exclusive((await audit(page)).playing);
   return video;
 }
@@ -276,6 +245,7 @@ test.beforeAll(async ({ browser }, info) => {
   try {
     const page = await context.newPage();
     ledger = await installMediaGuards(page);
+    await page.emulateMedia({ reducedMotion: "reduce" });
     await page.addInitScript(() => {
       sessionStorage.setItem("theme", "dark");
       localStorage.setItem("locale", "ar");
@@ -283,6 +253,8 @@ test.beforeAll(async ({ browser }, info) => {
     await page.goto("/?region=central", { waitUntil: "domcontentloaded", timeout: remaining() });
     await page.locator('.nx-home-brand[data-run="true"]').waitFor({ timeout: remaining() });
     await frame(page);
+    await page.goto("/sec/twin", { waitUntil: "domcontentloaded", timeout: remaining() });
+    const beforeGallery = ledger.media.length;
     await page.locator(".nx-home-twin-stage").scrollIntoViewIfNeeded({ timeout: remaining() });
     await page
       .locator('figure[data-film="twin"]')
@@ -290,7 +262,7 @@ test.beforeAll(async ({ browser }, info) => {
     await page
       .locator('figure[data-film="opening"]')
       .waitFor({ state: "attached", timeout: remaining() });
-    noEarlyMedia(ledger);
+    noEarlyMedia({ ...ledger, media: ledger.media.slice(beforeGallery) });
     expect(ledger.writes).toEqual([]);
     expect(ledger.provider).toEqual([]);
     expect(ledger.errors).toEqual([]);
@@ -365,6 +337,19 @@ test.afterEach(async ({ page, browserName, browser }, info) => {
   }
 });
 
+async function openHome(page: Page, theme: string, locale: Locale) {
+  await page.goto("/?region=central", { waitUntil: "domcontentloaded" });
+  await expect(page.getByTestId("home-opening-image")).toBeVisible({ timeout: 60_000 });
+  // Wait for the hydrated home before testing its controls or scrolling.
+  await expect(page.locator(".nx-home-brand")).toHaveAttribute("data-run", "true", {
+    timeout: 60_000,
+  });
+  await frame(page);
+  await expect(page.locator("html")).toHaveClass(new RegExp(`\\b${theme}\\b`));
+  await expect(page.locator("html")).toHaveAttribute("lang", locale);
+  expect(await page.evaluate(() => localStorage.getItem("sadeed-staff-number"))).toBeNull();
+}
+
 for (const theme of ["dark", "light"] as const) {
   for (const locale of ["ar", "en"] as const) {
     test.describe(`Owner media · ${theme} · ${locale}`, () => {
@@ -373,24 +358,22 @@ for (const theme of ["dark", "light"] as const) {
           ({ theme, locale }) => {
             sessionStorage.setItem("theme", theme);
             localStorage.setItem("locale", locale);
+            // Exercise autoplay on a known fast link even when the dev server is under load.
+            Object.defineProperty(navigator, "connection", {
+              configurable: true,
+              value: { effectiveType: "4g", saveData: false },
+            });
           },
           { theme, locale },
         );
-        await page.goto("/?region=central", { waitUntil: "domcontentloaded" });
-        await expect(page.getByTestId("home-opening-image")).toBeVisible({ timeout: 60_000 });
-        // SSR pixels precede hydration and router scroll restoration. Wait for
-        // the existing client-owned marker before scrolling the lazy gallery.
-        await expect(page.locator(".nx-home-brand")).toHaveAttribute("data-run", "true");
-        await frame(page);
-        await expect(page.locator("html")).toHaveClass(new RegExp(`\\b${theme}\\b`));
-        await expect(page.locator("html")).toHaveAttribute("lang", locale);
-        expect(await page.evaluate(() => localStorage.getItem("sadeed-staff-number"))).toBeNull();
       });
 
       test("shows the exact image and both posters at all certification widths without eager video", async ({
         page,
         browserName,
       }) => {
+        await page.emulateMedia({ reducedMotion: "reduce" });
+        await openHome(page, theme, locale);
         const hero = page.getByTestId("home-opening-image");
         await expect(hero.locator("video, audio")).toHaveCount(0);
         await expect(hero.locator("img")).toHaveAttribute("src", imageFallback);
@@ -437,14 +420,18 @@ for (const theme of ["dark", "light"] as const) {
           }
           expect(image.fit).toBe("contain");
           expect(image.caption).toBeGreaterThanOrEqual(image.bottom - 1);
-          await gallery(page, locale);
+        }
+        const beforeGallery = ledgers.get(page)!.media.length;
+        await gallery(page, locale);
+        for (const width of [360, 390, 430, 768, 1280]) {
+          await page.setViewportSize({ width, height: 950 });
           for (const film of ["opening", "twin"] as const) {
             await touchSize(
               figure(page, film).getByRole("button", { name: words[locale].play, exact: true }),
             );
-            await touchSize(figure(page, film).locator("button[data-action='reset']"));
+            await expect(figure(page, film).locator("video,source")).toHaveCount(0);
             await expect(figure(page, film).locator("figcaption")).toContainText(
-              film === "opening" ? "52" : "56",
+              film === "opening" ? "26" : "56",
             );
             const poster = figure(page, film).locator("img");
             await expect
@@ -462,7 +449,10 @@ for (const theme of ["dark", "light"] as const) {
           expect(dimensions.content, `${width}px ${theme} ${locale}`).toBeLessThanOrEqual(
             dimensions.viewport + 1,
           );
-          noEarlyMedia(ledgers.get(page)!);
+          noEarlyMedia({
+            ...ledgers.get(page)!,
+            media: ledgers.get(page)!.media.slice(beforeGallery),
+          });
           if (width === 390 || width === 1280) {
             await page.screenshot({
               path: `.audit-tmp/media-evidence/${browserName}-${theme}-${locale}-${width}-posters.png`,
@@ -472,164 +462,97 @@ for (const theme of ["dark", "light"] as const) {
         }
       });
 
-      test("uses original audio/rates, cancels late play, switches exclusively, pauses and preserves OMEGA", async ({
+      test("autoplays visible films muted, transfers playback, and preserves manual controls and reduced motion", async ({
         page,
       }) => {
+        await page.addInitScript(() => localStorage.setItem("sadeed-staff-number", "00000"));
+        await page.setViewportSize({ width: 390, height: 460 });
+        // Land at the first film rather than scrolling through the gallery's lower players.
+        await page.goto("/sec/twin", { waitUntil: "domcontentloaded" });
+        const stage = page.locator(".nx-home-twin-stage");
+        await stage.evaluate((el) => el.scrollIntoView({ block: "start", behavior: "instant" }));
+        const twin = figure(page, "twin");
+        await twin
+          .locator(".twin-film-frame")
+          .evaluate((el) => el.scrollIntoView({ block: "center", behavior: "instant" }));
+        const video = await playing(page, "twin");
+        const track = video.locator("track");
+        await expect(track).toHaveAttribute("srclang", locale);
+        await expect
+          .poll(() =>
+            video.evaluate((v: HTMLVideoElement) =>
+              Array.from(v.textTracks).some(
+                (t) => t.mode === "showing" && (t.cues?.length ?? 0) > 0,
+              ),
+            ),
+          )
+          .toBe(true);
+        await video.evaluate((v: HTMLVideoElement) => v.pause());
+        await expect(twin).toHaveAttribute("data-status", "paused");
+        await video.focus();
+        await video.evaluate((v: HTMLVideoElement) => v.play());
+        await playing(page, "twin");
+
+        const opening = figure(page, "opening");
+        await opening
+          .locator(".twin-film-frame")
+          .evaluate((el) => el.scrollIntoView({ block: "center", behavior: "instant" }));
+        const openingVideo = opening.locator("video");
+        await expect(openingVideo).toBeVisible();
+        await openingVideo.evaluate((v: HTMLVideoElement) => v.play());
+        await playing(page, "opening");
+        await expect.poll(() => video.evaluate((v: HTMLVideoElement) => v.paused)).toBe(true);
+        const media = ledgers.get(page)!.media;
+        expect(media.some((r) => r.film === "twin")).toBe(true);
+        expect(media.some((r) => r.film === "opening")).toBe(true);
+
+        await page.locator(".nx-home-twin a[href='/cinematic']").click();
+        await expect(page).toHaveURL(/\/cinematic$/);
+        await expect(page.locator("figure[data-film='opening']")).toHaveCount(0);
+        ledgers.get(page)!.playback.push(...(await audit(page)).observations);
+        await page.goto("/sec/decision-center", { waitUntil: "domcontentloaded" });
+        await expect(
+          page.getByRole("heading", {
+            name:
+              locale === "ar" ? "مركز القرار الأمني الذكي" : "Intelligent Security Decision Center",
+            exact: true,
+          }),
+        ).toBeVisible({ timeout: 60_000 });
+        await expect(
+          page.getByRole("region", {
+            name: locale === "ar" ? "مختبر السياق والافتراضات" : "Context & assumptions lab",
+            exact: true,
+          }),
+        ).toBeVisible();
+        await expect(page.locator("figure[data-film] video")).toHaveCount(0);
+        await expect(
+          page.getByRole("button", {
+            name: locale === "ar" ? "تصدير التقرير · محاكاة" : "Export report · simulation",
+            exact: true,
+          }),
+        ).toBeDisabled();
+
+        await page.emulateMedia({ reducedMotion: "reduce" });
+        const beforeReduced = media.length;
         await gallery(page, locale);
-        noEarlyMedia(ledgers.get(page)!);
-        let release!: () => void;
-        const held = new Promise<void>((resolve) => {
-          release = resolve;
-        });
-        let twinRequested = false;
-        await page.route("**/media/twin/*", async (route) => {
-          if (/\.(mp4|webm)$/.test(new URL(route.request().url()).pathname)) {
-            twinRequested = true;
-            await held;
-          }
-          await route.continue().catch(() => {});
-        });
-        try {
-          const first = figure(page, "twin").getByRole("button", {
-            name: words[locale].play,
-            exact: true,
-          });
-          await first.focus();
-          await first.press("Enter");
-          await expect.poll(() => twinRequested).toBe(true);
-          const other = figure(page, "opening").getByRole("button", {
-            name: words[locale].play,
-            exact: true,
-          });
-          await other.focus();
-          await other.press("Space");
-          const openingVideo = await playing(page, "opening", locale);
-          release();
-          const releaseTime = await openingVideo.evaluate(
-            (video: HTMLVideoElement) => video.currentTime,
-          );
-          await expect
-            .poll(() => openingVideo.evaluate((video: HTMLVideoElement) => video.currentTime))
-            .toBeGreaterThan(releaseTime + 0.6);
-          await expect
-            .poll(() =>
-              figure(page, "twin")
-                .locator("video")
-                .evaluate((v: HTMLVideoElement) => v.paused),
-            )
-            .toBe(true);
-          await figure(page, "opening")
-            .getByRole("button", { name: words[locale].pause, exact: true })
-            .click();
-          await expect.poll(async () => (await audit(page)).playing).toEqual([]);
-          await figure(page, "opening")
-            .getByRole("button", { name: words[locale].resume, exact: true })
-            .click();
-          await playing(page, "opening", locale);
-          for (const film of ["twin", "opening", "twin"] as const) {
-            await figure(page, film).locator(".twin-film-toggle").click();
-            await playing(page, film, locale);
-          }
-          expect(
-            ledgers.get(page)!.media.filter((request) => request.film === "opening").length,
-          ).toBeGreaterThan(0);
-          expect(
-            ledgers.get(page)!.media.filter((request) => request.film === "twin").length,
-          ).toBeGreaterThan(0);
-          for (const observation of (await audit(page)).observations)
-            exclusive(observation.playing);
-          for (const width of [360, 390, 430, 768, 1280]) {
-            await page.setViewportSize({ width, height: 950 });
-            for (const film of ["opening", "twin"] as const) {
-              const toggle = figure(page, film).locator(".twin-film-toggle");
-              if ((await toggle.getAttribute("data-action")) !== "pause") await toggle.click();
-              await playing(page, film, locale);
-              await activeBar(page, film, `${width}px playing ${locale} ${theme}`);
-              await figure(page, film)
-                .getByRole("button", { name: words[locale].pause, exact: true })
-                .click();
-              await expect.poll(async () => (await audit(page)).playing).toEqual([]);
-              await activeBar(page, film, `${width}px paused ${locale} ${theme}`);
-            }
-          }
-          await figure(page, "twin")
-            .getByRole("button", { name: words[locale].resume, exact: true })
-            .click();
-          await playing(page, "twin", locale);
-          await page.getByTestId("home-opening-image").scrollIntoViewIfNeeded();
-          await expect.poll(async () => (await audit(page)).playing).toEqual([]);
-          await figure(page, "twin").scrollIntoViewIfNeeded();
-          await frame(page);
-          await expect.poll(async () => (await audit(page)).playing).toEqual([]);
-          await figure(page, "twin")
-            .getByRole("button", { name: words[locale].resume, exact: true })
-            .click();
-          await playing(page, "twin", locale);
-          const oldVideo = await figure(page, "twin").locator("video").elementHandle();
-          expect(oldVideo).not.toBeNull();
-          await page.locator(".nx-home-twin a[href='/cinematic']").click();
-          await expect(page).toHaveURL(/\/cinematic$/);
-          await expect
-            .poll(() =>
-              oldVideo!.evaluate((video: HTMLVideoElement) => ({
-                connected: video.isConnected,
-                paused: video.paused,
-                sources: video.querySelectorAll("source").length,
-                src: video.hasAttribute("src"),
-              })),
-            )
-            .toEqual({ connected: false, paused: true, sources: 0, src: false });
-          ledgers.get(page)!.playback.push(...(await audit(page)).observations);
-          await page.goto("/sec/decision-center", { waitUntil: "domcontentloaded" });
-          await expect(
-            page.getByRole("heading", {
-              name:
-                locale === "ar"
-                  ? "مركز القرار الأمني الذكي"
-                  : "Intelligent Security Decision Center",
-              exact: true,
-            }),
-          ).toBeVisible();
-          await expect(
-            page.getByRole("region", {
-              name: locale === "ar" ? "مختبر السياق والافتراضات" : "Context & assumptions lab",
-              exact: true,
-            }),
-          ).toBeVisible();
-          await expect(page.locator("figure[data-film] video")).toHaveCount(0);
-          await expect(
-            page.getByRole("button", {
-              name: locale === "ar" ? "تصدير التقرير · محاكاة" : "Export report · simulation",
-              exact: true,
-            }),
-          ).toBeDisabled();
-          await page.emulateMedia({ reducedMotion: "reduce" });
-          const beforeReduced = ledgers.get(page)!.media.length;
-          await page.goto("/", { waitUntil: "domcontentloaded" });
-          await gallery(page, locale);
-          noEarlyMedia({
-            ...ledgers.get(page)!,
-            media: ledgers.get(page)!.media.slice(beforeReduced),
-          });
-          await figure(page, "opening")
-            .getByRole("button", { name: words[locale].play, exact: true })
-            .click();
-          await playing(page, "opening", locale);
-          await figure(page, "opening").locator("button[data-action='reset']").click();
-          await expect(figure(page, "opening").locator("video, video source")).toHaveCount(0);
-          await expect(
-            figure(page, "opening").getByRole("button", { name: words[locale].play, exact: true }),
-          ).toBeVisible();
-          await expect.poll(async () => (await audit(page)).playing).toEqual([]);
-        } finally {
-          release();
-        }
+        await expect(figure(page, "opening")).toHaveAttribute("data-gate", "reduced");
+        noEarlyMedia({ ...ledgers.get(page)!, media: media.slice(beforeReduced) });
+        await figure(page, "opening")
+          .getByRole("button", { name: words[locale].play, exact: true })
+          .click();
+        const requested = figure(page, "opening").locator("video");
+        await expect
+          .poll(() => requested.evaluate((v: HTMLVideoElement) => !v.paused && v.currentTime > 0))
+          .toBe(true);
+        await requested.evaluate((v: HTMLVideoElement) => v.pause());
+        await expect.poll(async () => (await audit(page)).playing).toEqual([]);
       });
 
       test("renders source provenance from an explicitly mocked SDK stream without provider calls", async ({
         page,
         browserName,
       }) => {
+        await openHome(page, theme, locale);
         const metadata = {
           citations: [
             { title: "Permit policy", tag: "[KB:Permit policy]" },

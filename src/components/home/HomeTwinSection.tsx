@@ -9,7 +9,11 @@ import { useI18n } from "@/lib/i18n";
 import { IdentityFilmHero } from "@/components/home/IdentityFilmHero";
 import { IDENTITY_FILMS } from "@/components/home/identity-film-model";
 import { TWIN_FILM_CATALOG, type TwinFilmId } from "@/components/twin/twin-film-catalog";
-import { TWIN_NARRATION, TWIN_NARRATED_FILMS } from "@/components/twin/twin-narration";
+import {
+  TWIN_NARRATION,
+  TWIN_NARRATED_FILMS,
+  TWIN_SCENE_SUBTITLES,
+} from "@/components/twin/twin-narration";
 import type { TwinFilmPlayerProps } from "@/components/twin/TwinFilmPlayer";
 import "@/styles/twin-film.css";
 
@@ -108,12 +112,12 @@ export function HomeTwinSection() {
   ];
   const introduction = narrated
     ? {
-        ar: "فيلم التوأم بصوت سديد، والأفلام الأصلية، ثم لماذا سديد؟ باللغة المختارة. شغّل فيلمًا واحدًا في كل مرة.",
-        en: "The twin film in Sadeed’s voice, the original films, then Why Sadeed? in your selected language. Play one film at a time.",
+        ar: "فيلم التوأم بصوت سديد، والأفلام الأصلية، ثم لماذا سديد؟ باللغة المختارة. يبدأ فيلم واحد تلقائيًا عند ظهوره.",
+        en: "The twin film in Sadeed’s voice, the original films, then Why Sadeed? in your selected language. One visible film starts automatically.",
       }
     : {
-        ar: "الأفلام الأصلية للتوأم وهوية سديد، ثم لماذا سديد؟ باللغة المختارة. شغّل فيلمًا واحدًا في كل مرة.",
-        en: "The original twin and Sadeed identity films, then Why Sadeed? in your selected language. Play one film at a time.",
+        ar: "الأفلام الأصلية للتوأم وهوية سديد، ثم لماذا سديد؟ باللغة المختارة. يبدأ فيلم واحد تلقائيًا عند ظهوره.",
+        en: "The original twin and Sadeed identity films, then Why Sadeed? in your selected language. One visible film starts automatically.",
       };
 
   return (
@@ -135,14 +139,14 @@ export function HomeTwinSection() {
         {!narrated && (
           <p className="text-sm text-muted-foreground" role="status">
             {ar
-              ? "نص التعليق جاهز بالعربية والإنجليزية؛ لم يجهز التسجيل الصوتي بصوت سديد بعد. يبقى صوت الأفلام الأصلي كما هو. السرعة المطلوبة للتعليق: "
-              : "The Arabic and English scripts are ready; the Sadeed voice recording is not ready yet. The films retain their original audio. Requested narration speed: "}
+              ? "يظهر نص المشاهد أثناء عرض فيلم التوأم. لم يجهز التسجيل الصوتي بصوت سديد بعد. سرعة التعليق المطلوبة "
+              : "The scene script appears during the twin film. The Sadeed voice recording is not ready yet. Planned narration speed is "}
             <span dir="ltr">{TWIN_NARRATION.voiceRate}×</span>
           </p>
         )}
         <details className="rounded-xl border border-border p-4" lang={lang}>
           <summary className="nx-focus-ring min-h-11 cursor-pointer font-semibold">
-            {ar ? "قراءة نص التعليق المقترح" : "Read the proposed narration"}
+            {ar ? "قراءة نص المشاهد" : "Read the scene script"}
           </summary>
           <ol className="mt-3 space-y-3">
             {TWIN_NARRATION.scripts[lang].map((scene) => (
@@ -170,9 +174,14 @@ export function HomeTwinSection() {
                   ) : (
                     <TwinFilmPlayer
                       film={film}
-                      manual
                       controlsMode="native"
-                      captions={narrated && film === narrated.film ? narrated.captions : undefined}
+                      captions={
+                        narrated && film === narrated.film
+                          ? narrated.captions
+                          : film === "twin"
+                            ? TWIN_SCENE_SUBTITLES[lang]
+                            : undefined
+                      }
                       startWithAudio={Boolean(narrated && film === narrated.film)}
                     />
                   )}

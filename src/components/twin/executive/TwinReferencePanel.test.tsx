@@ -5,14 +5,14 @@ import { TwinReferencePanel } from "./TwinReferencePanel";
 
 vi.mock("@/components/twin/TwinFilmPlayer", () => ({
   TwinFilmPlayer: ({ film, manual }: { film?: string; manual?: boolean }) => (
-    <div data-testid="attached-player" data-film={film} data-manual={String(manual)} />
+    <div data-testid="attached-player" data-film={film} data-manual={String(Boolean(manual))} />
   ),
 }));
 
 afterEach(() => localStorage.clear());
 
 it.each(["ar", "en"])(
-  "opens only the new manual reference profile after intent (%s)",
+  "opens the autoplay reference profile by default and allows closing it (%s)",
   async (locale) => {
     localStorage.setItem("locale", locale);
     const { container } = render(
@@ -20,7 +20,6 @@ it.each(["ar", "en"])(
         <TwinReferencePanel initialRegionId="central" />
       </I18nProvider>,
     );
-    expect(screen.queryByTestId("attached-player")).toBeNull();
     expect(container.querySelector("video,source,iframe")).toBeNull();
     expect(container.querySelector(".tx-poster")).toHaveAttribute(
       "src",
@@ -29,10 +28,10 @@ it.each(["ar", "en"])(
     const open = screen.getByRole("button", {
       name: locale === "ar" ? "فيلم توضيحي" : "Illustrative film",
     });
-    fireEvent.click(open);
+    expect(open).toHaveAttribute("aria-expanded", "true");
     const player = await screen.findByTestId("attached-player");
     expect(player).toHaveAttribute("data-film", "reference");
-    expect(player).toHaveAttribute("data-manual", "true");
+    expect(player).toHaveAttribute("data-manual", "false");
     expect(screen.getAllByTestId("attached-player")).toHaveLength(1);
     fireEvent.click(
       screen.getByRole("button", { name: locale === "ar" ? "إغلاق الفيلم" : "Close film" }),

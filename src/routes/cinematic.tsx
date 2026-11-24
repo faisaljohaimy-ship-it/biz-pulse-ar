@@ -9,6 +9,7 @@ import {
   type TwinFilmHandle,
 } from "@/components/twin/TwinFilmPlayer";
 import { controlFor, type FilmControl } from "@/components/twin/twin-film-model";
+import { TWIN_SCENE_SUBTITLES } from "@/components/twin/twin-narration";
 import "@/styles/sadeed-cinematic.css";
 
 /**
@@ -109,7 +110,12 @@ function SadeedCinematicExperience() {
         <p>{copy.tagline}</p>
       </header>
       <div className="sd-cinema-stage">
-        <TwinFilmPlayer ref={player} priority onControlChange={setControl} />
+        <TwinFilmPlayer
+          ref={player}
+          priority
+          captions={TWIN_SCENE_SUBTITLES[lang]}
+          onControlChange={setControl}
+        />
       </div>
     </main>
   );

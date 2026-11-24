@@ -335,8 +335,7 @@ describe("المشغّل — الملصق أوّلًا، والفيلم بعد �
     const video = videoOf(view.container)!;
     expect(video, "الفيلم لم يُركَّب بعد الظهور").not.toBeNull();
     expect(play).toHaveBeenCalledTimes(1);
-    // الفيلم بصوته: يُحاوَل التشغيل بصوتٍ أوّلًا (سلوك الصوت في `twin-film-sound.contract.test.tsx`).
-    expect(video.muted).toBe(false);
+    expect(video.muted).toBe(true);
     expect(video.loop).toBe(false);
     for (const attr of ["controls", "autoplay", "loop", "poster"]) {
       expect(video.hasAttribute(attr), `سمة ${attr}`).toBe(false);
@@ -896,13 +895,13 @@ describe("السقوط إلى الملصق — تعذّر الفيلم أو من
 
   it("منعُ المتصفّح للتشغيل (توفير الطاقة): يبقى الملصق، والزرّ يشغّله من داخل النقرة", async () => {
     refuse = "NotAllowedError";
-    refuseCount = 2; // بصوتٍ ثم صامتًا — المنع كاملٌ في الحالتين.
+    refuseCount = 1;
     const view = await mountVisible();
     const video = videoOf(view.container)!;
     expect(video.hasAttribute("data-ready"), "الفيلم ظهر وهو ممنوع").toBe(false);
     view.getByRole("button", { name: "متابعة الفيلم" });
     fireEvent.click(view.getByRole("button", { name: "متابعة الفيلم" }));
-    expect(play).toHaveBeenCalledTimes(3);
+    expect(play).toHaveBeenCalledTimes(2);
     expect(video.hasAttribute("data-ready")).toBe(true);
     view.getByRole("button", { name: "إيقاف الفيلم مؤقتًا" });
     view.unmount();
@@ -1128,6 +1127,53 @@ describe("native film controls — owner update 2026-11-24", () => {
         label: "العربية",
       },
     });
+
+  it("autoplays one visible native film muted, then starts its visible neighbour on completion", async () => {
+    const player = () =>
+      createElement(TwinFilmPlayer, { controlsMode: "native", startWithAudio: true });
+    const view = await mountVisible(createElement("div", null, player(), player()));
+    const [first, second] = view.container.querySelectorAll("video");
+    expect(first.controls).toBe(true);
+    expect(first.muted).toBe(true);
+    expect(first.paused).toBe(false);
+    expect(second.paused).toBe(true);
+    expect(play).toHaveBeenCalledTimes(1);
+    await finish(first);
+    expect(first.paused).toBe(true);
+    expect(second.paused).toBe(false);
+    expect(second.muted).toBe(true);
+    view.unmount();
+  });
+
+  it("keeps native autoplay paused after the visitor stops it and returns to the film", async () => {
+    const view = await mountVisible(createElement(TwinFilmPlayer, { controlsMode: "native" }));
+    const video = videoOf(view.container)!;
+    await act(async () => {
+      video.pause();
+      FakeObserver.show(false);
+      FakeObserver.show(true);
+    });
+    expect(video.paused).toBe(true);
+    expect(play).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      await video.play();
+    });
+    expect(video.paused).toBe(false);
+    expect(video.muted).toBe(true);
+    view.unmount();
+  });
+
+  it("keeps films source-free without viewport observation until the visitor selects one", async () => {
+    vi.stubGlobal("IntersectionObserver", undefined);
+    const view = render(withI18n(createElement(TwinFilmPlayer, { controlsMode: "native" })));
+    await act(async () => {});
+    expect(view.container.querySelector("video,source")).toBeNull();
+    await act(async () =>
+      fireEvent.click(view.container.querySelector(".twin-film-poster-control")!),
+    );
+    expect(videoOf(view.container)?.paused).toBe(false);
+    view.unmount();
+  });
 
   it("starts intentionally from the keyboard on the poster and exposes native accessible controls without the extra pills", async () => {
     const view = await mountVisible(nativePlayer());

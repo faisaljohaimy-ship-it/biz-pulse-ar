@@ -802,7 +802,7 @@ describe("/sec/twin — مشهد مرجعي واحد ومعرض أفلام من�
     expect(SEC_TWIN.match(/<TwinReferencePanel\b/g)).toHaveLength(1);
     expect(SEC_TWIN.match(/<TwinFilmGallery\b/g)).toHaveLength(1);
     expect(lazyImports(SEC_TWIN)).toContain("@/components/home/HomeTwinSection");
-    expect(panel).toContain('<TwinFilmPlayer film="reference" manual controlsMode="native" />');
+    expect(panel).toContain('<TwinFilmPlayer film="reference" controlsMode="native" />');
     expect(panel).not.toMatch(/film=["'](?:twin|opening)["']/);
     expect(panel.match(/<TwinFilmPlayer\b/g)).toHaveLength(1);
   });
