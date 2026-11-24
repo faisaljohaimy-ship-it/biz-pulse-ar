@@ -1,8 +1,13 @@
-/** English dashboard export, rendered by the same pdf-lib engine as the other reports. */
+/** Dashboard export; localized briefings reuse the existing shared Arabic-capable engine. */
 import { unmeasuredLabel } from "@/lib/evidence/evidence";
 import type { ExecKpis, ExecTimeseries, ExecTimeseriesPoint } from "@/lib/sec.functions";
+import type { DailyOpsFonts } from "@/lib/reports/daily-ops-pdf";
+import type { DashboardReadEvidence } from "./live-dashboard-briefing";
 
 export interface LiveDashboardPdfInput {
+  /** Omit to preserve the existing legacy English export contract. */
+  readonly locale?: "ar" | "en";
+  readonly readEvidence?: DashboardReadEvidence;
   readonly range: "7" | "30" | "90";
   readonly generatedAt: string;
   readonly kpis?: Pick<
@@ -27,12 +32,23 @@ const pctText = (value: number | null | undefined, suffix = "%") =>
 export function liveDashboardPdfFilename(
   range: LiveDashboardPdfInput["range"],
   generatedAt: string,
+  locale?: "ar" | "en",
 ): string {
-  return `sadeed-executive-${range}d-${generatedAt.slice(0, 10)}.pdf`;
+  return `sadeed-executive-${range}d-${generatedAt.slice(0, 10)}${locale ? `-${locale}` : ""}.pdf`;
 }
 
-/** No DOM, fetch, server access or new font request; at most forty daily rows are rendered. */
-export async function buildLiveDashboardPdf(input: LiveDashboardPdfInput): Promise<Uint8Array> {
+/** No server/provider calls; localized export loads the existing local report fonts on demand. */
+export async function buildLiveDashboardPdf(
+  input: LiveDashboardPdfInput,
+  fonts?: DailyOpsFonts,
+): Promise<Uint8Array> {
+  if (input.locale) {
+    const [{ buildLiveDashboardBriefing, liveDashboardBriefingReport }, { renderReportPdf }] =
+      await Promise.all([import("./live-dashboard-briefing"), import("@/lib/reports/pdf-rich")]);
+    const briefing = buildLiveDashboardBriefing(input, input.locale);
+    const blob = await renderReportPdf(liveDashboardBriefingReport(briefing), { fonts });
+    return new Uint8Array(await blob.arrayBuffer());
+  }
   const { PDFDocument, StandardFonts, PageSizes } = await import("pdf-lib");
   const pdf = await PDFDocument.create();
   const font = await pdf.embedFont(StandardFonts.Helvetica);

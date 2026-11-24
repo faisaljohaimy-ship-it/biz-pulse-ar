@@ -1,5 +1,6 @@
 import { useSadeedStore } from "@/lib/sadeed-core/store";
 import { readAnswerSources } from "./answer-sources";
+import { ReadResultEvidence } from "./ReadResultEvidence";
 
 const COPY = {
   ar: {
@@ -124,6 +125,7 @@ export function AnswerSources({
         {paragraph(copy.caveat)}
         {paragraph(view.bounded && copy.bounded)}
         {paragraph(view.unverifiedCount !== null && `${copy.unverified}: ${view.unverifiedCount}`)}
+        <ReadResultEvidence message={message} locale={language} />
         <dl className="space-y-1">
           {copy.unknownFields.map((title) => (
             <div key={title}>

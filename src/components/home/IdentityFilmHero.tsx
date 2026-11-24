@@ -129,6 +129,7 @@ export function IdentityFilmHero() {
           ref={bindPlayer}
           film={media.film}
           manual
+          controlsMode="native"
           priority
           startWithAudio
           initialTime={track.initialTime}

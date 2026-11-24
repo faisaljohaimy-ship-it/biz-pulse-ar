@@ -1,6 +1,7 @@
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
 import { createFileRoute } from "@tanstack/react-router";
 import { SecPageHeader, StatCard } from "@/components/sec/sec-shell";
+import { OperationalReadReview } from "@/components/sec/OperationalReadReview";
 
 export const Route = createFileRoute("/_authenticated/sec/shifts")({
   errorComponent: RouteError,
@@ -53,6 +54,7 @@ function Shifts() {
         subtitle="جدول الورديات وأعداد الحرّاس"
         badge="بيانات مرجعية (ليست حيّة)"
       />
+      <OperationalReadReview />
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {/* ٢٠٢٦/٠٨/٢٠ — بقرار المالك (الملاحظات الحمراء، الدفعة الخامسة): حُذفت
             كلمة «سليم» من البطاقتين بإرجاع نغمتهما إلى default — لا حالة تحذير

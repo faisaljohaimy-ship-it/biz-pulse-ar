@@ -4,6 +4,8 @@
 
 **Historical pre-commit status**: اكتمل إنتاج الوسائط وربطها في المصدر، واجتازت فحوص الأنواع و Lint والبناء والميزانية محليًا. لم تُتحقق المراجعة السمعية أو التشغيل الكامل، ولم يحدث نشر جديد. سؤال دورة النشر الأربع لم يُجب.
 
+**2026-11-24 reconciliation**: السطر السابق لقطة تاريخية؛ سجل التعافي أدناه يتضمن جواب المالك بست محاولات للدورة نفسها. اكتمل تصريح guardian وفحص مصدر539cc26 محليًا، واجتازت448 حزمة عبر التشغيل الأول وإعادة الفاشل تحت صلاحيات البيئة الصحيحة، مع البناء والميزانيات والتباين والمتصفح المحدود؛ التفاصيل والحدود في [سجل التحقق](verification-2026-11-24.md). لا يُغلق T008/T010 أو الدخول/الجهاز أو نتائج AI الحية بهذه الفحوص. الطلب الموسّع لكل عمل النظام المؤرشف يتابع في [009](../009-archived-system-completion/spec.md).
+
 ## Current release recovery — 2026-11-23
 
 Resume from [release-recovery.md](release-recovery.md). PR456 exists, but its old head
@@ -36,8 +38,8 @@ No release or fresh gate result is claimed before it occurs.
 
 - [x] T011 [US3] حدث جرد 12 ميزة في `specs/006-cinematic-voice-activation/source-inventory.md`؛ 1/3 جزئيتان، 4 موصول، و 12 BLOCKED بلا QR ميت أو تفعيل حي مختلق.
 - [x] T012 [US3] سجل TypeScript/Lint/build/budget PASS المحلية الفعلية في `specs/006-cinematic-voice-activation/plan.md`؛ لا اختبارات اختيارية أو CI يدوي. الوظائف الأربع البعيدة محفوظة، و assertions بأربعة ملفات قائمة معدلة للبوابة التلقائية فقط؛ لا نتيجة بعيدة لهذه النسخة بعد.
-- [ ] T013 [US3] ثبت Source QA وتصريح الحارس والدورة المعتمدة والهدف السليم والبوابات البعيدة الفعلية في `specs/006-cinematic-voice-activation/plan.md`؛ المراجعة قرائية جارية، وسؤال 4 محاولات بلا جواب، ولا publish clearance.
-- [ ] T014 [US3] سجل الالتزام و PR والـ SHA والأثر والرابط والتحقق والتعافي الفعلي في التقرير المستقل، وفق `specs/006-cinematic-voice-activation/plan.md`؛ لا إيصالات متوقعة أو ادعاء نشر 006.
+- [x] T013 [US3] اكتمل Source QA وتصريح guardian وموافقة الدورة المسجلة بست محاولات وحفظ الاحتياطي؛ النشر المباشر539cc26 مأذون دونCI في الطلب الحالي. [سجل التحقق](verification-2026-11-24.md) يميز نتائج الفحص المحلية من البوابات البعيدة التي لم تُشغّل، ولا يعيد سؤال الأربع القديم.
+- [x] T014 [US3] سُجل SHA539cc26 الكامل وأثرProduction `dpl_4hNC94YrXEDAnBQuynEw2pqjFbs1` READY/مُرقّى والتحقق من النطاقين والمسارات والأصول والمتصفح في [إيصال الإنتاج](verification-2026-11-24.md#observed-production-receipt). كان خط الأساس03ff/dpl_9nwbCuVbRBoNr27NF1WEezkrEVrW؛ لا تراجع لعدم الحاجة. لا ادعاءPR/CI جديدين، أو أن هذا الإصدار أغلق الاستماع/iPhone/التكاملات الحية أو تغييرات لاحقة.
 - [x] T015 [US3] سجل شريحة 1+4 وتصحيح presence المحدود في `specs/006-cinematic-voice-activation/source-inventory.md`: مسودة editable/no-autosend، وسياق route آمن، و controlled React/locale، وحد 2048، و delta=null دون baseline، و missing/error=null مقابل 0؛ لا auth/spend/provider/DB/flag changes.
 
 ## Dependencies and Strategy

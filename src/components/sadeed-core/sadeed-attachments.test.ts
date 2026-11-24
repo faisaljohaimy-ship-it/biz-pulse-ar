@@ -75,7 +75,9 @@ describe("إيداع المرفقات النصية — المستدعي الثا
   });
 
   it("رسالة تسجيل الدخول لخطأ جلسةٍ فعليّ وحده، وكل ملفٍّ مستقلّ", () => {
-    expect(deposit).toMatch(/catch \(error\) \{\s*if \(isSessionError\(error\)\)/);
+    expect(deposit).toMatch(
+      /catch \(error\) \{\s*if \(useSadeedStore\.getState\(\)\.accountRevision !== accountRevision\) return;\s*if \(isSessionError\(error\)\)/,
+    );
     expect(deposit.indexOf("for (const f of textFiles)")).toBeLessThan(
       deposit.indexOf("try {\n        const text"),
     );

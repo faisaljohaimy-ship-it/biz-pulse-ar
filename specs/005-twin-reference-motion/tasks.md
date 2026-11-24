@@ -2,7 +2,9 @@
 
 **Input**: [spec.md](spec.md)، [plan.md](plan.md)، [contract](contracts/media-ui.md).
 
-**Status**: التنفيذ والأصول و Chromium والبوابة المحلية الكاملة ناجحة. لا حاجة لرفع السقف؛ WebKit لديه hook FAIL قبل التطبيق و 4 not run، والدخول الحقيقي بحساب اختبار مأذون و iPhone وقرار دورة 4 محاولات والإصدار غير مكتملة.
+**Historical pre-commit status**: التنفيذ والأصول و Chromium والبوابة المحلية الكاملة ناجحة. لا حاجة لرفع السقف؛ WebKit لديه hook FAIL قبل التطبيق و 4 not run، والدخول الحقيقي بحساب اختبار مأذون و iPhone والإصدار غير مكتملة عند تلك اللقطة.
+
+**2026-11-24 reconciliation**: سؤال دورة الأربع محاولات القديم ليس طلبًا جديدًا؛ يثبت سجل006 موافقة المالك اللاحقة بست للدورة نفسها وحفظ الاحتياطي. سجل [التحقق539cc26](../006-cinematic-voice-activation/verification-2026-11-24.md) يثبت Source QA/guardian وفحوص الأنواع وLint والبناء والميزانيات والتباين و448 حزمة ناجحة عبر التشغيل وإعادة الفاشل. فحوص المتصفح الحديثة محدودة بالرئيسية AR/EN390/1280، وليست قبول iPhone أو تسجيل دخول أو تشغيل كامل لمشهد005. إيصالات الإنتاج النهائية تُضاف من رصدها فقط، والتكملة الموسعة تحت [009](../009-archived-system-completion/spec.md).
 
 ## Phase 1 — Setup / Foundation
 
@@ -31,8 +33,8 @@
 
 - [x] T011 [US3] اجتز build/aggregate بالسقوف القائمة في `specs/005-twin-reference-motion/plan.md`:JS 9,977,118/10,538,188.8، 694 ملفًا/53,948,210 بايت. وفرت PDF 573,154 بايت JS/إجماليًا؛ لا تعديل caps/deps/lock/config أو تطبيق 10.065.
 - [x] T012 [US3] اجتز البوابة المحلية الكاملة EXIT 0 في `/tmp/sadeed-reference-full-check-final.log`:448 ملفًا، 8506 ناجحًا+30 متخطى=8536 خلال 530.20s؛ types/lint0/32؛ build/budgets/accepted contrast floors؛ 3,568 secrets نظيفة و audit 12 دون high/critical. راجع حارس المصدر PDF 8/8 وحالة السطرين/7 assertions؛ هذا لا يمنح تصريح push أو إصدار أو WCAG AA شامل.
-- [ ] T013 [US3] ثبت جواب المالك عن دورة 4 محاولات جديدة في `specs/005-twin-reference-motion/plan.md`؛ لا جواب ولا دورة بدأت، وسؤال رفع السقف أصبح غير لازم. رصد 04:06:05–11 أكد Vercel 0/main 03ff والحماية كما هي، دون mutations. استثناء CI خاص بالمهمة فقط؛ لا تعديل حماية أو workflow أو صرف احتياطي قديم.
-- [ ] T014 [US3] سجل الالتزام/الوجهة/الأثر/الرابط والتحقق من النطاقين وخط أساس التعافي عند حدوثها فعلًا في التقرير الخارجي، وفق `specs/005-twin-reference-motion/contracts/media-ui.md`. لا push أو PR أو deploy جديد، ولا إغلاق قبل الإيصالات أو ادعاء اكتمال 004.
+- [x] T013 [US3] حُسم سؤال الدورة القديم بموافقة المالك اللاحقة لست محاولات للدورة نفسها في سجل006؛ حُفظ الاحتياطي، وأصبح طلب الأربع القديم تاريخيًا. تصريح QA والتحقق المحلي والإذن المباشر دونCI موثقة في [تحقق2026-11-24](../006-cinematic-voice-activation/verification-2026-11-24.md)، دون تغيير حماية/workflow أو ادعاء رصيد دورة جديدة.
+- [x] T014 [US3] سُجل التسليم الفعلي539cc26 إلى `dpl_4hNC94YrXEDAnBQuynEw2pqjFbs1` READY/مُرقّى؛ النطاقان والهوية وصفحات التحقق200 والأصول وAR/EN390/1280 مثبتة في [إيصال الإنتاج](../006-cinematic-voice-activation/verification-2026-11-24.md#observed-production-receipt). خط الأساس السابق كان03ff/dpl_9nwbCuVbRBoNr27NF1WEezkrEVrW؛ لا تراجع نُفذ أو قبول حساب/iPhone/كل004 يُدّعى. النشر المباشر باستثناءCI الحالي، لا ادعاء نجاح بوابات بعيدة لم تُشغّل.
 
 - [x] T015 [US3] وحّد PDF النصي لـ live-dashboard فقط على pdf-lib القائمة عبر `src/lib/executive/live-dashboard-pdf.ts` و adapter المسار؛ اختبار `live-dashboard-pdf.test.ts` بمحلل PDF مستقل 8/8 يحفظ الإنجليزية/الحقول/null≠0 وآخر 40/A4 أفقي/الصفحات/الاسم، ومراجعة السطرين 7 assertions. البناء النهائي وفر 573,154 بايت ضمن السقف، بلا caps/deps/config.
 

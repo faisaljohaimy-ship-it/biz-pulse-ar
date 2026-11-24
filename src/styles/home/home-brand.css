@@ -28,10 +28,6 @@
   position: relative;
   aspect-ratio: 1280 / 698;
 }
-.nx-command-room-motion-toggle {
-  margin-block-start: 12px;
-  min-block-size: 44px;
-}
 
 .nx-command-room-copy {
   padding: clamp(16px, 3vw, 32px);

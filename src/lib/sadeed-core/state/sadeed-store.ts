@@ -23,6 +23,9 @@ export type PendingCommand =
   | { kind: "send"; text: string };
 
 interface SadeedState {
+  /** Local account boundary only; never a permission or server identity claim. */
+  accountScope: string | null;
+  accountRevision: number;
   mode: SadeedMode;
   voice: SadeedVoiceState;
   pageContext: SadeedPageContext | null;
@@ -46,11 +49,15 @@ interface SadeedState {
   setActiveExecution: (execution: ExecutionEnvelope | null) => void;
   enqueue: (cmd: PendingCommand) => void;
   drainCommands: () => PendingCommand[];
+  /** Returns true only when an established account boundary changed. */
+  bindAccountScope: (scope: string) => boolean;
   /** يفتح اللوحة ويطلب بدء المخاطبة الصوتية في نفس الضغطة. */
   requestVoiceConversation: () => void;
 }
 
 export const useSadeedStore = create<SadeedState>((set, get) => ({
+  accountScope: null,
+  accountRevision: 0,
   mode: "collapsed",
   voice: "idle",
   pageContext: null,
@@ -72,6 +79,34 @@ export const useSadeedStore = create<SadeedState>((set, get) => ({
     if (cmds.length === 0) return cmds;
     set({ pendingCommands: [] });
     return cmds;
+  },
+  bindAccountScope: (accountScope) => {
+    const previous = get();
+    if (previous.accountScope === accountScope) return false;
+    // The first bind preserves commands queued while the singleton mounted.
+    if (previous.accountScope === null) {
+      set({ accountScope });
+      return false;
+    }
+    set({
+      accountScope,
+      accountRevision: previous.accountRevision + 1,
+      mode: "collapsed",
+      voice: "idle",
+      pageContext: previous.pageContext
+        ? {
+            pathname: previous.pageContext.pathname,
+            label: previous.pageContext.label,
+            locale: previous.pageContext.locale,
+          }
+        : null,
+      activeTurn: null,
+      activeEnvelope: null,
+      activeExecution: null,
+      pendingCommands: [],
+      voiceConversationRequest: 0,
+    });
+    return true;
   },
   requestVoiceConversation: () =>
     set({

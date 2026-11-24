@@ -227,6 +227,8 @@ export interface TwinFilmPlayerProps {
   readonly manual?: boolean;
   /** الإطار فوق الطيّة (LCP): ملصقه بأولوية عالية لا كسولًا. */
   readonly priority?: boolean;
+  /** Use the media element controls instead of the extra play/reset/subtitle button row. */
+  readonly controlsMode?: "custom" | "native";
   /** يُبلَّغ بالزرّ الواحد كلما تبدّل (حال/اسم/تعليق). يُمرَّر مستقرًّا (`setState`). */
   readonly onControlChange?: (control: FilmControl) => void;
   /** A chapter boundary in this selected-language recording, never a duration ratio. */
@@ -245,6 +247,7 @@ export function TwinFilmPlayer({
   film = "twin",
   manual = false,
   priority = false,
+  controlsMode = "custom",
   onControlChange,
   initialTime = 0,
   onPositionChange,
@@ -256,6 +259,7 @@ export function TwinFilmPlayer({
   const lang: TwinFilmLocale = locale === "en" ? "en" : "ar";
   const media = TWIN_FILM_CATALOG[film];
   const text = media.text[lang];
+  const nativeControls = controlsMode === "native";
   const { gate, cause } = useFilmGate();
   const uid = useId();
 
@@ -825,6 +829,7 @@ export function TwinFilmPlayer({
       data-gate={gate ?? undefined}
       data-film={film}
       data-manual={manual || undefined}
+      data-controls={controlsMode}
     >
       <div ref={frameRef} className="twin-film-frame" style={{ aspectRatio: media.aspectRatio }}>
         {/* الملصق أوّلًا: ما يُرسم من أوّل إطار وما يبقى لمن لا فيلم له. زخرفةٌ لقارئ الشاشة —
@@ -852,15 +857,50 @@ export function TwinFilmPlayer({
             ref={videoRef}
             className="twin-film-video"
             muted
+            controls={nativeControls}
+            poster={nativeControls ? media.poster.src : undefined}
+            aria-label={nativeControls ? text.title : undefined}
             playsInline
             preload="none"
-            aria-hidden
-            tabIndex={-1}
+            aria-hidden={nativeControls ? undefined : true}
+            tabIndex={nativeControls ? 0 : -1}
             disablePictureInPicture
             disableRemotePlayback
             data-ready={ready || undefined}
             onPlaying={(e) => onPlayback(e.currentTarget, true)}
-            onPlay={(e) => onPlayback(e.currentTarget)}
+            onPlay={(e) => {
+              const video = e.currentTarget;
+              if (
+                nativeControls &&
+                filmGate(readSignals()) !== "off" &&
+                document.visibilityState !== "hidden" &&
+                visible.current &&
+                (playbackOwner?.video !== video || userPaused.current || finishedRef.current)
+              ) {
+                // A native resume/replay is a fresh intentional play action, and must
+                // claim the same lease as the poster/custom controls before sounding.
+                finishedRef.current = false;
+                setFinished(false);
+                sound.current.denied = false;
+                sound.current.unlocked = true;
+                run(video);
+                return;
+              }
+              onPlayback(video);
+            }}
+            onVolumeChange={(e) => {
+              const video = e.currentTarget;
+              if (
+                nativeControls &&
+                playbackOwner?.video === video &&
+                visible.current &&
+                !sound.current.held
+              ) {
+                sound.current.wanted = !video.muted && video.volume > 0;
+                sound.current.unlocked = true;
+                setSoundState(soundStateOf(sound.current.wanted, false, true));
+              }
+            }}
             onPause={(e) => {
               // A queued pause from an earlier lease can arrive after playback resumed.
               if (!e.currentTarget.paused) return;
@@ -875,6 +915,14 @@ export function TwinFilmPlayer({
               // عند النهاية يصل `pause` قبل `ended` و`ended` يحمل الحال: تطبيق الترقية هنا يستدعي `load()`
               // الذي يلغي المهام المعلّقة ومنها `ended` (قِيس في Chromium) — فتُترك لـ`onEnded`.
               if (e.currentTarget.ended) return;
+              if (
+                nativeControls &&
+                playbackOwner?.video === e.currentTarget &&
+                !autoPaused.current
+              ) {
+                userPaused.current = true;
+                playbackOwner = null;
+              }
               setPlayState("paused");
               settle();
             }}
@@ -905,83 +953,102 @@ export function TwinFilmPlayer({
                 src={captions.src}
                 srcLang={captions.language}
                 label={captions.label}
-                default={captionsEnabled}
+                default={nativeControls || captionsEnabled}
                 onLoad={(event) => {
-                  event.currentTarget.track.mode = captionsEnabled ? "showing" : "disabled";
+                  event.currentTarget.track.mode =
+                    nativeControls || captionsEnabled ? "showing" : "disabled";
                 }}
               />
             )}
           </video>
         )}
+        {nativeControls && !mounted && (
+          <button
+            type="button"
+            className="twin-film-poster-control nx-focus-ring"
+            aria-label={control.label}
+            title={control.label}
+            aria-disabled={control.disabled || undefined}
+            aria-describedby={control.hint ? `${uid}-hint` : undefined}
+            onClick={onControl}
+          />
+        )}
       </div>
-      <div ref={barRef} className="twin-film-bar">
-        <button
-          type="button"
-          className="twin-film-btn twin-film-toggle nx-focus-ring"
-          data-action={control.action}
-          aria-label={control.label}
-          aria-disabled={control.disabled || undefined}
-          aria-describedby={control.hint ? `${uid}-hint` : undefined}
-          title={control.label}
-          onClick={onControl}
-        >
-          <Icon aria-hidden size={20} />
-          <span className="twin-film-btn-text">{control.label}</span>
-        </button>
-        {manual && (
+      {!nativeControls && (
+        <div ref={barRef} className="twin-film-bar">
           <button
             type="button"
-            className="twin-film-btn nx-focus-ring"
-            onClick={reset}
-            disabled={!started && !finished && !failed}
-            data-action="reset"
+            className="twin-film-btn twin-film-toggle nx-focus-ring"
+            data-action={control.action}
+            aria-label={control.label}
+            aria-disabled={control.disabled || undefined}
+            aria-describedby={control.hint ? `${uid}-hint` : undefined}
+            title={control.label}
+            onClick={onControl}
           >
-            <RotateCcw aria-hidden size={20} />
-            <span>{lang === "ar" ? "إعادة ضبط الفيلم" : "Reset film"}</span>
+            <Icon aria-hidden size={20} />
+            <span className="twin-film-btn-text">{control.label}</span>
           </button>
-        )}
-        {captions && (
-          <button
-            type="button"
-            className="twin-film-btn nx-focus-ring"
-            aria-pressed={captionsEnabled}
-            onClick={() => {
-              const enabled = !captionsEnabled;
-              setCaptionsEnabled(enabled);
-              const tracks = videoRef.current?.textTracks;
-              if (tracks)
-                for (const track of Array.from(tracks))
-                  track.mode = enabled ? "showing" : "disabled";
-            }}
-          >
-            <Captions aria-hidden size={20} />
-            <span>{lang === "ar" ? "الترجمة" : "Subtitles"}</span>
-          </button>
-        )}
-        {TWIN_FILM_HAS_AUDIO && mounted && (
-          // زرّ الصوت: اسمٌ ثابت وحالةٌ في `aria-pressed` (لا اسمٌ يتبدّل مع الحال). يظهر مع عنصر الفيديو
-          // وحده — لا صوت يُتحكَّم به قبله.
-          <button
-            type="button"
-            className="twin-film-btn twin-film-sound nx-focus-ring"
-            aria-pressed={soundState === "on" || soundState === "held"}
-            aria-describedby={
-              soundState === "held" || soundState === "blocked" ? `${uid}-sound-hint` : undefined
-            }
-            onClick={onSound}
-          >
-            {soundState === "on" || soundState === "held" ? (
-              <Volume2 aria-hidden size={20} />
-            ) : (
-              <VolumeX aria-hidden size={20} />
-            )}
-            <span className="twin-film-btn-text">{text.sound.name}</span>
-          </button>
-        )}
-        <span aria-hidden className="twin-film-progress">
-          <i />
-        </span>
-      </div>
+          {manual && (
+            <button
+              type="button"
+              className="twin-film-btn nx-focus-ring"
+              onClick={reset}
+              disabled={!started && !finished && !failed}
+              data-action="reset"
+            >
+              <RotateCcw aria-hidden size={20} />
+              <span>{lang === "ar" ? "إعادة ضبط الفيلم" : "Reset film"}</span>
+            </button>
+          )}
+          {captions && (
+            <button
+              type="button"
+              className="twin-film-btn nx-focus-ring"
+              aria-pressed={captionsEnabled}
+              onClick={() => {
+                const enabled = !captionsEnabled;
+                setCaptionsEnabled(enabled);
+                const tracks = videoRef.current?.textTracks;
+                if (tracks)
+                  for (const track of Array.from(tracks))
+                    track.mode = enabled ? "showing" : "disabled";
+              }}
+            >
+              <Captions aria-hidden size={20} />
+              <span>{lang === "ar" ? "الترجمة" : "Subtitles"}</span>
+            </button>
+          )}
+          {TWIN_FILM_HAS_AUDIO && mounted && (
+            // زرّ الصوت: اسمٌ ثابت وحالةٌ في `aria-pressed` (لا اسمٌ يتبدّل مع الحال). يظهر مع عنصر الفيديو
+            // وحده — لا صوت يُتحكَّم به قبله.
+            <button
+              type="button"
+              className="twin-film-btn twin-film-sound nx-focus-ring"
+              aria-pressed={soundState === "on" || soundState === "held"}
+              aria-describedby={
+                soundState === "held" || soundState === "blocked" ? `${uid}-sound-hint` : undefined
+              }
+              onClick={onSound}
+            >
+              {soundState === "on" || soundState === "held" ? (
+                <Volume2 aria-hidden size={20} />
+              ) : (
+                <VolumeX aria-hidden size={20} />
+              )}
+              <span className="twin-film-btn-text">{text.sound.name}</span>
+            </button>
+          )}
+          <span aria-hidden className="twin-film-progress">
+            <i />
+          </span>
+        </div>
+      )}
+      {nativeControls && !mounted && !control.hint && (
+        <p className="twin-film-hint">
+          {lang === "ar" ? "اضغط على الصورة لتشغيل الفيلم." : "Select the image to play the film."}
+        </p>
+      )}
       {control.hint && (
         <p id={`${uid}-hint`} className="twin-film-hint" role="status">
           {control.hint}

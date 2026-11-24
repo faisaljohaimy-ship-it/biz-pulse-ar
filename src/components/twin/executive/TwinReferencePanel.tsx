@@ -30,7 +30,7 @@ export function TwinReferencePanel({ initialRegionId }: { initialRegionId: Regio
       poster={scene}
       renderBroadcast={() => (
         <Suspense fallback={<TwinLoadState />}>
-          <TwinFilmPlayer film="reference" manual />
+          <TwinFilmPlayer film="reference" manual controlsMode="native" />
         </Suspense>
       )}
     />

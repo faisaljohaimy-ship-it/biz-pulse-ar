@@ -1,5 +1,5 @@
 import { RouteError, RouteNotFound } from "@/components/route-boundaries";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useI18n } from "@/lib/i18n";
@@ -381,6 +381,12 @@ function DigitalTwinPage() {
 
       {/* Top executive status bar */}
       <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex flex-wrap items-center justify-center gap-2 p-3 sm:gap-3 sm:p-4">
+        <Link
+          to="/sec/twin"
+          className="pointer-events-auto nx-focus-ring flex min-h-[44px] items-center rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm font-semibold backdrop-blur-xl"
+        >
+          {ar ? "المشهد التفاعلي وأفلام التوأم" : "Interactive twin and films"}
+        </Link>
         <div className="pointer-events-auto flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2 backdrop-blur-xl">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-cyan-400/15 text-cyan-300">
             <Boxes className="h-4 w-4" />

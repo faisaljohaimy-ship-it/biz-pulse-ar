@@ -16,6 +16,7 @@
 import { createElement, useRef, useState, type ReactNode } from "react";
 import { act, fireEvent, render } from "@testing-library/react";
 import { axe } from "jest-axe";
+import userEvent from "@testing-library/user-event";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { I18nProvider } from "@/lib/i18n";
 import { TwinFilmPlayer, type TwinFilmHandle } from "@/components/twin/TwinFilmPlayer";
@@ -1112,5 +1113,114 @@ describe("/cinematic — العنوان خارج الفيديو، والمسرح
     const description = JSON.stringify(head().meta);
     expect(description).toMatch(/مُصيَّر مسبقًا/);
     expect(description).not.toMatch(/تفاعلي|البث المباشر/);
+  });
+});
+
+describe("native film controls — owner update 2026-11-24", () => {
+  const nativePlayer = () =>
+    createElement(TwinFilmPlayer, {
+      manual: true,
+      controlsMode: "native",
+      startWithAudio: true,
+      captions: {
+        src: "/media/twin/narrated/sadeed-twin-ar.vtt",
+        language: "ar",
+        label: "العربية",
+      },
+    });
+
+  it("starts intentionally from the keyboard on the poster and exposes native accessible controls without the extra pills", async () => {
+    const view = await mountVisible(nativePlayer());
+    expect(videoOf(view.container)).toBeNull();
+    const poster = view.getByRole("button", { name: "تشغيل الفيلم والتعليق الصوتي" });
+    expect(poster).toHaveClass("twin-film-poster-control");
+    expect(view.container.querySelector(".twin-film-bar")).toBeNull();
+    poster.focus();
+    await userEvent.setup().keyboard("{Enter}");
+    const video = videoOf(view.container)!;
+    expect(video).not.toBeNull();
+    expect(video.controls).toBe(true);
+    expect(video).not.toHaveAttribute("aria-hidden");
+    expect(video).toHaveAttribute("tabindex", "0");
+    expect(video).toHaveAttribute("aria-label");
+    expect(video.querySelector("track")).toHaveAttribute("default");
+    expect(view.container.querySelector(".twin-film-poster-control")).toBeNull();
+    expect(view.queryByRole("button", { name: "إعادة ضبط الفيلم" })).toBeNull();
+    expect(view.queryByRole("button", { name: "الترجمة" })).toBeNull();
+    expect(play).toHaveBeenCalledTimes(1);
+    view.unmount();
+  });
+
+  it("native resume/replay claims the shared owner and never overlaps another film", async () => {
+    const view = await mountVisible(createElement("div", null, nativePlayer(), nativePlayer()));
+    const posters = view.getAllByRole("button", { name: "تشغيل الفيلم والتعليق الصوتي" });
+    await act(async () => fireEvent.click(posters[0]));
+    const first = videoOf(view.container)!;
+    await act(async () => fireEvent.click(posters[1]));
+    const second = view.container.querySelectorAll("video")[1];
+    expect(first.paused).toBe(true);
+    expect(second.paused).toBe(false);
+    await act(async () => {
+      await first.play();
+    });
+    expect(first.paused).toBe(false);
+    expect(first.muted).toBe(false);
+    expect(second.paused).toBe(true);
+    await finish(first);
+    await act(async () => {
+      first.currentTime = 0;
+      await first.play();
+    });
+    expect(first.paused).toBe(false);
+    expect(view.container.querySelector("figure")).toHaveAttribute("data-status", "playing");
+    view.unmount();
+  });
+
+  it("native pause and volume choices remain effective, with controls available after an audio-play rejection", async () => {
+    refuse = "NotAllowedError";
+    const view = await mountVisible(nativePlayer());
+    await act(async () =>
+      fireEvent.click(view.getByRole("button", { name: "تشغيل الفيلم والتعليق الصوتي" })),
+    );
+    const video = videoOf(view.container)!;
+    expect(video.controls).toBe(true);
+    expect(video.paused).toBe(true);
+    await act(async () => {
+      await video.play();
+    });
+    expect(video.paused).toBe(false);
+    await act(async () => {
+      video.muted = true;
+      fireEvent.volumeChange(video);
+      FakeObserver.show(true);
+    });
+    expect(video.muted).toBe(true);
+    await act(async () => {
+      video.pause();
+      FakeObserver.show(false);
+      FakeObserver.show(true);
+    });
+    expect(video.paused).toBe(true);
+    await act(async () => {
+      await video.play();
+    });
+    expect(video.muted).toBe(true);
+    view.unmount();
+  });
+
+  it("returns to the intentional poster retry when a native video source fails", async () => {
+    const view = await mountVisible(nativePlayer());
+    await act(async () =>
+      fireEvent.click(view.getByRole("button", { name: "تشغيل الفيلم والتعليق الصوتي" })),
+    );
+    const video = videoOf(view.container)!;
+    await act(async () => fireEvent.error(video));
+    expect(videoOf(view.container)).toBeNull();
+    const retry = view.container.querySelector<HTMLButtonElement>(".twin-film-poster-control")!;
+    expect(retry).toHaveAttribute("aria-label");
+    await act(async () => fireEvent.click(retry));
+    expect(videoOf(view.container)?.controls).toBe(true);
+    expect(videoOf(view.container)?.paused).toBe(false);
+    view.unmount();
   });
 });

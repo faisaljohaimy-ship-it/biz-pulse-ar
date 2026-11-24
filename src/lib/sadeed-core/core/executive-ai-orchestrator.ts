@@ -52,6 +52,7 @@ export interface OrchestratedSubmission {
 
 export const executiveAiOrchestrator = {
   async prepare(text: string): Promise<OrchestratedSubmission | null> {
+    const accountRevision = useSadeedStore.getState().accountRevision;
     const trimmed = text.trim();
     if (!trimmed) return null;
 
@@ -63,6 +64,8 @@ export const executiveAiOrchestrator = {
 
     // Phase 1: memory is a no-op. Kept in the pipeline so Phase 3 can inject.
     await memoryManager.recall(trimmed).catch(() => []);
+    // No old-account turn/envelope may be created after asynchronous recall.
+    if (useSadeedStore.getState().accountRevision !== accountRevision) return null;
 
     const turn = conversationManager.beginTurn(trimmed, hint.intent);
     if (!turn) return null; // duplicate within dedupe window

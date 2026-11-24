@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   ResponsiveContainer,
@@ -43,6 +43,10 @@ import { LivePipelinesPanel } from "@/components/executive/LivePipelinesPanel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { userFacingError } from "@/lib/errors/user-facing-error";
+import { useI18n } from "@/lib/i18n";
+import { useAuth } from "@/lib/auth-context";
+import { buildLiveDashboardBriefing } from "@/lib/executive/live-dashboard-briefing";
+import type { LiveDashboardPdfInput } from "@/lib/executive/live-dashboard-pdf";
 
 export const Route = createFileRoute("/_authenticated/live-dashboard")({
   head: () => ({
@@ -175,33 +179,55 @@ function ChartCard({
 }
 
 function LiveExecutiveDashboard() {
+  const { locale } = useI18n();
+  const { user, loading: authLoading } = useAuth();
+  const accountKey = user?.id ?? "guest";
+  const exportAccount = useRef<object | null>({});
+  const ar = locale === "ar";
   const [range, setRange] = useState<RangeKey>("30");
   const [search, setSearch] = useState("");
+  const [pdfBusy, setPdfBusy] = useState(false);
+  const [pdfError, setPdfError] = useState(false);
+  const [briefingWaitExpired, setBriefingWaitExpired] = useState(false);
+
+  useLayoutEffect(() => {
+    // A fresh identity also invalidates A→B→A account switches and remounts.
+    exportAccount.current = {};
+    setPdfBusy(false);
+    setPdfError(false);
+    return () => {
+      exportAccount.current = null;
+    };
+  }, [accountKey]);
 
   const kpisQ = useQuery({
-    queryKey: ["exec-kpis"],
+    queryKey: ["exec-kpis", accountKey],
     queryFn: () => getExecKpis(),
+    enabled: !authLoading,
     refetchInterval: 30_000,
     staleTime: 15_000,
   });
 
   const tsQ = useQuery({
-    queryKey: ["exec-timeseries", range],
+    queryKey: ["exec-timeseries", accountKey, range],
     queryFn: () => getExecTimeseries({ data: { days: Number(range) } }),
+    enabled: !authLoading,
     refetchInterval: 60_000,
     staleTime: 30_000,
   });
 
   const pulseQ = useQuery({
-    queryKey: ["exec-pulse"],
+    queryKey: ["exec-pulse", accountKey],
     queryFn: () => getSystemPulse(),
+    enabled: !authLoading,
     refetchInterval: 20_000,
     staleTime: 10_000,
   });
 
   const bizQ = useQuery({
-    queryKey: ["exec-business-kpis"],
+    queryKey: ["exec-business-kpis", accountKey],
     queryFn: () => getBusinessKpis(),
+    enabled: !authLoading,
     refetchInterval: 60_000,
     staleTime: 30_000,
   });
@@ -212,12 +238,58 @@ function LiveExecutiveDashboard() {
   const tsBusy = tsQ.isPending;
   const ts = tsQ.data;
 
+  useEffect(() => {
+    setBriefingWaitExpired(false);
+    if (!tsQ.isPending) return;
+    const timer = window.setTimeout(() => setBriefingWaitExpired(true), 4_000);
+    return () => window.clearTimeout(timer);
+  }, [tsQ.isPending, range]);
+
   const filteredPoints = useMemo(() => {
     if (!ts) return [];
     if (!search.trim()) return ts.points;
     const s = search.trim();
     return ts.points.filter((p) => p.day.includes(s));
   }, [ts, search]);
+
+  // One read-only snapshot feeds both the preview and its PDF. Fetch timestamps
+  // are deliberately distinguished from source-update/live-provenance metadata,
+  // which these existing responses do not supply. Never export stale error data.
+  const briefingInput = useMemo<LiveDashboardPdfInput | null>(() => {
+    if (authLoading || !ts || tsQ.isError) return null;
+    const readAt = (value: number) => (value > 0 ? new Date(value).toISOString() : null);
+    return {
+      locale,
+      range,
+      generatedAt: new Date().toISOString(),
+      kpis: kpisQ.isError ? undefined : k,
+      totals: ts.totals,
+      points: filteredPoints,
+      readEvidence: {
+        kpisReadAt: kpisQ.isError ? null : readAt(kpisQ.dataUpdatedAt),
+        seriesReadAt: readAt(tsQ.dataUpdatedAt),
+        from: ts.from,
+        to: ts.to,
+        dateFilter: search,
+      },
+    };
+  }, [
+    ts,
+    authLoading,
+    tsQ.isError,
+    tsQ.dataUpdatedAt,
+    k,
+    kpisQ.isError,
+    kpisQ.dataUpdatedAt,
+    filteredPoints,
+    locale,
+    range,
+    search,
+  ]);
+  const briefing = useMemo(
+    () => briefingInput && buildLiveDashboardBriefing(briefingInput, locale),
+    [briefingInput, locale],
+  );
 
   async function exportExcel() {
     if (!ts) return;
@@ -249,32 +321,42 @@ function LiveExecutiveDashboard() {
   }
 
   async function exportPdf() {
-    if (!ts) return;
-    const { buildLiveDashboardPdf, liveDashboardPdfFilename } =
-      await import("@/lib/executive/live-dashboard-pdf");
-    const generatedAt = new Date().toISOString();
-    const bytes = await buildLiveDashboardPdf({
-      range,
-      generatedAt,
-      kpis: k,
-      totals: ts.totals,
-      points: filteredPoints,
-    });
-    const url = URL.createObjectURL(new Blob([new Uint8Array(bytes)], { type: "application/pdf" }));
+    if (!briefingInput || pdfBusy) return;
+    const snapshot = briefingInput;
+    const snapshotAccount = exportAccount.current;
+    setPdfBusy(true);
+    setPdfError(false);
     try {
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = liveDashboardPdfFilename(range, generatedAt);
-      link.rel = "noopener";
-      document.body.appendChild(link);
+      const { buildLiveDashboardPdf, liveDashboardPdfFilename } =
+        await import("@/lib/executive/live-dashboard-pdf");
+      const bytes = await buildLiveDashboardPdf(snapshot);
+      if (exportAccount.current !== snapshotAccount) return;
+      const url = URL.createObjectURL(
+        new Blob([new Uint8Array(bytes)], { type: "application/pdf" }),
+      );
       try {
-        link.click();
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = liveDashboardPdfFilename(
+          snapshot.range,
+          snapshot.generatedAt,
+          snapshot.locale,
+        );
+        link.rel = "noopener";
+        document.body.appendChild(link);
+        try {
+          link.click();
+        } finally {
+          link.remove();
+        }
       } finally {
-        link.remove();
+        // Safari begins the download after the click handler returns.
+        setTimeout(() => URL.revokeObjectURL(url), 30_000);
       }
+    } catch {
+      if (exportAccount.current === snapshotAccount) setPdfError(true);
     } finally {
-      // Safari begins the download after the click handler returns.
-      setTimeout(() => URL.revokeObjectURL(url), 30_000);
+      if (exportAccount.current === snapshotAccount) setPdfBusy(false);
     }
   }
 
@@ -282,7 +364,7 @@ function LiveExecutiveDashboard() {
   const chartAxis = { stroke: "hsl(var(--muted-foreground))", fontSize: 12 };
 
   return (
-    <div className="min-h-screen bg-[#04060d] text-slate-100 p-4 md:p-6" dir="rtl">
+    <div className="min-h-screen bg-[#04060d] text-slate-100 p-4 md:p-6" dir={ar ? "rtl" : "ltr"}>
       {/* Header */}
       <header className="flex flex-col md:flex-row md:items-end md:justify-between gap-3 mb-6 pb-4 border-b border-white/5">
         <div>
@@ -300,10 +382,12 @@ function LiveExecutiveDashboard() {
           </div>
 
           <h1 className="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-l from-primary to-secondary mt-1">
-            لوحة القيادة التنفيذية الحية
+            {ar ? "لوحة القيادة التنفيذية الحية" : "Live Executive Dashboard"}
           </h1>
           <div className="text-xs text-foreground/50 mt-1">
-            Live Executive Dashboard · Real-time KPIs, trends & activity
+            {ar
+              ? "المؤشرات والاتجاهات والنشاط من القراءات المتاحة"
+              : "KPIs, trends and activity from available readings"}
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -318,12 +402,12 @@ function LiveExecutiveDashboard() {
                     : "text-foreground/70 hover:bg-white/5"
                 }`}
               >
-                {RANGE_LABEL[r].ar}
+                {RANGE_LABEL[r][locale]}
               </button>
             ))}
           </div>
           <Input
-            placeholder="بحث بالتاريخ YYYY-MM-DD"
+            placeholder={ar ? "بحث بالتاريخ YYYY-MM-DD" : "Filter date YYYY-MM-DD"}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="h-8 w-44 text-xs bg-background/40"
@@ -336,7 +420,7 @@ function LiveExecutiveDashboard() {
               tsQ.refetch();
             }}
           >
-            <RefreshCw className="w-3.5 h-3.5 me-1.5" /> تحديث
+            <RefreshCw className="w-3.5 h-3.5 me-1.5" /> {ar ? "تحديث" : "Refresh"}
           </Button>
           <Button
             size="sm"
@@ -354,12 +438,96 @@ function LiveExecutiveDashboard() {
             onClick={() => {
               void exportPdf();
             }}
-            disabled={!ts}
+            disabled={!briefingInput || pdfBusy}
+            aria-busy={pdfBusy}
+            style={{ minHeight: 44 }}
           >
-            <FileText className="w-3.5 h-3.5 me-1.5" /> PDF
+            <FileText className="w-3.5 h-3.5 me-1.5" />{" "}
+            {pdfBusy ? (ar ? "إعداد الملف…" : "Preparing…") : `PDF · ${ar ? "العربية" : "English"}`}
           </Button>
         </div>
       </header>
+
+      <section
+        className="mb-6 rounded-xl border border-border bg-card p-4 text-card-foreground"
+        dir={ar ? "rtl" : "ltr"}
+        lang={locale}
+        aria-labelledby="exec-briefing-title"
+      >
+        <h2 id="exec-briefing-title" className="font-semibold">
+          {ar ? "إحاطة تنفيذية قابلة للتصدير" : "Exportable executive briefing"}
+        </h2>
+        {briefing ? (
+          <>
+            <p className="mt-2 text-sm">{briefing.disclaimer}</p>
+            <p className="mt-2 text-xs text-muted-foreground">{briefing.sourceNotice}</p>
+            <details className="mt-3">
+              <summary className="min-h-11 cursor-pointer py-3 font-medium">
+                {ar ? "معاينة محتوى الإحاطة ومصادرها" : "Preview the briefing and its sources"}
+              </summary>
+              <p className="break-words text-xs">
+                {briefing.generatedLabel}: <span dir="ltr">{briefing.generatedAt}</span>
+              </p>
+              <p className="mt-2 break-words text-xs">
+                {briefing.periodLabel}: <span dir="ltr">{briefing.period}</span>
+              </p>
+              <div className="mt-3 grid gap-4 md:grid-cols-2">
+                {[
+                  { title: briefing.metricsTitle, items: briefing.metrics },
+                  { title: briefing.totalsTitle, items: briefing.totals },
+                ].map((group) => (
+                  <div key={group.title}>
+                    <h3 className="mb-2 text-sm font-medium">{group.title}</h3>
+                    <dl className="grid grid-cols-2 gap-2 text-sm">
+                      {group.items.map((metric) => (
+                        <div key={metric.id} className="min-w-0">
+                          <dt className="text-xs text-muted-foreground">{metric.label}</dt>
+                          <dd className="break-words font-semibold">{metric.value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </div>
+                ))}
+              </div>
+              <h3 className="mt-4 text-sm font-medium">{briefing.sourcesTitle}</h3>
+              <ul className="mt-2 space-y-2 text-xs">
+                {briefing.sources.map((source) => (
+                  <li key={source.id} className="break-words">
+                    <Link to={source.href} className="inline-flex min-h-11 items-center underline">
+                      {source.label}
+                    </Link>
+                    <p>
+                      {briefing.readLabel}: <span dir="ltr">{source.readAt}</span>
+                    </p>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-3 text-xs text-muted-foreground">{briefing.coverage}</p>
+            </details>
+          </>
+        ) : (
+          <p className="mt-2 text-sm" role={tsQ.isError ? "alert" : "status"}>
+            {tsQ.isError
+              ? ar
+                ? "تعذر إعداد الإحاطة من القراءات الحالية. حدّث البيانات وأعد المحاولة."
+                : "The current readings could not prepare a briefing. Refresh and try again."
+              : briefingWaitExpired
+                ? ar
+                  ? "لم تصل قراءات الفترة بعد. استخدم تحديث لإعادة المحاولة."
+                  : "Period readings have not arrived. Use Refresh to try again."
+                : ar
+                  ? "بانتظار قراءات الفترة لإعداد الإحاطة."
+                  : "Waiting for period readings to prepare the briefing."}
+          </p>
+        )}
+        {pdfError && (
+          <p className="mt-3 text-sm" role="alert">
+            {ar
+              ? "تعذر إنشاء ملف الإحاطة. أعد المحاولة من زر PDF."
+              : "The briefing PDF could not be created. Try the PDF button again."}
+          </p>
+        )}
+      </section>
 
       {/* Executive System Pulse */}
       {pulseQ.data && (

@@ -24,6 +24,7 @@ import { useLiveRows, fmtRel, fmtDuration } from "@/lib/runtime/useLiveRows";
 import { triggerWorkflowFn, cancelWorkflowRunFn } from "@/lib/exec.functions";
 import { toast } from "sonner";
 import { userFacingError } from "@/lib/errors/user-facing-error";
+import { WorkflowDraftComposer } from "@/components/exec/WorkflowDraftComposer";
 
 export const Route = createFileRoute("/_authenticated/workflows")({
   errorComponent: RouteError,
@@ -85,7 +86,11 @@ function WorkflowsRuntime() {
   const { locale } = useI18n();
   const ar = locale === "ar";
 
-  const { rows: workflows, loading: wfLoading } = useLiveRows<WfRow>("workflows", (q) =>
+  const {
+    rows: workflows,
+    loading: wfLoading,
+    refetch: refreshWorkflows,
+  } = useLiveRows<WfRow>("workflows", (q) =>
     q
       .select("id,name,description,enabled,trigger_topic,updated_at")
       .order("updated_at", { ascending: false }),
@@ -126,6 +131,8 @@ function WorkflowsRuntime() {
         }
         badge={ar ? "حي" : "Live"}
       />
+
+      <WorkflowDraftComposer onSaved={refreshWorkflows} />
 
       {/* Phase board */}
       <div className="grid gap-2 sm:grid-cols-4 lg:grid-cols-7">

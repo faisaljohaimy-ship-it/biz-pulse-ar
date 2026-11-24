@@ -1,9 +1,8 @@
-/** Owner update: exact attached command-room image before the narrated identity film (2026-11-24). */
+/** Owner update, 2026-11-24: static original image before the film; no screen-motion control. */
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { useI18n } from "@/lib/i18n";
 import { HomeTicker } from "@/components/home/HomeTicker";
 import { IdentityFilmHero } from "@/components/home/IdentityFilmHero";
-import { CommandRoomScreens } from "@/components/home/CommandRoomScreens";
 import "@/styles/home/home-brand.css";
 
 export const BRAND_RATIO = { width: 1280, height: 698 } as const;
@@ -91,65 +90,12 @@ function useOffscreen(ref: RefObject<HTMLElement | null>): boolean {
   return offscreen;
 }
 
-function useRoomMotion(
-  ref: RefObject<HTMLElement | null>,
-  ready: boolean,
-  paused: boolean,
-): boolean {
-  const [active, setActive] = useState(false);
-  useEffect(() => {
-    const node = ref.current;
-    if (!node || !ready || paused || typeof IntersectionObserver === "undefined") {
-      setActive(false);
-      return;
-    }
-    const root = document.documentElement;
-    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)");
-    let inView = false;
-    const sync = () =>
-      setActive(
-        inView &&
-          document.visibilityState === "visible" &&
-          !reduced?.matches &&
-          root.getAttribute("data-nx-motion") !== "off" &&
-          root.getAttribute("data-nx-motion-paused") !== "1" &&
-          !root.classList.contains("safe-mode"),
-      );
-    const observer = new IntersectionObserver((entries) => {
-      const entry = entries[entries.length - 1];
-      inView = Boolean(entry?.isIntersecting);
-      sync();
-    });
-    observer.observe(node);
-    const mutations = new MutationObserver(sync);
-    mutations.observe(root, {
-      attributes: true,
-      attributeFilter: ["data-nx-motion", "data-nx-motion-paused", "class"],
-    });
-    document.addEventListener("visibilitychange", sync);
-    window.addEventListener(MOTION_PAUSE_EVENT, sync);
-    reduced?.addEventListener?.("change", sync);
-    sync();
-    return () => {
-      observer?.disconnect();
-      mutations.disconnect();
-      document.removeEventListener("visibilitychange", sync);
-      window.removeEventListener(MOTION_PAUSE_EVENT, sync);
-      reduced?.removeEventListener?.("change", sync);
-    };
-  }, [ref, ready, paused]);
-  return active;
-}
-
 export function HomeBrandRow() {
   const { locale } = useI18n();
   const ar = locale === "ar";
   const known = useMotionReady();
   const ref = useRef<HTMLElement>(null);
   const offscreen = useOffscreen(ref);
-  const imageRef = useRef<HTMLDivElement>(null);
-  const [roomPaused, setRoomPaused] = useState(false);
-  const roomActive = useRoomMotion(imageRef, known, roomPaused);
   const plate = HOME_BRAND.banner;
   return (
     <section
@@ -162,7 +108,7 @@ export function HomeBrandRow() {
     >
       <HomeTicker offscreen={offscreen} ready={known} />
       <figure className="nx-brand" data-kind="command-room" data-testid="home-opening-image">
-        <div ref={imageRef} className="nx-command-room-stage">
+        <div className="nx-command-room-stage">
           <img
             src={HOME_OPENING_IMAGE.src}
             srcSet={HOME_OPENING_IMAGE.srcSet}
@@ -175,7 +121,6 @@ export function HomeBrandRow() {
             fetchPriority="high"
             className="nx-command-room-poster"
           />
-          <CommandRoomScreens active={roomActive} />
         </div>
         <figcaption className="nx-command-room-copy" dir={ar ? "rtl" : "ltr"}>
           <p className="nx-brand-title" dir="ltr">
@@ -193,20 +138,6 @@ export function HomeBrandRow() {
               ? "صورة توضيحية؛ خرائطها ومؤشراتها ليست بيانات تشغيلية حية."
               : "Illustrative image; its maps and indicators are not live operational data."}
           </p>
-          <button
-            type="button"
-            className="twin-film-btn nx-focus-ring nx-command-room-motion-toggle"
-            aria-pressed={roomPaused}
-            onClick={() => setRoomPaused((value) => !value)}
-          >
-            {ar
-              ? roomPaused
-                ? "تحريك الشاشات"
-                : "إيقاف حركة الشاشات"
-              : roomPaused
-                ? "Animate screens"
-                : "Pause screen motion"}
-          </button>
         </figcaption>
       </figure>
       <IdentityFilmHero />

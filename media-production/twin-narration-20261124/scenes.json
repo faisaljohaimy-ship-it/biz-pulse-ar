@@ -1,0 +1,15 @@
+{
+  "voiceProvider": "elevenlabs",
+  "voiceId": "izhopdR43PRI5gAmjXTj",
+  "sourceEndpoint": "https://neexios.com/api/public/sadeed-tts",
+  "sourceVoiceSpeed": 0.9,
+  "narrationTempo": 1.25,
+  "filmSeconds": 56,
+  "scenes": [
+    {"id":"s1","start":0.5,"end":7.7,"ar":"محطات الطاقة لا تنام، وحمايتها تبدأ برُؤية واضحة.","en":"Energy never sleeps. Protecting it begins with a clear view."},
+    {"id":"s2","start":8.2,"end":23.7,"ar":"من توليد الكهرباء، ورفع الجُهد، إلى نقلها وخفض الجهد ثم توزيعها؛ كل مرحلة تحتاج متابعة تحافظ على سلامة الموقع واستمرار الخدمة.","en":"From generation and higher voltage, through transmission, lower voltage and distribution, every stage needs careful oversight to protect the site and keep essential services running."},
+    {"id":"s3","start":24.2,"end":37.7,"ar":"ترتبط البوابات والكاميرات والدوريات بغرفة التحكم. وعندما تتوفر التكاملات والبيانات المُصرَّح بها، تساعد هذه الرؤية فريق الأمن على فهم الحدث واتخاذ القرار.","en":"Gates, cameras and patrols connect with the control room. Where authorized data and integrations are available, this shared view helps security teams understand events and make informed decisions."},
+    {"id":"s4","start":38.2,"end":49.7,"ar":"في هذا التصور، يربط التَّوأم الرَّقمي الأصول بالمعلومات المتاحة، ويعرض التنبيهات لتقييمها. يساند الفريق، واعتماد الإجراءات بيد الإنسان.","en":"In this concept, the digital twin links assets with available information and presents alerts for review. It supports the team; people authorize the actions."},
+    {"id":"s5","start":50.2,"end":55.9,"ar":"سَديد. قرار أدق، وإنجاز أسرع. مشاهد توضيحية، وليست بثًّا حيًّا.","en":"Sadeed. Smarter decisions. Faster execution. Illustrative scenes, not a live feed."}
+  ]
+}

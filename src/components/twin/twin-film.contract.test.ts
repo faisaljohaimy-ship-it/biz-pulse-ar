@@ -1,17 +1,16 @@
 /**
- * عقد «فيلم التوأم الرقمي» — صفحة `/cinematic`، وقسم الفيلم في **أسفل الرئيسية**، والمشغّل
+ * عقد «فيلم التوأم الرقمي» — صفحة `/cinematic`، ومعرض الأفلام في `/sec/twin`، والمشغّل
  * المضمَّن (أمر المالك ٢٠٢٦/١٠/٢٣: «راجع المرفقات للتحسين» و«اظف فديو موشن جرافيتي مختص
  * بالتوأم الرقمي»؛ ثم أمره ٢٠٢٦/١٠/٢٩ «قم بنقل التوأم الرقمي والفديو للتوأم الرقمي في اسفل
- * الصفحة الرئيسية للنظام»). **المشغّل يسكن اليوم في موضعين:** `/cinematic` و`/`
- * (`src/components/home/HomeTwinSection.tsx`، كسولًا عند الاقتراب) — و`/sec/twin` بلا فيلم.
+ * الصفحة الرئيسية للنظام»). أمر المالك ٢٠٢٦/١١/٢٤ أعاد المعرض والتوأم إلى `/sec/twin`
+ * وأزالهما من الرئيسية. المعرض يُطلب كسولًا، مع مشهد مرجعي واحد وشجرة الأصول القائمة.
  *
  * ما يكسر الأمر ولا يراه tsc ولا البناء:
  *   • صورةٌ خارجية عند طرفٍ ثالث (`HERO_IMAGE`) أو أيّ رابط `http(s)://` في الصفحة — وفي الصورة
  *     القديمة واجهةٌ مخبوزة بأرقامٍ وأحداثٍ مختلَقة («٩٩٪ مستوى الالتزام» و«عاجل: بلاغ أمني …»)؛
  *   • `<iframe>` يضمّ /cinematic في صفحةٍ أخرى (يحمل قشرة التطبيق مرّتين)؛
- *   • بقيّةٌ من قسم الفيلم تعود إلى /sec/twin (مشغّلٌ أو رابطٌ أو عنوان)، أو مشغّلٌ يُستورد
- *     **ساكنًا** في سطح الرئيسية فيكبّر حزمتها، أو ذيل الصفحة بغير ترتيبه (الخاتمة ← الفيلم ←
- *     الإفصاح)؛
+ *   • عودة التوأم أو معرضه إلى الرئيسية، أو تكرار المشهد المرجعي في صفحته؛
+ *     أو مشغّلٌ يُستورد ساكنًا في سطح الرئيسية، أو ذيل الصفحة بغير الخاتمة ← الإفصاح؛
  *   • ألفاظ «البثّ المباشر» و«عاجل» و`LIVE` في الصفحات أو المشغّل، أو رقمٌ في نصّها — الفيلم
  *     **مُصيَّر مسبقًا** لا بثّ ولا بيانات تشغيلية (المادة ٢٧)؛
  *   • صفُّ روايةٍ لـ`/cinematic` يقول إن المشهد «يعمل داخل المتصفح لا ملف فيديو» — صار كاذبًا؛
@@ -129,6 +128,7 @@ function textDigits(code: string): string[] {
  */
 const FILM_MARKERS = [
   "<TwinFilmPlayer",
+  "HomeTwinSection",
   'to="/cinematic"',
   "التوأم الرقمي السينمائي",
   'aria-label="تجربة سديد السينمائية"',
@@ -171,10 +171,11 @@ function quotedDigits(code: string): string[] {
     .filter((s) => /[0-9٠-٩۰-۹]/.test(s));
 }
 
-/** ذيل الرئيسية بترتيبه: الخاتمة ← فيلم التوأم ← الإفصاح — كلٌّ مرّةً واحدة. */
-const HOME_TAIL = ["<HomeClosingBand />", "<HomeTwinSection />", "<footer"] as const;
+/** ذيل الرئيسية بترتيبه: الخاتمة ← الإفصاح، والتوأم في صفحته المخصصة. */
+const HOME_TAIL = ["<HomeClosingBand />", "<footer"] as const;
 function tailBreaks(page: string): string[] {
   const out: string[] = [];
+  if (/\bHomeTwinSection\b/.test(page)) out.push("عاد التوأم إلى الرئيسية");
   const at = HOME_TAIL.map((n) => page.indexOf(n));
   HOME_TAIL.forEach((n, i) => {
     if (at[i] === -1) out.push(`${n} غائب`);
@@ -215,8 +216,18 @@ function videoGaps(code: string): string[] {
   if (!tag) return ["لا <video>"];
   if (/\bloop\b/.test(tag)) out.push("loop");
   if (/\bautoPlay\b/.test(tag)) out.push("autoPlay");
-  if (/\bcontrols\b/.test(tag)) out.push("controls الأصلية");
-  if (/\bposter=/.test(tag)) out.push("poster على الفيديو");
+  // Owner update 2026-11-24: the optional native mode is explicitly guarded;
+  // an unconditional native control/poster still breaks the original custom mode.
+  const optInNative =
+    code.includes('controlsMode = "custom"') &&
+    code.includes('const nativeControls = controlsMode === "native";');
+  const customTag = optInNative
+    ? tag
+        .replace("controls={nativeControls}", "")
+        .replace("poster={nativeControls ? media.poster.src : undefined}", "")
+    : tag;
+  if (/\bcontrols\b/.test(customTag)) out.push("controls الأصلية");
+  if (/\bposter=/.test(customTag)) out.push("poster على الفيديو");
   for (const need of [
     "muted",
     "playsInline",
@@ -547,6 +558,18 @@ describe("الكواشف تحمرّ على انتهاكٍ مزروع", () => {
     );
     expect(videoGaps(ok.replace("muted ", ""))).toContain("بلا muted");
     expect(videoGaps(ok.replace("playsInline ", ""))).toContain("بلا playsInline");
+    expect(videoGaps(PLAYER)).toEqual([]);
+    expect(videoGaps(PLAYER.replace("controls={nativeControls}", "controls"))).toContain(
+      "controls الأصلية",
+    );
+    expect(
+      videoGaps(
+        PLAYER.replace(
+          "poster={nativeControls ? media.poster.src : undefined}",
+          'poster="/x.webp"',
+        ),
+      ),
+    ).toContain("poster على الفيديو");
     expect(videoGaps(ok.replace('<source type="video/webm" />', ""))).toContain("مصدران");
   });
 
@@ -770,14 +793,16 @@ describe("/cinematic — حشوة الأسفل تُخلي زرّ سَدِيد ا
   });
 });
 
-describe("/sec/twin — الفيلمان السابقان في الرئيسية؛ المشهد المرجعي الجديد مستقل (2026-11-23)", () => {
-  it("يربط طلب المالك الجديد كسولًا بمشغّل reference اليدوي دون إعادة الفيلمين السابقين", () => {
+describe("/sec/twin — مشهد مرجعي واحد ومعرض أفلام منقول من الرئيسية (2026-11-24)", () => {
+  it("يربط المشهد المرجعي ومعرض الأفلام كسولًا دون تكرار المشهد", () => {
     const module = "@/components/twin/executive/TwinReferencePanel";
     const panel = strip(read("src/components/twin/executive/TwinReferencePanel.tsx"));
     expect(lazyImports(SEC_TWIN)).toContain(module);
     expect(staticImportOf(SEC_TWIN, module)).toEqual([]);
-    expect(SEC_TWIN).toContain("<TwinReferencePanel");
-    expect(panel).toContain('<TwinFilmPlayer film="reference" manual />');
+    expect(SEC_TWIN.match(/<TwinReferencePanel\b/g)).toHaveLength(1);
+    expect(SEC_TWIN.match(/<TwinFilmGallery\b/g)).toHaveLength(1);
+    expect(lazyImports(SEC_TWIN)).toContain("@/components/home/HomeTwinSection");
+    expect(panel).toContain('<TwinFilmPlayer film="reference" manual controlsMode="native" />');
     expect(panel).not.toMatch(/film=["'](?:twin|opening)["']/);
     expect(panel.match(/<TwinFilmPlayer\b/g)).toHaveLength(1);
   });
@@ -788,24 +813,25 @@ describe("/sec/twin — الفيلمان السابقان في الرئيسية�
     expect(SEC_TWIN, "الاستثناء بلا موضع — يُحذف من القائمة").toContain(WORK_ORDER_ACTION);
   });
 
-  it("لا بقيّة من قسم الفيلم: لا مشغّل ولا رابط /cinematic ولا عنوانه ولا استيراده — والكاشف يحمرّ على المزروع", () => {
-    expect(filmResidue(SEC_TWIN)).toEqual([]);
+  it("لا توأم أو معرض أفلام في الرئيسية — والكاشف يحمرّ على عودته", () => {
+    expect(filmResidue(HOME_PAGE)).toEqual([]);
+    expect(filmResidue(`${HOME_PAGE}\n<HomeTwinSection />`)).toEqual(["HomeTwinSection"]);
     // يحمرّ على المزروع (المادة ٣٠): كل علامةٍ على حدة، والتعليق لا يُعدّ بقيّة.
-    expect(filmResidue(`${SEC_TWIN}\n<TwinFilmPlayer />`)).toEqual(["<TwinFilmPlayer"]);
+    expect(filmResidue(`${HOME_PAGE}\n<TwinFilmPlayer />`)).toEqual(["<TwinFilmPlayer"]);
     expect(
       filmResidue(
-        `${SEC_TWIN}\n<Link to="/cinematic" className="twin-film-btn nx-focus-ring">فتح التجربة السينمائية</Link>`,
+        `${HOME_PAGE}\n<Link to="/cinematic" className="twin-film-btn nx-focus-ring">فتح التجربة السينمائية</Link>`,
       ),
     ).toEqual(['to="/cinematic"', "فتح التجربة السينمائية"]);
     expect(
       filmResidue(
-        `${SEC_TWIN}\n<section aria-label="تجربة سديد السينمائية"><h2>التوأم الرقمي السينمائي</h2></section>`,
+        `${HOME_PAGE}\n<section aria-label="تجربة سديد السينمائية"><h2>التوأم الرقمي السينمائي</h2></section>`,
       ),
     ).toEqual(["التوأم الرقمي السينمائي", 'aria-label="تجربة سديد السينمائية"']);
-    expect(filmResidue(`import { TwinFilmPlayer } from "${PLAYER_MODULE}";\n${SEC_TWIN}`)).toEqual([
-      PLAYER_MODULE,
-    ]);
-    expect(filmResidue(`${SEC_TWIN}\n{/* <TwinFilmPlayer /> */}`)).toEqual([]);
+    expect(filmResidue(`import { TwinFilmPlayer } from "${PLAYER_MODULE}";\n${HOME_PAGE}`)).toEqual(
+      [PLAYER_MODULE],
+    );
+    expect(filmResidue(`${HOME_PAGE}\n{/* <TwinFilmPlayer /> */}`)).toEqual([]);
   });
 
   it("أمر المالك ٢٠٢٦/١٠/٢٣: صندوقا الشارة وتحديث البيانات والمشهد المرسوم محذوفان، وتبقى بطاقة العطل ووسم المحاكاة", () => {
@@ -838,15 +864,19 @@ describe("/sec/twin — الفيلمان السابقان في الرئيسية�
   });
 });
 
-describe("الرئيسية — قسم فيلم التوأم في أسفل الصفحة (أمر المالك ٢٠٢٦/١٠/٢٩)", () => {
+describe("صفحة التوأم — معرض الأفلام المنقول من الرئيسية (أمر المالك ٢٠٢٦/١١/٢٤)", () => {
   const code = strip(HOME_TWIN);
   const page = strip(HOME_PAGE);
 
   it("القسم مُسمًّى بعنوانه وسطره، ورابط /cinematic يسمّي ما يفعله بزرّ المشغّل وحلقة التركيز", () => {
     expect(code).toMatch(/<section\s+aria-labelledby="nx-home-twin-title"/);
     expect(code).toMatch(/<h2 id="nx-home-twin-title"[^>]*>\s*\{ar \? "التوأم الرقمي السينمائي"/);
-    expect(code).toContain("فيلم التوأم الأصلي، ثم لماذا سديد؟ باللغة المختارة.");
-    expect(code).toContain("The original twin film, then Why Sadeed? in your selected language.");
+    expect(code).toContain(
+      "فيلم التوأم بصوت سديد، والأفلام الأصلية، ثم لماذا سديد؟ باللغة المختارة.",
+    );
+    expect(code).toContain(
+      "The twin film in Sadeed’s voice, the original films, then Why Sadeed? in your selected language.",
+    );
     expect(code).toMatch(
       /<Link to="\/cinematic" className="twin-film-btn nx-focus-ring">\s*\{ar \? "فتح التجربة السينمائية"/,
     );
@@ -854,12 +884,13 @@ describe("الرئيسية — قسم فيلم التوأم في أسفل الص
     expect(code, "رابط يسمّي التنقّل شاشةً كاملة").not.toMatch(/ملء الشاشة|Full screen/);
     expect(code).not.toMatch(/cinemaOpen|setCinemaOpen/);
     expect(code.match(/<Link to="\/cinematic"[^>]*>/)?.[0]).not.toContain("aria-expanded");
-    expect(code).toContain('aria-controls="nx-twin-reference"');
+    expect(code).not.toContain("TwinReferencePanel");
+    expect(code).not.toContain('to="/sec/twin"');
     expect(code).not.toMatch(/speechSynthesis/);
   });
 
   it("المشغّل كسولٌ عند الاقتراب: lazy + Suspense + IntersectionObserver، ولا استيراد ساكن له في سطح الرئيسية", () => {
-    expect(lazyImports(HOME_TWIN)).toEqual([PLAYER_MODULE, REFERENCE_MODULE]);
+    expect(lazyImports(HOME_TWIN)).toEqual([PLAYER_MODULE]);
     // رفض الحزمة يُلتقط في الاستيراد نفسه (السلوك في `home-twin-section.contract.test.tsx`).
     expect(code).toContain(".catch(() => ({ default: FilmUnavailable }))");
     expect(code).toContain("<Suspense fallback={placeholder}>");
@@ -868,7 +899,9 @@ describe("الرئيسية — قسم فيلم التوأم في أسفل الص
     // لا نافذة ولا مستند أثناء الرسم: الاقتراب حالٌ تبدأ `false` ويقلبها أثرٌ بعد التركيب.
     expect(code).toContain("const [near, setNear] = useState(false);");
     const surface = homeSurface(HOME_PAGE);
-    expect(surface.has("src/components/home/HomeTwinSection.tsx"), "القسم خارج السطح").toBe(true);
+    expect(surface.has("src/components/home/HomeTwinSection.tsx"), "عاد المعرض إلى الرئيسية").toBe(
+      false,
+    );
     for (const [file, src] of surface) {
       expect(staticImportOf(src, PLAYER_MODULE), `${file}: استيرادٌ ساكن للمشغّل`).toEqual([]);
       expect(
@@ -891,7 +924,7 @@ describe("الرئيسية — قسم فيلم التوأم في أسفل الص
     expect(TWIN_FILM_CATALOG.twin.poster).toEqual(TWIN_FILM_POSTER);
   });
 
-  it("ذيل الصفحة: الخاتمة ← فيلم التوأم ← الإفصاح، كلٌّ مرّةً واحدة", () => {
+  it("ذيل الرئيسية: الخاتمة ← الإفصاح، والتوأم في صفحته", () => {
     expect(tailBreaks(page)).toEqual([]);
   });
 
@@ -918,7 +951,7 @@ describe("الرئيسية — قسم فيلم التوأم في أسفل الص
       "null;",
     );
     expect(eager).not.toBe(HOME_TWIN);
-    expect(lazyImports(eager)).toEqual([REFERENCE_MODULE]);
+    expect(lazyImports(eager)).toEqual([]);
     expect(lazyImports('const X = lazy(() => import("@/x"));')).toEqual(["@/x"]);
     expect(lazyImports('const X = lazy<ComponentType>(() => import("@/x"));')).toEqual(["@/x"]);
     // مسار ملصقٍ مكتوب باليد، ورقمٌ في نصٍّ معروض، وإطارٌ يضمّ صفحة.
@@ -935,22 +968,17 @@ describe("الرئيسية — قسم فيلم التوأم في أسفل الص
     expect(quotedDigits('<p>{ar ? "2026" : "٢٠٢٦"}</p>')).toEqual(['"2026"', '"٢٠٢٦"']);
     expect(quotedDigits('<p className="mt-2">x</p>')).toEqual([]);
     expect(iframes(`${HOME_TWIN}\n<iframe src="/cinematic" />`)).toEqual(["<iframe"]);
-    // ذيلٌ مقلوب، ومكرّر، وغائب، وبعد الإفصاح.
+    // The current directive rejects every reintroduction of the gallery on home.
+    expect(tailBreaks(`${page}\n<HomeTwinSection />`)).toEqual(["عاد التوأم إلى الرئيسية"]);
     const swapped = page.replace(
-      /<HomeClosingBand \/>([\s\S]*?)<HomeTwinSection \/>/,
-      "<HomeTwinSection />$1<HomeClosingBand />",
+      /<HomeClosingBand \/>([\s\S]*?)<footer/,
+      "<footer$1<HomeClosingBand />",
     );
     expect(swapped).not.toBe(page);
-    expect(tailBreaks(swapped)).toEqual(["<HomeTwinSection /> قبل <HomeClosingBand />"]);
-    expect(tailBreaks(`${page}\n<HomeTwinSection />`)).toEqual(["<HomeTwinSection /> مكرّر"]);
-    expect(tailBreaks(page.replace("<HomeTwinSection />", ""))).toEqual([
-      "<HomeTwinSection /> غائب",
+    expect(tailBreaks(swapped)).toEqual(["<footer قبل <HomeClosingBand />"]);
+    expect(tailBreaks(page.replace("<HomeClosingBand />", ""))).toEqual([
+      "<HomeClosingBand /> غائب",
     ]);
-    const afterFooter = page
-      .replace("<HomeTwinSection />", "")
-      .replace("</footer>", "</footer>\n<HomeTwinSection />");
-    expect(afterFooter).not.toBe(page);
-    expect(tailBreaks(afterFooter)).toEqual(["<footer قبل <HomeTwinSection />"]);
   });
 });
 

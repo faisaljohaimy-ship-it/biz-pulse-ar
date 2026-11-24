@@ -458,8 +458,7 @@ const riskListCap = (body: string): number | null => {
 
 /**
  * صفوف الرئيسية بترتيبها (المواصفة §4.0): المؤشرات ← الصدر ← التشغيل ← التحليلات ← الخاتمة
- * ← فيلم التوأم (أمر المالك ٢٠٢٦/١٠/٢٩ — نُقل من /sec/twin إلى الموضع المحدَّد بالأحمر فوق
- * الإفصاح) ← الإفصاح.
+ * ← الإفصاح. التوأم وأفلامه في /sec/twin بأمر المالك ٢٠٢٦/١١/٢٤.
  */
 const ROW_SEQUENCE = [
   "<HomeKpiRow />",
@@ -469,7 +468,6 @@ const ROW_SEQUENCE = [
   "<HomeOpsRow />",
   "<HomeAnalyticsRow />",
   "<HomeClosingBand />",
-  "<HomeTwinSection />",
   "<footer",
 ] as const;
 /** مواضع تنكسر فيها السلسلة: غائبٌ، أو مكرّر، أو سابقٌ لما قبله. */
@@ -487,6 +485,7 @@ function orderBreaks(code: string, sequence: readonly string[]): string[] {
 /** ترتيب الصفحة، والخريطة وسَدِيد **داخل** الصدر: يُغلق بعدهما وقبل صفّ التشغيل. */
 function rowOrderBreaks(page: string): string[] {
   const out = orderBreaks(page, ROW_SEQUENCE);
+  if (/\bHomeTwinSection\b/.test(page)) out.push("عاد التوأم إلى الرئيسية");
   const sadeed = page.indexOf("<HomeSadeedCard />");
   const close = page.indexOf("</div>", sadeed);
   if (sadeed > -1 && !(close > sadeed && close < page.indexOf("<HomeOpsRow />"))) {
@@ -1461,14 +1460,10 @@ describe("الرئيسية — شبكات الصفوف وترتيبها", () => 
     const ticker = stripComments(surfaceFile("HomeTicker.tsx"));
     const focusables = (code: string) => code.match(/<(?:Link|a|button)\b/g) ?? [];
     const focusStops = (code: string) => code.match(/tabIndex=\{?["']?0\b/g) ?? [];
-    // Only the explicitly named room-motion toggle belongs to this row; the
-    // narrated identity hero owns its own controls in its existing wrapper.
-    const roomToggle =
-      /<button\s+type="button"\s+className="twin-film-btn nx-focus-ring nx-command-room-motion-toggle"/g;
-    const extraFocusables = (code: string) => focusables(code.replace(roomToggle, ""));
-    expect(brandRow.match(roomToggle)).toHaveLength(1);
-    expect(focusables(brandRow)).toEqual(["<button"]);
-    expect(extraFocusables(brandRow)).toEqual([]);
+    // Owner 2026-11-24 removed the circled room-motion control; the still is static.
+    const extraFocusables = focusables;
+    expect(brandRow).not.toContain("nx-command-room-motion-toggle");
+    expect(focusables(brandRow)).toEqual([]);
     expect(extraFocusables(`${brandRow}\n<button type="button" />`)).toEqual(["<button"]);
     expect(focusables(ticker)).toEqual([]);
     expect(focusables(`${ticker}\n<button type="button" />`)).toEqual(["<button"]);
@@ -1487,17 +1482,9 @@ describe("الرئيسية — شبكات الصفوف وترتيبها", () => 
     );
     expect(swapped).not.toBe(page);
     expect(rowOrderBreaks(swapped)).toEqual(["<HomeSadeedCard /> قبل <HomeMapCard />"]);
-    // فيلم التوأم بعد الإفصاح، أو قبل الخاتمة (أمر المالك ٢٠٢٦/١٠/٢٩: بينهما) — يحمرّ.
-    const twinAfterFooter = page.replace("<HomeTwinSection />", "") + "\n<HomeTwinSection />";
-    expect(rowOrderBreaks(twinAfterFooter)).toEqual(["<footer قبل <HomeTwinSection />"]);
-    const twinBeforeClose = page.replace(
-      /<HomeClosingBand \/>([\s\S]*?)<HomeTwinSection \/>/,
-      "<HomeTwinSection />$1<HomeClosingBand />",
-    );
-    expect(twinBeforeClose).not.toBe(page);
-    expect(rowOrderBreaks(twinBeforeClose)).toEqual([
-      "<HomeTwinSection /> قبل <HomeClosingBand />",
-    ]);
+    // Owner 2026-11-24: the twin gallery belongs to /sec/twin, never the homepage.
+    expect(page).not.toContain("HomeTwinSection");
+    expect(rowOrderBreaks(`${page}\n<HomeTwinSection />`)).toEqual(["عاد التوأم إلى الرئيسية"]);
     // بطاقة فِن **أسفل** سَدِيد في العمود نفسه (أمر المالك ٢٠٢٦/١٠/٢٣)، داخل الصدر لا بعده.
     const sadeedAt = page.indexOf("<HomeSadeedCard />");
     const finnAt = page.indexOf("<HomeFinnCard />");

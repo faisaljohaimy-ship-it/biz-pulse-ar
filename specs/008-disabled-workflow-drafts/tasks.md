@@ -2,7 +2,7 @@
 
 **Input**: [spec.md](spec.md)، [plan.md](plan.md).
 
-**Status**: تقييم مكتمل؛ تنفيذ الحفظ BLOCKED لغياب SQL INSERT عن المسار المأذون. لا endpoint أو زر حفظ جديد، ولا ميزة مكتملة.
+**Status**: استئناف ٢٠٢٦/١١/٢٤: المعاينة وAPI/واجهة حفظ المسودة المعطلة منفذة، وتغيير الصلاحيات المحدد معتمد ومطبق. التحقق السلوكي الحي للحفظ والعزل لم يُنفذ؛ لا ادعاء اكتمال T011. انظر [متابعة التنفيذ](continuation-2026-11-24.md).
 
 ## Phase 1 — نطاق مستقل ومصادر الحقيقة
 
@@ -19,9 +19,9 @@
 
 ## Phase 3 — US1/US2: مؤجلتان، لا تنفيذ في هذه الدفعة
 
-- [ ] T008 [US1] بعد معالجة ACL بتفويض مستقل، أنشئ `src/lib/exec/workflow-draft-template.ts` للقالب الحتمي AR/EN المحدود، مع رفض طلب التصريح/الأصل الحرج/إنشاء المهمة صراحة.
-- [ ] T009 [US2] بعد T008 وصلاحية كتابة مأذونة، أنشئ `src/lib/exec/workflow-drafts.functions.ts` بفرض disabled/null-topic/version1 وexact org/current membership/caller RLS، وINSERT+readback مطابق دون update أو تشغيل.
-- [ ] T010 [US1] [US2] بعد T009، أنشئ `src/components/exec/WorkflowDraftComposer.tsx` وglue محدود في `src/routes/_authenticated/workflows.tsx` لمعاينة واختيار جهة فارغ مبدئيًا وحفظ يدوي وإقرار حقيقي؛ لا activation أو Run من النموذج.
+- [x] T008 [US1] استئناف المالك ٢٠٢٦/١١/٢٤ فصل المعاينة المحلية الآمنة عن الحفظ المحجوب: أنشئ `src/lib/exec/workflow-draft-template.ts` للقالب الحتمي AR/EN المحدود، مع رفض طلب التصريح/الأصل الحرج/إنشاء المهمة صراحة.
+- [x] T009 [US2] بعد T008 واعتماد المالك المحدد للصلاحيات، أنشئ `src/lib/exec/workflow-drafts.functions.ts` بفرض disabled/null-topic/version1 وexact org/current membership/caller RLS، وINSERT+readback مطابق دون update أو تشغيل.
+- [x] T010 [US1] [US2] بعد T009، أنشئ `src/components/exec/WorkflowDraftComposer.tsx` وglue محدود في `src/routes/_authenticated/workflows.tsx` لمعاينة واختيار جهة فارغ مبدئيًا وحفظ يدوي وإقرار حقيقي؛ لا activation أو Run من النموذج.
 - [ ] T011 [US2] عند تفويض تحقق مستقل مناسب، أثبت حفظ المسودة وإقرارها وعدم تشغيلها ضمن بيئة مأذونة. لا business write أو اختبار أو CI في هذه الدفعة الحالية، ولا تُغلق القصة بنتيجة مصدر فقط.
 
 ## Phase 4 — تسليم التقييم
@@ -32,3 +32,11 @@
 ## Dependencies and Execution
 
 T001–T007 توثق الجدوى الحالية. T008–T011 محجوبة، ولا تُشغل بالتوازي أو ضمن هذه الدفعة. لا مهام تغيير ACL أو تعديل API القديم. T012–T013 توثيق فقط ويمكن مراجعتهما مستقلًا عن أعمال 006/007. لا اختبارات جديدة أو تشغيل Unit/Integration/E2E/CI/load/eval اختياريًا؛ البوابات الفعلية القائمة لا تتغير.
+
+## Continuation — 2026-11-24
+
+- [x] T014 [US1] أضف معاينة محلية AR/EN باختيار جهة فارغ وحد1–50؛ احفظ معطلة بعد مراجعة صريحة عبر caller RLS، مع تصفير الإقرار عند التحرير/تبديل الحساب، دون Run أو استدعاء أداة.
+- [x] T015 أعد فحص metadata فقط؛ INSERT ما زال مرفوضًا عند16:07:40Z، ودوّن مقترح SQL قابلًا للعكس خارج migrations دون تطبيق.
+- [x] T016 [US2] اعتمد المالك «المسودات المعطلة فقط»؛ طُبق المقترح المحروس نفسه مرة واحدة، وتحقق catalog من الأعمدة والسياسات. مرآة migration بتاريخ20261124162112 محفوظة.
+- [ ] T017 [US2] أثبت T011 بحفظ/إقرار وعزل سلوكي فعلي في بيئة اختبار مأذونة؛ لم تُنشأ صفوف إنتاج للاختبار.
+- [x] T018 نجح65اختبارًا مركزًا ببيانات fixtures فقط، وESLint وdiff check؛ ليست هذه نتائج حفظ إنتاجي.

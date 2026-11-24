@@ -224,3 +224,25 @@
     padding-inline: 0;
   }
 }
+
+/* Intentional playback stays on the film itself; no duplicate control pills. */
+.twin-film[data-controls="native"] .twin-film-video {
+  opacity: 1;
+}
+
+.twin-film-poster-control {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  min-block-size: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.twin-film-poster-control[aria-disabled="true"] {
+  cursor: default;
+}

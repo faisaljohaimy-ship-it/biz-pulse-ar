@@ -11,6 +11,7 @@
  */
 import { executiveAiOrchestrator } from "./executive-ai-orchestrator";
 import { assertOne } from "@/lib/sadeed/singletons";
+import { useSadeedStore } from "../state/sadeed-store";
 
 assertOne("BRAIN", "sadeedBrain@aria-core/core/sadeed-brain");
 
@@ -48,13 +49,19 @@ export const sadeedBrain = {
   },
   /** The single request entry point. */
   async submit(text: string): Promise<void> {
-    if (!boundSender) {
+    const sender = boundSender;
+    const accountRevision = useSadeedStore.getState().accountRevision;
+    if (!sender) {
       // Provider not mounted — refuse silently rather than crash the app.
       // The type system + singleton README already forbid this at build time.
       console.warn("[sadeedBrain] submit called before provider mount");
       return;
     }
     const submission = await executiveAiOrchestrator.prepare(text);
+    if (sender !== boundSender || useSadeedStore.getState().accountRevision !== accountRevision) {
+      sadeedBrain.emit({ type: "cancelled", reason: "account_context_changed" });
+      return;
+    }
     if (!submission) {
       sadeedBrain.emit({ type: "duplicate" });
       return;
@@ -62,9 +69,19 @@ export const sadeedBrain = {
     submitStamps.set(submission.turn.id, performance.now());
     sadeedBrain.emit({ type: "submitted", turnId: submission.turn.id });
     try {
-      await boundSender(submission.text);
+      await sender(submission.text);
       // completion is reported by the provider on stream finish.
     } catch (err) {
+      const current = useSadeedStore.getState();
+      if (
+        sender !== boundSender ||
+        current.accountRevision !== accountRevision ||
+        current.activeTurn?.id !== submission.turn.id ||
+        current.activeTurn.status === "cancelled"
+      ) {
+        takeLatency(submission.turn.id);
+        return;
+      }
       const message = executiveAiOrchestrator.failTurn(
         submission.turn.id,
         err,

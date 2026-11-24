@@ -1,11 +1,13 @@
 // @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { resolve } from "node:path";
+import { readFileSync } from "node:fs";
 import {
   buildLiveDashboardPdf,
   liveDashboardPdfFilename,
   type LiveDashboardPdfInput,
 } from "./live-dashboard-pdf";
+import { buildLiveDashboardBriefing } from "./live-dashboard-briefing";
 
 const sample: LiveDashboardPdfInput = {
   range: "30",
@@ -85,6 +87,51 @@ async function parse(bytes: Uint8Array) {
 }
 
 describe("live dashboard PDF — existing shared report engine", () => {
+  it.each(["ar", "en"] as const)(
+    "renders the localized briefing with embedded Arabic fonts and the displayed source limits: %s",
+    async (locale) => {
+      const input: LiveDashboardPdfInput = {
+        ...sample,
+        locale,
+        readEvidence: {
+          kpisReadAt: "2026-11-23T09:29:15.000Z",
+          seriesReadAt: "2026-11-23T09:28:15.000Z",
+          from: "2026-10-24T09:30:15.000Z",
+          to: sample.generatedAt,
+        },
+      };
+      const briefing = buildLiveDashboardBriefing(input, locale);
+      const bytes = await buildLiveDashboardPdf(input, {
+        regular: readFileSync(resolve("public/fonts/nexios-arabic.ttf")),
+        bold: readFileSync(resolve("public/fonts/nexios-arabic-bold.ttf")),
+      });
+      const pages = await parse(bytes);
+      const text = pages
+        .map((page) => page.text)
+        .join(" ")
+        .normalize("NFKC");
+      expect(bytes.length).toBeGreaterThan(10000);
+      expect(bytes.length).toBeLessThan(400 * 1024);
+      for (const stamp of [
+        sample.generatedAt,
+        input.readEvidence!.kpisReadAt!,
+        input.readEvidence!.seriesReadAt!,
+      ])
+        expect(text).toContain(stamp);
+      expect(text).toContain("/sec/exec");
+      expect(text).toContain("/live-dashboard");
+      if (locale === "en") {
+        for (const value of [briefing.title, briefing.sourceNotice, briefing.disclaimer])
+          expect(text).toContain(value);
+      } else {
+        expect(text).toContain("إحاطة");
+        expect(text).toContain("المصدر");
+      }
+      expect(liveDashboardPdfFilename("30", sample.generatedAt, locale)).toBe(
+        `sadeed-executive-30d-2026-11-23-${locale}.pdf`,
+      );
+    },
+  );
   it("preserves the English fields, units, precision and timestamp on A4 landscape", async () => {
     const pages = await parse(await buildLiveDashboardPdf(sample));
     expect(pages).toHaveLength(1);

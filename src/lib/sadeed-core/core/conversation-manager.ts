@@ -97,4 +97,10 @@ export const conversationManager = {
   signal(): AbortSignal | undefined {
     return activeController?.signal;
   },
+  /** Clear only this browser singleton's transient turn/dedupe state. */
+  resetForAccountChange() {
+    conversationManager.cancel();
+    lastSubmittedText = null;
+    lastSubmittedAt = 0;
+  },
 };

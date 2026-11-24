@@ -330,6 +330,7 @@ describe("static owner opening image", () => {
         locale === "ar" ? /ليست بيانات تشغيلية حية/ : /not live operational data/i,
       );
       expect(figure.querySelectorAll("img")).toHaveLength(1);
+      expect(figure.querySelector("button, .command-room-screens")).toBeNull();
       expect(heroMediaViolations(figure)).toEqual([]);
       expect(
         view.getByTestId("home-ticker").compareDocumentPosition(figure) &

@@ -35,6 +35,7 @@ vi.mock("@/components/sec/sec-shell", () => ({
   statusClass: () => "",
   severityClass: () => "",
 }));
+vi.mock("@/components/home/HomeTwinSection", () => ({ HomeTwinSection: () => null }));
 vi.mock("@/components/twin/executive/TwinReferencePanel", () => {
   throw new Error("seeded new-scene chunk failure");
 });

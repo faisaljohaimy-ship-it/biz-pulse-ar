@@ -1,5 +1,5 @@
 /**
- * عقد قسم فيلم التوأم في أسفل الرئيسية مُصيَّرًا (jsdom) — **تعذّر حزمة المشغّل لا يهدم الصفحة.**
+ * عقد معرض أفلام التوأم في صفحته المخصصة مُصيَّرًا (jsdom) — **تعذّر حزمة المشغّل لا يهدم الصفحة.**
  *
  * المقيس ٢٠٢٦/١٠/٢٩ قبل الإصلاح (Playwright، قطع طلب حزمة `TwinFilmPlayer` وردّ 404 عليه):
  * بعد التمرير إلى القسم زالت `main` والصفوف والخاتمة والإفصاح كلّها، وحلّت شاشة «حدث خطأ —
@@ -69,7 +69,7 @@ async function load(player: "rejects" | "arrives") {
   return { HomeTwinSection, I18nProvider };
 }
 
-/** الصفحة مختزلة: القسم ثم الإفصاح بعده — كما في `-blueprint-page.tsx`. */
+/** الصفحة مختزلة: المعرض ثم عنصر مجاور؛ يجب ألا يهدم تعذّر الحزمة بقية الصفحة. */
 async function mountPage(player: "rejects" | "arrives") {
   const { HomeTwinSection, I18nProvider } = await load(player);
   const view = render(
@@ -93,7 +93,11 @@ async function mountPage(player: "rejects" | "arrives") {
     Array.from(view.container.querySelectorAll<HTMLElement>("[data-gallery-film]"), (film) =>
       film.getAttribute("data-gallery-film"),
     ),
-  ).toEqual(["twin", localStorage.getItem("locale") === "en" ? "identityEn" : "identityAr"]);
+  ).toEqual([
+    "twin",
+    "opening",
+    localStorage.getItem("locale") === "en" ? "identityEn" : "identityAr",
+  ]);
   return view;
 }
 
@@ -130,7 +134,7 @@ afterEach(() => {
   localStorage.removeItem("locale");
 });
 
-describe("الرئيسية — قسم فيلم التوأم حين تتعذّر حزمة المشغّل", () => {
+describe("صفحة التوأم — معرض الأفلام حين تتعذّر حزمة المشغّل", () => {
   it("قبل الاقتراب: البديل وحده (ملصقٌ وتعليق)، ولا تُطلب الحزمة", async () => {
     const importSpy = vi.fn();
     vi.doMock(PLAYER_MODULE, () => {
@@ -143,6 +147,12 @@ describe("الرئيسية — قسم فيلم التوأم حين تتعذّر 
     expect(playerOf(view.container)).toBeNull();
     expect(importSpy, "طُلبت الحزمة قبل الاقتراب").not.toHaveBeenCalled();
     expect(FakeObserver.all.length, "لا مراقب اقتراب").toBeGreaterThan(0);
+    expect(view.getByRole("status")).toHaveTextContent("لم يجهز التسجيل الصوتي بصوت سديد بعد");
+    expect(view.getByRole("status")).toHaveTextContent("1.25×");
+    expect(view.getByText("قراءة نص التعليق المقترح")).toBeVisible();
+    expect(view.container.querySelector("details ol")?.children).toHaveLength(5);
+    expect(view.container.querySelector("details ol")).toHaveTextContent("محطات الطاقة لا تنام");
+    expect(view.container.querySelector('[data-gallery-film^="twinNarrated"]')).toBeNull();
     view.unmount();
   });
 
@@ -191,6 +201,10 @@ describe("الرئيسية — قسم فيلم التوأم حين تتعذّر 
     expect(unavailableOf(view.container)!.querySelector(".twin-film-caption")!.textContent).toMatch(
       /not a live feed/,
     );
+    expect(view.getByRole("status")).toHaveTextContent("Sadeed voice recording is not ready yet");
+    expect(view.getByText("Read the proposed narration")).toBeVisible();
+    expect(view.container.querySelector("details ol")).toHaveTextContent("Energy never sleeps");
+    expect(view.container.querySelector("details ol")).not.toHaveTextContent("محطات الطاقة");
     view.unmount();
   });
 
@@ -204,6 +218,11 @@ describe("الرئيسية — قسم فيلم التوأم حين تتعذّر 
     expect(pendingOf(view.container), "بديل الانتظار بقي مع المشغّل").toBeNull();
     expect(unavailableOf(view.container), "بديل التعذّر ظهر والحزمة وصلت").toBeNull();
     expect(sectionOf(view.container)).not.toBeNull();
+    expect(
+      Array.from(view.container.querySelectorAll("figure.twin-film"), (film) =>
+        film.getAttribute("data-controls"),
+      ),
+    ).toEqual(["native", "native", "native"]);
     view.unmount();
   });
 });

@@ -8,7 +8,16 @@
  * always visible). Chat floats above her with backdrop blur and readability
  * scrims. Mobile: near-fullscreen. Desktop: fixed width, full height.
  */
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { createPortal } from "react-dom";
 import {
   SADEED_ACCEPT,
@@ -473,6 +482,8 @@ function SadeedTopAvatar() {
 
 export function SadeedCopilot() {
   const { chat, composerRef, bindComposerDraft } = useSadeedChat();
+  const activeChatId = useRef(chat.id);
+  activeChatId.current = chat.id;
   const mode = useSadeedStore((s) => s.mode);
   const voice = useSadeedStore((s) => s.voice);
   const pageContext = useSadeedStore((s) => s.pageContext);
@@ -518,6 +529,7 @@ export function SadeedCopilot() {
   const voiceCaptureSupported = sttSupported || recorderSupported;
   const [listening, setListening] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
+  const transcriptionAbortRef = useRef<AbortController | null>(null);
   const [greeting, setGreeting] = useState(false);
   const recRef = useRef<SR | null>(null);
   const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -1250,6 +1262,7 @@ export function SadeedCopilot() {
   // الإيداع في قاعدة المعرفة: الملفات النصّية تُقسَّم وتُفهرَس لتصير مرجعًا
   // مستشهَدًا به. للمسجّلين فقط — الزائر يقرأ سَدِيد ملفّه دون إيداع.
   const depositTextFiles = useCallback(async (files: File[]) => {
+    const accountRevision = useSadeedStore.getState().accountRevision;
     const textFiles = files.filter(isTextFile);
     if (!textFiles.length) return;
     // الحدّ والرسالة من مصدرهما الوحيد (`knowledge-ingest-core`) — كان هذا
@@ -1264,10 +1277,12 @@ export function SadeedCopilot() {
         import("@/lib/errors/user-facing-error"),
       ]);
     } catch {
+      if (useSadeedStore.getState().accountRevision !== accountRevision) return;
       setUploadNote("قرأ سَدِيد الملفات؛ تعذّر إيداعها في قاعدة المعرفة الآن.");
       return;
     }
     const [{ enqueueKnowledgeIngest }, core, { isSessionError }] = modules;
+    if (useSadeedStore.getState().accountRevision !== accountRevision) return;
     let saved = 0;
     let deduped = 0;
     let sessionBlocked = false;
@@ -1275,6 +1290,7 @@ export function SadeedCopilot() {
     for (const f of textFiles) {
       try {
         const text = await f.text();
+        if (useSadeedStore.getState().accountRevision !== accountRevision) return;
         if (!text.trim()) continue;
         if (text.length > core.KNOWLEDGE_MAX_TEXT_CHARS) {
           problems.push(`${f.name}: ${core.knowledgeTooLargeMessage(text.length)}`);
@@ -1289,9 +1305,11 @@ export function SadeedCopilot() {
             tags: ["sadeed-upload", (f.name.split(".").pop() ?? "txt").toLowerCase().slice(0, 40)],
           },
         });
+        if (useSadeedStore.getState().accountRevision !== accountRevision) return;
         if (res.deduped) deduped++;
         else saved++;
       } catch (error) {
+        if (useSadeedStore.getState().accountRevision !== accountRevision) return;
         if (isSessionError(error)) {
           sessionBlocked = true;
           break;
@@ -1299,6 +1317,7 @@ export function SadeedCopilot() {
         problems.push(`${f.name}: ${core.INGEST_FAILED_MESSAGE}`);
       }
     }
+    if (useSadeedStore.getState().accountRevision !== accountRevision) return;
     const parts: string[] = [];
     if (saved) parts.push(`أُودع ${saved} ملف في قاعدة معرفة النظام`);
     if (deduped) parts.push(`${deduped} ملف موجود مسبقًا بالنص نفسه`);
@@ -1310,6 +1329,8 @@ export function SadeedCopilot() {
 
   const submit = useCallback(
     async (textOverride?: string, opts?: { fromVoice?: boolean }) => {
+      const accountRevision = useSadeedStore.getState().accountRevision;
+      if (activeChatId.current !== chat.id) return;
       const files = textOverride === undefined ? pendingFiles : [];
       const promptText = (textOverride ?? draft).trim();
       if ((!promptText && files.length === 0) || isBusy) return;
@@ -1335,7 +1356,17 @@ export function SadeedCopilot() {
       try {
         if (files.length > 0) {
           const parts = await Promise.all(files.map(fileToPart));
+          if (
+            useSadeedStore.getState().accountRevision !== accountRevision ||
+            activeChatId.current !== chat.id
+          )
+            return;
           await chat.sendMessage({ text: messageText, files: parts });
+          if (
+            useSadeedStore.getState().accountRevision !== accountRevision ||
+            activeChatId.current !== chat.id
+          )
+            return;
           void depositTextFiles(files);
         } else {
           await chat.sendMessage({ text: messageText });
@@ -1386,6 +1417,9 @@ export function SadeedCopilot() {
   }, []);
 
   const stopListening = useCallback(() => {
+    transcriptionAbortRef.current?.abort();
+    transcriptionAbortRef.current = null;
+    setTranscribing(false);
     const r = recRef.current;
     if (r) {
       try {
@@ -1416,6 +1450,24 @@ export function SadeedCopilot() {
     mediaStreamRef.current = null;
     setListening(false);
   }, [stopMediaAnalysis]);
+
+  const previousAccountChat = useRef(chat.id);
+  useLayoutEffect(() => {
+    if (previousAccountChat.current === chat.id) return;
+    previousAccountChat.current = chat.id;
+    convModeRef.current = false;
+    setConvMode(false);
+    setConvPaused(false);
+    setConvNotice(null);
+    finalTranscriptRef.current = "";
+    if (relistenTimerRef.current) clearTimeout(relistenTimerRef.current);
+    relistenTimerRef.current = null;
+    stopListening();
+    stopVoicePlayback();
+    setDraft("");
+    setPendingFiles([]);
+    setUploadNote(null);
+  }, [chat.id, stopListening, stopVoicePlayback]);
 
   const stopResponse = useCallback(() => {
     void chat.stop();
@@ -1532,7 +1584,17 @@ export function SadeedCopilot() {
 
   const transcribeVoiceBlob = useCallback(
     async (blob: Blob, mimeType: string) => {
+      const accountRevision = useSadeedStore.getState().accountRevision;
+      const chatId = chat.id;
+      const controller = new AbortController();
+      const currentAccount = () =>
+        !controller.signal.aborted &&
+        activeChatId.current === chatId &&
+        useSadeedStore.getState().accountRevision === accountRevision;
+      if (!currentAccount()) return;
       if (!convModeRef.current || blob.size === 0) return;
+      transcriptionAbortRef.current?.abort();
+      transcriptionAbortRef.current = controller;
       setTranscribing(true);
       sadeedState.set("thinking");
       try {
@@ -1548,7 +1610,9 @@ export function SadeedCopilot() {
         let response = await authenticatedFetch("/api/sadeed/transcribe", {
           method: "POST",
           body: makeForm(),
+          signal: controller.signal,
         });
+        if (!currentAccount()) return;
         if (
           !response.ok &&
           (response.status === 401 ||
@@ -1560,12 +1624,14 @@ export function SadeedCopilot() {
             method: "POST",
             body: makeForm(),
             cache: "no-store",
+            signal: controller.signal,
           });
         }
         const payload = (await response.json().catch(() => null)) as {
           text?: unknown;
           error?: unknown;
         } | null;
+        if (!currentAccount()) return;
         if (!response.ok || typeof payload?.text !== "string") {
           const reason =
             typeof payload?.error === "string" && !/authenticat|unauthor/i.test(payload.error)
@@ -1586,17 +1652,21 @@ export function SadeedCopilot() {
         setDraft("");
         await submit(transcript, { fromVoice: true });
       } catch {
+        if (!currentAccount()) return;
         setConvNotice("تعذّر تحليل الصوت — تحقق من الاتصال ثم أعد المحاولة.");
         setConvPaused(false);
         scheduleConversationRelisten(900);
       } finally {
-        setTranscribing(false);
+        if (currentAccount()) setTranscribing(false);
+        if (transcriptionAbortRef.current === controller) transcriptionAbortRef.current = null;
       }
     },
-    [scheduleConversationRelisten, submit],
+    [scheduleConversationRelisten, submit, chat.id],
   );
 
   const startRecordedListening = useCallback(async () => {
+    const accountRevision = useSadeedStore.getState().accountRevision;
+    const chatId = chat.id;
     if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
       setConvNotice("التسجيل الصوتي غير متاح في هذا المتصفح.");
       setConvPaused(true);
@@ -1610,7 +1680,11 @@ export function SadeedCopilot() {
       stopMediaAnalysis();
       const stream = await requestSadeedMicrophone();
       acquiredStream = stream;
-      if (!convModeRef.current) {
+      if (
+        !convModeRef.current ||
+        activeChatId.current !== chatId ||
+        useSadeedStore.getState().accountRevision !== accountRevision
+      ) {
         stream.getTracks().forEach((track) => track.stop());
         return;
       }
@@ -1629,12 +1703,24 @@ export function SadeedCopilot() {
         if (event.data.size > 0) mediaChunksRef.current.push(event.data);
       };
       recorder.onerror = () => {
+        if (
+          activeChatId.current !== chatId ||
+          useSadeedStore.getState().accountRevision !== accountRevision
+        )
+          return;
         mediaCaptureCancelledRef.current = true;
         setConvNotice("حدث خطأ أثناء التسجيل الصوتي.");
         setConvPaused(true);
         if (recorder.state !== "inactive") recorder.stop();
       };
       recorder.onstop = () => {
+        if (
+          activeChatId.current !== chatId ||
+          useSadeedStore.getState().accountRevision !== accountRevision
+        ) {
+          for (const track of stream.getTracks()) track.stop();
+          return;
+        }
         const cancelled = mediaCaptureCancelledRef.current;
         const noSpeech = mediaNoSpeechRef.current;
         const chunks = mediaChunksRef.current;
@@ -1695,6 +1781,13 @@ export function SadeedCopilot() {
           mediaAnalysisContextRef.current = context;
           mediaAnalysisOwnsContextRef.current = context !== unlockContext;
           if (context.state === "suspended") await context.resume();
+          if (
+            activeChatId.current !== chatId ||
+            useSadeedStore.getState().accountRevision !== accountRevision
+          ) {
+            for (const track of stream.getTracks()) track.stop();
+            return;
+          }
           const analyser = context.createAnalyser();
           analyser.fftSize = 1_024;
           analyser.smoothingTimeConstant = 0.2;
@@ -1729,6 +1822,13 @@ export function SadeedCopilot() {
         if (recorder.state !== "inactive") recorder.stop();
       }, 30_000);
     } catch (error) {
+      if (
+        activeChatId.current !== chatId ||
+        useSadeedStore.getState().accountRevision !== accountRevision
+      ) {
+        for (const track of acquiredStream?.getTracks() ?? []) track.stop();
+        return;
+      }
       stopMediaAnalysis();
       for (const track of acquiredStream?.getTracks() ?? []) track.stop();
       if (mediaStreamRef.current === acquiredStream) mediaStreamRef.current = null;
@@ -1747,6 +1847,7 @@ export function SadeedCopilot() {
     stopMediaAnalysis,
     transcribeVoiceBlob,
     transcriptionProviderReady,
+    chat.id,
   ]);
 
   const finishListening = useCallback(() => {
@@ -1770,6 +1871,7 @@ export function SadeedCopilot() {
   }, []);
 
   const startListening = useCallback(() => {
+    const chatId = chat.id;
     primeIOSAudio();
     // Barge-in: silence and release every pending SADEED speech resource.
     stopVoicePlayback();
@@ -1813,6 +1915,7 @@ export function SadeedCopilot() {
         }, silenceMs);
       };
       r.onresult = (e) => {
+        if (activeChatId.current !== chatId) return;
         let interim = "";
         for (let i = e.resultIndex; i < e.results.length; i++) {
           const res = e.results[i] as ArrayLike<{ transcript: string }> & {
@@ -1826,6 +1929,7 @@ export function SadeedCopilot() {
         armSilence();
       };
       r.onerror = (event) => {
+        if (activeChatId.current !== chatId) return;
         if (recognitionFailed) return;
         recognitionFailed = true;
         if (silenceTimerRef.current) {
@@ -1850,6 +1954,7 @@ export function SadeedCopilot() {
         void startRecordedListening();
       };
       r.onend = () => {
+        if (activeChatId.current !== chatId) return;
         if (silenceTimerRef.current) {
           clearTimeout(silenceTimerRef.current);
           silenceTimerRef.current = null;
@@ -1873,7 +1978,14 @@ export function SadeedCopilot() {
       setListening(false);
       void startRecordedListening();
     }
-  }, [submit, stopListening, stopVoicePlayback, startRecordedListening, recorderSupported]);
+  }, [
+    submit,
+    stopListening,
+    stopVoicePlayback,
+    startRecordedListening,
+    recorderSupported,
+    chat.id,
+  ]);
 
   useEffect(() => {
     startListeningRef.current = startListening;

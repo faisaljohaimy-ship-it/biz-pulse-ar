@@ -11,10 +11,22 @@
  */
 import { useChat } from "@ai-sdk/react";
 import { type UIMessage } from "ai";
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+} from "react";
 import { useRouterState } from "@tanstack/react-router";
 import { useSadeedStore } from "../state/sadeed-store";
-import { createSadeedTransport } from "../services/sadeed-service";
+import {
+  createSadeedTransport,
+  setPendingReplyMode,
+  setPendingRouteHint,
+} from "../services/sadeed-service";
 import { sadeedBrain } from "../core/sadeed-brain";
 import { voiceManager } from "../core/voice-manager";
 import { avatarLifecycle } from "../core/avatar-lifecycle";
@@ -22,6 +34,9 @@ import { avatarBrain } from "../core/avatar-brain";
 import { trackMount } from "@/lib/sadeed/singletons";
 import { useI18n } from "@/lib/i18n";
 import { pageContextDraft } from "../page-context-draft";
+import { useAuth } from "@/lib/auth-context";
+import { conversationManager } from "../core/conversation-manager";
+import { conversationIntelligence } from "../core/conversation-intelligence";
 
 interface SadeedProviderValue {
   chat: ReturnType<typeof useChat>;
@@ -44,6 +59,8 @@ const SADEED_WELCOME_AR: UIMessage = {
 
 export function SadeedProvider({ children }: { children: React.ReactNode }) {
   const { locale } = useI18n();
+  const { user } = useAuth();
+  const accountScope = user?.id ?? "guest";
   const composerRef = useRef<HTMLTextAreaElement | null>(null);
   const draftSetter = useRef<((draft: string) => void) | null>(null);
   const pendingDraft = useRef<{ text: string; focus: boolean } | null>(null);
@@ -67,18 +84,41 @@ export function SadeedProvider({ children }: { children: React.ReactNode }) {
   const transport = useMemo(() => createSadeedTransport(), []);
 
   const chat = useChat({
-    id: "sadeed-singleton",
+    id: `sadeed-singleton:${accountScope}`,
     messages: [SADEED_WELCOME_AR],
     transport,
   });
+  const previousStop = useRef(chat.stop);
+  const reportedRef = useRef<Set<string>>(new Set());
+  useLayoutEffect(() => {
+    const stopPrevious = previousStop.current;
+    previousStop.current = chat.stop;
+    if (!useSadeedStore.getState().bindAccountScope(accountScope)) return;
+    void stopPrevious();
+    pendingDraft.current = null;
+    draftSetter.current?.("");
+    reportedRef.current.clear();
+    conversationManager.resetForAccountChange();
+    conversationIntelligence.clear();
+    setPendingRouteHint(null);
+    setPendingReplyMode("text");
+  }, [accountScope, chat.stop]);
+  // The SDK replaces its Chat object on id change; abort the detached stream too.
+  useEffect(() => {
+    const stop = chat.stop;
+    return () => {
+      void stop();
+    };
+  }, [chat.id, chat.stop]);
 
   // ── Bind chat sender into the Brain (once) ────────────────────────────
   useEffect(() => {
+    const sendMessage = chat.sendMessage;
     const unbind = sadeedBrain.bindSender(async (text: string) => {
-      await chat.sendMessage({ text });
+      await sendMessage({ text });
     });
     return unbind;
-  }, [chat]);
+  }, [chat.sendMessage]);
 
   // ── Singleton mount guard: warn loudly if a 2nd SadeedProvider mounts ────
   useEffect(() => trackMount("PROVIDER", "SadeedProvider@__root"), []);
@@ -104,7 +144,7 @@ export function SadeedProvider({ children }: { children: React.ReactNode }) {
       locale,
       ...(previous?.pathname === pathname && previous.facts ? { facts: previous.facts } : {}),
     });
-  }, [pathname, searchStr, locale, setPageContext]);
+  }, [pathname, searchStr, locale, accountScope, setPageContext]);
 
   // ── Imperative command drain (open / focus / send from any component) ─
   useEffect(() => {
@@ -145,7 +185,6 @@ export function SadeedProvider({ children }: { children: React.ReactNode }) {
   }, [chat.status]);
 
   // ── Stream completion → Brain telemetry ───────────────────────────────
-  const reportedRef = useRef<Set<string>>(new Set());
   useEffect(() => {
     if (chat.status !== "ready") return;
     const active = useSadeedStore.getState().activeTurn;

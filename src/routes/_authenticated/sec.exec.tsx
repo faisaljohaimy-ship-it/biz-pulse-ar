@@ -6,6 +6,7 @@ import { getExecKpis, pctOrUnmeasured, numOrUnmeasured } from "@/lib/sec.functio
 import { SecPageHeader, SecLoading, SecError } from "@/components/sec/sec-shell";
 import { ExecDrilldownDialog } from "@/components/sec/ExecDrilldownDialog";
 import { useRegion } from "@/lib/region-context";
+import { PresenceChangesCard } from "@/components/sec/PresenceChangesCard";
 
 export const Route = createFileRoute("/_authenticated/sec/exec")({
   errorComponent: RouteError,
@@ -49,6 +50,8 @@ function ExecDashboard() {
         title="لوحة القيادة التنفيذية"
         subtitle={`إدارة الأمن الصناعي — مؤشرات الأداء التنفيذية للمنطقة ${region.shortAr}`}
       />
+
+      <PresenceChangesCard />
 
       {/* حُذف صندوق «الجاهزية التشغيلية» (مع مؤشرَي السلامة والمخاطر)
           بقرار المالك ٢٠٢٦/٠٨/٢٠ — الملاحظات الحمراء. */}

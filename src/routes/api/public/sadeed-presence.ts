@@ -21,6 +21,8 @@ import { detectInterruption } from "@/lib/sadeed/presence/interruption.server";
 import { readCursor, writeCursor } from "@/lib/sadeed/presence/tiers.server";
 import { requireBearerUser } from "@/lib/sadeed/require-bearer.server";
 import { getCurrentOrgIdForUser } from "@/lib/authz.server";
+import { presenceCursorScope } from "@/lib/sadeed/presence/change-comparison";
+import { computePresenceDelta } from "@/lib/sadeed/presence/since-last-visit.server";
 
 function clientIp(req: Request): string {
   const h = req.headers;
@@ -51,26 +53,40 @@ export const Route = createFileRoute("/api/public/sadeed-presence")({
 
         const url = new URL(request.url);
         const sid = (url.searchParams.get("sid") ?? "").trim();
-        if (!sid || sid.length < 4) {
+        if (!sid || sid.length < 4 || sid.length > 120) {
           return Response.json({ error: "missing_sid" }, { status: 400 });
         }
         try {
           // Scope all admin-client reads to the caller's org so incidents,
           // alerts, KPIs and priorities never bleed across tenants.
-          const orgId = await getCurrentOrgIdForUser(auth.userId);
+          const orgId = await getCurrentOrgIdForUser(auth.userId).catch(() => null);
+          const scope = orgId ? presenceCursorScope(auth.userId, orgId, sid) : null;
+          if (!scope) return Response.json({ error: "scope_unavailable" }, { status: 503 });
+          if (url.searchParams.get("view") === "changes") {
+            const delta = await computePresenceDelta(scope, orgId, auth.userId);
+            return Response.json(
+              { delta, accountId: auth.userId, organizationId: orgId, durableBaseline: false },
+              {
+                headers: { "Cache-Control": "private, no-store" },
+              },
+            );
+          }
           const [greeting, interruption] = await Promise.all([
-            composePresenceGreeting(sid, orgId),
-            detectInterruption(sid, orgId),
+            composePresenceGreeting(scope, orgId),
+            detectInterruption(scope, orgId),
           ]);
-          return Response.json({
-            greeting_en: greeting.greeting_en,
-            greeting_ar: greeting.greeting_ar,
-            time_band: greeting.timeBand,
-            delta: greeting.delta,
-            top_priorities: greeting.briefing.priorities.slice(0, 3),
-            health: greeting.briefing.health,
-            interruption,
-          });
+          return Response.json(
+            {
+              greeting_en: greeting.greeting_en,
+              greeting_ar: greeting.greeting_ar,
+              time_band: greeting.timeBand,
+              delta: greeting.delta,
+              top_priorities: greeting.briefing.priorities.slice(0, 3),
+              health: greeting.briefing.health,
+              interruption,
+            },
+            { headers: { "Cache-Control": "private, no-store" } },
+          );
         } catch (e) {
           console.error("[aria-presence.GET]", e instanceof Error ? e.message : e);
           return Response.json({ error: "presence_failed" }, { status: 502 });
@@ -91,13 +107,19 @@ export const Route = createFileRoute("/api/public/sadeed-presence")({
         }
         const parsed = HeartbeatSchema.safeParse(body);
         if (!parsed.success) return Response.json({ error: "invalid_input" }, { status: 400 });
+        const orgId = await getCurrentOrgIdForUser(auth.userId).catch(() => null);
+        const scope = orgId ? presenceCursorScope(auth.userId, orgId, parsed.data.sessionId) : null;
+        if (!scope) return Response.json({ error: "scope_unavailable" }, { status: 503 });
         const nowISO = new Date().toISOString();
-        const cur = readCursor(parsed.data.sessionId) ?? { lastVisitAt: nowISO };
+        const cur = readCursor(scope) ?? { lastVisitAt: nowISO };
         if (parsed.data.kind === "seen_incident") cur.lastSeenIncidentId = parsed.data.ref;
         if (parsed.data.kind === "seen_alert") cur.lastSeenAlertAt = nowISO;
         cur.lastVisitAt = nowISO;
-        writeCursor(parsed.data.sessionId, cur);
-        return Response.json({ ok: true, cursor: cur });
+        writeCursor(scope, cur);
+        return Response.json(
+          { ok: true, cursor: cur },
+          { headers: { "Cache-Control": "private, no-store" } },
+        );
       },
     },
   },

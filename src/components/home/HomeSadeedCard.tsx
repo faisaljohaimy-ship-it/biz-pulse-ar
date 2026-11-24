@@ -47,6 +47,7 @@ import {
   SadeedStagePresence,
   type SadeedConnection,
 } from "@/components/sadeed/SadeedStagePresence";
+import { SadeedDraftForms } from "@/components/sadeed-core/SadeedDraftForms";
 import "@/styles/home/home-sadeed.css";
 
 /* ── رموز الرقاقات كما رُسمت: صورٌ ظلّية 16×16 بفتحاتٍ مفرَّغة ─────────── */
@@ -382,6 +383,11 @@ export function HomeSadeedCard() {
           <Paperclip aria-hidden />
         </button>
       </form>
+      <SadeedDraftForms
+        key={user?.id ?? "guest"}
+        locale={locale}
+        onDraft={(draft) => open({ focus: true, draft })}
+      />
     </section>
   );
 }

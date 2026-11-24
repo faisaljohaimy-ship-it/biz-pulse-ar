@@ -1,0 +1,34 @@
+{
+  "status": "blocked",
+  "reason": "canonical_voice_recording_unavailable",
+  "observedRequest": {
+    "scene": "s1",
+    "language": "ar",
+    "httpStatus": 502,
+    "error": "tts_failed"
+  },
+  "providerFailureCause": "not_established_by_media_renderer",
+  "canonicalVoice": {
+    "provider": "elevenlabs",
+    "voiceId": "izhopdR43PRI5gAmjXTj",
+    "recordedSourceVoiceSpeed": 0.9
+  },
+  "requestedNarrationTempo": 1.25,
+  "scriptLanguages": [
+    "ar",
+    "en"
+  ],
+  "scriptStatus": "authored_not_a_verified_recording_transcript",
+  "publicNarratedAssetsCreated": false,
+  "servedPictureProfile": {
+    "source": "public/media/twin/sadeed-twin-640.mp4",
+    "dimensions": [
+      640,
+      360
+    ],
+    "seconds": 56,
+    "pictureMode": "stream-copy"
+  },
+  "runtimeFallback": "Retain the existing original film; display bilingual authored script with truthful unavailable-recording status. Do not label the original music as SADEED narration.",
+  "releaseScope": "This status does not certify application deployment or production verification."
+}

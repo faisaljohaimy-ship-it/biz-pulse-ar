@@ -53,7 +53,11 @@ function recordAuditFailure(message: string): void {
  * bus also mirrors events into this table via trigger; direct calls are for
  * actions that don't publish an event (e.g. fine-grained sub-steps).
  */
-export async function audit(supabase: SupabaseClient<Database>, entry: AuditEntry): Promise<void> {
+export async function audit(
+  supabase: SupabaseClient<Database>,
+  entry: AuditEntry,
+  options: { signal?: AbortSignal } = {},
+): Promise<void> {
   try {
     const row: Record<string, unknown> = {
       actor_id: entry.actor_id ?? null,
@@ -76,7 +80,8 @@ export async function audit(supabase: SupabaseClient<Database>, entry: AuditEntr
     };
     if (entry.org_id) row.org_id = entry.org_id;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase as any).from("audit_logs").insert(row);
+    const query = (supabase as any).from("audit_logs").insert(row);
+    const { error } = await (options.signal ? query.abortSignal(options.signal) : query);
     if (error) {
       recordAuditFailure(error.message);
       console.error("[audit] insert failed", error.message);

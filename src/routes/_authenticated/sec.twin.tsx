@@ -36,6 +36,12 @@ const TwinReferencePanel = lazy(() =>
     .catch(() => ({ default: ReferenceUnavailable })),
 );
 
+const TwinFilmGallery = lazy(() =>
+  import("@/components/home/HomeTwinSection")
+    .then((m) => ({ default: m.HomeTwinSection }))
+    .catch(() => ({ default: ReferenceUnavailable })),
+);
+
 function ReferenceUnavailable() {
   return <TwinLoadState failed />;
 }
@@ -89,8 +95,8 @@ function TwinPage() {
         title={ar ? "التوأم الرقمي للمناطق" : "Regional digital twin"}
         subtitle={
           ar
-            ? "مشهد مرجعي تفاعلي، وشجرة الأصول الأمنية القائمة"
-            : "An interactive reference scene and the existing security asset tree"
+            ? "مشهد مرجعي تفاعلي وأفلام توضيحية، وشجرة الأصول الأمنية القائمة"
+            : "An interactive reference scene, illustrative films and the existing security asset tree"
         }
       />
 
@@ -105,7 +111,10 @@ function TwinPage() {
         <TwinReferencePanel key={region.id} initialRegionId={region.id} />
       </Suspense>
 
-      {/* قسم فيلم التوأم الرقمي نُقل إلى أسفل الرئيسية بأمر المالك ٢٠٢٦/١٠/٢٩ (`src/components/home/HomeTwinSection.tsx`). */}
+      {/* Owner 2026-11-24: the twin and its films live here, outside the homepage. */}
+      <Suspense fallback={<TwinLoadState />}>
+        <TwinFilmGallery />
+      </Suspense>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[420px_1fr]">
         <div className="rounded-xl border border-border bg-card p-3 max-h-[78vh] overflow-y-auto">

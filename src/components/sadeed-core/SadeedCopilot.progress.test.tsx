@@ -23,6 +23,7 @@ import { createElement, useSyncExternalStore } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 type FakeChat = {
+  id: string;
   messages: unknown[];
   status: "ready" | "submitted" | "streaming" | "error";
   error: Error | undefined;
@@ -110,6 +111,7 @@ beforeEach(() => {
     vi.fn(async () => new Response(JSON.stringify({ ok: true }), { status: 200 })),
   );
   fake.holder.chat = {
+    id: "sadeed-singleton:account-A",
     messages: [],
     status: "ready",
     error: undefined,
@@ -132,6 +134,18 @@ function renderPanel() {
   return render(createElement(SadeedCopilot));
 }
 const stopButton = () => screen.getByRole("button", { name: "إيقاف الرد" });
+
+describe("حدود الحساب في لوحة المساعد", () => {
+  it("يمحو المسودة عند تغير معرف المحادثة للحساب فقط، ولا يرسلها أو يمحوها لإعادة الرسم", () => {
+    renderPanel();
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: "PRIVATE ACCOUNT A DRAFT" } });
+    setChat({ status: "ready" });
+    expect(screen.getByRole("textbox")).toHaveValue("PRIVATE ACCOUNT A DRAFT");
+    setChat({ id: "sadeed-singleton:account-B", messages: [] });
+    expect(screen.getByRole("textbox")).toHaveValue("");
+    expect(fake.holder.chat.sendMessage).not.toHaveBeenCalled();
+  });
+});
 
 describe("انتظار طويل — تقدّم صادق وزرّ إيقاف", () => {
   it("12 ث ثم 25 ث تتبدّل الرسالة، والإيقاف ظاهر طوال الانتظار ويوقف فعلًا", async () => {
