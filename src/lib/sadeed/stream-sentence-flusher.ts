@@ -30,11 +30,11 @@ export interface SentenceFlusherOptions {
   softFlushChars?: number;
 }
 
-// Sentence terminators: . ! ? ؟ ۔ 。 ！ ？ newline
+// Sentence terminators: . ! ? ؟ ۔ 。 ！ ？ CR, LF, or CRLF
 // A streamed question/exclamation may end its chunk without whitespace. Flush it
 // immediately rather than waiting for the next token or stream close. Keep a
 // trailing ASCII period buffered: it may be the start of a decimal (e.g. 3.14).
-const SENTENCE_TERMINATOR = /([!?؟۔。！？](?=\s|$)|\.(?=\s)|\n)/;
+const SENTENCE_TERMINATOR = /([!?؟۔。！？](?=\s|$)|\.(?=\s)|\r\n?|\n)/;
 
 export function createSentenceFlusher(opts: SentenceFlusherOptions) {
   const budget = opts.firstSentenceBudgetMs ?? 250;
