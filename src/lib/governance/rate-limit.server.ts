@@ -158,7 +158,17 @@ export async function enforceRateLimit(
   windowSeconds = 60,
   options: RateLimitOptions = {},
 ): Promise<RateLimitDecision> {
-  const deadlineMs = options.deadlineMs ?? RATE_LIMIT_DEFAULT_DEADLINE_MS;
+  // Node clamps NaN, negative, fractional-under-1 and overflowing timer delays
+  // to 1 ms. An invalid override must never turn a working quota database into
+  // an immediate synthetic outage and open the storage circuit breaker.
+  const override = options.deadlineMs;
+  const deadlineMs =
+    override !== undefined &&
+    Number.isSafeInteger(override) &&
+    override >= 1 &&
+    override <= 2_147_483_647
+      ? override
+      : RATE_LIMIT_DEFAULT_DEADLINE_MS;
   const startedAt = Date.now();
   if (breakerShouldSkip(startedAt)) {
     // لا انتظار: المخزن معروفٌ أنه معطّل حتى موعد الفحص التالي.

@@ -84,6 +84,29 @@ describe("enforceRateLimit — المهلة", () => {
     expect(output).not.toContain(privateDbMessage);
   });
 
+  it.each([
+    Number.NaN,
+    Number.POSITIVE_INFINITY,
+    Number.NEGATIVE_INFINITY,
+    -1,
+    0,
+    0.5,
+    2_147_483_648,
+  ])(
+    "invalid deadline override (%s) falls back to bounded 2s instead of Node's 1ms timer",
+    async (invalidDeadline) => {
+      rpc.impl = () => new Promise(() => {});
+      let settled: unknown = "pending";
+      void enforceRateLimit("invalid-deadline", 10, 60, { deadlineMs: invalidDeadline }).then(
+        (decision) => (settled = decision),
+      );
+      await vi.advanceTimersByTimeAsync(RATE_LIMIT_DEFAULT_DEADLINE_MS - 1);
+      expect(settled).toBe("pending");
+      await vi.advanceTimersByTimeAsync(1);
+      expect(settled).toEqual({ allowed: false, unavailable: true });
+    },
+  );
+
   it("بلا خيار ⇐ المهلة الافتراضية 2000 مللي ثانية — لا نداء بلا حدّ", async () => {
     rpc.impl = () => new Promise(() => {});
     let settled: unknown = "pending";
