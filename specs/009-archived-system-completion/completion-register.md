@@ -2,8 +2,10 @@
 
 This register separates original archived delivery/acceptance, current bounded
 engineering choices and capability-audit follow-up proposals. It does not convert
-an audit row into a previously promised unfinished feature. It does not certify
-the final candidate's Production release or claim every capability is complete.
+an audit row into a previously promised unfinished feature. The [dated receipt
+reconciliation](delivery-reconciliation-2026-11-24.md) confirms that existing
+e5681f2 is already served on both Production domains; it does not certify the
+subsequent cleanup candidate's release or claim every capability is complete.
 The verified539cc26 artifact remains a separate historical delivery receipt.
 
 ## Classification from the original archive
@@ -16,15 +18,15 @@ The verified539cc26 artifact remains a separate historical delivery receipt.
 
 ## Historical delivery tasks and genuine remaining acceptance
 
-| Original task group                                   | Actual state                                                                                                                                                                                                                                                                                                           |
-| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 005T013–T014 and006T013–T014                          | Reconciled/closed from observed539cc26 delivery: READY/promoted `dpl_4hNC94YrXEDAnBQuynEw2pqjFbs1`, both domains/exact live revision/required HTML and assets, plus limited AR/EN390/1280 browser evidence; direct no-CI instruction recorded. [Receipt](../006-cinematic-voice-activation/verification-2026-11-24.md) |
-| 004/002/003 historical pre-commit delivery statements | Keep their original snapshots historical and reconcile against actual receipts/owner policy; do not interpret “no release yet” in an old source snapshot as missing new feature code or invent a successful historical CI run                                                                                          |
-| 004T015/T016/T017                                     | Actual authorized login/session, actual iPhone Safari and the complete originally requested browser/device acceptance remain distinct. Current viewport tests do not close real device/account acceptance                                                                                                              |
-| 006T008/current narrated-film request                 | Actual canonical-voice listening/pronunciation/VTT alignment remains unverified while voice generation is unavailable. Removing/moving UI does not manufacture the requested narration                                                                                                                                 |
-| 007source QA/runtime acceptance                       | Independent source review completed; actual authorized record/tenant/account/QR scan acceptance remains open                                                                                                                                                                                                           |
-| 008T008–T010/T011                                     | Compiler/reviewed disabled-save/readback source plus exact approved permission change implemented; actual authenticated save/receipt and behavioral tenant exercise not performed                                                                                                                                      |
-| Current reporting/checks/release                      | Bounded source-linked report implementation and readiness checks are current work; final candidate checks/actual artifact verification remain root-owned and separate from the old539cc26 receipt                                                                                                                      |
+| Original task group                                   | Actual state                                                                                                                                                                                                                                                                                                                                                                  |
+| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 005T013–T014 and006T013–T014                          | Reconciled/closed from observed539cc26 delivery: READY/promoted `dpl_4hNC94YrXEDAnBQuynEw2pqjFbs1`, both domains/exact live revision/required HTML and assets, plus limited AR/EN390/1280 browser evidence; direct no-CI instruction recorded. [Receipt](../006-cinematic-voice-activation/verification-2026-11-24.md)                                                        |
+| 004/002/003 historical pre-commit delivery statements | Reconciled by009T004 in [the dated addendum](delivery-reconciliation-2026-11-24.md): fetched merged PR454/455/456 metadata and attributed historical delivery receipts, plus independently observed current e5681f2 live identity/READY artifact/both aliases. Original checkpoints remain historical; unavailable acceptance and unperformed CI are not closed.              |
+| 004T015/T016/T017                                     | Actual authorized login/session, actual iPhone Safari and the complete originally requested browser/device acceptance remain distinct. Current viewport tests do not close real device/account acceptance                                                                                                                                                                     |
+| 006T008/current narrated-film request                 | Actual canonical-voice listening/pronunciation/VTT alignment remains unverified while voice generation is unavailable. Removing/moving UI does not manufacture the requested narration                                                                                                                                                                                        |
+| 007source QA/runtime acceptance                       | Independent source review completed; actual authorized record/tenant/account/QR scan acceptance remains open                                                                                                                                                                                                                                                                  |
+| 008T008–T010/T011                                     | Compiler/reviewed disabled-save/readback source plus exact approved permission change implemented; actual authenticated save/receipt and behavioral tenant exercise not performed                                                                                                                                                                                             |
+| Current reporting/checks/release                      | Existing bounded implementation e5681f2 is live on both domains at READY `dpl_m8ydNx9GZf3DGgVQkeENM5kRCrAa`; [identity receipt](delivery-reconciliation-2026-11-24.md#existing-e5681f2-production-identity-observed-today). Its full release sequence is not reconstructed from liveness alone. Final cleanup-candidate checks/review/release remain root-owned and separate. |
 
 ## Implemented current continuation and bounded additions
 
@@ -47,7 +49,8 @@ Current remaining acceptance includes actual canonical narration (T030/T032),
 relevant final browser/media/controls checks (T031), actual authorized session/QR/
 workflow behavior and real device evidence (T034–T036), available-read/browser PDF
 acceptance (T013), and final integrated checks/release/receipt reconciliation
-(T043–T046). Report each actual outcome or concrete unmet acceptance separately;
+(T043–T046). Historical receipt reconciliation T004 is complete; it does not
+complete those final cleanup-candidate tasks. Report each actual outcome or concrete unmet acceptance separately;
 source fixtures and successful deployment do not close real-account/voice/device
 requirements automatically.
 

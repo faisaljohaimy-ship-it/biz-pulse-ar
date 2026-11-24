@@ -22,9 +22,9 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SOURCE="${SOURCE:-$SCRATCH/video/source.mp4}"
 OVERLAY_DIR="${OVERLAY_DIR:-$SCRATCH/video/overlay}"
 OVERLAY_PNG="$OVERLAY_DIR/overlay.png"
-# Retired film: keep manual derivatives in the source archive, never reintroduce
-# an unused 10.96 MiB public asset or overwrite the preserved original blob.
-OUT="${OUT:-$REPO_ROOT/media-production/archive/welcome/sadeed-welcome-derived.mp4}"
+# Retired film: manual derivatives belong in ignored local output, never public
+# or a tracked archive. The retired original remains recoverable in Git history.
+OUT="${OUT:-$REPO_ROOT/.sadeed/video-out/sadeed-welcome-derived.mp4}"
 PW_BROWSERS="${PLAYWRIGHT_BROWSERS_PATH:-/opt/pw-browsers}"
 
 # عقد الصوت (من BRIEF): أول كلمة عند 2.236s، مدة الكلام الأصلي 48.3s
@@ -54,6 +54,7 @@ build_overlay() {
 }
 
 export_branded() { # يجرّب CRF 23 ثم يرفع حتى ينزل تحت 12MiB
+  mkdir -p "$(dirname "$OUT")"
   for crf in 23 24 25 26; do
     echo "▶ تصدير CRF $crf …"
     "$FFMPEG" -y -v error \
