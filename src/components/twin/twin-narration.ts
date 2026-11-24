@@ -72,6 +72,22 @@ export const TWIN_NARRATION = {
   },
 } as const;
 
+/** Authored subtitles timed to the scenes of the original 56-second film. */
+export const TWIN_SCENE_SUBTITLES = {
+  ar: {
+    src: "/media/twin/script/sadeed-twin-ar.vtt",
+    language: "ar",
+    label: "نص المشاهد",
+    default: true,
+  },
+  en: {
+    src: "/media/twin/script/sadeed-twin-en.vtt",
+    language: "en",
+    label: "Scene script",
+    default: true,
+  },
+} as const;
+
 /** Until genuine recordings are verified, retain the original picture/audio.
  * Never point a player at an ungenerated narrated file or label original music
  * as SADEED narration. These fallbacks are not narration delivery receipts. */

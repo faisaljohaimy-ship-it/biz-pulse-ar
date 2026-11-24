@@ -33,7 +33,7 @@ export interface TwinExecutiveExperienceProps {
     readonly height: number;
   };
   readonly initialRegionId?: RegionId;
-  /** Called only while the visitor has intentionally opened the illustrative film inset. */
+  /** Renders an initially expanded film inset when a film is available. */
   readonly renderBroadcast?: () => ReactNode;
 }
 
@@ -61,7 +61,7 @@ export function TwinExecutiveExperience({
   const [departmentId, setDepartmentId] = useState<ExecutiveDepartmentId>("substations");
   const [regionsShown, setRegionsShown] = useState(true);
   const [assetsShown, setAssetsShown] = useState(true);
-  const [broadcastOpen, setBroadcastOpen] = useState(false);
+  const [broadcastOpen, setBroadcastOpen] = useState(Boolean(renderBroadcast));
   const region = getRegion(regionId);
   const department = EXECUTIVE_TWIN_REFERENCE.departments.find((item) => item.id === departmentId)!;
   const DetailIcon = departmentIcons[departmentId];

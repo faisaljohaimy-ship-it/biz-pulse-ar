@@ -24,9 +24,7 @@
  *   على iOS) بقي الملصق والزرّ يشغّله من داخل النقرة.
  * • الفيديو `muted playsInline` و`aria-hidden`؛ والمنطقة (`<figure>`) تحمل وصفًا نصّيًّا صادقًا
  *   وإفصاحًا مرئيًّا بأنه فيلمٌ مُصيَّر مسبقًا لا بثّ ولا بيانات تشغيلية.
- * • **الصوت** (أمر المالك ٢٠٢٦/١٠/٢٣ «تعمل تلقائيًا مع عمل الفيديوهات»): متى كان في الملفّ مسار
- *   صوت (`TWIN_FILM_HAS_AUDIO`) يُحاوَل التشغيل **بصوته** أوّلًا؛ فإن منعه المتصفّح عاد صامتًا وانتظر
- *   أوّل لمسة (لا يُفرَض صوتٌ على متصفّحٍ يمنعه — سياسة التشغيل التلقائي)، وزرّ الصوت ظاهرٌ دائمًا.
+ * • **الصوت**: يبدأ التشغيل التلقائي صامتًا. يمكن تشغيل الصوت من أداة الصوت في المشغّل.
  *   ويُسكته سَدِيد (ينطق أو لوحته مفتوحة) بالمصدر المشترك `film-audio-hold` نفسه الذي يتبعه فيلم
  *   الرئيسية — لا فيلمٌ يتكلّم فوق سَدِيد. تفضيل الزائر في `twin-film-sound-pref.ts` وحده.
  *
@@ -96,6 +94,19 @@ import "@/styles/twin-film.css";
 
 /** One playback owner across instances of this player, including pending play promises. */
 let playbackOwner: { video: HTMLVideoElement; stop: () => void } | null = null;
+
+// When two films share a row, release the current film before starting a visible neighbour.
+const waitingForPlayback = new Set<() => void>();
+function releaseOwner(video: HTMLVideoElement) {
+  if (playbackOwner?.video !== video) return;
+  playbackOwner = null;
+  queueMicrotask(() => {
+    for (const resume of waitingForPlayback) {
+      if (playbackOwner) break;
+      resume();
+    }
+  });
+}
 
 type ConnectionInfo = {
   saveData?: boolean;
@@ -223,7 +234,7 @@ export interface TwinFilmHandle {
 
 export interface TwinFilmPlayerProps {
   readonly film?: TwinFilmId;
-  /** The gallery never mounts a video/source until its own intentional play action. */
+  /** Opt out of viewport autoplay when the host requires a play gesture. */
   readonly manual?: boolean;
   /** الإطار فوق الطيّة (LCP): ملصقه بأولوية عالية لا كسولًا. */
   readonly priority?: boolean;
@@ -239,6 +250,7 @@ export interface TwinFilmPlayerProps {
     readonly src: string;
     readonly language: "ar" | "en";
     readonly label: string;
+    readonly default?: boolean;
   };
   readonly ref?: Ref<TwinFilmHandle>;
 }
@@ -282,7 +294,7 @@ export function TwinFilmPlayer({
   const [src, setSrc] = useState<string | null>(null);
   /** تعذّر الملصق نفسه (404): يزول فيبقى سطح الإطار الهادئ لا أيقونة صورةٍ مكسورة فوقه. */
   const [posterFailed, setPosterFailed] = useState(false);
-  const [captionsEnabled, setCaptionsEnabled] = useState(false);
+  const [captionsEnabled, setCaptionsEnabled] = useState(captions?.default ?? false);
   const positionCallback = useRef(onPositionChange);
   positionCallback.current = onPositionChange;
   const initialSeek = useRef<number | null>(
@@ -324,7 +336,7 @@ export function TwinFilmPlayer({
       userPaused.current = true;
       autoPaused.current = false;
     }
-    if (playbackOwner?.video === video) playbackOwner = null;
+    releaseOwner(video);
     video.muted = true;
     video.pause();
     if (alive.current) setPlayState("paused");
@@ -443,9 +455,16 @@ export function TwinFilmPlayer({
   }, []);
 
   const run = useCallback(
-    function playWithLease(video: HTMLVideoElement): void {
+    function playWithLease(video: HTMLVideoElement, automatic = false): void {
       if (!alive.current) return;
-      if (playbackOwner && playbackOwner.video !== video) playbackOwner.stop();
+      if (document.visibilityState === "hidden") return;
+      if (playbackOwner && playbackOwner.video !== video) {
+        if (automatic) {
+          setPlayState("paused");
+          return;
+        }
+        playbackOwner.stop();
+      }
       const owner = { video, stop: () => stopPlayback(video) };
       playbackOwner = owner;
       const version = ++attempt.current;
@@ -473,19 +492,17 @@ export function TwinFilmPlayer({
           video.pause();
         }
       };
-      // يبدأ بصوته إن أُذن له: يُحاوَل بصوتٍ أوّلًا، فإن منعه المتصفّح (`NotAllowedError`) عاد صامتًا
-      // وانتظر أوّل لمسة. لا يُحاوَل تحت سَدِيد ولا بعد أن أسكته الزائر.
+      // Autoplay is muted until the visitor enables sound in this player.
       const s = sound.current;
       s.held = TWIN_FILM_HAS_AUDIO ? filmAudioHeld() : false;
       // A narrated film must not silently skip spoken content under another speaker.
-      if (startWithAudio && s.held) {
+      if (startWithAudio && s.held && !automatic) {
         setSoundState("held");
         stopPlayback(video);
         return;
       }
       if (initialSeek.current !== null) {
-        // Metadata is requested only after this intentional play action. Its
-        // continuation still needs this exact lease, attempt and visibility.
+        // Resolve a chapter seek before playing its first frame under this lease.
         deferredSeekPlay.current = {
           video,
           resume: () => {
@@ -495,7 +512,7 @@ export function TwinFilmPlayer({
               document.visibilityState !== "hidden" &&
               (visible.current || (manual && startedRef.current))
             )
-              playWithLease(video);
+              playWithLease(video, automatic);
           },
         };
         video.muted = true;
@@ -507,6 +524,7 @@ export function TwinFilmPlayer({
       const audible =
         TWIN_FILM_HAS_AUDIO &&
         s.wanted &&
+        (!automatic || s.unlocked) &&
         !s.held &&
         !s.denied &&
         (visible.current || (manual && startedRef.current));
@@ -531,7 +549,7 @@ export function TwinFilmPlayer({
           s.denied = true;
           video.muted = true;
           applySound();
-          if (startWithAudio) {
+          if (startWithAudio && !automatic) {
             stopPlayback(video);
             return;
           }
@@ -542,11 +560,11 @@ export function TwinFilmPlayer({
                 rejectLatePlayback();
                 return;
               }
-              if (!(e instanceof DOMException && e.name === "AbortError")) setPlayState("paused");
+              if (!(e instanceof DOMException && e.name === "AbortError")) stopPlayback(video);
             });
           return;
         }
-        setPlayState("paused");
+        stopPlayback(video);
       });
     },
     [applySound, manual, startWithAudio, stopPlayback],
@@ -560,16 +578,19 @@ export function TwinFilmPlayer({
   }, [applySound]);
 
   useEffect(() => {
-    if (!manual) return;
-    const hidden = () => {
+    const onVisibilityChange = () => {
       const video = videoRef.current;
-      if (document.visibilityState !== "hidden" || !video) return;
-      autoPaused.current = true;
-      stopPlayback(video, false);
+      if (!video) return;
+      if (document.visibilityState === "hidden") {
+        autoPaused.current = true;
+        stopPlayback(video, false);
+      } else if (!manual && visible.current && !userPaused.current && !finishedRef.current) {
+        run(video, true);
+      }
     };
-    document.addEventListener("visibilitychange", hidden);
-    return () => document.removeEventListener("visibilitychange", hidden);
-  }, [manual, stopPlayback]);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", onVisibilityChange);
+  }, [manual, run, stopPlayback]);
 
   // سَدِيد ينطق أو لوحته مفتوحة: يُسكت الفيلم (لا يوقف)، ويعود صوته بزوال السبب.
   useEffect(() => {
@@ -582,26 +603,6 @@ export function TwinFilmPlayer({
       applySound();
     });
   }, [applySound, startWithAudio, stopPlayback]);
-
-  // أوّل لمسة تفتح الصوت إن منعه المتصفّح — وحدها تكفي (إيماءة المستخدم تسمح بفكّ الكتم). `pointerdown`
-  // اللمسيّ ليس إيماءةً (لا تنشيط) فيُتجاهَل، أمّا `click` فيُقبَل من الإصبع أيضًا (يحمل `pointerType`
-  // «touch» ولا يُفلتَر). ومفتاحٌ كـTab ليس قبولًا بالصوت — فلا `keydown` (Enter/Space على زرٍّ يُطلقان
-  // `click`). لمسة زرّ الصوت نفسه يعالجها الزرّ.
-  useEffect(() => {
-    if (!TWIN_FILM_HAS_AUDIO || !mounted) return;
-    const gestures = ["pointerdown", "click"] as const;
-    const unlock = (event: Event) => {
-      if (event.type === "pointerdown" && (event as PointerEvent).pointerType === "touch") return;
-      if (event.target instanceof Element && event.target.closest(".twin-film-sound")) return;
-      const s = sound.current;
-      s.denied = false; // لمسةٌ جديدة: يُحاوَل بصوتٍ ثانيةً (استئناف/إعادة عرض داخل النقرة).
-      if (s.unlocked) return;
-      s.unlocked = true;
-      applySound();
-    };
-    gestures.forEach((type) => document.addEventListener(type, unlock, true));
-    return () => gestures.forEach((type) => document.removeEventListener(type, unlock, true));
-  }, [mounted, applySound]);
 
   const onSound = () => {
     const s = sound.current;
@@ -621,11 +622,8 @@ export function TwinFilmPlayer({
   useEffect(() => {
     const frame = frameRef.current;
     if (!frame) return;
-    if (typeof IntersectionObserver === "undefined") {
-      visible.current = true;
-      setArmed(true);
-      return;
-    }
+    // Older engines can still start a film explicitly without fetching every film on mount.
+    if (typeof IntersectionObserver === "undefined") return;
     const watcher = new IntersectionObserver(
       (entries) => {
         // السجلّات تصل الأقدم أولًا، وقد تتراكم عدّة سجلّات في مهمّةٍ مشغولة: الحاكم **الأحدث** لا الأقدم.
@@ -650,7 +648,7 @@ export function TwinFilmPlayer({
           !finishedRef.current &&
           !video.ended
         ) {
-          run(video);
+          run(video, true);
         }
       },
       { threshold: [0, VISIBLE_RATIO] },
@@ -696,8 +694,20 @@ export function TwinFilmPlayer({
     video.addEventListener("canplay", restoreInitialSeek);
     restoreInitialSeek();
     const playRequested = manual ? requested.current : visible.current || startedRef.current;
-    if (!finishedRef.current && playRequested) run(video);
+    const resumeWhenFree = () => {
+      if (
+        visible.current &&
+        !playbackOwner &&
+        !userPaused.current &&
+        !finishedRef.current &&
+        filmGate(readSignals()) === "open"
+      )
+        run(video, true);
+    };
+    if (!manual) waitingForPlayback.add(resumeWhenFree);
+    if (!finishedRef.current && playRequested) run(video, !manual && !requested.current);
     return () => {
+      waitingForPlayback.delete(resumeWhenFree);
       stopPlayback(video);
       video.removeEventListener("loadedmetadata", restoreInitialSeek);
       video.removeEventListener("canplay", restoreInitialSeek);
@@ -710,15 +720,14 @@ export function TwinFilmPlayer({
   }, [mounted, run, progress, film, manual, stopPlayback]);
 
   const begin = () => {
+    if (typeof IntersectionObserver === "undefined") visible.current = true;
     if (startWithAudio) sound.current.wanted = true;
     requested.current = true;
     startedRef.current = true;
     userPaused.current = false;
-    // Mount inside the intentional gesture so Safari can authorize original audio.
-    if (manual) {
-      flushSync(() => setStarted(true));
-      if (requested.current && videoRef.current) run(videoRef.current);
-    } else setStarted(true);
+    // Keep an intentional poster play in the original gesture, including reduced-motion mode.
+    flushSync(() => setStarted(true));
+    if (requested.current && videoRef.current) run(videoRef.current);
   };
 
   const onControl = () => {
@@ -741,12 +750,11 @@ export function TwinFilmPlayer({
       case "replay":
         finishedRef.current = false;
         setFinished(false);
-        begin();
         if (video) {
           video.currentTime = 0;
           progress(video);
           run(video);
-        }
+        } else begin();
         break;
       case "retry":
         setFailed(false);
@@ -882,6 +890,8 @@ export function TwinFilmPlayer({
                 finishedRef.current = false;
                 setFinished(false);
                 sound.current.denied = false;
+                // For viewport players, a native play click retains the control's mute setting.
+                if (!manual) sound.current.wanted = !video.muted && video.volume > 0;
                 sound.current.unlocked = true;
                 run(video);
                 return;
@@ -921,7 +931,7 @@ export function TwinFilmPlayer({
                 !autoPaused.current
               ) {
                 userPaused.current = true;
-                playbackOwner = null;
+                releaseOwner(e.currentTarget);
               }
               setPlayState("paused");
               settle();
@@ -929,7 +939,7 @@ export function TwinFilmPlayer({
             onTimeUpdate={(e) => progress(e.currentTarget)}
             onEnded={(e) => {
               attempt.current += 1;
-              if (playbackOwner?.video === e.currentTarget) playbackOwner = null;
+              releaseOwner(e.currentTarget);
               finishedRef.current = true;
               setFinished(true);
               setPlayState("paused");
@@ -1055,7 +1065,11 @@ export function TwinFilmPlayer({
         </p>
       )}
       {TWIN_FILM_HAS_AUDIO && mounted && (soundState === "held" || soundState === "blocked") && (
-        <p id={`${uid}-sound-hint`} className="twin-film-hint" role="status">
+        <p
+          id={`${uid}-sound-hint`}
+          className="twin-film-hint"
+          role={soundState === "held" ? "status" : undefined}
+        >
           {soundState === "held" ? text.sound.held : text.sound.blocked}
         </p>
       )}

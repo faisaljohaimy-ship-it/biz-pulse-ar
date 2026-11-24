@@ -128,7 +128,6 @@ export function IdentityFilmHero() {
           key={track.epoch}
           ref={bindPlayer}
           film={media.film}
-          manual
           controlsMode="native"
           priority
           startWithAudio

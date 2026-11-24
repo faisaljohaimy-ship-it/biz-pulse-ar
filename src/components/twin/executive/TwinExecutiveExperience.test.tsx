@@ -111,16 +111,18 @@ describe("Executive twin reference experience", () => {
     expect(screen.getByRole("heading", { name: "Sensors & alarms" })).toBeVisible();
   });
 
-  it("mounts a supplied film only after an intentional open and unmounts it on close, without network actions", () => {
+  it("opens a supplied film immediately and restores the toggle when closed", () => {
     const fetch = vi.spyOn(globalThis, "fetch");
     const film = vi.fn(() => <p>Supplied illustrative player</p>);
     const view = mount({ renderBroadcast: film });
     fireEvent.click(screen.getByRole("button", { name: "Eastern" }));
     fireEvent.click(rows().getByRole("button", { name: /Logistics/ }));
-    expect(film).not.toHaveBeenCalled();
+    expect(film).toHaveBeenCalled();
     expect(view.container.querySelector("video,source,iframe")).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "Illustrative film" }));
-    expect(film).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole("button", { name: "Illustrative film" })).toHaveAttribute(
+      "aria-expanded",
+      "true",
+    );
     expect(screen.getByText("Supplied illustrative player")).toBeVisible();
     fireEvent.click(screen.getByRole("button", { name: "Close film" }));
     expect(screen.queryByText("Supplied illustrative player")).toBeNull();

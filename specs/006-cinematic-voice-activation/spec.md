@@ -68,3 +68,23 @@
 ## Assumptions
 
 التعليمات المباشرة أعلى من تسلسل MD داخل ZIP. النصان من رسالة المالك، وليسا VO داخل الحزمة. لا يحول الرصيد الظاهر إلىإذن إنفاق غير محدود. تحفظ 004/005 تاريخيًا دون تعديل.
+
+### Follow-up — film playback and digital-twin narration, 2026-11-24
+
+On the home page and film surfaces, a visible film should start inline without
+a poster click and expose working pause, sound and replay controls. Respect
+reduced-motion and data-saving preferences. Do not fetch all gallery films on
+initial load. Confirm playback by observing the media clock in a browser.
+
+The digital-twin film should carry spoken narration matching the illustrated
+scenes and provide the script for silent viewing. Verify recorded audio and
+captions before selecting a narrated asset. Release through the existing
+production project and verify the deployed revision on both Neexios domains.
+
+Local Chromium verification covered the home page, twin gallery and cinematic
+page. At 390 px the cinematic player selected the 640 px film, advanced within
+341 ms of scrolling into view and showed the Arabic scene cues. Pause, resume,
+unmute and reduced-motion behavior passed. The two WebVTT tracks carry the
+approved script in twelve cues per language. The canonical voice endpoint
+returned HTTP 502 on the first scene, so the released media selection retains
+the existing score and identifies these tracks as authored scene text.

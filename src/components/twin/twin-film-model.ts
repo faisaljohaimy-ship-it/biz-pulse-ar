@@ -33,7 +33,7 @@ export const TWIN_FILM_SECONDS = 56;
  */
 export const TWIN_FILM_HAS_AUDIO = true;
 
-/** حال الصوت للمشغّل: يُسمع · أُسكت بطلب الزائر · ينتظر أوّل لمسة (منع التشغيل التلقائي) · يُسكته سَدِيد. */
+/** حال الصوت للمشغّل: يُسمع · أُسكت بطلب الزائر · ينتظر تفعيل الصوت في المشغّل · يُسكته سَدِيد. */
 export type SoundState = "on" | "off" | "blocked" | "held";
 
 /** أيعمل الصوت الآن؟ — **وحده** يقرّر `muted` على العنصر؛ والمكوّن يحرسه بالراية قبل أن يستدعيه. */
@@ -183,7 +183,7 @@ export const TWIN_FILM_TEXT = {
     sound: {
       name: "الصوت",
       held: "الصوت موقوف مؤقتًا بينما يتحدّث سَدِيد أو تُفتح لوحته.",
-      blocked: "منع المتصفّح الصوت التلقائي. المس أيّ مكان في الصفحة أو اضغط «الصوت».",
+      blocked: "الفيلم مكتوم. شغّل الصوت من مشغّل الفيلم.",
     },
     hints: {
       off: "الحركة موقوفة في النظام، فيُعرض الفيلم صورةً ثابتة.",
@@ -213,7 +213,7 @@ export const TWIN_FILM_TEXT = {
     sound: {
       name: "Sound",
       held: "Sound is paused while Sadeed is speaking or its panel is open.",
-      blocked: "Your browser blocked autoplay sound. Touch anywhere on the page or press “Sound”.",
+      blocked: "The film is muted. Turn on sound in the film player.",
     },
     hints: {
       off: "Motion is turned off, so the film is shown as a still image.",

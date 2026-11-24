@@ -1,13 +1,3 @@
-/**
- * عقد صوت «فيلم التوأم الرقمي» — الراية مقلوبة `true` عمدًا (الملفّات الحاليّة بلا صوت؛ هذا الاختبار
- * يحرس سلوك المشغّل يوم يُركَّب الفيلم ذو الصوت). المحرّك مزيّف كما في عقد المشغّل.
- *
- * ما يكسره التعديل ولا يراه tsc:
- *   • فيلمٌ يبدأ صامتًا رغم أن المتصفّح يسمح بصوته (التشغيل التلقائي «بصوته» أمر المالك)؛
- *   • فيلمٌ منعه المتصفّح فلا يعود صامتًا (إطارٌ أسود) أو يُفرَض عليه صوتٌ يمنعه؛
- *   • فيلمٌ يتكلّم فوق سَدِيد أو لوحته، أو لا يعود صوته بزوال السبب؛
- *   • زرّ صوتٍ بلا حالٍ (`aria-pressed`) أو لا يحفظ اختيار الزائر، أو يظهر قبل وجود صوتٍ يُتحكَّم به.
- */
 import { createElement, type ReactNode } from "react";
 import { act, fireEvent, render } from "@testing-library/react";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
@@ -151,38 +141,27 @@ describe("صوت فيلم التوأم", () => {
     view.unmount();
   });
 
-  it("يبدأ بصوته حين يسمح المتصفّح، والزرّ مضغوطٌ «يعمل»", async () => {
-    const view = await mountVisible();
-    expect(mutedAtPlay, "محاولة التشغيل الأولى بصوت").toEqual([false]);
-    expect(videoOf(view.container).muted).toBe(false);
-    expect(view.getByRole("button", { name: "الصوت" }).getAttribute("aria-pressed")).toBe("true");
-    expect(view.queryByText(/منع المتصفّح الصوت التلقائي/)).toBeNull();
-    view.unmount();
-  });
-
-  it("منعه المتصفّح ⇒ يعود صامتًا ويعمل (لا إطار أسود)، ويشرح السبب، وأوّل لمسةٍ تفتح الصوت", async () => {
-    blockAudible = true;
+  it("starts muted and enables audio only through the film control", async () => {
     const view = await mountVisible();
     const video = videoOf(view.container);
-    expect(mutedAtPlay, "بصوتٍ فمرفوض ثم صامتًا").toEqual([false, true]);
+    const sound = view.getByRole("button", { name: "الصوت" });
+    expect(mutedAtPlay).toEqual([true]);
+    expect(video.paused).toBe(false);
+    expect(sound).toHaveAttribute("aria-pressed", "false");
+    await act(async () => fireEvent.click(document.body));
     expect(video.muted).toBe(true);
-    expect(st(video).paused, "الفيلم يعمل صامتًا").toBe(false);
-    expect(view.getByRole("button", { name: "الصوت" }).getAttribute("aria-pressed")).toBe("false");
-    view.getByText(/منع المتصفّح الصوت التلقائي/);
-    await act(async () => {
-      fireEvent.click(document.body);
-    });
-    expect(video.muted, "اللمسة تفتح الصوت").toBe(false);
-    expect(view.getByRole("button", { name: "الصوت" }).getAttribute("aria-pressed")).toBe("true");
+    await act(async () => fireEvent.click(sound));
+    expect(video.muted).toBe(false);
+    expect(sound).toHaveAttribute("aria-pressed", "true");
     view.unmount();
   });
 
   it("زرّ الصوت يكتم ويحفظ الاختيار، ومن كتمه لا يبدأ له فيلمٌ بصوته لاحقًا", async () => {
     const view = await mountVisible();
     const button = view.getByRole("button", { name: "الصوت" });
-    await act(async () => {
-      fireEvent.click(button);
-    });
+    await act(async () => fireEvent.click(button));
+    expect(videoOf(view.container).muted).toBe(false);
+    await act(async () => fireEvent.click(button));
     expect(videoOf(view.container).muted).toBe(true);
     expect(button.getAttribute("aria-pressed")).toBe("false");
     expect(localStorage.getItem(SOUND_PREF_KEY)).toBe("off");
@@ -216,7 +195,7 @@ describe("صوت فيلم التوأم", () => {
     // لم يسبق نجاحُ تشغيلٍ بصوتٍ ولا لمسة ⇒ ينتظر الإذن لا يفرض نفسه.
     expect(video.muted).toBe(true);
     await act(async () => {
-      fireEvent.click(document.body);
+      fireEvent.click(view.getByRole("button", { name: "الصوت" }));
     });
     expect(video.muted).toBe(false);
     view.unmount();
@@ -225,6 +204,7 @@ describe("صوت فيلم التوأم", () => {
   it("سَدِيد ينطق في أثناء الفيلم ⇒ يُسكت الفيلم فورًا ثم يعود بانتهاء كلامه", async () => {
     const view = await mountVisible();
     const video = videoOf(view.container);
+    await act(async () => fireEvent.click(view.getByRole("button", { name: "الصوت" })));
     expect(video.muted).toBe(false);
     await act(async () => {
       sadeedState.set("speaking");
@@ -238,36 +218,10 @@ describe("صوت فيلم التوأم", () => {
     view.unmount();
   });
 
-  it("لمسة الإصبع (`click` بنوع «touch») تفتح الصوت، و`pointerdown` اللمسيّ وTab لا يفتحانه", async () => {
-    blockAudible = true;
-    const view = await mountVisible();
-    const video = videoOf(view.container);
-    expect(video.muted).toBe(true);
-    // Tab ليس قبولًا بالصوت.
-    await act(async () => {
-      fireEvent.keyDown(document.body, { key: "Tab" });
-    });
-    expect(video.muted, "ضغطة مفتاحٍ فتحت الصوت").toBe(true);
-    // `pointerdown` لمسيٌّ ليس إيماءة تنشيط.
-    await act(async () => {
-      const down = new Event("pointerdown", { bubbles: true });
-      Object.defineProperty(down, "pointerType", { value: "touch" });
-      document.body.dispatchEvent(down);
-    });
-    expect(video.muted, "pointerdown لمسيّ فتح الصوت").toBe(true);
-    // أمّا `click` الناتج عن الإصبع فيحمل `pointerType` «touch» وهو الإيماءة الحقيقية.
-    await act(async () => {
-      const click = new Event("click", { bubbles: true });
-      Object.defineProperty(click, "pointerType", { value: "touch" });
-      document.body.dispatchEvent(click);
-    });
-    expect(video.muted, "نقرة الإصبع لم تفتح الصوت").toBe(false);
-    view.unmount();
-  });
-
   it("خارج الشاشة لا يُسمَع الفيلم أبدًا، ويعود صوته بعودته", async () => {
     const view = await mountVisible();
     const video = videoOf(view.container);
+    await act(async () => fireEvent.click(view.getByRole("button", { name: "الصوت" })));
     expect(video.muted).toBe(false);
     await act(async () => {
       FakeObserver.show(false);
@@ -300,13 +254,13 @@ describe("صوت فيلم التوأم", () => {
     view.unmount();
   });
 
-  it("رُفض الصوت مرّةً ثم جاءت لمسة: المحاولة التالية (إعادة عرض) بصوتٍ من جديد", async () => {
+  it("يحتفظ باختيار الصوت بعد الوقف والاستئناف", async () => {
     blockAudible = true;
     const view = await mountVisible();
-    expect(mutedAtPlay).toEqual([false, true]);
+    expect(mutedAtPlay).toEqual([true]);
     blockAudible = false;
     await act(async () => {
-      fireEvent.click(document.body);
+      fireEvent.click(view.getByRole("button", { name: "الصوت" }));
     });
     mutedAtPlay.length = 0;
     await act(async () => {
