@@ -48,11 +48,17 @@ export const FORBIDDEN_FILLER: readonly string[] = [
 ];
 
 /** True if the text opens with / contains a banned filler phrase. */
+function normalizeFillerBoundary(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[.,:;!?،؛؟—–()[\]{}"“”«»]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export function hasForbiddenFiller(text: string): boolean {
-  const t = ` ${text.toLowerCase().trim()} `;
-  return FORBIDDEN_FILLER.some(
-    (f) => t.includes(` ${f.toLowerCase()} `) || t.trimStart().startsWith(f.toLowerCase()),
-  );
+  const t = ` ${normalizeFillerBoundary(text)} `;
+  return FORBIDDEN_FILLER.some((f) => t.includes(` ${normalizeFillerBoundary(f)} `));
 }
 
 /* ── Scope lock ─────────────────────────────────────────────────────────── */
