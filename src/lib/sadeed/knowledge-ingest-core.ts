@@ -38,8 +38,10 @@ export function knowledgeTooLargeMessage(length: number): string {
 
 /** Whitespace normalization shared by chunking (behavior kept from the hook). */
 function normalizeForChunking(input: string): string {
+  // Extractors can emit standalone CR; treat CR, LF and CRLF identically
+  // for document deduplication and paragraph splitting.
   return input
-    .replace(/\r\n/g, "\n")
+    .replace(/\r\n?/g, "\n")
     .replace(/[ \t]+\n/g, "\n")
     .trim();
 }
