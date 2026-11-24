@@ -1,4 +1,4 @@
-/** Owner update: narrated identity first, then the unchanged command-room photograph. */
+/** Owner update: exact attached command-room image before the narrated identity film (2026-11-24). */
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { useI18n } from "@/lib/i18n";
 import { HomeTicker } from "@/components/home/HomeTicker";
@@ -6,7 +6,7 @@ import { IdentityFilmHero } from "@/components/home/IdentityFilmHero";
 import { CommandRoomScreens } from "@/components/home/CommandRoomScreens";
 import "@/styles/home/home-brand.css";
 
-export const BRAND_RATIO = { width: 1320, height: 720 } as const;
+export const BRAND_RATIO = { width: 1280, height: 698 } as const;
 // Shared historical tier tolerance; the opening film remains unchanged in the gallery.
 export const FILM_UPSCALE_LIMIT = 1.15;
 export {
@@ -18,9 +18,9 @@ export {
 } from "./brand-film-playback";
 
 export const HOME_OPENING_IMAGE = {
-  src: "/home/command-room/command-room-1320.webp",
+  src: "/home/command-room/command-room-1280.webp",
   srcSet:
-    "/home/command-room/command-room-640.webp 640w, /home/command-room/command-room-1320.webp 1320w",
+    "/home/command-room/command-room-640.webp?v=aac28d35a22b 640w, /home/command-room/command-room-1280.webp 1280w",
   sizes: "(min-width: 1664px) 1394px, (min-width: 1024px) calc(100vw - 270px), calc(100vw - 46px)",
   alt: {
     ar: "غرفة قيادة زرقاء بخرائط ومؤشرات ومكاتب؛ صورة توضيحية.",
@@ -161,7 +161,6 @@ export function HomeBrandRow() {
       data-offscreen={offscreen || undefined}
     >
       <HomeTicker offscreen={offscreen} ready={known} />
-      <IdentityFilmHero />
       <figure className="nx-brand" data-kind="command-room" data-testid="home-opening-image">
         <div ref={imageRef} className="nx-command-room-stage">
           <img
@@ -171,9 +170,9 @@ export function HomeBrandRow() {
             width={BRAND_RATIO.width}
             height={BRAND_RATIO.height}
             alt={ar ? HOME_OPENING_IMAGE.alt.ar : HOME_OPENING_IMAGE.alt.en}
-            loading="lazy"
+            loading="eager"
             decoding="async"
-            fetchPriority="auto"
+            fetchPriority="high"
             className="nx-command-room-poster"
           />
           <CommandRoomScreens active={roomActive} />
@@ -210,6 +209,7 @@ export function HomeBrandRow() {
           </button>
         </figcaption>
       </figure>
+      <IdentityFilmHero />
     </section>
   );
 }

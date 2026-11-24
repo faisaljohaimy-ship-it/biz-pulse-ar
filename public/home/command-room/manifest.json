@@ -1,26 +1,26 @@
 {
-  "sourceAttachment": "SADEED_Home_Hero_Original.jpeg",
-  "original": "docs/design/reference/command-room-owner-package-2026-11-23.jpeg",
-  "sha256": "54411bb22a9f487a4dcea8546cbba56515ec8b49ca7cdc1e08cf5d5dca89e0e4",
-  "width": 1320,
-  "height": 720,
-  "originalBytes": 227440,
-  "transform": "Full-frame proportional resize only; WebP quality 66, method 6",
+  "sourceAttachment": "command-room-owner-2026-11-23.jpg",
+  "original": "docs/design/reference/command-room-owner-2026-11-23.jpg",
+  "sha256": "1008e89f8ef301f286dd1448ecfd6bc1805e91547c66a491ee99626fab8b574a",
+  "width": 1280,
+  "height": 698,
+  "originalBytes": 189560,
+  "transform": "Full-frame proportional resize only; WebP quality 75, method 6",
   "illustrative": true,
   "variants": [
     {
       "file": "command-room-640.webp",
       "width": 640,
       "height": 349,
-      "bytes": 19286,
-      "sha256": "30969a946ec04ec44c43b4d5a2d2b77e51eb59b36ecfcfc145e0c1ba8ea391e0"
+      "bytes": 21112,
+      "sha256": "aac28d35a22b0110729dbc2ffa9e2e7d46a8b9827848538a95a0f06ec9fc555b"
     },
     {
-      "file": "command-room-1320.webp",
-      "width": 1320,
-      "height": 720,
-      "bytes": 58736,
-      "sha256": "c72efa92885692017878a888f7ae891477b280ed63e8bf51cfcee5364ed28699"
+      "file": "command-room-1280.webp",
+      "width": 1280,
+      "height": 698,
+      "bytes": 54304,
+      "sha256": "b0d1b960aac5420d5f001f4fd98a5b3326b43539726f9aa244d6a5dc763db605"
     }
   ]
 }

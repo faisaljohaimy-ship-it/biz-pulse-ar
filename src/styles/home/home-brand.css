@@ -1,4 +1,4 @@
-/* Owner's full-frame command-room image after the identity film, 2026-11-23.
+/* Owner's full-frame command-room image before the identity film, 2026-11-24.
    Text sits below the photograph so the entire scene remains visible at every width. */
 .nx-home-brand {
   display: flex;
@@ -20,13 +20,13 @@
   display: block;
   inline-size: 100%;
   block-size: auto;
-  aspect-ratio: 1320 / 720;
+  aspect-ratio: 1280 / 698;
   object-fit: contain;
 }
 
 .nx-command-room-stage {
   position: relative;
-  aspect-ratio: 1320 / 720;
+  aspect-ratio: 1280 / 698;
 }
 .nx-command-room-motion-toggle {
   margin-block-start: 12px;

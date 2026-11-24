@@ -43,22 +43,22 @@ const OWNER = {
     "An AI assistant giving executive insight into industrial security across all Saudi regions.",
 };
 const IMAGE_CEILING = 400 * 1024;
-const OWNER_IMAGE_ARCHIVE = "docs/design/reference/command-room-owner-package-2026-11-23.jpeg";
-const OWNER_IMAGE_SHA256 = "54411bb22a9f487a4dcea8546cbba56515ec8b49ca7cdc1e08cf5d5dca89e0e4";
+const OWNER_IMAGE_ARCHIVE = "docs/design/reference/command-room-owner-2026-11-23.jpg";
+const OWNER_IMAGE_SHA256 = "1008e89f8ef301f286dd1448ecfd6bc1805e91547c66a491ee99626fab8b574a";
 const OPENING_VARIANTS = [
   {
     file: "command-room-640.webp",
     width: 640,
     height: 349,
-    bytes: 19286,
-    sha256: "30969a946ec04ec44c43b4d5a2d2b77e51eb59b36ecfcfc145e0c1ba8ea391e0",
+    bytes: 21112,
+    sha256: "aac28d35a22b0110729dbc2ffa9e2e7d46a8b9827848538a95a0f06ec9fc555b",
   },
   {
-    file: "command-room-1320.webp",
-    width: 1320,
-    height: 720,
-    bytes: 58736,
-    sha256: "c72efa92885692017878a888f7ae891477b280ed63e8bf51cfcee5364ed28699",
+    file: "command-room-1280.webp",
+    width: 1280,
+    height: 698,
+    bytes: 54304,
+    sha256: "b0d1b960aac5420d5f001f4fd98a5b3326b43539726f9aa244d6a5dc763db605",
   },
 ] as const;
 const FILM_CEILING = { each: 4_500_000, phone: 2_000_000, total: 10_000_000 };
@@ -255,11 +255,11 @@ function mountHero(locale: "ar" | "en" = "ar") {
 describe("static owner opening image", () => {
   it("archives the exact original owner JPEG without shipping another public copy", () => {
     const bytes = readFileSync(OWNER_IMAGE_ARCHIVE);
-    expect(bytes.length).toBe(227440);
+    expect(bytes.length).toBe(189560);
     expect(createHash("sha256").update(bytes).digest("hex")).toBe(OWNER_IMAGE_SHA256);
-    expect(jpegSize(bytes)).toEqual({ width: 1320, height: 720 });
+    expect(jpegSize(bytes)).toEqual({ width: 1280, height: 698 });
     expect(readdirSync("public/home/command-room").sort()).toEqual([
-      "command-room-1320.webp",
+      "command-room-1280.webp",
       "command-room-640.webp",
       "manifest.json",
     ]);
@@ -269,7 +269,7 @@ describe("static owner opening image", () => {
     const manifest = JSON.parse(readFileSync("public/home/command-room/manifest.json", "utf8"));
     expect(manifest.original).toBe(OWNER_IMAGE_ARCHIVE);
     expect(manifest.sha256).toBe(OWNER_IMAGE_SHA256);
-    expect(manifest.originalBytes).toBe(227440);
+    expect(manifest.originalBytes).toBe(189560);
     expect(manifest.variants).toEqual(OPENING_VARIANTS);
     for (const variant of OPENING_VARIANTS) {
       const bytes = readFileSync(`public/home/command-room/${variant.file}`);
@@ -279,7 +279,7 @@ describe("static owner opening image", () => {
         width: variant.width,
         height: variant.height,
       });
-      expect(variant.height).toBe(Math.round((variant.width * 720) / 1320));
+      expect(variant.height).toBe(Math.round((variant.width * 698) / 1280));
     }
   });
 
@@ -296,11 +296,11 @@ describe("static owner opening image", () => {
       });
     expect(candidates).toEqual(
       OPENING_VARIANTS.map((variant) => ({
-        src: `/home/command-room/${variant.file}`,
+        src: `/home/command-room/${variant.file}${variant.width === 640 ? "?v=aac28d35a22b" : ""}`,
         width: variant.width,
       })),
     );
-    expect(image).toHaveAttribute("src", "/home/command-room/command-room-1320.webp");
+    expect(image).toHaveAttribute("src", "/home/command-room/command-room-1280.webp");
     expect(image.getAttribute("sizes")).toBe(HOME_OPENING_IMAGE.sizes);
     expect(image.getAttribute("sizes")).toMatch(/100vw/);
     view.unmount();
@@ -339,7 +339,7 @@ describe("static owner opening image", () => {
     },
   );
 
-  it("ships the responsive room image lazily after the identity film before hydration effects", () => {
+  it("prioritizes the exact attached image before the identity film before hydration effects", () => {
     const server = document.createElement("div");
     server.innerHTML = renderToString(
       createElement(I18nProvider, null, createElement(HomeBrandRow)),
@@ -347,15 +347,15 @@ describe("static owner opening image", () => {
     const figure = server.querySelector('[data-testid="home-opening-image"]')!;
     const image = figure.querySelector("img")!;
     expect(
-      server.querySelector(".identity-film-hero")!.compareDocumentPosition(figure) &
+      figure.compareDocumentPosition(server.querySelector(".identity-film-hero")!) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).not.toBe(0);
-    expect(image).toHaveAttribute("loading", "lazy");
-    expect(image).toHaveAttribute("fetchpriority", "auto");
+    expect(image).toHaveAttribute("loading", "eager");
+    expect(image).toHaveAttribute("fetchpriority", "high");
     expect(image).toHaveAttribute("decoding", "async");
-    expect(image).toHaveAttribute("width", "1320");
-    expect(image).toHaveAttribute("height", "720");
-    expect(BRAND_RATIO).toEqual({ width: 1320, height: 720 });
+    expect(image).toHaveAttribute("width", "1280");
+    expect(image).toHaveAttribute("height", "698");
+    expect(BRAND_RATIO).toEqual({ width: 1280, height: 698 });
     expect(image.getAttribute("src")).toMatch(/\.webp$/);
     expect(image.getAttribute("srcset")).toBeTruthy();
     expect(image.getAttribute("sizes")).toBeTruthy();
@@ -371,7 +371,7 @@ describe("static owner opening image", () => {
     const poster = declarations(".nx-command-room-poster");
     expect(poster["inline-size"]).toBe("100%");
     expect(poster["block-size"]).toBe("auto");
-    expect(poster["aspect-ratio"]).toBe("1320 / 720");
+    expect(poster["aspect-ratio"]).toBe("1280 / 698");
     expect(poster["object-fit"]).toBe("contain");
     expect(sceneStyleGaps(CSS)).toEqual([]);
   });
