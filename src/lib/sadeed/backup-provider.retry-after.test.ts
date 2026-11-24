@@ -9,9 +9,36 @@ import {
   primaryCoolingDown,
   primaryCooldownFor,
   retryAfterMs,
+  shouldUseBackup,
 } from "./backup-provider.server";
 
 const NOW = 1_700_000_000_000;
+
+describe("Backup eligibility from upstream HTTP status", () => {
+  it("recognizes quota and transient SDK errors without a status in the message", () => {
+    for (const statusCode of [429, 500, 502, 503, 504]) {
+      const error = Object.assign(new Error("Request failed"), { statusCode });
+      expect(shouldUseBackup(error)).toBe(true);
+    }
+    expect(shouldUseBackup({ statusCode: "429", message: "Request failed" })).toBe(true);
+  });
+
+  it("never retries denied or invalid requests even when the message mentions quota", () => {
+    for (const statusCode of [400, 401, 402, 403]) {
+      const error = Object.assign(new Error("429 quota unavailable"), { statusCode });
+      expect(shouldUseBackup(error)).toBe(false);
+    }
+    expect(shouldUseBackup(Object.assign(new Error("Request failed"), { statusCode: 501 }))).toBe(
+      false,
+    );
+  });
+
+  it("preserves existing message-based fallback and retired-model handling", () => {
+    expect(shouldUseBackup(new Error("429 quota exhausted"))).toBe(true);
+    expect(shouldUseBackup(new Error("model gemini-old not found"))).toBe(true);
+    expect(shouldUseBackup(new Error("invalid request"))).toBe(false);
+  });
+});
 
 describe("Retry-After من خطأ المزوّد", () => {
   it("ثوانٍ ⇐ مللي ثانية، بأيّ حالة أحرف للترويسة", () => {
