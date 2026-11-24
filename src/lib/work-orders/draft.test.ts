@@ -12,6 +12,7 @@ import {
   createButtonLabel,
   validateWorkOrderDraft,
   ERR_FAULT_TYPE_REQUIRED,
+  ERR_DUE_DATE_INVALID,
   ERR_RETURN_REASON_REQUIRED,
   ERR_TITLE_REQUIRED,
   RETURN_REASON_MIN,
@@ -134,5 +135,33 @@ describe("⑤ القرار يُحمل إلى الخادم، وتسمية الز�
   it("وبلا تاريخ لا يُرسل نصٌّ فارغ — يسقط الحقل كليًّا", () => {
     // نصٌّ فارغ في عمود timestamptz يرفضه Postgres (عطل ٢٠٢٦/٠٨/٢٠).
     expect(buildWorkOrderPayload(base).due_at).toBeUndefined();
+  });
+});
+
+describe("due date calendar validation", () => {
+  it("rejects impossible days instead of silently moving the work order to March", () => {
+    for (const due_at of ["2026-02-31", "2025-02-29", "2026-04-31"]) {
+      const draft = { ...base, due_at };
+      expect(validateWorkOrderDraft(draft)).toBe(ERR_DUE_DATE_INVALID);
+      expect(() => buildWorkOrderPayload(draft)).toThrow(RangeError);
+    }
+  });
+
+  it("rejects malformed, out-of-range and non-date input without throwing in validation", () => {
+    for (const due_at of ["2026-13-01", "2026-00-10", "2026-01-00", "2026-1-1", "not-a-date"]) {
+      expect(validateWorkOrderDraft({ ...base, due_at })).toBe(ERR_DUE_DATE_INVALID);
+    }
+  });
+
+  it("accepts a real leap day and keeps the original end-of-local-day payload contract", () => {
+    const draft = { ...base, due_at: "2024-02-29" };
+    expect(validateWorkOrderDraft(draft)).toBeNull();
+    expect(buildWorkOrderPayload(draft).due_at).toBe(new Date("2024-02-29T23:59:59").toISOString());
+  });
+
+  it("preserves an empty optional date and ordinary month-end dates", () => {
+    expect(validateWorkOrderDraft(base)).toBeNull();
+    expect(buildWorkOrderPayload(base).due_at).toBeUndefined();
+    expect(validateWorkOrderDraft({ ...base, due_at: "2026-01-31" })).toBeNull();
   });
 });
