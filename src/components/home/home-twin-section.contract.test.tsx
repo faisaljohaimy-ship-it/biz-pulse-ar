@@ -18,7 +18,7 @@
  * `render` يرمي الخطأ نفسه ويسجّل React استعادة الشجرة من حدّ الخطأ.
  */
 import { createElement, type ReactNode } from "react";
-import { act, render, waitFor } from "@testing-library/react";
+import { act, render, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const PLAYER_MODULE = "@/components/twin/TwinFilmPlayer";
@@ -187,6 +187,13 @@ describe("صفحة التوأم — معرض الأفلام حين تتعذّر 
     expect(placeholder!.querySelector(".twin-film-caption")!.textContent).toMatch(
       /ليس بثًّا حيًّا/,
     );
+    // Each failed original film needs its own explanation and recovery action;
+    // the identity film's separate error state must not satisfy this assertion.
+    for (const film of ["twin", "opening"]) {
+      const card = within(container.querySelector<HTMLElement>(`[data-gallery-film="${film}"]`)!);
+      expect(card.getByRole("alert")).toHaveTextContent("تعذر تحميل هذا الجزء");
+      expect(card.getByRole("button", { name: "إعادة تحميل الصفحة" })).toBeEnabled();
+    }
     expect(container.querySelector("footer.nx-bp-stage .nx-bp-note")!.textContent).toBe(
       "سطر الإفصاح",
     );
@@ -209,6 +216,13 @@ describe("صفحة التوأم — معرض الأفلام حين تتعذّر 
     expect(unavailableOf(view.container)!.querySelector(".twin-film-caption")!.textContent).toMatch(
       /not a live feed/,
     );
+    for (const film of ["twin", "opening"]) {
+      const card = within(
+        view.container.querySelector<HTMLElement>(`[data-gallery-film="${film}"]`)!,
+      );
+      expect(card.getByRole("alert")).toHaveTextContent("This section could not load");
+      expect(card.getByRole("button", { name: "Reload page" })).toBeEnabled();
+    }
     expect(view.getByRole("status")).toHaveTextContent("Sadeed voice recording is not ready yet");
     expect(view.getByText("Read the scene script")).toBeVisible();
     expect(view.container.querySelector("details ol")).toHaveTextContent("Energy never sleeps");
@@ -232,6 +246,8 @@ describe("صفحة التوأم — معرض الأفلام حين تتعذّر 
       ),
     ).toEqual(["native", "native", "native"]);
     expect(view.container.querySelector("figure[data-manual]")).toBeNull();
+    expect(view.queryByRole("alert")).toBeNull();
+    expect(view.queryByRole("button", { name: "إعادة تحميل الصفحة" })).toBeNull();
     view.unmount();
   });
 });

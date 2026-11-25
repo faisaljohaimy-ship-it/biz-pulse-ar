@@ -86,6 +86,7 @@ jobs:
             assertDeployment, assertAliases, assertLive, deploymentOrigin, probePublicLive,
             assertPageHtml, assertAsset, probePublicPages,
             deploymentCycle, assertDeploymentBudget, verifiedDeploymentCount,
+            deploymentBuildRef, ReleaseGuardError, releaseFailureMessage,
           } from './scripts/cd-gate.mjs';
 
           const env = process.env;
@@ -99,7 +100,7 @@ jobs:
               method: 'GET', redirect: 'error', signal: AbortSignal.timeout(20000),
               headers: { authorization: `Bearer ${token}`, accept: 'application/json' },
             });
-            if (!response.ok) throw new Error(`Release API GET failed: HTTP ${response.status}`);
+            if (!response.ok) throw new ReleaseGuardError(`Release API GET failed: HTTP ${response.status}`);
             return response.json();
           }
           const github = (path) => api('https://api.github.com', `/repos/${RELEASE_REPOSITORY}${path}`, env.GH_TOKEN);
@@ -110,7 +111,10 @@ jobs:
           function cli(args, timeout = 900000) {
             // Vercel 64.5.0 reads VERCEL_TOKEN from env, never argv.
             const result = spawnSync('vercel', args, { encoding: 'utf8', timeout, maxBuffer: 8 * 1024 * 1024 });
-            if (result.error || result.status !== 0) throw new Error('Vercel command failed; release stopped');
+            if (result.error || result.status !== 0) {
+              const operation = ['deploy', 'promote', 'rollback', 'curl'].includes(args[0]) ? args[0] : 'command';
+              throw new ReleaseGuardError(`Vercel ${operation} failed; release stopped`);
+            }
             return result.stdout.trim();
           }
           function stagePages(origin) {
@@ -138,7 +142,7 @@ jobs:
             return assertReleaseCandidate({ eventName: env.GITHUB_EVENT_NAME, event, sha, ref, mainSha, ciRuns: runs.workflow_runs });
           }
 
-          let cycle, baseline, candidate, promoted = false, creationAttempted = false;
+          let cycle, baseline, baselineRef, candidate, promoted = false, creationAttempted = false;
           try {
             const target = await gate();
             assertReleaseConfig(env); // Missing/mis-scoped credentials stop before any deployment.
@@ -151,11 +155,12 @@ jobs:
               baseline = await inspect(before[0]?.deploymentId);
               const baselineSha = assertSha(baseline.meta?.githubCommitSha);
               assertDeployment(baseline, baselineSha, 'production');
+              baselineRef = deploymentBuildRef(baseline, baselineSha);
               assertAliases(before, baseline.id);
-              await Promise.all(PRODUCTION_DOMAINS.map((domain) => probePublicLive(`https://${domain}`, baselineSha)));
+              await Promise.all(PRODUCTION_DOMAINS.map((domain) => probePublicLive(`https://${domain}`, baselineSha, { ref: baselineRef })));
               const diff = await github(`/compare/${baselineSha}...${sha}`);
               if (diff.status !== 'ahead' || diff.behind_by !== 0 || diff.merge_base_commit?.sha !== baselineSha || !Array.isArray(diff.files) || diff.files.length >= 300) {
-                throw new Error('Release ancestry or complete change evidence is missing');
+                throw new ReleaseGuardError('Release ancestry or complete change evidence is missing');
               }
               assertOwnerReview(env.GITHUB_EVENT_NAME, event, sha, diff.files.flatMap((file) => [file.filename, file.previous_filename].filter(Boolean)));
               summary(`Rollback baseline: ${baseline.id} / ${baselineSha}`);
@@ -170,7 +175,7 @@ jobs:
             const spent = verifiedDeploymentCount(cycle, after, Date.now());
             const remaining = cycle.total - spent;
             summary(`Deployment created: ${candidate.id}; remaining=${remaining}; reserve=2`);
-            if (!after.deployments.some((deployment) => (deployment.uid ?? deployment.id) === candidate.id) || remaining < 2) throw new Error('Post-build budget evidence missing or emergency reserve consumed');
+            if (!after.deployments.some((deployment) => (deployment.uid ?? deployment.id) === candidate.id) || remaining < 2) throw new ReleaseGuardError('Post-build budget evidence missing or emergency reserve consumed');
             // Authenticated CLI curl reads only liveness; no DB/rate-store probe or paid chat.
             const stamp = cli(['curl', `${origin}/api/public/live`, '--', '--silent', '--show-error', '--fail', '--max-time', '10']);
             assertLive(JSON.parse(stamp), sha, ref);
@@ -191,7 +196,7 @@ jobs:
                 assertAliases(await aliases(), candidate.id);
                 await Promise.all(PRODUCTION_DOMAINS.map((domain) => probePublicLive(`https://${domain}`, sha, { timeoutMs: Math.max(1, Math.min(10000, deadline - Date.now())) })));
                 await Promise.all(PRODUCTION_DOMAINS.map((domain) => probePublicPages(`https://${domain}`, { timeoutMs: Math.max(1, Math.min(10000, deadline - Date.now())) })));
-                if (Date.now() > deadline) throw new Error('Production verification deadline exceeded');
+                if (Date.now() > deadline) throw new ReleaseGuardError('Production verification deadline exceeded');
                 verified = true;
                 break;
               } catch {
@@ -199,10 +204,12 @@ jobs:
                 await new Promise((resolve) => setTimeout(resolve, 5000));
               }
             }
-            if (!verified) throw new Error('Production liveness/build verification failed within 90 seconds');
+            if (!verified) throw new ReleaseGuardError('Production liveness/build verification failed within 90 seconds');
             summary(`Production verified: ${sha} on ${PRODUCTION_DOMAINS.join(', ')}`);
           } catch (error) {
-            summary(`Release failed: ${error.message}`);
+            const failure = releaseFailureMessage(error);
+            summary(`Release failed: ${failure}`);
+            console.error(`::error::${failure}`);
             if (creationAttempted && cycle) {
               try {
                 const evidence = await vercel(`/v6/deployments?projectId=${RELEASE_PROJECT}&since=${cycle.since}&limit=100`);
@@ -214,18 +221,19 @@ jobs:
               try {
                 const current = await aliases();
                 if (current.some((alias) => ![baseline.id, candidate.id].includes(alias.deploymentId))) {
-                  throw new Error('Concurrent production writer detected; no automatic rollback');
+                  throw new ReleaseGuardError('Concurrent production writer detected; no automatic rollback');
                 }
                 if (current.some((alias) => alias.deploymentId === candidate.id)) {
                   cli(['rollback', `https://${baseline.url}`, '--yes']);
                 }
                 assertAliases(await aliases(), baseline.id);
-                await Promise.all(PRODUCTION_DOMAINS.map((domain) => probePublicLive(`https://${domain}`, baseline.meta.githubCommitSha)));
+                await Promise.all(PRODUCTION_DOMAINS.map((domain) => probePublicLive(`https://${domain}`, baseline.meta.githubCommitSha, { ref: baselineRef })));
                 // The previous release can legitimately predate the new decision-center route.
                 await Promise.all(PRODUCTION_DOMAINS.map((domain) => probePublicPages(`https://${domain}`, { routes: ['/auth', '/sec/incidents'] })));
                 summary(`Rollback verified: ${baseline.id} / ${baseline.meta.githubCommitSha}`);
               } catch {
                 summary(`ROLLBACK UNVERIFIED: inspect production immediately; baseline ${baseline.id}`);
+                console.error('::error::ROLLBACK UNVERIFIED: inspect production immediately');
               }
             }
             process.exitCode = 1;
