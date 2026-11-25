@@ -6,8 +6,22 @@ export const RELEASE_TEAM = "team_lFSyX3zRr4VzdY5egj5xO2Ro";
 export const PRODUCTION_DOMAINS = ["neexios.com", "www.neexios.com"];
 export const RELEASE_ROUTES = ["/auth", "/sec/decision-center", "/sec/incidents"];
 
+/** Only deliberate, payload-free guard failures may be shown in release logs. */
+export class ReleaseGuardError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "ReleaseGuardError";
+  }
+}
+
+export function releaseFailureMessage(error) {
+  return error instanceof ReleaseGuardError
+    ? error.message
+    : "Unexpected release error; response details withheld";
+}
+
 function requireCondition(condition, message) {
-  if (!condition) throw new Error(message);
+  if (!condition) throw new ReleaseGuardError(message);
 }
 
 export function assertSha(sha) {
@@ -16,7 +30,15 @@ export function assertSha(sha) {
 }
 
 export function assertReleaseConfig(env) {
-  requireCondition(Boolean(env.VERCEL_TOKEN?.trim()), "VERCEL_TOKEN is missing");
+  const required = [
+    "VERCEL_TOKEN",
+    "VERCEL_ORG_ID",
+    "VERCEL_PROJECT_ID",
+    "SADEED_DEPLOY_CYCLE_BUDGET",
+    "SADEED_DEPLOY_CYCLE_STARTED_AT",
+  ];
+  const missing = required.filter((key) => typeof env[key] !== "string" || !env[key].trim());
+  requireCondition(missing.length === 0, `Missing release configuration: ${missing.join(", ")}`);
   requireCondition(env.VERCEL_PROJECT_ID === RELEASE_PROJECT, "Unexpected Vercel project");
   requireCondition(env.VERCEL_ORG_ID === RELEASE_TEAM, "Unexpected Vercel team");
 }
@@ -188,7 +210,22 @@ export function assertAliases(aliases, deploymentId) {
   }
 }
 
+function assertBuildRef(ref, sha) {
+  requireCondition(
+    ref === "main" || ref === assertSha(sha),
+    "Build ref must be main or the exact deployment SHA",
+  );
+  return ref;
+}
+
+/** Capture baseline identity from inspected metadata, never from the public response. */
+export function deploymentBuildRef(deployment, sha) {
+  assertSha(sha);
+  return assertBuildRef(deployment.meta?.githubCommitRef, sha);
+}
+
 export function assertLive(body, sha, ref = "main") {
+  assertBuildRef(ref, sha);
   requireCondition(
     body?.ok === true &&
       body.status === "live" &&
@@ -199,7 +236,11 @@ export function assertLive(body, sha, ref = "main") {
 }
 
 /** GET-only: no DB/rate-store probes, URL credentials, redirects or AI calls. */
-export async function probePublicLive(origin, sha, { fetchImpl = fetch, timeoutMs = 10000 } = {}) {
+export async function probePublicLive(
+  origin,
+  sha,
+  { fetchImpl = fetch, timeoutMs = 10000, ref = "main" } = {},
+) {
   requireCondition(
     PRODUCTION_DOMAINS.some((domain) => origin === `https://${domain}`),
     "Unapproved production origin",
@@ -211,7 +252,7 @@ export async function probePublicLive(origin, sha, { fetchImpl = fetch, timeoutM
     signal: AbortSignal.timeout(timeoutMs),
   });
   requireCondition(response.status === 200, "Liveness did not return HTTP 200");
-  assertLive(await response.json(), sha);
+  assertLive(await response.json(), sha, ref);
 }
 
 /** HTTP UI smoke complements, but does not claim, a hydrated browser interaction test. */

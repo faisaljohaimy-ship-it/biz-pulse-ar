@@ -60,7 +60,9 @@ async function fixture(options = {}) {
     ...options.env,
   };
   const calls = [],
-    summary = [];
+    summary = [],
+    errors = [];
+  const baselineRef = Object.hasOwn(options, "baselineRef") ? options.baselineRef : "main";
   let activeId = baselineId,
     staged = false,
     clock = Date.parse("2026-11-22T00:00:01.000Z");
@@ -70,7 +72,10 @@ async function fixture(options = {}) {
     readyState: "READY",
     target: options.inputs?.target === "preview" && id === candidateId ? null : "production",
     url: id === baselineId ? "baseline.vercel.app" : "candidate.vercel.app",
-    meta: { githubCommitSha: id === baselineId ? oldSha : sha },
+    meta: {
+      githubCommitSha: id === baselineId ? oldSha : sha,
+      githubCommitRef: id === baselineId ? baselineRef : "main",
+    },
   });
   function pageResponse(path, phase) {
     if (path.endsWith(".js"))
@@ -96,6 +101,7 @@ async function fixture(options = {}) {
     calls.push({ type: "http", url: url.origin + url.pathname, method: init.method });
     assert.equal(init.method, "GET", "The release probe must never write data");
     if (url.origin === "https://api.github.com") {
+      if (options.untrustedFailureMessage) throw new Error(options.untrustedFailureMessage);
       if (url.pathname.endsWith("/git/ref/heads/main"))
         return Response.json({
           object: { sha: options.stale || (options.staleAfterStage && staged) ? oldSha : sha },
@@ -152,7 +158,10 @@ async function fixture(options = {}) {
         status: "live",
         build: {
           sha: activeId === candidateId && !options.badProductionStamp ? sha : oldSha,
-          ref: "main",
+          ref:
+            activeId === candidateId
+              ? (options.productionRef ?? "main")
+              : (options.baselineLiveRef ?? baselineRef),
         },
       });
     }
@@ -170,7 +179,12 @@ async function fixture(options = {}) {
     Response,
     JSON,
     Promise,
-    console: { log() {}, error() {} },
+    console: {
+      log() {},
+      error(...args) {
+        errors.push(args.join(" "));
+      },
+    },
     Date: class extends Date {
       static now() {
         return clock;
@@ -228,6 +242,7 @@ async function fixture(options = {}) {
   return {
     calls,
     summary: summary.join(""),
+    errors: errors.join("\n"),
     exitCode: thrown ? 1 : context.process.exitCode,
     activeId,
     commands: calls.filter((call) => call.type === "cli").map((call) => call.args[0]),
@@ -244,6 +259,74 @@ test("valid automatic release stages without domains, verifies, then promotes ex
   assert(deploy.args.includes("--prod") && deploy.args.includes("--skip-domain"));
   assert.equal(result.activeId, candidateId);
   assert.match(result.summary, /Production verified/);
+});
+
+test("a SHA-pinned production baseline permits the next main release", async () => {
+  const result = await fixture({ baselineRef: oldSha });
+  assert.equal(result.exitCode, 0, result.summary);
+  assert.equal(result.activeId, candidateId);
+  assert.match(result.summary, /Production verified/);
+});
+
+test("a failed promotion verifies rollback to a SHA-pinned baseline", async () => {
+  const result = await fixture({ baselineRef: oldSha, promoteFailure: true });
+  assert.equal(result.exitCode, 1);
+  assert.equal(result.activeId, baselineId);
+  assert.deepEqual(result.commands.slice(-2), ["promote", "rollback"]);
+  assert.match(result.summary, /Rollback verified/);
+  assert.doesNotMatch(result.summary, /ROLLBACK UNVERIFIED/);
+});
+
+for (const baselineRef of [undefined, null, "", "feature/other", sha, oldSha.slice(0, 7)])
+  test(`baseline ref ${String(baselineRef)} cannot authorize production creation`, async () => {
+    const result = await fixture({ baselineRef, baselineLiveRef: "main" });
+    assert.equal(result.exitCode, 1);
+    assert.deepEqual(result.commands, []);
+    assert.equal(result.activeId, baselineId);
+  });
+
+test("baseline metadata and public ref must agree even when the SHA matches", async () => {
+  const result = await fixture({ baselineRef: oldSha, baselineLiveRef: "main" });
+  assert.equal(result.exitCode, 1);
+  assert.deepEqual(result.commands, []);
+});
+
+test("candidate production ref remains main and cannot inherit baseline's SHA ref", async () => {
+  const result = await fixture({ baselineRef: oldSha, productionRef: sha });
+  assert.equal(result.exitCode, 1);
+  assert(result.commands.includes("promote"));
+  assert(result.commands.includes("rollback"));
+  assert.equal(result.activeId, baselineId);
+  assert.match(result.summary, /Rollback verified/);
+});
+
+test("missing release settings are named together in the summary and visible job error", async () => {
+  const required = [
+    "VERCEL_TOKEN",
+    "VERCEL_ORG_ID",
+    "VERCEL_PROJECT_ID",
+    "SADEED_DEPLOY_CYCLE_BUDGET",
+    "SADEED_DEPLOY_CYCLE_STARTED_AT",
+  ];
+  const result = await fixture({ env: Object.fromEntries(required.map((key) => [key, ""])) });
+  assert.equal(result.exitCode, 1);
+  assert.deepEqual(result.commands, []);
+  for (const key of required) {
+    assert(result.summary.includes(key), `summary must name ${key}`);
+    assert(result.errors.includes(key), `job log must name ${key}`);
+  }
+  assert.match(result.errors, /::error::/);
+  assert.doesNotMatch(result.summary + result.errors, /offline-fixture/);
+});
+
+test("untrusted upstream error payloads never enter summary or visible job logs", async () => {
+  const secretMarker = "PRIVATE_UPSTREAM_PAYLOAD_DO_NOT_LOG";
+  const result = await fixture({ untrustedFailureMessage: secretMarker });
+  assert.equal(result.exitCode, 1);
+  assert.deepEqual(result.commands, []);
+  assert.doesNotMatch(result.summary + result.errors, new RegExp(secretMarker));
+  assert.match(result.summary, /Unexpected release error/);
+  assert.match(result.errors, /::error::/);
 });
 
 test("Vercel terminal pagination without next permits a fully verified release", async () => {

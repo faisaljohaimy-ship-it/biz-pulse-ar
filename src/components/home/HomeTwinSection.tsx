@@ -9,6 +9,7 @@ import { useI18n } from "@/lib/i18n";
 import { IdentityFilmHero } from "@/components/home/IdentityFilmHero";
 import { IDENTITY_FILMS } from "@/components/home/identity-film-model";
 import { TWIN_FILM_CATALOG, type TwinFilmId } from "@/components/twin/twin-film-catalog";
+import { TwinLoadState } from "@/components/twin/executive/TwinLoadState";
 import {
   TWIN_NARRATION,
   TWIN_NARRATED_FILMS,
@@ -61,6 +62,11 @@ function FilmPlaceholder({
         />
       </div>
       <div className="twin-film-bar nx-home-twin-bar" aria-hidden />
+      {state === "unavailable" && (
+        <div className="p-4">
+          <TwinLoadState failed />
+        </div>
+      )}
       <p className="twin-film-caption">
         <strong>{text.kind}</strong>
         <span aria-hidden> · </span>
