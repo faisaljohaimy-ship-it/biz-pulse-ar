@@ -4,7 +4,7 @@
   "scope": "development-only; no production runtime or provider integration change",
   "hub": {
     "url": "https://github.com/faisaljohaimy-ship-it/Global-AI-Engneering-Hub",
-    "reviewed_commit": "12f067d42c2bcad4256e3aa130503044af16e5b3",
+    "reviewed_commit": "fdd3684a39abb3e4e713cc24867de26bc3f09c4b",
     "sdk_version": "1.0.0"
   },
   "capability_manifest": ".engineering/capabilities.json",

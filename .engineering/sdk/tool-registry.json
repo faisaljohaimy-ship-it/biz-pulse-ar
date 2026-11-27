@@ -373,11 +373,12 @@
     "id": "microsoft/playwright",
     "source": "https://github.com/microsoft/playwright",
     "category": "quality",
-    "status": "discovered",
-    "revision": null,
-    "license_review": "pending",
-    "security_review": "pending",
-    "commercial_review": "pending"
+    "status": "approved",
+    "revision": "1b025d7e20a026371cd5f98ba0cdce48892737c8",
+    "license_review": "approved",
+    "security_review": "approved",
+    "commercial_review": "approved",
+    "approval_scope": "Playwright1.63.0 isolated localhost developer QA only; see catalog/capabilities/playwright.json"
   },
   {
     "id": "grafana/k6",

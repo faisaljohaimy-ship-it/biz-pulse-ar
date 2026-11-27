@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "hub_url": "https://github.com/faisaljohaimy-ship-it/Global-AI-Engneering-Hub",
-  "hub_revision": "12f067d42c2bcad4256e3aa130503044af16e5b3",
+  "hub_revision": "fdd3684a39abb3e4e713cc24867de26bc3f09c4b",
   "project": {
     "id": "biz-pulse-ar",
     "repository": "https://github.com/faisaljohaimy-ship-it/biz-pulse-ar"
@@ -43,7 +43,7 @@
           "path": ".engineering/sdk/tool-registry.json",
           "source": "catalog/registry.json",
           "mode": "copy",
-          "sha256": "417af27fb9fa75de598bba70590258027d594ee47224dfcf924a45fca0922564"
+          "sha256": "b586d10862f6a22cf72b99d981ee2c47eb93109c8e62730bfd1437314a28d6e9"
         },
         {
           "path": ".engineering/sdk/integrations.json",
