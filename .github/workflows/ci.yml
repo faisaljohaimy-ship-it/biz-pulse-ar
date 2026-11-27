@@ -133,8 +133,8 @@ jobs:
         run: node --experimental-strip-types --test scripts/cd-gate.regression.test.mjs
       - name: Offline production page validation regression tests
         run: node --test scripts/check-production.regression.test.mjs
-      - name: Integration PostgreSQL 16 provisioning regression
-        run: node --test tests/integration/postgres-provisioning.regression.test.mjs
+      - name: Integration provisioning, target safety and fixture regressions
+        run: node --test tests/integration/*.regression.test.mjs
       # الأمر نفسه الذي تشغّله السلسلة المحلّية (`npm run check`) — لا نسخة ثانية.
       - name: Production dependency audit
         run: npm run check:audit

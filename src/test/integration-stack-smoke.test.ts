@@ -21,18 +21,20 @@ function smokeExit(response: string): number | null {
 
 describe("isolated integration fixture readiness smoke", () => {
   it.each([
-    '[{"ref":"INT-A-1"},{"ref":"INT-B-2"}]',
-    '[\n  { "ref": "INT-A-1" },\n  { "ref": "INT-B-2" }\n]',
-  ])("accepts only the exact two ordered fixture records (%s)", (response) => {
+    '[{"ref":"INT-A-1"},{"ref":"INT-A-2"},{"ref":"INT-B-1"},{"ref":"INT-B-2"}]',
+    '[\n  { "ref": "INT-A-1" },\n  { "ref": "INT-A-2" },\n  { "ref": "INT-B-1" },\n  { "ref": "INT-B-2" }\n]',
+  ])("accepts only the exact four ordered fixture records (%s)", (response) => {
     expect(smokeExit(response)).toBe(0);
   });
 
   it.each([
     '{"error":"expected INT-A-1 then INT-B-2 but found no records"}',
     '{"message":"INT-A-1, INT-B-2"}',
-    '[{"ref":"INT-A-1"},{"ref":"INT-B-2"},{"ref":"INT-C-3"}]',
-    '[{"ref":"INT-B-2"},{"ref":"INT-A-1"}]',
-    '[{"ref":"INT-A-1","unexpected":true},{"ref":"INT-B-2"}]',
+    '[{"ref":"INT-A-1"},{"ref":"INT-A-2"},{"ref":"INT-B-1"},{"ref":"INT-B-2"},{"ref":"INT-C-3"}]',
+    '[{"ref":"INT-B-2"},{"ref":"INT-B-1"},{"ref":"INT-A-2"},{"ref":"INT-A-1"}]',
+    '[{"ref":"INT-A-1","unexpected":true},{"ref":"INT-A-2"},{"ref":"INT-B-1"},{"ref":"INT-B-2"}]',
+    '[{"ref":"INT-A-1"},{"ref":"INT-B-2"}]',
+    "[]",
     "not JSON INT-A-1 INT-B-2",
   ])("rejects false-positive fixture responses (%s)", (response) => {
     expect(smokeExit(response)).not.toBe(0);

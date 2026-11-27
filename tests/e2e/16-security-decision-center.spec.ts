@@ -183,6 +183,14 @@ for (const theme of ["dark", "light"] as const) {
       test.setTimeout(180_000);
       const evidence = { writes: [] as string[], mockedHealth: [] as string[] };
       networkEvidence.set(page, evidence);
+      // iOS may offer Add to Home Screen after the user has started a review.
+      // Close the optional prompt through its real accessible control whenever
+      // it appears, so the tested workflow stays the same as a user's flow.
+      const installPrompt = page.getByRole("region", { name: "تثبيت التطبيق", exact: true });
+      await page.addLocatorHandler(installPrompt, async () => {
+        await installPrompt.getByRole("button", { name: "إغلاق", exact: true }).click();
+        await expect(installPrompt).toHaveCount(0);
+      });
       await page.route("**/*", (route) => {
         const request = route.request();
         const pathname = new URL(request.url()).pathname.replace(/\/$/, "");

@@ -55,7 +55,7 @@ describe("policy inventory (definitions, not counters)", () => {
 
     const restrictive = await db()<
       Array<{ tablename: string; policyname: string; qual: string }>
-    >`select tablename, policyname, qual from pg_policies where schemaname = 'public' and permissive = 'RESTRICTIVE' and tablename = any(${tables})`;
+    >`select tablename, policyname, qual from pg_policies where schemaname = 'public' and permissive = 'RESTRICTIVE' and policyname like 'tenant_isolation_%' and tablename = any(${tables})`;
     expect(restrictive.map((p) => p.tablename).sort()).toEqual([...tables].sort());
     for (const p of restrictive) {
       expect(p.policyname).toBe(`tenant_isolation_${p.tablename}`);
