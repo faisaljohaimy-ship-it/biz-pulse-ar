@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "hub_revision": "4f39e1d115e220629d73e56864813545022acc99",
+  "selected_local_skills": [
+    "skills/release-engineering/SKILL.md",
+    "skills/security-review/SKILL.md",
+    "skills/digital-motion/SKILL.md"
+  ],
+  "selection": "Read only when relevant to the current task; discovery does not authorize execution.",
+  "external_tools": {
+    "default": "not-approved",
+    "required": [
+      "immutable revision",
+      "license and commercial review",
+      "security review",
+      "isolated functional test"
+    ],
+    "automatic_install": false
+  },
+  "production_runtime_dependency": false,
+  "budget_additional_sar": 0,
+  "motion_compatibility": {
+    "planned_new_motions": 400,
+    "target_is_not_implementation_evidence": true,
+    "duplicate_runtime_packages": false,
+    "copy_entire_library": false,
+    "requirements": [
+      "deterministic timing",
+      "prefers-reduced-motion fallback",
+      "RTL-safe logical movement",
+      "lazy load selected effects",
+      "measure browser and asset budgets"
+    ]
+  }
+}
