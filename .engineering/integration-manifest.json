@@ -33,7 +33,17 @@
     "claude_code": {
       "configuration": ".mcp.json",
       "configuration_scope": "project",
-      "status": "configured; binary absent in this environment, host invocation unverified"
+      "status": "Task-local Claude Code recognized the project configuration; default probe approval pending, selective native health unverified, no model session invoked.",
+      "cli_version": "2.1.332",
+      "cli_installation_scope": "Isolated development tool profile; not a product dependency",
+      "project_config_recognized": true,
+      "default_probe_approval": "pending",
+      "selective_native_health_verified": false,
+      "selective_native_health_result": "CONNECTION_CLOSED before initialization in the recorded local probes; independent read-only reference control showed the same failure",
+      "actual_model_session_invoked": false,
+      "observed_at_utc": "2026-11-27T23:31:43.338765+00:00",
+      "evidence_scope": "Existing project .mcp.json under documented isolated CLI configuration; engineering-only selective approval; no credentials or model calls. Raw SDK stdio checks are a separate scope.",
+      "evidence_reference": "Private execution receipt: official-cli-review/official-cli-host-verification.json"
     }
   },
   "working_directory_contract": "The host launches from the repository root. Launcher resolves its own project root before serving.",
