@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "hub_revision": "12f067d42c2bcad4256e3aa130503044af16e5b3",
+  "sdk_version": "1.0.0",
+  "mode": "offline-development-tooling",
+  "production_runtime_dependency": false,
+  "automatic_install": false,
+  "automatic_provider_calls": false,
+  "additional_budget": 0,
+  "mcp": {
+    "transport": "stdio",
+    "command": "python3 .engineering/sdk/engineering_sdk.py mcp --project .",
+    "tools": ["engineering_discover", "engineering_verify"],
+    "write_tools": false,
+    "host_registration": "not configured automatically; preserve existing host configuration"
+  },
+  "motion": {"new_400_motions": "roadmap, not an implementation claim", "import_policy": "selected reviewed assets only", "existing_runtime_unchanged": true},
+  "release_policy": "Existing scripts/cd-gate.mjs and approved staged release remain authoritative; SDK eligibility never creates deployment authority."
+}

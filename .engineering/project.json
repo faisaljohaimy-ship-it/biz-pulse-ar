@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "id": "biz-pulse-ar",
+  "repository": "https://github.com/faisaljohaimy-ship-it/biz-pulse-ar",
+  "identity_verified": true,
+  "vercel": {
+    "team_id": "team_lFSyX3zRr4VzdY5egj5xO2Ro",
+    "project_id": "prj_9ijbW2tJ2J5p2C2RwbK4A6qJfIpO",
+    "root_directory": "."
+  },
+  "required_checks": [
+    "CI Verification",
+    "Verify link to the engineering hub",
+    "Engineering offline integrity"
+  ],
+  "source": {
+    "kind": "existing-repository",
+    "commit": "f3f847ad11147a15823da8ab59f19a149e470081",
+    "history": "preserved in original repository"
+  },
+  "release_status": "Target verified through official Vercel API; this SDK branch still requires exact-head CI/review and an approved staged release. This contract does not authorize promotion.",
+  "additional_budget": 0
+}

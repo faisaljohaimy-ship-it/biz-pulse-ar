@@ -60,6 +60,16 @@ server-side; never assume free API credit or enable paid model calls by key pres
 The executable release process and credential prerequisites are documented in
 `docs/operations/CONTINUOUS_DELIVERY_AR.md`.
 
+## Offline engineering handover
+
+Resume from ENGINEERING_HANDOVER.md and TASK_STATE.json, checking live provider facts
+before using any recorded release identity. The engineering SDK is development tooling:
+`python3 .engineering/sdk/engineering_sdk.py verify` and selective `discover --query`.
+Read .engineering/integration-manifest.json; local CLI/MCP verification does not prove
+that a host has registered the MCP server. Never replace the existing release controller.
+This continuation branch alone has Git Preview creation disabled to preserve the two
+emergency attempts. All CI/review gates remain required; no extra deployment is authorized.
+
 
 ## OMEGA evidence and iteration discipline — 2026-11-22
 

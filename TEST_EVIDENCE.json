@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "checkpoint": "Pre-commit; new exact-head remote checks are not claimed",
+  "new_sdk_checks": {"hub_strict_files_passed": 13, "upstream_hub_python_tests_passed": 68, "upstream_sdk_tests_included_in_hub_total": 12, "project_sdk_integration_tests_passed": 3, "local_sdk_network_requests": 0},
+  "current_branch_quality": {"npm_ci": "success, normal lockfile resolution", "npm_run_check_exit": 0, "lint_errors": 0, "existing_lint_warnings": 32, "typecheck": "passed", "vitest_files_passed": 467, "vitest_passed": 8661, "vitest_skipped": 30, "build": "passed", "performance_budget": "passed", "contrast": "passed existing owner-approved floors using installed Chromium", "secret_scan_tracked_files": 3700, "production_dependency_advisories": 0},
+  "previous_app_source_acceptance": {"source_sha": "7d1ba7b9c44275952f1770baa1c5184c264d2ad7", "vitest_passed": 8661, "vitest_skipped": 30, "local_rls_passed": 69, "chromium_passed": 16, "chromium_skipped": 10, "webkit_passed": 11, "webkit_skipped": 1},
+  "unverified": ["new exact-head remote CI", "protected staged functional check", "real Apple Safari", "live paid-model calls", "production DB advisory resolution"],
+  "production_smoke_for_this_batch": "not performed; not deployed"
+}

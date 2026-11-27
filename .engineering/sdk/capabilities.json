@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "sdk_version": "1.0.0",
+  "policy": "Discover selectively; inspect status, license, security, exact lockfile version and budget before enabling a tool. Candidates are never executable approvals.",
+  "capabilities": [
+    {"id": "engineering-sdk", "status": "implemented", "execution": "local-python-stdlib", "commands": ["verify", "target", "release", "registry", "discover"]},
+    {"id": "mcp-discovery", "status": "implemented", "transport": "stdio", "tools": ["engineering_discover", "engineering_verify"], "write_tools": false},
+    {"id": "shared-skills", "status": "implemented", "selection": "skill:<name>", "locations": [".agents/skills", ".claude/skills"]},
+    {"id": "motion-library", "status": "implemented", "selection": "pack:motion-runtime and motion:<id>", "runtime": "vendored CSS/WAAPI", "license_review": "per-file provenance in catalog/packs.json"},
+    {"id": "chromium-stack", "status": "browser-verified-in-hub", "lockfile": "motion-library/verify/package-lock.json", "invocation": "node motion-library/verify/browser.mjs", "project_runtime": "verify separately"},
+    {"id": "remotion", "status": "adapter-only", "source": "motion-library/adapters/remotion.mjs", "engine_runtime": "unverified", "license_review": "company licence may be required", "automatic_install": false},
+    {"id": "webgpu", "status": "candidate", "upstream": "https://www.w3.org/TR/webgpu/", "runtime": "unverified; retain CSS/Canvas fallbacks", "automatic_install": false},
+    {"id": "ai-tool-registry", "status": "discovery-only", "source": "catalog/registry.json and integrations/PROGRAMS.json", "credentials": "project-local server environment only", "automatic_invocation": false},
+    {"id": "provider-mcp", "status": "environment-specific", "providers": ["GitHub", "Vercel", "Supabase"], "authorization": "verify account and capabilities per environment", "automatic_authentication": false}
+  ]
+}

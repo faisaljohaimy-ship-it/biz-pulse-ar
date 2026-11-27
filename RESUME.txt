@@ -1,0 +1,9 @@
+Read AGENTS.md, CLAUDE.md, SADEED_CONSTITUTION.md and ENGINEERING_HANDOVER.md.
+Resume specs/015-offline-engineering-handover/spec.md on codex/engineering-handover-20261127.
+Verify current main, CI, both aliases, exact staged SHA and complete deployment count.
+Protected staging access requires ordinary authenticated login or specifically approved access; never create a permanent bypass implicitly.
+Complete the pending f3f847ad release before merging a newer main.
+Do not create an SDK Preview/Production deployment using the two emergency reserves.
+Use local SDK verify/discover; preserve host MCP config and load skills selectively.
+Keep original worktrees, stash, bundles, films, database state and credentials intact.
+Refresh provider receipts and test evidence after each actual phase. Never infer real Safari or live AI from Linux tests or source inventory.
