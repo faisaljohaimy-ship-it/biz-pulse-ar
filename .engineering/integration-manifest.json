@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "project": "biz-pulse-ar",
+  "scope": "development-only; no production runtime or provider integration change",
+  "hub": {
+    "url": "https://github.com/faisaljohaimy-ship-it/Global-AI-Engneering-Hub",
+    "reviewed_commit": "12f067d42c2bcad4256e3aa130503044af16e5b3",
+    "sdk_version": "1.0.0"
+  },
+  "capability_manifest": ".engineering/capabilities.json",
+  "server": {
+    "name": "engineering",
+    "transport": "stdio",
+    "command": "python3",
+    "args": [
+      ".engineering/run_mcp.py"
+    ],
+    "tools": [
+      "engineering_discover",
+      "engineering_verify"
+    ],
+    "read_only": true,
+    "network_listener": false
+  },
+  "hosts": {
+    "codex": {
+      "configuration": ".codex/config.toml",
+      "configuration_scope": "project",
+      "status": "project configuration saved; installed CLI did not recognize the server without overrides",
+      "cli_recognized_without_overrides": false,
+      "activation_cause": "unverified; inspect trust and project-configuration loading in the actual Codex host without changing global settings"
+    },
+    "claude_code": {
+      "configuration": ".mcp.json",
+      "configuration_scope": "project",
+      "status": "configured; binary absent in this environment, host invocation unverified"
+    }
+  },
+  "working_directory_contract": "The host launches from the repository root. Launcher resolves its own project root before serving.",
+  "local_integrity_is_upstream_approval": false,
+  "operational_evidence": "Private execution workspace receipts; configuration alone is not an agent model-session invocation.",
+  "legacy_servers": "Other pre-existing servers are preserved, not reviewed, installed or invoked by this change.",
+  "additional_budget": 0
+}

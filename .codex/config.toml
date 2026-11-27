@@ -3,3 +3,10 @@ command = "docker"
 args = ["run", "-i", "--rm", "-v", "robin-investigations:/app/investigations", "docker.io/apurvsg/robin:v3.0", "mcp"]
 startup_timeout_sec = 120
 tool_timeout_sec = 600
+
+[mcp_servers.engineering]
+command = "python3"
+args = [".engineering/run_mcp.py"]
+startup_timeout_sec = 10
+tool_timeout_sec = 30
+enabled = true
