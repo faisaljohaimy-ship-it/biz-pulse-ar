@@ -1,0 +1,40 @@
+# Copy to .github/workflows/hub-link.yml in a registered project.
+# It proves the link instead of asserting it: the hub is fetched at the commit pinned in
+# .engineering/capabilities.json and every declared file is compared with that commit.
+# It runs only when link files change, so application checks and deployments do not
+# depend on the hub being reachable.
+name: hub-link
+
+on:
+  pull_request:
+    paths: [".engineering/**", ".claude/skills/**", ".agents/skills/**", ".github/workflows/hub-link.yml"]
+  push:
+    branches: [main]
+    paths: [".engineering/**", ".claude/skills/**", ".agents/skills/**", ".github/workflows/hub-link.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify link to the engineering hub
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Fetch the hub at the pinned commit
+        run: |
+          set -euo pipefail
+          revision=$(python3 -c "import json; print(json.load(open('.engineering/capabilities.json'))['hub_revision'])")
+          [[ "$revision" =~ ^[a-f0-9]{40}$ ]]
+          git init --quiet "$RUNNER_TEMP/hub"
+          git -C "$RUNNER_TEMP/hub" remote add origin https://github.com/faisaljohaimy-ship-it/Global-AI-Engneering-Hub
+          git -C "$RUNNER_TEMP/hub" fetch --quiet origin "+refs/heads/main:refs/remotes/origin/main"
+          git -C "$RUNNER_TEMP/hub" fetch --quiet origin "$revision"
+          git -C "$RUNNER_TEMP/hub" merge-base --is-ancestor "$revision" refs/remotes/origin/main
+          git -C "$RUNNER_TEMP/hub" checkout --quiet --detach "$revision"
+      - name: Compare this project with the pinned hub commit
+        run: python3 "$RUNNER_TEMP/hub/hub.py" verify "$GITHUB_WORKSPACE" --strict

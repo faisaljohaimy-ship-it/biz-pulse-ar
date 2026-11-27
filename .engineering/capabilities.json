@@ -1,8 +1,94 @@
 {
   "schema_version": 1,
   "hub_url": "https://github.com/faisaljohaimy-ship-it/Global-AI-Engneering-Hub",
-  "hub_revision": "53e620fa6316fd328d8bea6dfdf116170c611cea",
-  "capabilities": [],
+  "hub_revision": "12f067d42c2bcad4256e3aa130503044af16e5b3",
+  "project": {
+    "id": "biz-pulse-ar",
+    "repository": "https://github.com/faisaljohaimy-ship-it/biz-pulse-ar"
+  },
+  "capabilities": [
+    {
+      "id": "pack:engineering-sdk",
+      "files": [
+        {
+          "path": ".claude/skills/engineering-sdk/SKILL.md",
+          "source": "skills/engineering-sdk/SKILL.md",
+          "mode": "copy",
+          "sha256": "9a9c461292f295464aebae9dd0e84838913ad16a5cc86c871ee765811bfc7661"
+        },
+        {
+          "path": ".agents/skills/engineering-sdk/SKILL.md",
+          "source": "skills/engineering-sdk/SKILL.md",
+          "mode": "copy",
+          "sha256": "9a9c461292f295464aebae9dd0e84838913ad16a5cc86c871ee765811bfc7661"
+        },
+        {
+          "path": ".engineering/sdk/tool-registry.json",
+          "source": "catalog/registry.json",
+          "mode": "copy",
+          "sha256": "417af27fb9fa75de598bba70590258027d594ee47224dfcf924a45fca0922564"
+        },
+        {
+          "path": ".engineering/sdk/integrations.json",
+          "source": "integrations/PROGRAMS.json",
+          "mode": "copy",
+          "sha256": "ef241771303a445c4ae7b407972e185f15ec36ef7fa9add19030b5bb7c5d0133"
+        },
+        {
+          "path": ".engineering/sdk/VERSION",
+          "source": "sdk/VERSION",
+          "mode": "copy",
+          "sha256": "59854984853104df5c353e2f681a15fc7924742f9a2e468c29af248dce45ce03"
+        },
+        {
+          "path": ".engineering/sdk/capabilities.json",
+          "source": "sdk/capabilities.json",
+          "mode": "copy",
+          "sha256": "c39a6f7fcf8c6c07c24a61b54e91b199fc4f8c83256278b1e1e04028d4e0a3a5"
+        },
+        {
+          "path": ".engineering/sdk/engineering_sdk.py",
+          "source": "sdk/engineering_sdk.py",
+          "mode": "copy",
+          "sha256": "235e4dae4d369f9a31756160cc81305cf237b42cf6f36c3fb004ecc7b348c224"
+        }
+      ]
+    },
+    {
+      "id": "skill:release-engineering",
+      "files": [
+        {
+          "path": ".claude/skills/release-engineering/SKILL.md",
+          "source": "skills/release-engineering/SKILL.md",
+          "mode": "copy",
+          "sha256": "6c2c40c2ccb5b62dddf655be5d9f09fafd637eaac7b1d5a8e5b073c92851bf58"
+        },
+        {
+          "path": ".agents/skills/release-engineering/SKILL.md",
+          "source": "skills/release-engineering/SKILL.md",
+          "mode": "copy",
+          "sha256": "6c2c40c2ccb5b62dddf655be5d9f09fafd637eaac7b1d5a8e5b073c92851bf58"
+        }
+      ]
+    },
+    {
+      "id": "skill:security-review",
+      "files": [
+        {
+          "path": ".claude/skills/security-review/SKILL.md",
+          "source": "skills/security-review/SKILL.md",
+          "mode": "copy",
+          "sha256": "b98f89f077913929125e160563a75023e1250757891e05d862eed9c290b03a22"
+        },
+        {
+          "path": ".agents/skills/security-review/SKILL.md",
+          "source": "skills/security-review/SKILL.md",
+          "mode": "copy",
+          "sha256": "b98f89f077913929125e160563a75023e1250757891e05d862eed9c290b03a22"
+        }
+      ]
+    }
+  ],
   "discovery_skill": "hub-capabilities",
   "budget_additional_sar": 0,
   "production_runtime_dependency": false
