@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "hub_revision": "4f39e1d115e220629d73e56864813545022acc99",
+  "hub_revision": "12f067d42c2bcad4256e3aa130503044af16e5b3",
   "selected_local_skills": [
     "skills/release-engineering/SKILL.md",
     "skills/security-review/SKILL.md",

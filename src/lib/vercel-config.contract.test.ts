@@ -40,8 +40,13 @@ describe("vercel.json — منطقة الدوال", () => {
 });
 
 describe("vercel.json — ما كان قائمًا لم يُمسّ", () => {
-  it("نشر main معطَّل، والبناء والتثبيت والإطار كما كانت", () => {
-    expect(CONFIG.git?.deploymentEnabled).toEqual({ main: false });
+  it("نشر main وفرع التسليم المحدد معطَّل، والبناء والتثبيت والإطار كما كانت", () => {
+    // The isolated SDK review must preserve the two emergency deployment attempts.
+    // Exact equality rejects any extra branch rule or wildcard deployment enablement.
+    expect(CONFIG.git?.deploymentEnabled).toEqual({
+      main: false,
+      "codex/engineering-handover-20261127": false,
+    });
     expect(CONFIG.buildCommand).toBe("npm run build");
     expect(CONFIG.installCommand).toBe("npm ci --no-audit --no-fund");
     expect(CONFIG.framework).toBeNull();

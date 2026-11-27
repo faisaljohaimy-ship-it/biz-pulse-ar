@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "checkpoint_base_sha": "f3f847ad11147a15823da8ab59f19a149e470081",
+  "branch": "codex/engineering-handover-20261127",
+  "recovered_sdk_pr": 464,
+  "recovered_sdk_sha": "d19cfa7217b45df984806bb73293c148843f1910",
+  "phase": "offline SDK recovery and durable handover",
+  "this_batch_merged": false,
+  "this_batch_deployed": false,
+  "next": "Finish mandatory checks, guardian clearance, source PR; preserve pending f3 release before any merge",
+  "new_runtime_dependencies": 0,
+  "new_paid_calls": 0,
+  "production_database_writes": 0
+}

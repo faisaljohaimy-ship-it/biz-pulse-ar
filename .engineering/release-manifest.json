@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "project": "biz-pulse-ar",
+  "source_checkpoint": "f3f847ad11147a15823da8ab59f19a149e470081",
+  "pending_artifact": "dpl_73AD3tePkoZ3sBrad5A2VkF5F9Cg",
+  "pending_artifact_state": "READY; protected functional verification and promotion incomplete at checkpoint",
+  "live_baseline": "dpl_12FbSBiXioP2QPwun5EctQB8Yooa",
+  "this_sdk_batch_deployed": false,
+  "release_authority": "docs/operations/CONTINUOUS_DELIVERY_AR.md",
+  "note": "Historical checkpoint; re-read exact current SHA, CI, domains, artifact identity and budget before release. Never reuse this JSON as provider proof."
+}

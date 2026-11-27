@@ -11,7 +11,8 @@
   },
   "git": {
     "deploymentEnabled": {
-      "main": false
+      "main": false,
+      "codex/engineering-handover-20261127": false
     }
   },
   "headers": [
