@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "hub_url": "https://github.com/faisaljohaimy-ship-it/Global-AI-Engneering-Hub",
+  "hub_revision": "53e620fa6316fd328d8bea6dfdf116170c611cea",
+  "capabilities": [],
+  "discovery_skill": "hub-capabilities",
+  "budget_additional_sar": 0,
+  "production_runtime_dependency": false
+}
