@@ -8,6 +8,23 @@
   },
   "capabilities": [
     {
+      "id": "skill:hub-capabilities",
+      "files": [
+        {
+          "path": ".claude/skills/hub-capabilities/SKILL.md",
+          "source": "skills/hub-capabilities/SKILL.md",
+          "mode": "copy",
+          "sha256": "ac232c5534860609f70a3a8817f1f09b9ff840d93eeb94cd3e1ea714d9c63573"
+        },
+        {
+          "path": ".agents/skills/hub-capabilities/SKILL.md",
+          "source": "skills/hub-capabilities/SKILL.md",
+          "mode": "copy",
+          "sha256": "ac232c5534860609f70a3a8817f1f09b9ff840d93eeb94cd3e1ea714d9c63573"
+        }
+      ]
+    },
+    {
       "id": "pack:engineering-sdk",
       "files": [
         {

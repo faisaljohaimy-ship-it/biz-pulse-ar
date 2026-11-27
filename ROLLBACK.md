@@ -674,8 +674,8 @@ Vercel. زومن القفل (`npm install --package-lock-only`) مع بقاء ا
 ## ٢٠٢٦/١١/٢٧ — الربط الهندسي المحلي المثبّت
 
 حزمة التطوير في `.engineering/sdk/` ومهارات `engineering-sdk` و`release-engineering`
-و`security-review` تُضبط من نسخة المركز وبصماتها في `.engineering/capabilities.json`.
-نسختا `hub-capabilities` القديمتان محفوظتان كما هما خارج إدارة الحزمة. هذا الربط لا
+و`security-review` و`hub-capabilities` تُضبط من نسخة المركز وبصماتها في
+`.engineering/capabilities.json`، مع حفظ تسجيل `hub-capabilities` الوارد من `main`. هذا الربط لا
 يغيّر مسار تشغيل المنتج أو مزوّديه أو بياناته أو خط النشر المعتمد. عند الحاجة
 إلى التراجع عن تغيير الربط، يُعكس commit الربط المحدد بـ`git revert` ثم تُشغّل
 البوابة كاملة وتصريح الحارس، مع حفظ بقية إعدادات المشروع وتاريخه. لا يُحذف
