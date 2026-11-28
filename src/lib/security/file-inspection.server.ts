@@ -77,6 +77,18 @@ const DANGEROUS_EXTENSION =
 const ACTIVE_TEXT =
   /(?:<\s*(?:script|iframe|object|embed|svg|html)\b|<!doctype\s+html|javascript\s*:|data\s*:\s*text\/html)/i;
 const ACTIVE_PDF = /\/(?:JavaScript|JS|Launch|EmbeddedFile|OpenAction|RichMedia)\b/i;
+/**
+ * PDF names allow #XX hexadecimal escapes. A name such as /Open#41ction
+ * resolves to /OpenAction in PDF readers and must not bypass this gate.
+ * Normalize escapes before applying the existing active-action denylist.
+ */
+function hasActivePdfAction(chunk: string): boolean {
+  const decoded = chunk.replace(/#([0-9a-f]{2})/gi, (_match, digits: string) =>
+    String.fromCharCode(Number.parseInt(digits, 16)),
+  );
+  return ACTIVE_PDF.test(decoded);
+}
+
 const EICAR = "X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*";
 
 function ascii(bytes: Uint8Array, start = 0, end = bytes.length): string {
@@ -370,7 +382,7 @@ export function inspectSadeedAttachment(input: {
   }
   if (mime === "application/pdf") {
     if (ascii(bytes, 0, 5) !== "%PDF-") mismatch();
-    if (scanAscii(bytes, (chunk) => ACTIVE_PDF.test(chunk))) {
+    if (scanAscii(bytes, hasActivePdfAction)) {
       throw new FileInspectionError("active_pdf", "PDF actions and embedded files are blocked.");
     }
     return { detectedMime: mime, family: "pdf", checks: ["magic", "active-content"] };
