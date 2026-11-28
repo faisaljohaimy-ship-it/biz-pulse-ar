@@ -195,10 +195,13 @@ jobs:
     name: rag preflight (real Postgres)
     # التشغيل الكامل وحده (الأسبوعي أو اليدوي).
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
+    # The fixture gate must execute PostgreSQL16 rather than skip on26.04.
+    runs-on: ubuntu-24.04
     timeout-minutes: 13
     permissions:
       contents: read
+    env:
+      SADEED_E2E_FIXTURE_ONLY: ${{ inputs.fixture_only == true && 'true' || 'false' }}
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
@@ -207,6 +210,17 @@ jobs:
           cache: npm
       - name: Install
         run: npm ci --no-audit --no-fund
+      - name: Provision PostgreSQL 16 for required fixture RAG checks
+        if: inputs.fixture_only == true
+        run: |
+          set -euo pipefail
+          if [ ! -x /usr/lib/postgresql/16/bin/initdb ] || [ ! -x /usr/lib/postgresql/16/bin/pg_ctl ] || ! command -v psql >/dev/null; then
+            sudo apt-get update -qq
+            sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends postgresql-16 postgresql-client-16
+          fi
+          test -x /usr/lib/postgresql/16/bin/initdb
+          test -x /usr/lib/postgresql/16/bin/pg_ctl
+          command -v psql >/dev/null
       - name: RAG preflight (isolation + privilege on real Postgres)
         run: npm run check:rag
 
