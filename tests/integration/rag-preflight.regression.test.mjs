@@ -118,6 +118,33 @@ test("fixture SQL assertion errors remain failures rather than skips", (t) => {
   assert.doesNotMatch(result.output, /✓ كل فحوص/);
 });
 
+test("every scheduled/manual RAG job requires PostgreSQL regardless of fixture input", () => {
+  const workflow = readFileSync(join(root, ".github/workflows/ci.yml"), "utf8");
+  const job = workflow.match(/  rag-preflight:\n([\s\S]*?)\n  integration:/)?.[1];
+  assert.ok(job, "RAG job must remain separate from integration");
+  assert.match(
+    job,
+    /^    if: github\.event_name == 'schedule' \|\| github\.event_name == 'workflow_dispatch'$/m,
+  );
+  assert.match(job, /^      SADEED_E2E_FIXTURE_ONLY: ["']true["']$/m);
+  assert.doesNotMatch(
+    job,
+    /inputs\.fixture_only/,
+    "RAG execution must not depend on the optional diagnostic input",
+  );
+  const provisioning = job.match(
+    /      - name: Provision PostgreSQL 16 for required fixture RAG checks\n([\s\S]*?)      - name: RAG preflight/,
+  )?.[1];
+  assert.ok(provisioning);
+  assert.doesNotMatch(
+    provisioning,
+    /^        if:/m,
+    "every selected RAG job must provision its tools",
+  );
+  assert.match(provisioning, /set -euo pipefail/);
+  assert.match(job, /run: npm run check:rag/);
+});
+
 test("the actual fixture provisioning shell stops immediately on apt setup failure", (t) => {
   const fixture = harness(t, { missing: true });
   writeFileSync(
@@ -127,9 +154,9 @@ test("the actual fixture provisioning shell stops immediately on apt setup failu
   );
   const workflow = readFileSync(join(root, ".github/workflows/ci.yml"), "utf8");
   const match = workflow.match(
-    /      - name: Provision PostgreSQL 16 for required fixture RAG checks\n        if: inputs\.fixture_only == true\n        run: \|\n((?:          .*\n)+)/,
+    /      - name: Provision PostgreSQL 16 for required fixture RAG checks\n        run: \|\n((?:          .*\n)+)/,
   );
-  assert.ok(match, "fixture provisioning step must stay conditional and executable");
+  assert.ok(match, "RAG provisioning step must stay unconditional and executable");
   const body = match[1].replace(/^          /gm, "");
   const result = spawnSync("/bin/bash", ["-c", body], {
     env: { PATH: fixture.bin, RAG_TEST_LOG: fixture.log },
