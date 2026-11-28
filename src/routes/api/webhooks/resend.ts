@@ -1,3 +1,4 @@
+import { readBoundedWebhookBody } from "@/lib/sadeed/bounded-webhook-body.server";
 import { createFileRoute } from "@tanstack/react-router";
 import { recordOutboundProviderEvent } from "@/lib/sadeed/outbound-messaging.server";
 import { verifyResendWebhook } from "@/lib/sadeed/webhook-signatures.server";
@@ -49,9 +50,17 @@ export const Route = createFileRoute("/api/webhooks/resend")({
         const svixId = request.headers.get("svix-id")?.trim() ?? "";
         const svixTimestamp = request.headers.get("svix-timestamp")?.trim() ?? "";
         const svixSignature = request.headers.get("svix-signature")?.trim() ?? "";
-        const rawBody = await request.text();
-        if (new TextEncoder().encode(rawBody).length > MAX_BODY_BYTES)
-          return json({ ok: false, error: "Webhook body is too large." }, 413);
+        const bounded = await readBoundedWebhookBody(request, MAX_BODY_BYTES);
+        if (!bounded.ok) {
+          const error =
+            bounded.status === 413
+              ? "Webhook body is too large."
+              : bounded.status === 408
+                ? "Webhook body timed out."
+                : "Webhook body is invalid.";
+          return json({ ok: false, error }, bounded.status);
+        }
+        const rawBody = bounded.text;
         if (
           !(await verifyResendWebhook({
             rawBody,
