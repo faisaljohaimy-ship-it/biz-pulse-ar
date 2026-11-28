@@ -951,8 +951,9 @@ rebase (المادة ٣٥). **وعبر `/api/chat` بلا
 | `release-engineering` | مراجعة هوية الإصدار والفحوص والتراجع والميزانية | قبل إصدار مشروع |
 | `security-review` | مراجعة الأسرار والتبعيات وحدود الوصول | عند مراجعة أمنية مأذونة |
 | `hub-capabilities` | اكتشاف القدرات المناسبة من المركز عند النسخة المثبّتة | قبل اختيار أداة أو مهارة مشتركة |
+| `headroom-context-engineering` | تحسين مخرجات الأدوات محليًا مع حفظ الأصل والتحقق من استرجاعه | عند معالجة JSON أو سجلات كبيرة مأذونة |
 
-مرجع نسخة SDK والمهارات الأربع وبصماتها هو `.engineering/capabilities.json`؛
+مرجع نسخة SDK والمهارات المثبّتة وبصماتها هو `.engineering/capabilities.json`؛
 النسخ في `.claude/skills/` و`.agents/skills/` تخدم Claude Code وCodex. ابدأ بـ
 `python3 .engineering/sdk/engineering_sdk.py discover --query <task>` ثم
 `python3 .engineering/sdk/engineering_sdk.py verify`. الفحص المحلي يثبت تطابق
@@ -962,6 +963,8 @@ rebase (المادة ٣٥). **وعبر `/api/chat` بلا
 المهارات انتقائية، وظهور أداة مرشحة في الفهرس لا يثبت تركيبها أو ترخيصها أو
 اتصالها. لا يُستدعى المركز العام أثناء بناء المنتج أو تشغيله، ولا يفعّل هذا
 الربط مزوّدًا أو MCP أو نشرًا تلقائيًا؛ تبقى بوابات المشروع أعلاه حاكمة.
+دليل Headroom الانتقائي هو [`.engineering/headroom/README.md`](.engineering/headroom/README.md)؛
+دليل SDK المحلي لا يثبت تفعيلًا أصليًا في الوكلاء أو جاهزيةً للإنتاج.
 
 ### الوكلاء (`.claude/agents/nexios-*.md`)
 

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "hub_url": "https://github.com/faisaljohaimy-ship-it/Global-AI-Engneering-Hub",
-  "hub_revision": "fdd3684a39abb3e4e713cc24867de26bc3f09c4b",
+  "hub_revision": "81b2374aaf8aa7c04d38ed122a9b92e12afc483e",
   "project": {
     "id": "biz-pulse-ar",
     "repository": "https://github.com/faisaljohaimy-ship-it/biz-pulse-ar"
@@ -43,7 +43,7 @@
           "path": ".engineering/sdk/tool-registry.json",
           "source": "catalog/registry.json",
           "mode": "copy",
-          "sha256": "b586d10862f6a22cf72b99d981ee2c47eb93109c8e62730bfd1437314a28d6e9"
+          "sha256": "36f4237d0d87ad5a10ed0babc36a9bfe3012f5e37c010c88805770e7d8c92af2"
         },
         {
           "path": ".engineering/sdk/integrations.json",
@@ -61,7 +61,7 @@
           "path": ".engineering/sdk/capabilities.json",
           "source": "sdk/capabilities.json",
           "mode": "copy",
-          "sha256": "c39a6f7fcf8c6c07c24a61b54e91b199fc4f8c83256278b1e1e04028d4e0a3a5"
+          "sha256": "a9a6a4721893416807d8d67a41a5ba893132ee77b7d3c7aa6e83e25d13bce6fc"
         },
         {
           "path": ".engineering/sdk/engineering_sdk.py",
@@ -102,6 +102,53 @@
           "source": "skills/security-review/SKILL.md",
           "mode": "copy",
           "sha256": "b98f89f077913929125e160563a75023e1250757891e05d862eed9c290b03a22"
+        }
+      ]
+    },
+    {
+      "id": "pack:headroom-context",
+      "files": [
+        {
+          "path": ".claude/skills/headroom-context-engineering/SKILL.md",
+          "source": "skills/headroom-context-engineering/SKILL.md",
+          "mode": "copy",
+          "sha256": "ac1f124fa1c12c260ea6d5a3e737a0e7823846548978946f4c00d1f00199ae49"
+        },
+        {
+          "path": ".agents/skills/headroom-context-engineering/SKILL.md",
+          "source": "skills/headroom-context-engineering/SKILL.md",
+          "mode": "copy",
+          "sha256": "ac1f124fa1c12c260ea6d5a3e737a0e7823846548978946f4c00d1f00199ae49"
+        },
+        {
+          "path": ".engineering/headroom/README.md",
+          "source": "docs/headroom-context-engineering.md",
+          "mode": "copy",
+          "sha256": "b21153a759d427f339a0f11f1bf94d10d03cda72333754e0410854fde41d4d76"
+        },
+        {
+          "path": ".engineering/headroom/requirements.lock",
+          "source": "integrations/headroom/requirements.lock",
+          "mode": "copy",
+          "sha256": "2bfb5f5ddfb54dc16d98b8d647c7dbf7821b0e14b345f1811e430418d2f29bbb"
+        },
+        {
+          "path": ".engineering/headroom/requirements.txt",
+          "source": "integrations/headroom/requirements.txt",
+          "mode": "copy",
+          "sha256": "2bfb5f5ddfb54dc16d98b8d647c7dbf7821b0e14b345f1811e430418d2f29bbb"
+        },
+        {
+          "path": ".engineering/headroom/headroom_context.py",
+          "source": "tools/headroom_context.py",
+          "mode": "copy",
+          "sha256": "cbe2aa3abd390ec76c214a8dded622d3620e5871ba32199e22020e8925b68ca4"
+        },
+        {
+          "path": ".engineering/headroom/headroom_worker.py",
+          "source": "tools/headroom_worker.py",
+          "mode": "copy",
+          "sha256": "09b5fc89f34113ebc10f9fe877988e70b61b4ef733b89c407d99898f597b03f6"
         }
       ]
     }
