@@ -66,6 +66,13 @@ export function fixturePolicyFromEnvironment(baseURL, env = process.env) {
 
 export async function installFixtureBrowserGuard(context, policy) {
   if (!policy) return;
+  if (context.browser()?.browserType().name() === "chromium") {
+    // Fetch/fulfill gives Chromium a synthetic document, which otherwise loses
+    // loopback address-space trust and blocks the allowed local HMR socket.
+    // Scope this temporary context permission to the validated app origin;
+    // HTTP, redirect, WebSocket and service-worker restrictions remain in place.
+    await context.grantPermissions(["local-network-access"], { origin: policy.appOrigin });
+  }
   await context.routeWebSocket("**/*", (socket) => {
     if (policy.allows(socket.url(), true)) socket.connectToServer();
     else socket.close({ code: 1008, reason: "Fixture-only upstream denied" });
@@ -75,7 +82,11 @@ export async function installFixtureBrowserGuard(context, policy) {
     try {
       // Playwright does not route the next URL in a redirect chain again.
       // Only direct fixture responses are accepted; never follow a redirect.
-      const response = await route.fetch({ maxRedirects: 0, timeout: 15_000 });
+      // Vite may reset a local module connection while rebuilding its cold
+      // optimizer graph. The native API retries ECONNRESET only, never HTTP
+      // errors; bound retries to safe reads and keep the same request deadline.
+      const maxRetries = ["GET", "HEAD"].includes(route.request().method()) ? 2 : 0;
+      const response = await route.fetch({ maxRedirects: 0, maxRetries, timeout: 15_000 });
       if (response.status() >= 300 && response.status() < 400 && response.status() !== 304) {
         return route.abort("blockedbyclient");
       }

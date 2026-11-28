@@ -103,6 +103,7 @@ test("browser routes deny before fetch, reject redirect responses and preserve n
   let handler, socketHandler;
   const calls = [];
   const context = {
+    browser: () => ({ browserType: () => ({ name: () => "webkit" }) }),
     route: async (_pattern, fn) => {
       handler = fn;
     },
@@ -113,12 +114,14 @@ test("browser routes deny before fetch, reject redirect responses and preserve n
   await installFixtureBrowserGuard(context, null);
   assert.equal(handler, undefined);
   await installFixtureBrowserGuard(context, policy);
-  const route = (url, status) => ({
-    request: () => ({ url: () => url }),
+  const route = (url, status, method = "GET") => ({
+    request: () => ({ url: () => url, method: () => method }),
     abort: () => calls.push("abort"),
     fetch: async (options) => {
       calls.push("fetch");
       assert.equal(options.maxRedirects, 0);
+      assert.equal(options.maxRetries, ["GET", "HEAD"].includes(method) ? 2 : 0);
+      assert.equal(options.timeout, 15_000);
       return { status: () => status };
     },
     fulfill: () => calls.push("fulfill"),
@@ -138,6 +141,27 @@ test("browser routes deny before fetch, reject redirect responses and preserve n
     connectToServer: () => calls.push("connect"),
   });
   assert.deepEqual(calls, ["close"]);
+});
+
+test("only Chromium fixture contexts receive an origin-scoped loopback permission", async () => {
+  for (const engine of ["chromium", "webkit", "firefox"]) {
+    const grants = [];
+    const context = {
+      browser: () => ({ browserType: () => ({ name: () => engine }) }),
+      grantPermissions: async (...args) => grants.push(args),
+      route: async () => {},
+      routeWebSocket: async () => {},
+    };
+    await installFixtureBrowserGuard(context, null);
+    assert.deepEqual(grants, []);
+    await installFixtureBrowserGuard(context, policy);
+    assert.deepEqual(
+      grants,
+      engine === "chromium"
+        ? [[["local-network-access"], { origin: "http://localhost:8080" }]]
+        : [],
+    );
+  }
 });
 
 test("CI and both E2E entrypoints actually wire the conditional fixture boundary", () => {

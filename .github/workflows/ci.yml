@@ -83,6 +83,9 @@ jobs:
       - name: Verify the fixture-only network boundary locally
         if: inputs.fixture_only == true
         run: node tests/integration/fixture-network.regression.test.mjs
+      - name: Verify allowed local HMR with fixture isolation
+        if: inputs.fixture_only == true
+        run: npx playwright test tests/e2e/19-fixture-network-boundary.spec.ts --project=desktop --workers=1
       - name: Start isolated dev server
         run: |
           npm run dev -- --host 127.0.0.1 --port 8080 --strictPort > /tmp/public-health-dev.log 2>&1 &
