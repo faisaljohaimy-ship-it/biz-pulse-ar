@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "project": "biz-pulse-ar",
+  "repository": "https://github.com/faisaljohaimy-ship-it/biz-pulse-ar",
+  "source_commit_before_configuration": "d19cfa7217b45df984806bb73293c148843f1910",
+  "production_branch": "main",
+  "vercel": {
+    "team_id": "team_lFSyX3zRr4VzdY5egj5xO2Ro",
+    "project_id": "prj_9ijbW2tJ2J5p2C2RwbK4A6qJfIpO",
+    "root_directory": "."
+  },
+  "identity_verified": false,
+  "release_eligible": false,
+  "state": "blocked",
+  "blocking_evidence": [
+    {
+      "code": "TARGET_IDENTITY_UNVERIFIED",
+      "source": ".engineering/project.json"
+    },
+    {
+      "code": "COMPLETE_PROVIDER_SETTINGS_UNAVAILABLE",
+      "scope": "Git/build/root/branch configuration and relinking capability"
+    },
+    {
+      "code": "PRODUCTION_PREVIEW_AND_ROLLBACK_GATES_INCOMPLETE",
+      "scope": "No new release or rollback validation performed"
+    },
+    {
+      "code": "COMMERCIAL_PRIVACY_REVIEW_PENDING",
+      "message": "Existing visibility preserved; no privacy change performed"
+    },
+    {
+      "code": "VERCEL_DEPLOYMENT_RATE_LIMIT",
+      "observed_at_utc": "2026-11-27T21:39:52Z",
+      "provider_message": "Deployment rate limited — retry in 24 hours.",
+      "scope": "Last SDK pull-request head; recheck provider status after its wait period, without upgrading or bypassing limits"
+    }
+  ],
+  "last_observed_production": [
+    {
+      "deployment_id": "dpl_12FbSBiXioP2QPwun5EctQB8Yooa",
+      "url": "https://biz-pulse-3is1pnvjd-faisaljohaimy-ship-its-projects.vercel.app",
+      "commit": "0361a1c55b3cf9cadea84a4913b7764b9c3ccd56"
+    }
+  ],
+  "rollback_verified": false,
+  "new_production_deployment": null,
+  "post_new_deployment_smoke": "not run; no new deployment",
+  "required_checks": [
+    "source",
+    "security",
+    "build",
+    "browser-smoke",
+    "engineering-integrity"
+  ],
+  "additional_budget": 0,
+  "requirements": "Exact-head tests and review, verified target/configuration, staged preview/production smoke, approved budget and a verified known-good rollback."
+}

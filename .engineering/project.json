@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "id": "biz-pulse-ar",
+  "repository": "https://github.com/faisaljohaimy-ship-it/biz-pulse-ar",
+  "identity_verified": false,
+  "vercel": {
+    "team_id": "team_lFSyX3zRr4VzdY5egj5xO2Ro",
+    "project_id": "prj_9ijbW2tJ2J5p2C2RwbK4A6qJfIpO",
+    "root_directory": "."
+  },
+  "required_checks": [
+    "source",
+    "security",
+    "build",
+    "browser-smoke",
+    "engineering-integrity"
+  ],
+  "source": {
+    "kind": "existing-repository",
+    "commit": "7e11697a",
+    "history": "preserved in original repository"
+  },
+  "release_status": "blocked: private-repository/admin access and complete provider configuration/target proof required",
+  "additional_budget": 0
+}

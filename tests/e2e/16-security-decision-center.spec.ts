@@ -1,5 +1,12 @@
 import { test, expect, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
+import {
+  fixtureOnly,
+  fixturePolicyFromEnvironment,
+  installFixtureBrowserGuard,
+} from "./support/fixture-network.mjs";
+
+if (fixtureOnly) test.use({ serviceWorkers: "block" });
 
 const networkEvidence = new WeakMap<Page, { writes: string[]; mockedHealth: string[] }>();
 const scenarios = [
@@ -179,10 +186,12 @@ async function inspectDownloadedReport(
 
 for (const theme of ["dark", "light"] as const) {
   test.describe(`Security decision center · safe local demonstration · ${theme}`, () => {
-    test.beforeEach(async ({ page }) => {
+    test.beforeEach(async ({ page, baseURL }) => {
       test.setTimeout(180_000);
       const evidence = { writes: [] as string[], mockedHealth: [] as string[] };
       networkEvidence.set(page, evidence);
+      const fixturePolicy = fixturePolicyFromEnvironment(baseURL);
+      await installFixtureBrowserGuard(page.context(), fixturePolicy);
       // iOS may offer Add to Home Screen after the user has started a review.
       // Close the optional prompt through its real accessible control whenever
       // it appears, so the tested workflow stays the same as a user's flow.
@@ -193,6 +202,9 @@ for (const theme of ["dark", "light"] as const) {
       });
       await page.route("**/*", (route) => {
         const request = route.request();
+        if (fixturePolicy && !fixturePolicy.allows(request.url())) {
+          return route.abort("blockedbyclient");
+        }
         const pathname = new URL(request.url()).pathname.replace(/\/$/, "");
         // These GET probes increment database rate counters. Mock them before
         // navigation in every environment; HTTP method alone is not read-only.
@@ -215,7 +227,9 @@ for (const theme of ["dark", "light"] as const) {
           evidence.writes.push(`${request.method()} ${request.url()}`);
           return route.abort();
         }
-        return route.continue();
+        // A page route's continue() bypasses context guards. In fixture mode,
+        // fall through so the context checks the actual response for redirects.
+        return fixtureOnly ? route.fallback() : route.continue();
       });
       await page.addInitScript((theme) => {
         sessionStorage.setItem("theme", theme);

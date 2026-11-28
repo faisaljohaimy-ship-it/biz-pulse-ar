@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "project": "biz-pulse-ar",
+  "scope": "development-only; no production runtime or provider integration change",
+  "hub": {
+    "url": "https://github.com/faisaljohaimy-ship-it/Global-AI-Engneering-Hub",
+    "reviewed_commit": "81b2374aaf8aa7c04d38ed122a9b92e12afc483e",
+    "sdk_version": "1.0.0"
+  },
+  "capability_manifest": ".engineering/capabilities.json",
+  "server": {
+    "name": "engineering",
+    "transport": "stdio",
+    "command": "python3",
+    "args": [
+      ".engineering/run_mcp.py"
+    ],
+    "tools": [
+      "engineering_discover",
+      "engineering_verify"
+    ],
+    "read_only": true,
+    "network_listener": false
+  },
+  "hosts": {
+    "codex": {
+      "configuration": ".codex/config.toml",
+      "configuration_scope": "project",
+      "status": "Project configuration preserved; native runtime remains unverified under recorded no-global-auth constraints; raw SDK stdio verified separately.",
+      "cli_recognized_without_overrides": false,
+      "activation_cause": "Unverified; no isolated auth-free native runtime invocation proven in the recorded host."
+    },
+    "claude_code": {
+      "configuration": ".mcp.json",
+      "configuration_scope": "project",
+      "status": "Recorded task-local Claude Code project health connected; this is scoped health/discovery evidence, not native tool invocation or model authentication.",
+      "cli_version": "2.1.332",
+      "cli_installation_scope": "Isolated development tool profile; not a product dependency",
+      "project_config_recognized": true,
+      "default_probe_approval": "pending",
+      "selective_native_health_verified": false,
+      "selective_native_health_result": "Current81b review-worktree native health not re-probed. Recorded fdd/SDK1.0 task-local health connected8/8; see scoped observation.",
+      "actual_model_session_invoked": false,
+      "observed_at_utc": "2026-11-28T01:50:15.163633+00:00",
+      "evidence_scope": "Recorded task-local Claude Code2.1.332 engineering-only project health8/8; native toolcalls0/model sessions0. Current-pin raw stdio and local Headroom CLI are separate scopes.",
+      "evidence_reference": "Private execution receipt: native-host-recheck-20261128/final-receipt.json",
+      "native_health_observation": {
+        "hub_revision": "fdd3684a39abb3e4e713cc24867de26bc3f09c4b",
+        "sdk_version": "1.0.0",
+        "project_health_connected": 8,
+        "project_health_tested": 8,
+        "native_tool_calls": 0,
+        "model_sessions": 0,
+        "current_pin_native_health_rechecked": false,
+        "verified": true
+      },
+      "last_observed_selective_native_health_verified": true
+    }
+  },
+  "working_directory_contract": "The host launches from the repository root. Launcher resolves its own project root before serving.",
+  "local_integrity_is_upstream_approval": false,
+  "operational_evidence": "Private execution workspace receipts; configuration alone is not an agent model-session invocation.",
+  "legacy_servers": "Other pre-existing servers are preserved, not reviewed, installed or invoked by this change.",
+  "additional_budget": 0,
+  "headroom": {
+    "pack": "pack:headroom-context",
+    "pack_version": "0.1.0",
+    "approved_hub_commit": "81b2374aaf8aa7c04d38ed122a9b92e12afc483e",
+    "sdk_dependency_version": "0.45.0",
+    "execution_scope": "optional local development CLI with separately approved shared isolated interpreter; no copied dependency environment",
+    "actual_managed_cli_verified": true,
+    "full_original_retrieval_verified": true,
+    "short_and_protected_passthrough_verified": true,
+    "network_boundary": "linux-seccomp-no-ip",
+    "native_agent_interception": false,
+    "provider_model_calls": 0,
+    "production_runtime_dependency": false,
+    "additional_budget": 0,
+    "verified_at_utc": "2026-11-28T03:51:14.533018+00:00"
+  },
+  "current_linkage_verification": {
+    "hub_revision": "81b2374aaf8aa7c04d38ed122a9b92e12afc483e",
+    "managed_files": 20,
+    "offline_integrity_verified": true,
+    "upstream_provenance_verified": true,
+    "raw_readonly_stdio_verified": true,
+    "native_model_session_invoked": false,
+    "verified_at_utc": "2026-11-28T03:51:14.533028+00:00"
+  }
+}

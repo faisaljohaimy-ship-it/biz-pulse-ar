@@ -10,17 +10,27 @@
 #
 # الاستخدام:  bash scripts/rag-preflight.sh
 # المتطلبات:  postgresql 16 + pgvector محليًّا (initdb/pg_ctl/psql في PATH
-#             أو /usr/lib/postgresql/16/bin). يتخطى الفحص بلا فشل إن غابا.
+#             أو /usr/lib/postgresql/16/bin). يتخطى الفحص بلا فشل إن غابا،
+#             إلا حين SADEED_E2E_FIXTURE_ONLY=true: غياب الأدوات/فشل الإعداد فشل.
 # المخرج:     صفر عند نجاح كل الفحوص، وغير ذلك عند أول فشل.
 # ============================================================================
 set -uo pipefail
+FIXTURE_ONLY="${SADEED_E2E_FIXTURE_ONLY:-false}"
 
 PGBIN="${PGBIN:-/usr/lib/postgresql/16/bin}"
 [ -x "$PGBIN/initdb" ] || PGBIN="$(dirname "$(command -v initdb 2>/dev/null || echo /nonexistent)")"
 
 if [ ! -x "$PGBIN/initdb" ] || [ ! -x "$PGBIN/pg_ctl" ]; then
+  if [ "$FIXTURE_ONLY" = "true" ]; then
+    echo "✗ وضع fixture يتطلب Postgres محليًا — لا يُسمح بتخطي فحوص RAG."
+    exit 1
+  fi
   echo "⚠ لا يوجد Postgres محلي — فحوص RAG تُتخطّى (ليست فشلًا)."
   exit 0
+fi
+if [ "$FIXTURE_ONLY" = "true" ] && ! command -v psql >/dev/null 2>&1; then
+  echo "✗ psql غير متاح — فحوص RAG المعزولة إلزامية."
+  exit 1
 fi
 
 CHECKS=(
@@ -41,19 +51,49 @@ fi
 
 run_as() { if [ -n "$RUNUSER" ]; then su "$RUNUSER" -c "$1"; else bash -c "$1"; fi; }
 
+fixture_base=""; fixture_data=""
+cleanup_fixture() {
+  if [ -n "$fixture_data" ]; then
+    run_as "$PGBIN/pg_ctl -D $fixture_data -m immediate stop" >/dev/null 2>&1
+  fi
+  [ -z "$fixture_base" ] || rm -rf -- "$fixture_base"
+  fixture_base=""; fixture_data=""
+}
+[ "$FIXTURE_ONLY" != "true" ] || trap cleanup_fixture EXIT
+
 failed=0
 for check in "${CHECKS[@]}"; do
   name="$(basename "$check" .sql)"
-  data="$(mktemp -d)/pg"
-  mkdir -p "$data"
-  [ -n "$RUNUSER" ] && chown -R "$RUNUSER" "$(dirname "$data")" "$data"
+  socket="/tmp"
+  PSQL=(psql)
+  options=()
+  if [ "$FIXTURE_ONLY" = "true" ]; then
+    fixture_base="$(mktemp -d)" || { echo "✗ تعذّر إنشاء مجلد fixture"; exit 1; }
+    data="$fixture_base/pg"; fixture_data="$data"; socket="$fixture_base/sock"
+    mkdir -p "$data" "$socket" || { echo "✗ تعذّر إعداد مجلد fixture"; exit 1; }
+    if [ -n "$RUNUSER" ]; then
+      chown -R "$RUNUSER" "$fixture_base" || { echo "✗ تعذّر إسناد مجلد fixture"; exit 1; }
+    fi
+    # A private socket prevents a failed start from hitting another local cluster.
+    # Explicit libpq inputs and -X avoid inherited services/password files/psqlrc.
+    PSQL=(env -u PGSERVICE -u PGHOSTADDR -u PGOPTIONS -u PGPASSWORD PGPASSFILE=/dev/null PGSERVICEFILE=/dev/null psql)
+    options=(-X -d postgres)
+    run_as "$PGBIN/initdb -D $data -U postgres -E UTF8 --locale=C.utf8 -A trust" >/dev/null 2>&1 \
+      || { echo "✗ تعذّر initdb — فحوص RAG لم تُشغّل"; exit 1; }
+    run_as "$PGBIN/pg_ctl -D $data -o '-p $PORT -k $socket -c listen_addresses=' -l $data/log -w start" >/dev/null 2>&1 \
+      || { echo "✗ تعذّر تشغيل عنقود fixture — فحوص RAG لم تُشغّل"; exit 1; }
+  else
+    data="$(mktemp -d)/pg"
+    mkdir -p "$data"
+    [ -n "$RUNUSER" ] && chown -R "$RUNUSER" "$(dirname "$data")" "$data"
 
-  run_as "$PGBIN/initdb -D $data -U postgres -E UTF8 --locale=C.utf8 -A trust" >/dev/null 2>&1
-  run_as "$PGBIN/pg_ctl -D $data -o '-p $PORT -k /tmp -c listen_addresses=' -l $data/log start" >/dev/null 2>&1
-  sleep 2
+    run_as "$PGBIN/initdb -D $data -U postgres -E UTF8 --locale=C.utf8 -A trust" >/dev/null 2>&1
+    run_as "$PGBIN/pg_ctl -D $data -o '-p $PORT -k /tmp -c listen_addresses=' -l $data/log start" >/dev/null 2>&1
+    sleep 2
+  fi
 
   # كل فحص يستدعي ملفات الترحيل الحقيقية بـ\i، فتُمرَّر مساراتها متغيّرات.
-  out="$(psql -h /tmp -p "$PORT" -U postgres -v ON_ERROR_STOP=1 -q \
+  out="$("${PSQL[@]}" -h "$socket" -p "$PORT" -U postgres "${options[@]}" -v ON_ERROR_STOP=1 -q \
     -v normalize_file="$M/20260728093100_rag_ar_normalize.sql" \
     -v documents_file="$M/20260728093200_rag_documents.sql" \
     -v chunks_file="$M/20260728093300_rag_chunks.sql" \
@@ -72,8 +112,12 @@ for check in "${CHECKS[@]}"; do
     failed=1
   fi
 
-  run_as "$PGBIN/pg_ctl -D $data -m immediate stop" >/dev/null 2>&1
-  rm -rf "$(dirname "$data")"
+  if [ "$FIXTURE_ONLY" = "true" ]; then
+    cleanup_fixture
+  else
+    run_as "$PGBIN/pg_ctl -D $data -m immediate stop" >/dev/null 2>&1
+    rm -rf "$(dirname "$data")"
+  fi
 done
 
 if [ $failed -ne 0 ]; then

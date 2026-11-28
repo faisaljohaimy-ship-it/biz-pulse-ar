@@ -27,6 +27,11 @@ on:
   # المستودع الحالية، فيُشغَّل الفحص يدويًّا على فرع الإصلاح قبل دمجه في main —
   # «CI أخضر على الـSHA المدفوع» شرطٌ يُقاس لا يُفترض. والتشغيل اليدوي كامل.
   workflow_dispatch:
+    inputs:
+      fixture_only:
+        description: Validate disposable local fixtures without the production-connected advisory E2E
+        type: boolean
+        default: false
   # الفحص الكامل الأسبوعي: الجمعة 15:00 UTC = 18:00 بتوقيت الرياض.
   schedule:
     - cron: "0 15 * * 5"
@@ -63,6 +68,24 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Install Playwright chromium + webkit
         run: npx playwright install --with-deps chromium webkit
+      - name: Restrict fixture-only runs to disposable loopback targets
+        if: inputs.fixture_only == true
+        run: |
+          {
+            echo 'SADEED_E2E_FIXTURE_ONLY=true'
+            echo 'VITE_SUPABASE_URL=http://127.0.0.1:54321'
+            echo 'VITE_SUPABASE_PUBLISHABLE_KEY=fixture-only-publishable-key'
+            echo 'VITE_SUPABASE_PROJECT_ID=fixture-only-local'
+            echo 'SUPABASE_URL=http://127.0.0.1:54321'
+            echo 'SUPABASE_PUBLISHABLE_KEY=fixture-only-publishable-key'
+            echo 'SUPABASE_PROJECT_ID=fixture-only-local'
+          } >> "$GITHUB_ENV"
+      - name: Verify the fixture-only network boundary locally
+        if: inputs.fixture_only == true
+        run: node tests/integration/fixture-network.regression.test.mjs
+      - name: Verify allowed local HMR with fixture isolation
+        if: inputs.fixture_only == true
+        run: npx playwright test tests/e2e/19-fixture-network-boundary.spec.ts --project=desktop --workers=1
       - name: Start isolated dev server
         run: |
           npm run dev -- --host 127.0.0.1 --port 8080 --strictPort > /tmp/public-health-dev.log 2>&1 &
@@ -172,10 +195,13 @@ jobs:
     name: rag preflight (real Postgres)
     # التشغيل الكامل وحده (الأسبوعي أو اليدوي).
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
+    # Every full RAG job must execute PostgreSQL16 rather than silently skip.
+    runs-on: ubuntu-24.04
     timeout-minutes: 13
     permissions:
       contents: read
+    env:
+      SADEED_E2E_FIXTURE_ONLY: "true"
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
@@ -184,6 +210,16 @@ jobs:
           cache: npm
       - name: Install
         run: npm ci --no-audit --no-fund
+      - name: Provision PostgreSQL 16 for required fixture RAG checks
+        run: |
+          set -euo pipefail
+          if [ ! -x /usr/lib/postgresql/16/bin/initdb ] || [ ! -x /usr/lib/postgresql/16/bin/pg_ctl ] || ! command -v psql >/dev/null; then
+            sudo apt-get update -qq
+            sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends postgresql-16 postgresql-client-16
+          fi
+          test -x /usr/lib/postgresql/16/bin/initdb
+          test -x /usr/lib/postgresql/16/bin/pg_ctl
+          command -v psql >/dev/null
       - name: RAG preflight (isolation + privilege on real Postgres)
         run: npm run check:rag
 
@@ -195,7 +231,8 @@ jobs:
   integration:
     name: integration (real Postgres + PostgREST)
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
+    # PostgreSQL16 is provided by this LTS image; ubuntu-latest moved to26.04.
+    runs-on: ubuntu-24.04
     timeout-minutes: 13
     permissions:
       contents: read
@@ -238,7 +275,9 @@ jobs:
   # workflow_dispatch), not on every push/PR — it never gated deploy anyway
   # (advisory when credentials are absent, and not in deploy's needs).
   security-gap-closure-e2e:
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    # Explicit fixture diagnostics never allocate production credentials. Default
+    # full/manual and scheduled behavior stays unchanged; this is an advisory job.
+    if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && inputs.fixture_only != true
     runs-on: ubuntu-latest
     needs: [static, test, build]
     # Bind to the production environment so this gate can read secrets whether

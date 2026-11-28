@@ -1,0 +1,182 @@
+{
+  "schema_version": 1,
+  "notes": "Discovery and integration candidates, not authenticated account connections. Each environment must verify its own credentials, availability, license and cost. No secrets stored.",
+  "programs": [
+    {
+      "name": "GitHub",
+      "url": "https://github.com",
+      "status": "available",
+      "codex_connection": "verified-read-write-2026-11-27",
+      "claude_code_connection": "unverified",
+      "cost_review": "required"
+    },
+    {
+      "name": "Vercel",
+      "url": "https://vercel.com",
+      "status": "candidate",
+      "codex_connection": "unverified",
+      "claude_code_connection": "unverified",
+      "cost_review": "required"
+    },
+    {
+      "name": "Supabase",
+      "url": "https://supabase.com",
+      "status": "candidate",
+      "codex_connection": "unverified",
+      "claude_code_connection": "unverified",
+      "cost_review": "required"
+    },
+    {
+      "name": "Google Drive",
+      "url": "https://drive.google.com",
+      "status": "candidate",
+      "codex_connection": "unverified",
+      "claude_code_connection": "unverified",
+      "cost_review": "required"
+    },
+    {
+      "name": "Render",
+      "url": "https://render.com",
+      "status": "candidate",
+      "codex_connection": "unverified",
+      "claude_code_connection": "unverified",
+      "cost_review": "required"
+    },
+    {
+      "name": "Canva",
+      "url": "https://www.canva.com",
+      "status": "candidate",
+      "codex_connection": "unverified",
+      "claude_code_connection": "unverified",
+      "cost_review": "required"
+    },
+    {
+      "name": "Figma",
+      "url": "https://www.figma.com",
+      "status": "candidate",
+      "codex_connection": "unverified",
+      "claude_code_connection": "unverified",
+      "cost_review": "required"
+    },
+    {
+      "name": "Runway",
+      "url": "https://runwayml.com",
+      "status": "candidate",
+      "codex_connection": "unverified",
+      "claude_code_connection": "unverified",
+      "cost_review": "required"
+    },
+    {
+      "name": "Higgsfield",
+      "url": "https://higgsfield.ai",
+      "status": "candidate",
+      "codex_connection": "unverified",
+      "claude_code_connection": "unverified",
+      "cost_review": "required"
+    },
+    {
+      "name": "HeyGen",
+      "url": "https://www.heygen.com",
+      "status": "candidate",
+      "codex_connection": "unverified",
+      "claude_code_connection": "unverified",
+      "cost_review": "required"
+    },
+    {
+      "name": "ElevenLabs",
+      "url": "https://elevenlabs.io",
+      "status": "candidate",
+      "codex_connection": "unverified",
+      "claude_code_connection": "unverified",
+      "cost_review": "required"
+    },
+    {
+      "name": "n8n",
+      "url": "https://n8n.io",
+      "status": "candidate",
+      "codex_connection": "unverified",
+      "claude_code_connection": "unverified",
+      "cost_review": "required"
+    },
+    {
+      "name": "Lovable",
+      "url": "https://lovable.dev",
+      "status": "candidate",
+      "codex_connection": "unverified",
+      "claude_code_connection": "unverified",
+      "cost_review": "required"
+    },
+    {
+      "name": "OpenRouter",
+      "url": "https://openrouter.ai",
+      "status": "candidate",
+      "codex_connection": "unverified",
+      "claude_code_connection": "unverified",
+      "cost_review": "required"
+    },
+    {
+      "name": "Remotion",
+      "url": "https://www.remotion.dev",
+      "status": "candidate",
+      "codex_connection": "unverified",
+      "claude_code_connection": "unverified",
+      "cost_review": "required"
+    },
+    {
+      "name": "Blender",
+      "url": "https://www.blender.org",
+      "status": "candidate",
+      "codex_connection": "unverified",
+      "claude_code_connection": "unverified",
+      "cost_review": "required"
+    },
+    {
+      "name": "FFmpeg",
+      "url": "https://ffmpeg.org",
+      "status": "candidate",
+      "codex_connection": "unverified",
+      "claude_code_connection": "unverified",
+      "cost_review": "required"
+    },
+    {
+      "name": "Three.js",
+      "url": "https://threejs.org",
+      "status": "candidate",
+      "codex_connection": "unverified",
+      "claude_code_connection": "unverified",
+      "cost_review": "required"
+    },
+    {
+      "name": "Motion",
+      "url": "https://motion.dev",
+      "status": "candidate",
+      "codex_connection": "unverified",
+      "claude_code_connection": "unverified",
+      "cost_review": "required"
+    },
+    {
+      "name": "GSAP",
+      "url": "https://gsap.com",
+      "status": "candidate",
+      "codex_connection": "unverified",
+      "claude_code_connection": "unverified",
+      "cost_review": "required"
+    },
+    {
+      "name": "Rive",
+      "url": "https://rive.app",
+      "status": "candidate",
+      "codex_connection": "unverified",
+      "claude_code_connection": "unverified",
+      "cost_review": "required"
+    },
+    {
+      "name": "Lottie",
+      "url": "https://lottiefiles.com",
+      "status": "candidate",
+      "codex_connection": "unverified",
+      "claude_code_connection": "unverified",
+      "cost_review": "required"
+    }
+  ]
+}
