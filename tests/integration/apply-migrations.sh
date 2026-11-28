@@ -28,6 +28,35 @@ if [ $# -eq 0 ]; then
   exit 2
 fi
 
+# This command executes DDL and test-only ACL prerequisites. Require an explicit
+# loopback host before opening psql; connection strings/services can override a
+# separate -h flag, so do not accept them in this local harness.
+local_host=""
+expect_host=0
+for argument in "$@"; do
+  if [ "$expect_host" = 1 ]; then
+    local_host="$argument"
+    expect_host=0
+  else
+    case "$argument" in
+      -h|--host) expect_host=1; continue ;;
+      --host=*) local_host="${argument#--host=}" ;;
+      -h*) local_host="${argument#-h}" ;;
+      *://*|*=*) echo "Refusing connection strings in the local integration harness" >&2; exit 1 ;;
+      *) continue ;;
+    esac
+  fi
+  case "$local_host" in
+    127.0.0.1|localhost|::1) ;;
+    *) echo "Refusing non-loopback integration database host" >&2; exit 1 ;;
+  esac
+done
+if [ -z "$local_host" ] || [ "$expect_host" = 1 ]; then
+  echo "Refusing integration database without an explicit loopback host" >&2
+  exit 1
+fi
+unset PGHOSTADDR PGSERVICE PGSERVICEFILE
+
 work="$(mktemp -d "${TMPDIR:-/tmp}/sadeed-migrations.XXXXXX")"
 trap 'rm -rf "$work"' EXIT
 failed="$work/failed.txt"
@@ -37,6 +66,16 @@ ok=0
 bad=0
 for path in $(ls "$MIGRATIONS"/*.sql | grep -v '_rollback\.sql$' | sort); do
   f="$(basename "$path")"
+  # Production grants can differ from platform defaults outside the migration
+  # history. Replay only reviewed, test-only prerequisites before their exact
+  # migration. Never relax a migration's preflight or add it to the failure list.
+  prerequisite="$HERE/sql/platform-prerequisites/$f"
+  if [ -f "$prerequisite" ]; then
+    if ! psql "$@" -X -q -1 -v ON_ERROR_STOP=1 -f "$prerequisite"; then
+      echo "✗ test platform prerequisite failed: $f" >&2
+      exit 1
+    fi
+  fi
   # Preprocess into the temp dir: platform-only DDL becomes a comment.
   perl -0777 -pe '
     s/CREATE\s+EXTENSION\s+(IF\s+NOT\s+EXISTS\s+)?("?)(vector|pg_cron|pg_net|supabase_vault|pgmq)\2([^;]*);/-- [shim] extension $3 stubbed;/gi;

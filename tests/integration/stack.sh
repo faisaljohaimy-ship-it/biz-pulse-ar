@@ -104,7 +104,7 @@ is_exact_fixture_response() {
     const fs = require("node:fs");
     let rows;
     try { rows = JSON.parse(fs.readFileSync(0, "utf8")); } catch { process.exit(1); }
-    const expected = ["INT-A-1", "INT-B-2"];
+    const expected = ["INT-A-1", "INT-A-2", "INT-B-1", "INT-B-2"];
     if (!Array.isArray(rows) || rows.length !== expected.length ||
         !rows.every((row, index) => row && typeof row === "object" &&
           !Array.isArray(row) && Object.keys(row).length === 1 && row.ref === expected[index])) {
@@ -174,6 +174,7 @@ cmd_up() {
   fi
   command -v node >/dev/null || die "node is required"
   command -v psql >/dev/null || die "psql is required"
+  command -v curl >/dev/null || die "curl is required for the mandatory fixture smoke check"
   ensure_postgrest
 
   local W

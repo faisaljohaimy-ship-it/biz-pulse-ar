@@ -195,7 +195,15 @@
   align-items: stretch;
   border: 1px solid var(--arabia-panel-line);
   border-radius: 12px;
-  background: color-mix(in srgb, var(--arabia-slate) 70%, var(--arabia-glass));
+  /* WebKit can crash when both color-mix operands are themselves mixed colors.
+     These palette surfaces are opaque: 70% slate over glass preserves the same
+     sRGB blend (verified pixels within 1/255), without nesting the two trees. */
+  background:
+    linear-gradient(
+      color-mix(in srgb, var(--arabia-slate) 70%, transparent),
+      color-mix(in srgb, var(--arabia-slate) 70%, transparent)
+    ),
+    var(--arabia-glass);
 }
 
 .nx-home-map-view {

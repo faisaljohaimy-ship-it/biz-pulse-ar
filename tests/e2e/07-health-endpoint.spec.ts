@@ -1,8 +1,16 @@
 import { test, expect } from "@playwright/test";
+import { fixtureAwareGet, fixturePolicyFromEnvironment } from "./support/fixture-network.mjs";
 
 test.describe("Health endpoint", () => {
-  test("GET /api/public/health reports readiness and correct HTTP status", async ({ request }) => {
-    const res = await request.get("/api/public/health");
+  test("GET /api/public/health reports readiness and correct HTTP status", async ({
+    request,
+    baseURL,
+  }) => {
+    const res = await fixtureAwareGet(
+      request,
+      "/api/public/health",
+      fixturePolicyFromEnvironment(baseURL),
+    );
     const body = await res.json();
 
     expect(res.headers()["cache-control"]).toContain("no-store");
@@ -37,8 +45,13 @@ test.describe("Health endpoint", () => {
 
   test("GET /api/public/live remains available when dependencies are unhealthy", async ({
     request,
+    baseURL,
   }) => {
-    const res = await request.get("/api/public/live");
+    const res = await fixtureAwareGet(
+      request,
+      "/api/public/live",
+      fixturePolicyFromEnvironment(baseURL),
+    );
     expect(res.status()).toBe(200);
     expect(res.headers()["cache-control"]).toContain("no-store");
     const body = await res.json();

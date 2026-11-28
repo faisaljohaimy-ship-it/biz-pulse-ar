@@ -25,11 +25,11 @@ printf 'probes=%s' "$(cat "$counter")"`,
 }
 
 describe("local PostgREST integration-stack readiness probe", () => {
-  it("retries a transient PGRST002 schema-cache response before requiring both fixtures", () => {
+  it("retries a transient PGRST002 schema-cache response before requiring all four fixtures", () => {
     const result = runProbe(`if [ "$count" -le 2 ]; then
   printf '%s\\n' '{"code":"PGRST002"}'
 else
-  printf '%s\\n' '[{"ref":"INT-A-1"},{"ref":"INT-B-2"}]'
+  printf '%s\\n' '[{"ref":"INT-A-1"},{"ref":"INT-A-2"},{"ref":"INT-B-1"},{"ref":"INT-B-2"}]'
 fi`);
     expect(result.status).toBe(0);
     expect(result.stdout).toContain("probes=3");
