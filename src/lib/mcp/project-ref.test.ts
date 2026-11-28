@@ -46,6 +46,23 @@ describe("project ref resolution", () => {
     ).toBe(LIVE);
   });
 
+  it("falls back to the valid Supabase URL when the explicit ref is malformed", () => {
+    // A truthy but invalid project id must not override an otherwise valid issuer.
+    expect(
+      resolveProjectRef({
+        VITE_SUPABASE_PROJECT_ID: "not-a-project-ref",
+        VITE_SUPABASE_URL: `https://${LIVE}.supabase.co`,
+      }),
+    ).toBe(LIVE);
+  });
+
+  it("marks invalid explicit refs as unresolved rather than advertising a broken issuer", () => {
+    for (const invalid of ["https://attacker.example/", "short", "a".repeat(21), "A".repeat(20)]) {
+      expect(resolveProjectRef({ VITE_SUPABASE_PROJECT_ID: invalid })).toBe(UNRESOLVED_PROJECT_REF);
+      expect(isIssuerResolved({ VITE_SUPABASE_PROJECT_ID: invalid })).toBe(false);
+    }
+  });
+
   it("refuses a proxy host — the issuer must be the direct Supabase origin", () => {
     // A .lovable.cloud URL is rejected by issuer verification, so it must not
     // be mined for a ref. Reporting "unresolved" beats advertising a host that
